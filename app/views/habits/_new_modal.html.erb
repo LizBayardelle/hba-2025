@@ -1,0 +1,122 @@
+<!-- New Habit Modal -->
+<div x-show="showNewHabitModal" @click.self="showNewHabitModal = false" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" style="display: none;">
+  <div @click.stop class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto" x-data="{ showAdvanced: false }">
+    <h2 class="text-2xl font-bold mb-6 display-font" :style="'color: ' + selectedColor">Add New Habit</h2>
+
+    <%= form_with model: [@category, Habit.new], url: category_habits_path(@category), local: true do |f| %>
+      <!-- Habit Name -->
+      <div class="mb-5">
+        <label class="block text-sm font-semibold mb-2" :style="'color: ' + colorMap[selectedColor].dark">Habit Name</label>
+        <%= f.text_field :name, class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light", "x-bind:style": "'border-color: ' + selectedColor + '; color: ' + colorMap[selectedColor].dark", placeholder: "e.g., Morning meditation" %>
+      </div>
+
+      <!-- Frequency: Times per Period -->
+      <div class="mb-5">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold mb-2" :style="'color: ' + colorMap[selectedColor].dark">TIMES</label>
+            <%= f.number_field :target_count, value: 1, class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light", "x-bind:style": "'border-color: ' + selectedColor + '; color: ' + colorMap[selectedColor].dark", min: 1 %>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold mb-2" :style="'color: ' + colorMap[selectedColor].dark">PER</label>
+            <%= f.select :frequency_type,
+                [['Day', 'day'], ['Week', 'week'], ['Month', 'month'], ['Year', 'year']],
+                { selected: 'day' },
+                class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light",
+                "x-bind:style": "'border-color: ' + selectedColor + '; color: ' + colorMap[selectedColor].dark" %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reminder Toggle -->
+      <div class="mb-6" x-data="{ reminderEnabled: false }">
+        <label class="flex items-center justify-between cursor-pointer">
+          <span class="text-sm font-semibold" :style="'color: ' + colorMap[selectedColor].dark">Enable reminders</span>
+          <div class="relative">
+            <%= f.check_box :reminder_enabled, class: "sr-only peer", id: "reminder_toggle", "x-model": "reminderEnabled" %>
+            <label for="reminder_toggle" class="block w-11 h-6 bg-gray-300 rounded-full transition cursor-pointer" :style="reminderEnabled ? ('background-color: ' + selectedColor) : ''"></label>
+            <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition" :class="reminderEnabled ? 'translate-x-5' : ''" style="pointer-events: none;"></div>
+          </div>
+        </label>
+      </div>
+
+      <!-- Hidden Start Date Field (always today) -->
+      <%= f.hidden_field :start_date, value: Date.today %>
+
+      <!-- Advanced Options Toggle -->
+      <button type="button" @click="showAdvanced = !showAdvanced" class="flex items-center gap-2 mb-4 text-sm font-semibold transition hover:opacity-70" :style="'color: ' + colorMap[selectedColor].dark">
+        <span>Advanced Options</span>
+        <i :class="showAdvanced ? 'fa-chevron-up' : 'fa-chevron-down'" class="fa-solid text-xs"></i>
+      </button>
+
+      <!-- Advanced Options Section -->
+      <div x-show="showAdvanced" x-collapse class="mb-6">
+        <div class="p-5 rounded-lg" :style="'background-color: ' + colorMap[selectedColor].light + '80'">
+          <!-- Description (Optional) -->
+          <div class="mb-5">
+            <label class="block text-sm font-semibold mb-2" :style="'color: ' + colorMap[selectedColor].dark">Description (Optional)</label>
+            <%= f.text_area :description, rows: 2, class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light resize-none bg-white", "x-bind:style": "'border-color: ' + selectedColor + '; color: ' + colorMap[selectedColor].dark", placeholder: "Add more context..." %>
+          </div>
+
+          <!-- Starting/Stopping Toggle -->
+          <div class="mb-5" x-data="{ habitType: true }">
+            <div class="flex items-center justify-center gap-3">
+              <span class="text-sm font-semibold" :style="!habitType ? ('color: ' + colorMap[selectedColor].dark) : 'color: #9CA3A8'">Stopping a bad habit</span>
+              <div class="relative">
+                <%= f.check_box :positive, class: "sr-only peer", id: "habit_type_toggle", checked: true, "x-model": "habitType" %>
+                <label for="habit_type_toggle" class="block w-11 h-6 bg-gray-300 rounded-full transition cursor-pointer" :style="habitType ? ('background-color: ' + selectedColor) : ''"></label>
+                <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition peer-checked:translate-x-5" style="pointer-events: none;"></div>
+              </div>
+              <span class="text-sm font-semibold" :style="habitType ? ('color: ' + colorMap[selectedColor].dark) : 'color: #9CA3A8'">Starting a good habit</span>
+            </div>
+          </div>
+
+          <!-- Time of Day Toggle -->
+          <div class="mb-5" x-data="{ timeOfDay: 'anytime' }">
+            <label class="block text-sm font-semibold mb-2" :style="'color: ' + colorMap[selectedColor].dark">Time of Day</label>
+            <%= f.hidden_field :time_of_day, "x-model": "timeOfDay" %>
+            <div class="grid grid-cols-4 gap-2">
+              <button type="button" @click="timeOfDay = 'morning'" class="py-2 px-3 rounded-lg border-2 text-sm font-semibold transition" :style="timeOfDay === 'morning' ? ('border-color: ' + selectedColor + '; background-color: ' + colorMap[selectedColor].light + '; color: ' + colorMap[selectedColor].dark) : ('border-color: ' + colorMap[selectedColor].light + '; color: ' + colorMap[selectedColor].dark)">Morning</button>
+              <button type="button" @click="timeOfDay = 'afternoon'" class="py-2 px-3 rounded-lg border-2 text-sm font-semibold transition" :style="timeOfDay === 'afternoon' ? ('border-color: ' + selectedColor + '; background-color: ' + colorMap[selectedColor].light + '; color: ' + colorMap[selectedColor].dark) : ('border-color: ' + colorMap[selectedColor].light + '; color: ' + colorMap[selectedColor].dark)">Afternoon</button>
+              <button type="button" @click="timeOfDay = 'evening'" class="py-2 px-3 rounded-lg border-2 text-sm font-semibold transition" :style="timeOfDay === 'evening' ? ('border-color: ' + selectedColor + '; background-color: ' + colorMap[selectedColor].light + '; color: ' + colorMap[selectedColor].dark) : ('border-color: ' + colorMap[selectedColor].light + '; color: ' + colorMap[selectedColor].dark)">Evening</button>
+              <button type="button" @click="timeOfDay = 'anytime'" class="py-2 px-3 rounded-lg border-2 text-sm font-semibold transition" :style="timeOfDay === 'anytime' ? ('border-color: ' + selectedColor + '; background-color: ' + colorMap[selectedColor].light + '; color: ' + colorMap[selectedColor].dark) : ('border-color: ' + colorMap[selectedColor].light + '; color: ' + colorMap[selectedColor].dark)">Anytime</button>
+            </div>
+          </div>
+
+          <!-- Difficulty Slider -->
+          <div class="mb-0" x-data="{
+            difficulty: null,
+            difficultyLabels: {
+              1: 'No Challenge At All',
+              2: 'A Little Challenging',
+              3: 'Could Be a Challenge',
+              4: 'Should Be Interesting',
+              5: 'Pushing Myself'
+            }
+          }">
+            <label class="block text-sm font-semibold mb-2" :style="'color: ' + colorMap[selectedColor].dark">Difficulty (Optional)</label>
+            <%= f.hidden_field :difficulty, "x-model": "difficulty" %>
+            <div class="flex items-center gap-4 mb-3">
+              <span class="text-xs font-semibold" :style="'color: ' + colorMap[selectedColor].dark">Easy</span>
+              <input type="range" min="1" max="5" x-model="difficulty" class="flex-1 h-2 rounded-lg appearance-none cursor-pointer" :style="'accent-color: ' + selectedColor + '; background: linear-gradient(to right, ' + colorMap[selectedColor].light + ', ' + selectedColor + ')'">
+              <span class="text-xs font-semibold" :style="'color: ' + colorMap[selectedColor].dark">Hard</span>
+            </div>
+            <div class="text-center">
+              <span class="text-sm font-semibold" :style="'color: ' + colorMap[selectedColor].dark" x-text="difficulty ? difficultyLabels[difficulty] : 'Not set'"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="flex gap-3">
+        <button type="button" @click="showNewHabitModal = false" class="flex-1 py-3 px-4 rounded-lg font-semibold border-2 transition" :style="'color: ' + colorMap[selectedColor].dark + '; border-color: ' + colorMap[selectedColor].light">
+          Cancel
+        </button>
+        <button type="submit" class="flex-1 py-3 px-4 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition transform hover:scale-[1.02]" :style="'background-color: ' + selectedColor">
+          Create Habit
+        </button>
+      </div>
+    <% end %>
+  </div>
+</div>

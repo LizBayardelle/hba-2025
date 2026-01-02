@@ -1,0 +1,586 @@
+<style>
+  body {
+    font-family: 'Inter', sans-serif;
+  }
+  h1, h2, h3, .display-font {
+    font-family: 'Space Grotesk', sans-serif;
+  }
+</style>
+
+<div class="flex h-screen" style="background-color: #f8f9fa;">
+  <!-- Left Sidebar Navigation -->
+  <aside class="w-64 shadow-xl" style="background: linear-gradient(to bottom, #1d3e4c, #32505c);">
+    <div class="p-6 text-white">
+      <!-- Logo Area -->
+      <div class="flex items-center gap-3 mb-8">
+        <div class="w-12 h-12 rounded-lg flex items-center justify-center" style="background-color: #F8796D;">
+          <i class="fa-solid fa-otter text-2xl text-white"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold display-font">Habit Beaver</h1>
+          <p class="text-xs" style="color: #657b84;">Build better habits</p>
+        </div>
+      </div>
+
+      <!-- Navigation Items -->
+      <nav class="space-y-2">
+        <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg transition" style="background-color: rgba(255, 255, 255, 0.15);">
+          <i class="fa-solid fa-chart-line text-lg" style="color: #F8796D;"></i>
+          <span class="font-medium">Dashboard</span>
+        </a>
+        <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg transition hover:bg-white/10">
+          <i class="fa-solid fa-list-check text-lg"></i>
+          <span class="font-light">My Habits</span>
+        </a>
+        <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg transition hover:bg-white/10">
+          <i class="fa-solid fa-chart-column text-lg"></i>
+          <span class="font-light">Analytics</span>
+        </a>
+        <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg transition hover:bg-white/10">
+          <i class="fa-solid fa-bullseye text-lg"></i>
+          <span class="font-light">Goals</span>
+        </a>
+        <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg transition hover:bg-white/10">
+          <i class="fa-solid fa-gear text-lg"></i>
+          <span class="font-light">Settings</span>
+        </a>
+      </nav>
+
+      <!-- Categories Section -->
+      <div class="mt-8">
+        <h3 class="text-xs font-semibold uppercase tracking-wide mb-3" style="color: #657b84;">Category Colors</h3>
+        <div class="space-y-2">
+          <a href="#" class="flex items-center gap-2 px-4 py-2 hover:bg-white/10 rounded-lg transition text-sm font-light">
+            <div class="w-3 h-3 rounded-full" style="background-color: #9C8B7E;"></div>
+            <span>Warm Grey</span>
+          </a>
+          <a href="#" class="flex items-center gap-2 px-4 py-2 hover:bg-white/10 rounded-lg transition text-sm font-light">
+            <div class="w-3 h-3 rounded-full" style="background-color: #F8796D;"></div>
+            <span>Salmon</span>
+          </a>
+          <a href="#" class="flex items-center gap-2 px-4 py-2 hover:bg-white/10 rounded-lg transition text-sm font-light">
+            <div class="w-3 h-3 rounded-full" style="background-color: #FFA07A;"></div>
+            <span>Peach</span>
+          </a>
+          <a href="#" class="flex items-center gap-2 px-4 py-2 hover:bg-white/10 rounded-lg transition text-sm font-light">
+            <div class="w-3 h-3 rounded-full" style="background-color: #FDE047;"></div>
+            <span>Mustard</span>
+          </a>
+          <a href="#" class="flex items-center gap-2 px-4 py-2 hover:bg-white/10 rounded-lg transition text-sm font-light">
+            <div class="w-3 h-3 rounded-full" style="background-color: #BDB76B;"></div>
+            <span>Sage</span>
+          </a>
+          <a href="#" class="flex items-center gap-2 px-4 py-2 hover:bg-white/10 rounded-lg transition text-sm font-light">
+            <div class="w-3 h-3 rounded-full" style="background-color: #7CB342;"></div>
+            <span>Green</span>
+          </a>
+          <a href="#" class="flex items-center gap-2 px-4 py-2 hover:bg-white/10 rounded-lg transition text-sm font-light">
+            <div class="w-3 h-3 rounded-full" style="background-color: #6EE7B7;"></div>
+            <span>Seafoam</span>
+          </a>
+          <a href="#" class="flex items-center gap-2 px-4 py-2 hover:bg-white/10 rounded-lg transition text-sm font-light">
+            <div class="w-3 h-3 rounded-full" style="background-color: #22D3EE;"></div>
+            <span>Aqua</span>
+          </a>
+          <a href="#" class="flex items-center gap-2 px-4 py-2 hover:bg-white/10 rounded-lg transition text-sm font-light">
+            <div class="w-3 h-3 rounded-full" style="background-color: #6366F1;"></div>
+            <span>Indigo</span>
+          </a>
+          <a href="#" class="flex items-center gap-2 px-4 py-2 hover:bg-white/10 rounded-lg transition text-sm font-light">
+            <div class="w-3 h-3 rounded-full" style="background-color: #A78BFA;"></div>
+            <span>Lavender</span>
+          </a>
+          <a href="#" class="flex items-center gap-2 px-4 py-2 hover:bg-white/10 rounded-lg transition text-sm font-light">
+            <div class="w-3 h-3 rounded-full" style="background-color: #E879F9;"></div>
+            <span>Fuchsia</span>
+          </a>
+          <a href="#" class="flex items-center gap-2 px-4 py-2 hover:bg-white/10 rounded-lg transition text-sm font-light">
+            <div class="w-3 h-3 rounded-full" style="background-color: #FB7185;"></div>
+            <span>Rose</span>
+          </a>
+          <a href="#" class="flex items-center gap-2 px-4 py-2 hover:bg-white/10 rounded-lg transition text-sm font-light">
+            <div class="w-3 h-3 rounded-full" style="background-color: #9CA3A8;"></div>
+            <span>Slate Grey</span>
+          </a>
+          <a href="#" class="flex items-center gap-2 px-4 py-2 hover:bg-white/10 rounded-lg transition text-sm font-light">
+            <div class="w-3 h-3 rounded-full" style="background-color: #6B8A99;"></div>
+            <span>Theme Blue</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <!-- Top Navbar -->
+    <header class="bg-white shadow-sm" style="border-bottom: 1px solid #e5e7eb;">
+      <div class="px-8 py-4 flex items-center justify-between">
+        <div>
+          <h2 class="text-2xl font-bold display-font" style="color: #1d3e4c;">Dashboard</h2>
+          <p class="text-sm font-light" style="color: #657b84;">Track your daily progress</p>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2 px-4 py-2 rounded-full" style="background-color: #fef3f2; color: #F8796D;">
+            <i class="fa-solid fa-fire text-lg"></i>
+            <span class="font-semibold">7 Day Streak!</span>
+          </div>
+          <button class="p-2 hover:bg-gray-100 rounded-lg transition">
+            <i class="fa-solid fa-bell text-xl" style="color: #45606b;"></i>
+          </button>
+          <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" style="background: linear-gradient(135deg, #45606b, #657b84);">
+            LB
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Scrollable Content -->
+    <main class="flex-1 overflow-y-auto p-8" style="background-color: #f8f9fa;">
+      <!-- Color Picker Demo -->
+      <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <h3 class="text-xl font-bold display-font mb-4" style="color: #1d3e4c;">Color Picker</h3>
+        <p class="text-sm font-light mb-6" style="color: #657b84;">Choose a color for your habit or category</p>
+
+        <div class="grid grid-cols-14 gap-3">
+          <button class="group relative">
+            <div class="w-12 h-12 rounded-lg transition-transform hover:scale-110 cursor-pointer ring-2 ring-offset-2" style="background-color: #9C8B7E;"></div>
+            <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs font-light whitespace-nowrap opacity-0 group-hover:opacity-100 transition" style="color: #566e78;">Warm Grey</div>
+          </button>
+          <button class="group relative">
+            <div class="w-12 h-12 rounded-lg transition-transform hover:scale-110 cursor-pointer hover:ring-2 hover:ring-offset-2" style="background-color: #F8796D;"></div>
+            <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs font-light whitespace-nowrap opacity-0 group-hover:opacity-100 transition" style="color: #566e78;">Salmon</div>
+          </button>
+          <button class="group relative">
+            <div class="w-12 h-12 rounded-lg transition-transform hover:scale-110 cursor-pointer hover:ring-2 hover:ring-offset-2" style="background-color: #FFA07A;"></div>
+            <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs font-light whitespace-nowrap opacity-0 group-hover:opacity-100 transition" style="color: #566e78;">Peach</div>
+          </button>
+          <button class="group relative">
+            <div class="w-12 h-12 rounded-lg transition-transform hover:scale-110 cursor-pointer hover:ring-2 hover:ring-offset-2" style="background-color: #FDE047;"></div>
+            <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs font-light whitespace-nowrap opacity-0 group-hover:opacity-100 transition" style="color: #566e78;">Mustard</div>
+          </button>
+          <button class="group relative">
+            <div class="w-12 h-12 rounded-lg transition-transform hover:scale-110 cursor-pointer hover:ring-2 hover:ring-offset-2" style="background-color: #BDB76B;"></div>
+            <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs font-light whitespace-nowrap opacity-0 group-hover:opacity-100 transition" style="color: #566e78;">Sage</div>
+          </button>
+          <button class="group relative">
+            <div class="w-12 h-12 rounded-lg transition-transform hover:scale-110 cursor-pointer hover:ring-2 hover:ring-offset-2" style="background-color: #7CB342;"></div>
+            <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs font-light whitespace-nowrap opacity-0 group-hover:opacity-100 transition" style="color: #566e78;">Green</div>
+          </button>
+          <button class="group relative">
+            <div class="w-12 h-12 rounded-lg transition-transform hover:scale-110 cursor-pointer hover:ring-2 hover:ring-offset-2" style="background-color: #6EE7B7;"></div>
+            <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs font-light whitespace-nowrap opacity-0 group-hover:opacity-100 transition" style="color: #566e78;">Seafoam</div>
+          </button>
+          <button class="group relative">
+            <div class="w-12 h-12 rounded-lg transition-transform hover:scale-110 cursor-pointer hover:ring-2 hover:ring-offset-2" style="background-color: #22D3EE;"></div>
+            <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs font-light whitespace-nowrap opacity-0 group-hover:opacity-100 transition" style="color: #566e78;">Aqua</div>
+          </button>
+          <button class="group relative">
+            <div class="w-12 h-12 rounded-lg transition-transform hover:scale-110 cursor-pointer hover:ring-2 hover:ring-offset-2" style="background-color: #6366F1;"></div>
+            <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs font-light whitespace-nowrap opacity-0 group-hover:opacity-100 transition" style="color: #566e78;">Indigo</div>
+          </button>
+          <button class="group relative">
+            <div class="w-12 h-12 rounded-lg transition-transform hover:scale-110 cursor-pointer hover:ring-2 hover:ring-offset-2" style="background-color: #A78BFA;"></div>
+            <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs font-light whitespace-nowrap opacity-0 group-hover:opacity-100 transition" style="color: #566e78;">Lavender</div>
+          </button>
+          <button class="group relative">
+            <div class="w-12 h-12 rounded-lg transition-transform hover:scale-110 cursor-pointer hover:ring-2 hover:ring-offset-2" style="background-color: #E879F9;"></div>
+            <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs font-light whitespace-nowrap opacity-0 group-hover:opacity-100 transition" style="color: #566e78;">Fuchsia</div>
+          </button>
+          <button class="group relative">
+            <div class="w-12 h-12 rounded-lg transition-transform hover:scale-110 cursor-pointer hover:ring-2 hover:ring-offset-2" style="background-color: #FB7185;"></div>
+            <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs font-light whitespace-nowrap opacity-0 group-hover:opacity-100 transition" style="color: #566e78;">Rose</div>
+          </button>
+          <button class="group relative">
+            <div class="w-12 h-12 rounded-lg transition-transform hover:scale-110 cursor-pointer hover:ring-2 hover:ring-offset-2" style="background-color: #9CA3A8;"></div>
+            <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs font-light whitespace-nowrap opacity-0 group-hover:opacity-100 transition" style="color: #566e78;">Slate Grey</div>
+          </button>
+          <button class="group relative">
+            <div class="w-12 h-12 rounded-lg transition-transform hover:scale-110 cursor-pointer hover:ring-2 hover:ring-offset-2" style="background-color: #6B8A99;"></div>
+            <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs font-light whitespace-nowrap opacity-0 group-hover:opacity-100 transition" style="color: #566e78;">Theme Blue</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="rounded-xl p-6 text-white shadow-lg" style="background: linear-gradient(135deg, #1d3e4c, #32505c);">
+          <i class="fa-solid fa-bullseye text-3xl mb-2"></i>
+          <div class="text-3xl font-bold">12</div>
+          <div class="text-sm font-light" style="color: #657b84;">Active Habits</div>
+        </div>
+        <div class="rounded-xl p-6 text-white shadow-lg" style="background: linear-gradient(135deg, #32505c, #45606b);">
+          <i class="fa-solid fa-chart-line text-3xl mb-2"></i>
+          <div class="text-3xl font-bold">89%</div>
+          <div class="text-sm font-light" style="color: #9ca3af;">Completion Rate</div>
+        </div>
+        <div class="rounded-xl p-6 text-white shadow-lg" style="background: linear-gradient(135deg, #45606b, #566e78);">
+          <i class="fa-solid fa-fire text-3xl mb-2" style="color: #F8796D;"></i>
+          <div class="text-3xl font-bold">23</div>
+          <div class="text-sm font-light" style="color: #9ca3af;">Longest Streak</div>
+        </div>
+        <div class="rounded-xl p-6 text-white shadow-lg" style="background-color: #F8796D;">
+          <i class="fa-solid fa-star text-3xl mb-2"></i>
+          <div class="text-3xl font-bold">156</div>
+          <div class="text-sm font-light" style="color: #fef3f2;">Total Points</div>
+        </div>
+      </div>
+
+      <!-- Two Column Layout -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column - Habits -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Today's Habits Checklist -->
+          <div class="bg-white rounded-xl shadow-md p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="text-xl font-bold display-font" style="color: #1d3e4c;">Today's Habits</h3>
+              <span class="text-sm font-light" style="color: #657b84;">Tuesday, Dec 31</span>
+            </div>
+
+            <div class="space-y-3">
+              <!-- 1. Warm Grey -->
+              <label class="flex items-center gap-4 p-4 rounded-lg border-2 transition cursor-pointer relative" style="background-color: #E8E0D5; border-color: #9C8B7E;">
+                <div class="w-6 h-6 rounded flex items-center justify-center" style="background-color: #9C8B7E;">
+                  <i class="fa-solid fa-check text-white text-sm"></i>
+                </div>
+                <div class="flex-1">
+                  <div class="font-semibold" style="color: #5C4F45;">Warm Grey Habit</div>
+                  <div class="text-xs font-light" style="color: #5C4F45;">Light bg, normal border/checkbox, dark text</div>
+                </div>
+              </label>
+
+              <!-- 2. Salmon -->
+              <label class="flex items-center gap-4 p-4 rounded-lg border-2 transition cursor-pointer relative" style="background-color: #FFD4CE; border-color: #F8796D;">
+                <div class="w-6 h-6 rounded flex items-center justify-center" style="background-color: #F8796D;">
+                  <i class="fa-solid fa-check text-white text-sm"></i>
+                </div>
+                <div class="flex-1">
+                  <div class="font-semibold" style="color: #B8352A;">Salmon Habit</div>
+                  <div class="text-xs font-light" style="color: #B8352A;">Light bg, normal border/checkbox, dark text</div>
+                </div>
+              </label>
+
+              <!-- 3. Peach -->
+              <label class="flex items-center gap-4 p-4 rounded-lg border-2 transition cursor-pointer relative" style="background-color: #FFE4D6; border-color: #FFA07A;">
+                <div class="w-6 h-6 rounded flex items-center justify-center" style="background-color: #FFA07A;">
+                  <i class="fa-solid fa-check text-white text-sm"></i>
+                </div>
+                <div class="flex-1">
+                  <div class="font-semibold" style="color: #D66A3E;">Peach Habit</div>
+                  <div class="text-xs font-light" style="color: #D66A3E;">Light bg, normal border/checkbox, dark text</div>
+                </div>
+              </label>
+
+              <!-- 4. Mustard (darker for white checkmark) -->
+              <label class="flex items-center gap-4 p-4 rounded-lg border-2 transition cursor-pointer relative" style="background-color: #FEF7C3; border-color: #E5C730;">
+                <div class="w-6 h-6 rounded flex items-center justify-center" style="background-color: #E5C730;">
+                  <i class="fa-solid fa-check text-white text-sm"></i>
+                </div>
+                <div class="flex-1">
+                  <div class="font-semibold" style="color: #B89F0A;">Mustard Habit</div>
+                  <div class="text-xs font-light" style="color: #B89F0A;">Light bg, normal border/checkbox, dark text</div>
+                </div>
+              </label>
+
+              <!-- 5. Sage (darker for white checkmark) -->
+              <label class="flex items-center gap-4 p-4 rounded-lg border-2 transition cursor-pointer relative" style="background-color: #E8EBCD; border-color: #A8A356;">
+                <div class="w-6 h-6 rounded flex items-center justify-center" style="background-color: #A8A356;">
+                  <i class="fa-solid fa-check text-white text-sm"></i>
+                </div>
+                <div class="flex-1">
+                  <div class="font-semibold" style="color: #7A7637;">Sage Habit</div>
+                  <div class="text-xs font-light" style="color: #7A7637;">Light bg, normal border/checkbox, dark text</div>
+                </div>
+              </label>
+
+              <!-- 6. Green -->
+              <label class="flex items-center gap-4 p-4 rounded-lg border-2 transition cursor-pointer relative" style="background-color: #D7EDCB; border-color: #7CB342;">
+                <div class="w-6 h-6 rounded flex items-center justify-center" style="background-color: #7CB342;">
+                  <i class="fa-solid fa-check text-white text-sm"></i>
+                </div>
+                <div class="flex-1">
+                  <div class="font-semibold" style="color: #4A6B27;">Green Habit</div>
+                  <div class="text-xs font-light" style="color: #4A6B27;">Light bg, normal border/checkbox, dark text</div>
+                </div>
+              </label>
+
+              <!-- 7. Seafoam -->
+              <label class="flex items-center gap-4 p-4 rounded-lg border-2 transition cursor-pointer relative" style="background-color: #D1FAF0; border-color: #6EE7B7;">
+                <div class="w-6 h-6 rounded flex items-center justify-center" style="background-color: #6EE7B7;">
+                  <i class="fa-solid fa-check text-white text-sm"></i>
+                </div>
+                <div class="flex-1">
+                  <div class="font-semibold" style="color: #2C9D73;">Seafoam Habit</div>
+                  <div class="text-xs font-light" style="color: #2C9D73;">Light bg, normal border/checkbox, dark text</div>
+                </div>
+              </label>
+
+              <!-- 8. Aqua -->
+              <label class="flex items-center gap-4 p-4 rounded-lg border-2 transition cursor-pointer relative" style="background-color: #CFFAFE; border-color: #22D3EE;">
+                <div class="w-6 h-6 rounded flex items-center justify-center" style="background-color: #22D3EE;">
+                  <i class="fa-solid fa-check text-white text-sm"></i>
+                </div>
+                <div class="flex-1">
+                  <div class="font-semibold" style="color: #0E7490;">Aqua Habit</div>
+                  <div class="text-xs font-light" style="color: #0E7490;">Light bg, normal border/checkbox, dark text</div>
+                </div>
+              </label>
+
+              <!-- 9. Indigo -->
+              <label class="flex items-center gap-4 p-4 rounded-lg border-2 transition cursor-pointer relative" style="background-color: #E0E7FF; border-color: #6366F1;">
+                <div class="w-6 h-6 rounded flex items-center justify-center" style="background-color: #6366F1;">
+                  <i class="fa-solid fa-check text-white text-sm"></i>
+                </div>
+                <div class="flex-1">
+                  <div class="font-semibold" style="color: #3730A3;">Indigo Habit</div>
+                  <div class="text-xs font-light" style="color: #3730A3;">Light bg, normal border/checkbox, dark text</div>
+                </div>
+              </label>
+
+              <!-- 10. Lavender -->
+              <label class="flex items-center gap-4 p-4 rounded-lg border-2 transition cursor-pointer relative" style="background-color: #EDE9FE; border-color: #A78BFA;">
+                <div class="w-6 h-6 rounded flex items-center justify-center" style="background-color: #A78BFA;">
+                  <i class="fa-solid fa-check text-white text-sm"></i>
+                </div>
+                <div class="flex-1">
+                  <div class="font-semibold" style="color: #6B21A8;">Lavender Habit</div>
+                  <div class="text-xs font-light" style="color: #6B21A8;">Light bg, normal border/checkbox, dark text</div>
+                </div>
+              </label>
+
+              <!-- 11. Fuchsia -->
+              <label class="flex items-center gap-4 p-4 rounded-lg border-2 transition cursor-pointer relative" style="background-color: #FAE8FF; border-color: #E879F9;">
+                <div class="w-6 h-6 rounded flex items-center justify-center" style="background-color: #E879F9;">
+                  <i class="fa-solid fa-check text-white text-sm"></i>
+                </div>
+                <div class="flex-1">
+                  <div class="font-semibold" style="color: #A21CAF;">Fuchsia Habit</div>
+                  <div class="text-xs font-light" style="color: #A21CAF;">Light bg, normal border/checkbox, dark text</div>
+                </div>
+              </label>
+
+              <!-- 12. Rose -->
+              <label class="flex items-center gap-4 p-4 rounded-lg border-2 transition cursor-pointer relative" style="background-color: #FFE4E6; border-color: #FB7185;">
+                <div class="w-6 h-6 rounded flex items-center justify-center" style="background-color: #FB7185;">
+                  <i class="fa-solid fa-check text-white text-sm"></i>
+                </div>
+                <div class="flex-1">
+                  <div class="font-semibold" style="color: #BE123C;">Rose Habit</div>
+                  <div class="text-xs font-light" style="color: #BE123C;">Light bg, normal border/checkbox, dark text</div>
+                </div>
+              </label>
+
+              <!-- 13. Slate Grey -->
+              <label class="flex items-center gap-4 p-4 rounded-lg border-2 transition cursor-pointer relative" style="background-color: #E8E8E8; border-color: #9CA3A8;">
+                <div class="w-6 h-6 rounded flex items-center justify-center" style="background-color: #9CA3A8;">
+                  <i class="fa-solid fa-check text-white text-sm"></i>
+                </div>
+                <div class="flex-1">
+                  <div class="font-semibold" style="color: #4A5057;">Slate Grey Habit</div>
+                  <div class="text-xs font-light" style="color: #4A5057;">Light bg, normal border/checkbox, dark text</div>
+                </div>
+              </label>
+
+              <!-- 14. Theme Blue -->
+              <label class="flex items-center gap-4 p-4 rounded-lg border-2 transition cursor-pointer relative" style="background-color: #E8EEF1; border-color: #6B8A99;">
+                <div class="w-6 h-6 rounded flex items-center justify-center" style="background-color: #6B8A99;">
+                  <i class="fa-solid fa-check text-white text-sm"></i>
+                </div>
+                <div class="flex-1">
+                  <div class="font-semibold" style="color: #1d3e4c;">Theme Blue Habit</div>
+                  <div class="text-xs font-light" style="color: #1d3e4c;">Light bg, normal border/checkbox, dark text</div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Weekly Progress Chart -->
+          <div class="bg-white rounded-xl shadow-md p-6">
+            <h3 class="text-xl font-bold display-font mb-6" style="color: #1d3e4c;">Weekly Progress</h3>
+            <div class="flex items-end justify-between h-64 gap-4">
+              <div class="flex-1 flex flex-col items-center gap-2">
+                <div class="w-full rounded-t-lg relative" style="height: 75%; background: linear-gradient(to top, #32505c, #45606b);">
+                  <div class="absolute -top-8 left-0 right-0 text-center font-bold" style="color: #1d3e4c;">75%</div>
+                </div>
+                <span class="text-sm font-medium" style="color: #566e78;">Mon</span>
+              </div>
+              <div class="flex-1 flex flex-col items-center gap-2">
+                <div class="w-full rounded-t-lg relative" style="height: 90%; background: linear-gradient(to top, #32505c, #45606b);">
+                  <div class="absolute -top-8 left-0 right-0 text-center font-bold" style="color: #1d3e4c;">90%</div>
+                </div>
+                <span class="text-sm font-medium" style="color: #566e78;">Tue</span>
+              </div>
+              <div class="flex-1 flex flex-col items-center gap-2">
+                <div class="w-full rounded-t-lg relative" style="height: 60%; background: linear-gradient(to top, #32505c, #45606b);">
+                  <div class="absolute -top-8 left-0 right-0 text-center font-bold" style="color: #1d3e4c;">60%</div>
+                </div>
+                <span class="text-sm font-medium" style="color: #566e78;">Wed</span>
+              </div>
+              <div class="flex-1 flex flex-col items-center gap-2">
+                <div class="w-full rounded-t-lg relative" style="height: 100%; background-color: #F8796D;">
+                  <div class="absolute -top-8 left-0 right-0 text-center font-bold" style="color: #1d3e4c;">100%</div>
+                </div>
+                <span class="text-sm font-medium" style="color: #566e78;">Thu</span>
+              </div>
+              <div class="flex-1 flex flex-col items-center gap-2">
+                <div class="w-full rounded-t-lg relative" style="height: 85%; background: linear-gradient(to top, #32505c, #45606b);">
+                  <div class="absolute -top-8 left-0 right-0 text-center font-bold" style="color: #1d3e4c;">85%</div>
+                </div>
+                <span class="text-sm font-medium" style="color: #566e78;">Fri</span>
+              </div>
+              <div class="flex-1 flex flex-col items-center gap-2">
+                <div class="w-full rounded-t-lg relative" style="height: 45%; background: linear-gradient(to top, #32505c, #45606b);">
+                  <div class="absolute -top-8 left-0 right-0 text-center font-bold" style="color: #1d3e4c;">45%</div>
+                </div>
+                <span class="text-sm font-medium" style="color: #566e78;">Sat</span>
+              </div>
+              <div class="flex-1 flex flex-col items-center gap-2">
+                <div class="w-full rounded-t-lg relative" style="height: 70%; background: linear-gradient(to top, #32505c, #45606b);">
+                  <div class="absolute -top-8 left-0 right-0 text-center font-bold" style="color: #1d3e4c;">70%</div>
+                </div>
+                <span class="text-sm font-medium" style="color: #566e78;">Sun</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column - Widgets -->
+        <div class="space-y-6">
+          <!-- Quick Toggles -->
+          <div class="bg-white rounded-xl shadow-md p-6">
+            <h3 class="text-lg font-bold display-font mb-4" style="color: #1d3e4c;">Quick Actions</h3>
+            <div class="space-y-4">
+              <div class="flex items-center justify-between p-3 rounded-lg" style="background-color: #f8f9fa;">
+                <span class="text-sm font-medium" style="color: #32505c;">Notifications</span>
+                <label class="relative inline-block w-12 h-6">
+                  <input type="checkbox" checked class="sr-only peer" />
+                  <div class="w-12 h-6 rounded-full transition" style="background-color: #F8796D; position: relative;">
+                    <div class="absolute top-0.5 left-0.5 bg-white rounded-full h-5 w-5 transition peer-checked:translate-x-6" style="transform: translateX(24px);"></div>
+                  </div>
+                </label>
+              </div>
+              <div class="flex items-center justify-between p-3 rounded-lg" style="background-color: #f8f9fa;">
+                <span class="text-sm font-medium" style="color: #32505c;">Daily Reminders</span>
+                <label class="relative inline-block w-12 h-6">
+                  <input type="checkbox" checked class="sr-only peer" />
+                  <div class="w-12 h-6 rounded-full transition" style="background-color: #45606b; position: relative;">
+                    <div class="absolute top-0.5 left-0.5 bg-white rounded-full h-5 w-5 transition" style="transform: translateX(24px);"></div>
+                  </div>
+                </label>
+              </div>
+              <div class="flex items-center justify-between p-3 rounded-lg" style="background-color: #f8f9fa;">
+                <span class="text-sm font-medium" style="color: #32505c;">Dark Mode</span>
+                <label class="relative inline-block w-12 h-6">
+                  <input type="checkbox" class="sr-only peer" />
+                  <div class="w-12 h-6 rounded-full transition" style="background-color: #cbd5e1; position: relative;">
+                    <div class="absolute top-0.5 left-0.5 bg-white rounded-full h-5 w-5 transition"></div>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Streak Calendar -->
+          <div class="bg-white rounded-xl shadow-md p-6">
+            <h3 class="text-lg font-bold display-font mb-4" style="color: #1d3e4c;">Streak Calendar</h3>
+            <div class="grid grid-cols-7 gap-1">
+              <div class="aspect-square rounded" style="background-color: #32505c;"></div>
+              <div class="aspect-square rounded" style="background-color: #32505c;"></div>
+              <div class="aspect-square rounded" style="background-color: #45606b;"></div>
+              <div class="aspect-square rounded" style="background-color: #32505c;"></div>
+              <div class="aspect-square rounded" style="background-color: #32505c;"></div>
+              <div class="aspect-square rounded" style="background-color: #e5e7eb;"></div>
+              <div class="aspect-square rounded" style="background-color: #566e78;"></div>
+              <div class="aspect-square rounded" style="background-color: #32505c;"></div>
+              <div class="aspect-square rounded" style="background-color: #32505c;"></div>
+              <div class="aspect-square rounded" style="background-color: #32505c;"></div>
+              <div class="aspect-square rounded" style="background-color: #e5e7eb;"></div>
+              <div class="aspect-square rounded" style="background-color: #45606b;"></div>
+              <div class="aspect-square rounded" style="background-color: #32505c;"></div>
+              <div class="aspect-square rounded" style="background-color: #32505c;"></div>
+              <div class="aspect-square rounded" style="background-color: #566e78;"></div>
+              <div class="aspect-square rounded" style="background-color: #32505c;"></div>
+              <div class="aspect-square rounded" style="background-color: #32505c;"></div>
+              <div class="aspect-square rounded" style="background-color: #32505c;"></div>
+              <div class="aspect-square rounded" style="background-color: #45606b;"></div>
+              <div class="aspect-square rounded" style="background-color: #e5e7eb;"></div>
+              <div class="aspect-square rounded" style="background-color: #32505c;"></div>
+              <div class="aspect-square rounded" style="background-color: #32505c;"></div>
+              <div class="aspect-square rounded" style="background-color: #32505c;"></div>
+              <div class="aspect-square rounded" style="background-color: #566e78;"></div>
+              <div class="aspect-square rounded" style="background-color: #32505c;"></div>
+              <div class="aspect-square rounded" style="background-color: #45606b;"></div>
+              <div class="aspect-square rounded" style="background-color: #32505c;"></div>
+              <div class="aspect-square rounded" style="background-color: #F8796D;"></div>
+            </div>
+            <div class="flex items-center gap-4 mt-4 text-xs" style="color: #566e78;">
+              <div class="flex items-center gap-1">
+                <div class="w-3 h-3 rounded" style="background-color: #e5e7eb;"></div>
+                <span class="font-light">Missed</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <div class="w-3 h-3 rounded" style="background-color: #566e78;"></div>
+                <span class="font-light">Partial</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <div class="w-3 h-3 rounded" style="background-color: #32505c;"></div>
+                <span class="font-light">Complete</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Achievements -->
+          <div class="bg-white rounded-xl shadow-md p-6">
+            <h3 class="text-lg font-bold display-font mb-4" style="color: #1d3e4c;">Recent Achievements</h3>
+            <div class="space-y-3">
+              <div class="flex items-center gap-3 p-3 rounded-lg border" style="background: linear-gradient(to right, #fef3f2, #fef3f2); border-color: #F8796D;">
+                <i class="fa-solid fa-trophy text-2xl" style="color: #F8796D;"></i>
+                <div>
+                  <div class="font-semibold text-sm" style="color: #1d3e4c;">Week Warrior</div>
+                  <div class="text-xs font-light" style="color: #566e78;">7 day streak!</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 p-3 rounded-lg border" style="background-color: #f0f4f8; border-color: #45606b;">
+                <i class="fa-solid fa-dumbbell text-2xl" style="color: #45606b;"></i>
+                <div>
+                  <div class="font-semibold text-sm" style="color: #1d3e4c;">Fitness Fan</div>
+                  <div class="text-xs font-light" style="color: #566e78;">30 workouts</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 p-3 rounded-lg border" style="background-color: #f0f4f8; border-color: #566e78;">
+                <i class="fa-solid fa-spa text-2xl" style="color: #566e78;"></i>
+                <div>
+                  <div class="font-semibold text-sm" style="color: #1d3e4c;">Zen Master</div>
+                  <div class="text-xs font-light" style="color: #566e78;">Meditated 10 days</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Progress Ring -->
+          <div class="bg-white rounded-xl shadow-md p-6">
+            <h3 class="text-lg font-bold display-font mb-4" style="color: #1d3e4c;">Today's Progress</h3>
+            <div class="flex flex-col items-center">
+              <div class="relative w-32 h-32">
+                <svg class="transform -rotate-90 w-32 h-32">
+                  <circle cx="64" cy="64" r="56" stroke="#E5E7EB" stroke-width="12" fill="none" />
+                  <circle cx="64" cy="64" r="56" stroke="#F8796D" stroke-width="12" fill="none" stroke-dasharray="351.86" stroke-dashoffset="87.965" stroke-linecap="round" />
+                </svg>
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <div class="text-center">
+                    <div class="text-3xl font-bold" style="color: #1d3e4c;">75%</div>
+                    <div class="text-xs font-light" style="color: #657b84;">Complete</div>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-4 text-center">
+                <div class="text-sm font-medium" style="color: #32505c;">6 of 8 habits done</div>
+                <div class="text-xs font-light" style="color: #657b84;">Keep it up!</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

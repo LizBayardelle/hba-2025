@@ -1,0 +1,107 @@
+<div class="flex h-screen bg-gray-50">
+  <%= render 'shared/sidebar' %>
+
+  <!-- Main Content Area -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <%= render 'shared/navbar' %>
+
+    <!-- Scrollable Content -->
+    <main class="flex-1 overflow-y-auto bg-gray-50 p-8">
+      <div class="max-w-2xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+          <h1 class="text-3xl font-bold display-font mb-2" style="color: #1d3e4c;">Account Settings</h1>
+          <p class="text-sm font-light" style="color: #657b84;">Manage your email and password</p>
+        </div>
+
+        <!-- Main Card -->
+        <div class="bg-white rounded-2xl shadow-lg p-8">
+          <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
+            <%= render "devise/shared/error_messages", resource: resource %>
+
+            <!-- Email Section -->
+            <div class="mb-8">
+              <h2 class="text-lg font-semibold mb-4 display-font" style="color: #1d3e4c;">
+                <i class="fa-solid fa-envelope mr-2"></i>Email Address
+              </h2>
+              <div class="mb-4">
+                <%= f.label :email, class: "block text-sm font-semibold mb-2", style: "color: #1d3e4c;" %>
+                <%= f.email_field :email, autofocus: true, autocomplete: "email",
+                    class: "w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-opacity-100 focus:outline-none transition font-light",
+                    style: "border-color: #E8EEF1; focus:border-color: #6B8A99;",
+                    placeholder: "you@example.com" %>
+              </div>
+
+              <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
+                <div class="p-3 rounded-lg font-light text-sm" style="background-color: #FFF4E6; color: #8B5A00;">
+                  <i class="fa-solid fa-clock mr-2"></i>Currently waiting confirmation for: <%= resource.unconfirmed_email %>
+                </div>
+              <% end %>
+            </div>
+
+            <!-- Password Section -->
+            <div class="mb-8 pt-8 border-t border-gray-200">
+              <h2 class="text-lg font-semibold mb-2 display-font" style="color: #1d3e4c;">
+                <i class="fa-solid fa-key mr-2"></i>Change Password
+              </h2>
+              <p class="text-xs font-light mb-6" style="color: #566e78;">Leave these fields blank if you don't want to change your password</p>
+
+              <!-- New Password Field -->
+              <div class="mb-4">
+                <div class="flex items-center justify-between mb-2">
+                  <%= f.label :password, "New Password", class: "block text-sm font-semibold", style: "color: #1d3e4c;" %>
+                  <% if @minimum_password_length %>
+                    <span class="text-xs font-light" style="color: #566e78;">
+                      (<%= @minimum_password_length %> characters minimum)
+                    </span>
+                  <% end %>
+                </div>
+                <%= f.password_field :password, autocomplete: "new-password",
+                    class: "w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-opacity-100 focus:outline-none transition font-light",
+                    style: "border-color: #E8EEF1; focus:border-color: #6B8A99;",
+                    placeholder: "Enter new password" %>
+              </div>
+
+              <!-- Password Confirmation Field -->
+              <div class="mb-4">
+                <%= f.label :password_confirmation, "Confirm New Password", class: "block text-sm font-semibold mb-2", style: "color: #1d3e4c;" %>
+                <%= f.password_field :password_confirmation, autocomplete: "new-password",
+                    class: "w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-opacity-100 focus:outline-none transition font-light",
+                    style: "border-color: #E8EEF1; focus:border-color: #6B8A99;",
+                    placeholder: "Confirm new password" %>
+              </div>
+            </div>
+
+            <!-- Current Password (Required for all changes) -->
+            <div class="mb-6 pt-6 border-t border-gray-200">
+              <%= f.label :current_password, class: "block text-sm font-semibold mb-2", style: "color: #1d3e4c;" %>
+              <p class="text-xs font-light mb-3" style="color: #566e78;">We need your current password to confirm any changes</p>
+              <%= f.password_field :current_password, autocomplete: "current-password",
+                  class: "w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-opacity-100 focus:outline-none transition font-light",
+                  style: "border-color: #E8EEF1; focus:border-color: #6B8A99;",
+                  placeholder: "Enter current password" %>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="mb-6">
+              <%= f.submit "Update Account", class: "w-full py-3 px-4 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition transform hover:scale-[1.02] cursor-pointer", style: "background: linear-gradient(135deg, #1d3e4c, #45606b);" %>
+            </div>
+          <% end %>
+        </div>
+
+        <!-- Danger Zone Card -->
+        <div class="mt-6 bg-white rounded-2xl shadow-lg p-8 border-2" style="border-color: #FEE2E2;">
+          <h2 class="text-lg font-semibold mb-3 display-font" style="color: #DC2626;">
+            <i class="fa-solid fa-triangle-exclamation mr-2"></i>Danger Zone
+          </h2>
+          <p class="text-sm font-light mb-4" style="color: #566e78;">Once you delete your account, there is no going back. Please be certain.</p>
+          <%= button_to "Delete My Account", registration_path(resource_name),
+              data: { confirm: "Are you sure? This action cannot be undone.", turbo_confirm: "Are you sure? This action cannot be undone." },
+              method: :delete,
+              class: "py-2 px-6 rounded-lg font-semibold border-2 transition hover:bg-red-50",
+              style: "color: #DC2626; border-color: #DC2626;" %>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

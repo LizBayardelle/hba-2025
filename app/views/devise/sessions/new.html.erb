@@ -1,0 +1,77 @@
+<div class="min-h-screen flex items-center justify-center relative overflow-hidden" style="background: linear-gradient(135deg, #1d3e4c 0%, #32505c 50%, #45606b 100%);">
+  <!-- Animated background texture -->
+  <div class="absolute inset-0 opacity-10">
+    <div class="absolute top-20 left-20 w-96 h-96 bg-white rounded-full mix-blend-overlay filter blur-3xl animate-pulse"></div>
+    <div class="absolute bottom-20 right-20 w-96 h-96 bg-white rounded-full mix-blend-overlay filter blur-3xl animate-pulse" style="animation-delay: 2s;"></div>
+  </div>
+
+  <!-- Sign In Card -->
+  <div class="relative z-10 w-full max-w-md mx-4">
+    <!-- Logo/Brand -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-4 shadow-2xl" style="background-color: #F8796D;">
+        <i class="fa-solid fa-otter text-4xl text-white"></i>
+      </div>
+      <h1 class="text-4xl font-bold text-white mb-2 display-font">Habit Beaver</h1>
+      <p class="text-sm text-gray-300 font-light">Build better habits, one day at a time</p>
+    </div>
+
+    <!-- Card -->
+    <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8">
+      <h2 class="text-2xl font-bold mb-6 display-font" style="color: #1d3e4c;">Welcome Back</h2>
+
+      <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+        <!-- Email Field -->
+        <div class="mb-5">
+          <%= f.label :email, class: "block text-sm font-semibold mb-2", style: "color: #1d3e4c;" %>
+          <%= f.email_field :email, autofocus: true, autocomplete: "email",
+              class: "w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-opacity-100 focus:outline-none transition font-light",
+              style: "border-color: #E8EEF1; focus:border-color: #6B8A99;",
+              placeholder: "you@example.com" %>
+        </div>
+
+        <!-- Password Field -->
+        <div class="mb-5">
+          <%= f.label :password, class: "block text-sm font-semibold mb-2", style: "color: #1d3e4c;" %>
+          <%= f.password_field :password, autocomplete: "current-password",
+              class: "w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-opacity-100 focus:outline-none transition font-light",
+              style: "border-color: #E8EEF1; focus:border-color: #6B8A99;",
+              placeholder: "Enter your password" %>
+        </div>
+
+        <!-- Remember Me -->
+        <% if devise_mapping.rememberable? %>
+          <div class="flex items-center mb-6">
+            <%= f.check_box :remember_me, class: "w-4 h-4 rounded", style: "accent-color: #6B8A99;" %>
+            <%= f.label :remember_me, class: "ml-2 text-sm font-light", style: "color: #1d3e4c;" %>
+          </div>
+        <% end %>
+
+        <!-- Submit Button -->
+        <div class="mb-6">
+          <%= f.submit "Sign In", class: "w-full py-3 px-4 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition transform hover:scale-[1.02] cursor-pointer", style: "background: linear-gradient(135deg, #1d3e4c, #45606b);" %>
+        </div>
+      <% end %>
+
+      <!-- Links -->
+      <div class="text-center space-y-3">
+        <%= link_to "Forgot your password?", new_password_path(resource_name), class: "block text-sm font-light hover:underline transition", style: "color: #6B8A99;" %>
+
+        <div class="pt-4 border-t border-gray-200">
+          <p class="text-sm font-light mb-2" style="color: #566e78;">Don't have an account?</p>
+          <%= link_to "Create Account", new_registration_path(resource_name), class: "inline-block px-6 py-2 rounded-lg font-semibold border-2 hover:bg-opacity-5 transition", style: "color: #1d3e4c; border-color: #6B8A99; background-color: rgba(107, 138, 153, 0.05);" %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes pulse {
+    0%, 100% { opacity: 0.1; }
+    50% { opacity: 0.15; }
+  }
+  .animate-pulse {
+    animation: pulse 4s ease-in-out infinite;
+  }
+</style>

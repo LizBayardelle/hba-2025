@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Hba 2025" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <%= stylesheet_link_tag "application" %>
+    <%= javascript_include_tag "application", type: "module" %>
+  </head>
+
+  <body>
+    <!-- Flash Messages -->
+    <% if notice || alert %>
+      <div class="fixed top-4 right-4 z-50 max-w-md" x-data="{ show: true }" x-show="show" x-transition>
+        <% if notice %>
+          <div class="mb-3 flex items-start gap-3 p-4 rounded-lg shadow-lg border-2" style="background-color: #D7EDCB; border-color: #7CB342;">
+            <div class="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center" style="background-color: #7CB342;">
+              <i class="fa-solid fa-check text-white text-xs"></i>
+            </div>
+            <div class="flex-1">
+              <p class="font-semibold text-sm mb-1" style="color: #4A6B27;">Success</p>
+              <p class="text-sm font-light" style="color: #4A6B27;"><%= notice %></p>
+            </div>
+            <button @click="show = false" class="flex-shrink-0 text-sm hover:opacity-70 transition" style="color: #4A6B27;">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        <% end %>
+        <% if alert %>
+          <div class="mb-3 flex items-start gap-3 p-4 rounded-lg shadow-lg border-2" style="background-color: #FFE4E6; border-color: #FB7185;">
+            <div class="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center" style="background-color: #FB7185;">
+              <i class="fa-solid fa-exclamation text-white text-xs"></i>
+            </div>
+            <div class="flex-1">
+              <p class="font-semibold text-sm mb-1" style="color: #BE123C;">Error</p>
+              <p class="text-sm font-light" style="color: #BE123C;"><%= alert %></p>
+            </div>
+            <button @click="show = false" class="flex-shrink-0 text-sm hover:opacity-70 transition" style="color: #BE123C;">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- Auto-dismiss after 5 seconds -->
+      <script>
+        setTimeout(() => {
+          const flashContainer = document.querySelector('[x-data*="show: true"]');
+          if (flashContainer && flashContainer.__x) {
+            flashContainer.__x.$data.show = false;
+          }
+        }, 5000);
+      </script>
+    <% end %>
+
+    <%= yield %>
+  </body>
+</html>

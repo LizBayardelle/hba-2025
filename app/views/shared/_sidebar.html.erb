@@ -1,0 +1,280 @@
+<!-- Left Sidebar Navigation -->
+<aside class="w-64 shadow-xl flex flex-col" style="background: linear-gradient(to bottom, #1d3e4c, #32505c);">
+  <div class="p-6 text-white flex-1">
+    <!-- Logo Area -->
+    <%= link_to root_path, class: "flex items-center gap-3 mb-8 hover:opacity-80 transition" do %>
+      <div class="w-12 h-12 bg-yellow-400 rounded-lg flex items-center justify-center" style="background-color: #F8796D;">
+        <i class="fa-solid fa-otter text-2xl text-white"></i>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold display-font">Habit Beaver</h1>
+        <p class="text-xs" style="color: #657b84;">Build better habits</p>
+      </div>
+    <% end %>
+
+    <!-- Navigation Items -->
+    <nav class="space-y-2">
+      <%= link_to root_path, class: "flex items-center gap-3 px-4 py-3 rounded-lg transition #{current_page?(root_path) && !@category ? 'font-medium' : 'font-light hover:bg-white/10'}", style: current_page?(root_path) && !@category ? "background-color: rgba(255, 255, 255, 0.15);" : "" do %>
+        <i class="fa-solid fa-chart-line text-lg" style="<%= current_page?(root_path) && !@category ? 'color: #F8796D;' : '' %>"></i>
+        <span>Dashboard</span>
+      <% end %>
+      <a href="#" class="flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-lg transition">
+        <i class="fa-solid fa-list-check text-lg"></i>
+        <span class="font-light">My Habits</span>
+      </a>
+      <a href="#" class="flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-lg transition">
+        <i class="fa-solid fa-chart-column text-lg"></i>
+        <span class="font-light">Analytics</span>
+      </a>
+      <a href="#" class="flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-lg transition">
+        <i class="fa-solid fa-bullseye text-lg"></i>
+        <span class="font-light">Goals</span>
+      </a>
+      <a href="#" class="flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-lg transition">
+        <i class="fa-solid fa-gear text-lg"></i>
+        <span class="font-light">Settings</span>
+      </a>
+    </nav>
+
+    <!-- Categories Section -->
+    <div class="mt-8" x-data="{
+      showModal: false,
+      selectedColor: '#6B8A99',
+      selectedIcon: 'fa-check',
+      categoryName: '',
+      colorMap: {
+        '#6B8A99': { light: '#E8EEF1', dark: '#1d3e4c' },
+        '#9C8B7E': { light: '#E8E0D5', dark: '#5C4F45' },
+        '#F8796D': { light: '#FFD4CE', dark: '#B8352A' },
+        '#FFA07A': { light: '#FFE4D6', dark: '#D66A3E' },
+        '#E5C730': { light: '#FEF7C3', dark: '#B89F0A' },
+        '#A8A356': { light: '#E8EBCD', dark: '#7A7637' },
+        '#7CB342': { light: '#D7EDCB', dark: '#4A6B27' },
+        '#6EE7B7': { light: '#D1FAF0', dark: '#2C9D73' },
+        '#22D3EE': { light: '#CFFAFE', dark: '#0E7490' },
+        '#6366F1': { light: '#E0E7FF', dark: '#3730A3' },
+        '#A78BFA': { light: '#EDE9FE', dark: '#6B21A8' },
+        '#E879F9': { light: '#FAE8FF', dark: '#A21CAF' },
+        '#FB7185': { light: '#FFE4E6', dark: '#BE123C' },
+        '#9CA3A8': { light: '#E8E8E8', dark: '#4A5057' }
+      }
+    }">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-xs font-semibold uppercase tracking-wide" style="color: #657b84;">Categories</h3>
+        <button @click="showModal = true" class="w-5 h-5 rounded flex items-center justify-center hover:bg-white/10 transition" style="color: #657b84;">
+          <i class="fa-solid fa-plus text-xs"></i>
+        </button>
+      </div>
+      <div class="space-y-2">
+        <% if user_signed_in? && current_user.categories.active.ordered.any? %>
+          <% current_user.categories.active.ordered.each do |category| %>
+            <% is_active = @category && @category.id == category.id %>
+            <%= link_to category_path(category), class: "flex items-center gap-3 px-4 py-2 rounded-lg transition text-sm #{is_active ? 'font-medium' : 'font-light hover:bg-white/10'}", style: is_active ? "background-color: rgba(255, 255, 255, 0.15);" : "" do %>
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm" style="background-color: <%= category.color %>;">
+                <i class="fa-solid <%= category.icon %> text-white"></i>
+              </div>
+              <span><%= category.name %></span>
+            <% end %>
+          <% end %>
+        <% else %>
+          <p class="text-xs font-light px-4 py-2" style="color: #657b84;">No categories yet</p>
+        <% end %>
+      </div>
+
+      <!-- New Category Modal -->
+      <div x-show="showModal" @click.self="showModal = false" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" style="display: none;">
+        <div @click.stop class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4">
+          <h2 class="text-2xl font-bold mb-6 display-font" style="color: #1d3e4c;">New Category</h2>
+
+          <%= form_with model: Category.new, url: categories_path, method: :post, local: true do |f| %>
+            <!-- Preview Box -->
+            <div class="mb-6">
+              <p class="text-xs font-semibold mb-2" style="color: #566e78;">PREVIEW</p>
+              <div class="p-4 rounded-lg border-2" :style="'background-color: ' + colorMap[selectedColor].light + '; border-color: ' + selectedColor">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm" :style="'background-color: ' + selectedColor">
+                    <i :class="'fa-solid ' + selectedIcon" class="text-white"></i>
+                  </div>
+                  <span class="font-bold display-font" :style="'color: ' + colorMap[selectedColor].dark" x-text="categoryName || 'My Category'"></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Category Name -->
+            <div class="mb-5">
+              <%= f.label :name, "Category Name", class: "block text-sm font-semibold mb-2", style: "color: #1d3e4c;" %>
+              <%= f.text_field :name, "x-model": "categoryName", placeholder: "e.g., Health & Fitness", class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light", style: "border-color: #E8EEF1; color: #1d3e4c;" %>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-5">
+              <%= f.label :description, "Description (Optional)", class: "block text-sm font-semibold mb-2", style: "color: #1d3e4c;" %>
+              <%= f.text_area :description, rows: 2, placeholder: "e.g., Daily exercise and nutrition habits", class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light resize-none", style: "border-color: #E8EEF1; color: #1d3e4c;" %>
+            </div>
+
+            <!-- Hidden fields for color and icon -->
+            <%= f.hidden_field :color, "x-model": "selectedColor" %>
+            <%= f.hidden_field :icon, "x-model": "selectedIcon" %>
+
+            <!-- Icon Selector -->
+            <div class="mb-5">
+              <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">Icon</label>
+              <div class="grid grid-cols-6 gap-2">
+                <button type="button" @click="selectedIcon = 'fa-check'" :class="selectedIcon === 'fa-check' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-check text-base" style="color: #1d3e4c;"></i>
+                </button>
+                <button type="button" @click="selectedIcon = 'fa-dumbbell'" :class="selectedIcon === 'fa-dumbbell' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-dumbbell text-base" style="color: #1d3e4c;"></i>
+                </button>
+                <button type="button" @click="selectedIcon = 'fa-book'" :class="selectedIcon === 'fa-book' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-book text-base" style="color: #1d3e4c;"></i>
+                </button>
+                <button type="button" @click="selectedIcon = 'fa-heart'" :class="selectedIcon === 'fa-heart' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-heart text-base" style="color: #1d3e4c;"></i>
+                </button>
+                <button type="button" @click="selectedIcon = 'fa-briefcase'" :class="selectedIcon === 'fa-briefcase' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-briefcase text-base" style="color: #1d3e4c;"></i>
+                </button>
+                <button type="button" @click="selectedIcon = 'fa-utensils'" :class="selectedIcon === 'fa-utensils' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-utensils text-base" style="color: #1d3e4c;"></i>
+                </button>
+                <button type="button" @click="selectedIcon = 'fa-bed'" :class="selectedIcon === 'fa-bed' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-bed text-base" style="color: #1d3e4c;"></i>
+                </button>
+                <button type="button" @click="selectedIcon = 'fa-apple-whole'" :class="selectedIcon === 'fa-apple-whole' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-apple-whole text-base" style="color: #1d3e4c;"></i>
+                </button>
+                <button type="button" @click="selectedIcon = 'fa-mug-hot'" :class="selectedIcon === 'fa-mug-hot' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-mug-hot text-base" style="color: #1d3e4c;"></i>
+                </button>
+                <button type="button" @click="selectedIcon = 'fa-person-running'" :class="selectedIcon === 'fa-person-running' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-person-running text-base" style="color: #1d3e4c;"></i>
+                </button>
+                <button type="button" @click="selectedIcon = 'fa-pills'" :class="selectedIcon === 'fa-pills' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-pills text-base" style="color: #1d3e4c;"></i>
+                </button>
+                <button type="button" @click="selectedIcon = 'fa-brain'" :class="selectedIcon === 'fa-brain' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-brain text-base" style="color: #1d3e4c;"></i>
+                </button>
+                <button type="button" @click="selectedIcon = 'fa-music'" :class="selectedIcon === 'fa-music' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-music text-base" style="color: #1d3e4c;"></i>
+                </button>
+                <button type="button" @click="selectedIcon = 'fa-paintbrush'" :class="selectedIcon === 'fa-paintbrush' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-paintbrush text-base" style="color: #1d3e4c;"></i>
+                </button>
+                <button type="button" @click="selectedIcon = 'fa-droplet'" :class="selectedIcon === 'fa-droplet' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-droplet text-base" style="color: #1d3e4c;"></i>
+                </button>
+                <button type="button" @click="selectedIcon = 'fa-users'" :class="selectedIcon === 'fa-users' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-users text-base" style="color: #1d3e4c;"></i>
+                </button>
+                <button type="button" @click="selectedIcon = 'fa-star'" :class="selectedIcon === 'fa-star' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-star text-base" style="color: #1d3e4c;"></i>
+                </button>
+                <button type="button" @click="selectedIcon = 'fa-pen'" :class="selectedIcon === 'fa-pen' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-pen text-base" style="color: #1d3e4c;"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Color Selector -->
+            <div class="mb-6">
+              <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">Color</label>
+              <div class="grid grid-cols-7 gap-2">
+                <button type="button" @click="selectedColor = '#6B8A99'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition relative flex items-center justify-center" :class="selectedColor === '#6B8A99' ? 'border-gray-800' : 'border-white'" style="background-color: #6B8A99;">
+                  <i x-show="selectedColor === '#6B8A99'" class="fa-solid fa-check text-white text-sm font-black"></i>
+                </button>
+                <button type="button" @click="selectedColor = '#9C8B7E'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition flex items-center justify-center" :class="selectedColor === '#9C8B7E' ? 'border-gray-800' : 'border-white'" style="background-color: #9C8B7E;">
+                  <i x-show="selectedColor === '#9C8B7E'" class="fa-solid fa-check text-white text-sm font-black"></i>
+                </button>
+                <button type="button" @click="selectedColor = '#F8796D'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition flex items-center justify-center" :class="selectedColor === '#F8796D' ? 'border-gray-800' : 'border-white'" style="background-color: #F8796D;">
+                  <i x-show="selectedColor === '#F8796D'" class="fa-solid fa-check text-white text-sm font-black"></i>
+                </button>
+                <button type="button" @click="selectedColor = '#FFA07A'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition flex items-center justify-center" :class="selectedColor === '#FFA07A' ? 'border-gray-800' : 'border-white'" style="background-color: #FFA07A;">
+                  <i x-show="selectedColor === '#FFA07A'" class="fa-solid fa-check text-white text-sm font-black"></i>
+                </button>
+                <button type="button" @click="selectedColor = '#E5C730'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition flex items-center justify-center" :class="selectedColor === '#E5C730' ? 'border-gray-800' : 'border-white'" style="background-color: #E5C730;">
+                  <i x-show="selectedColor === '#E5C730'" class="fa-solid fa-check text-white text-sm font-black"></i>
+                </button>
+                <button type="button" @click="selectedColor = '#A8A356'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition flex items-center justify-center" :class="selectedColor === '#A8A356' ? 'border-gray-800' : 'border-white'" style="background-color: #A8A356;">
+                  <i x-show="selectedColor === '#A8A356'" class="fa-solid fa-check text-white text-sm font-black"></i>
+                </button>
+                <button type="button" @click="selectedColor = '#7CB342'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition flex items-center justify-center" :class="selectedColor === '#7CB342' ? 'border-gray-800' : 'border-white'" style="background-color: #7CB342;">
+                  <i x-show="selectedColor === '#7CB342'" class="fa-solid fa-check text-white text-sm font-black"></i>
+                </button>
+                <button type="button" @click="selectedColor = '#6EE7B7'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition flex items-center justify-center" :class="selectedColor === '#6EE7B7' ? 'border-gray-800' : 'border-white'" style="background-color: #6EE7B7;">
+                  <i x-show="selectedColor === '#6EE7B7'" class="fa-solid fa-check text-white text-sm font-black"></i>
+                </button>
+                <button type="button" @click="selectedColor = '#22D3EE'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition flex items-center justify-center" :class="selectedColor === '#22D3EE' ? 'border-gray-800' : 'border-white'" style="background-color: #22D3EE;">
+                  <i x-show="selectedColor === '#22D3EE'" class="fa-solid fa-check text-white text-sm font-black"></i>
+                </button>
+                <button type="button" @click="selectedColor = '#6366F1'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition flex items-center justify-center" :class="selectedColor === '#6366F1' ? 'border-gray-800' : 'border-white'" style="background-color: #6366F1;">
+                  <i x-show="selectedColor === '#6366F1'" class="fa-solid fa-check text-white text-sm font-black"></i>
+                </button>
+                <button type="button" @click="selectedColor = '#A78BFA'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition flex items-center justify-center" :class="selectedColor === '#A78BFA' ? 'border-gray-800' : 'border-white'" style="background-color: #A78BFA;">
+                  <i x-show="selectedColor === '#A78BFA'" class="fa-solid fa-check text-white text-sm font-black"></i>
+                </button>
+                <button type="button" @click="selectedColor = '#E879F9'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition flex items-center justify-center" :class="selectedColor === '#E879F9' ? 'border-gray-800' : 'border-white'" style="background-color: #E879F9;">
+                  <i x-show="selectedColor === '#E879F9'" class="fa-solid fa-check text-white text-sm font-black"></i>
+                </button>
+                <button type="button" @click="selectedColor = '#FB7185'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition flex items-center justify-center" :class="selectedColor === '#FB7185' ? 'border-gray-800' : 'border-white'" style="background-color: #FB7185;">
+                  <i x-show="selectedColor === '#FB7185'" class="fa-solid fa-check text-white text-sm font-black"></i>
+                </button>
+                <button type="button" @click="selectedColor = '#9CA3A8'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition flex items-center justify-center" :class="selectedColor === '#9CA3A8' ? 'border-gray-800' : 'border-white'" style="background-color: #9CA3A8;">
+                  <i x-show="selectedColor === '#9CA3A8'" class="fa-solid fa-check text-white text-sm font-black"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex gap-3">
+              <button type="button" @click="showModal = false" class="flex-1 py-3 px-4 rounded-lg font-semibold border-2 transition" style="color: #1d3e4c; border-color: #E8EEF1;">
+                Cancel
+              </button>
+              <%= f.submit "Create Category", class: "flex-1 py-3 px-4 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition transform hover:scale-[1.02]", style: "background: linear-gradient(135deg, #1d3e4c, #45606b);" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Dropdown at Bottom -->
+  <div class="p-6 border-t text-white" style="border-color: rgba(255, 255, 255, 0.1);" x-data="{ open: false }">
+    <% if user_signed_in? %>
+      <button @click="open = !open" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold" style="background: rgba(255, 255, 255, 0.2);">
+          <%= current_user.email.first.upcase %>
+        </div>
+        <div class="flex-1 text-left">
+          <div class="text-sm font-medium"><%= current_user.email.split('@').first %></div>
+          <div class="text-xs font-light" style="color: #657b84;">View profile</div>
+        </div>
+        <i class="fa-solid fa-chevron-up text-xs" :class="open ? '' : 'rotate-180'" style="transition: transform 0.2s;"></i>
+      </button>
+
+      <!-- Dropdown Menu -->
+      <div x-show="open" x-transition class="mt-2 bg-white rounded-lg shadow-lg overflow-hidden">
+        <%= link_to edit_user_registration_path, class: "flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition" do %>
+          <i class="fa-solid fa-user" style="color: #45606b;"></i>
+          <span class="text-sm font-medium" style="color: #1d3e4c;">My Account</span>
+        <% end %>
+        <%= button_to destroy_user_session_path, method: :delete, class: "w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition text-left" do %>
+          <i class="fa-solid fa-arrow-right-from-bracket" style="color: #45606b;"></i>
+          <span class="text-sm font-medium" style="color: #1d3e4c;">Sign Out</span>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="space-y-2">
+        <%= link_to new_user_session_path, class: "flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition" do %>
+          <i class="fa-solid fa-arrow-right-to-bracket"></i>
+          <span class="text-sm font-medium">Sign In</span>
+        <% end %>
+        <%= link_to new_user_registration_path, class: "flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition" do %>
+          <i class="fa-solid fa-user-plus"></i>
+          <span class="text-sm font-medium">Create Account</span>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</aside>
