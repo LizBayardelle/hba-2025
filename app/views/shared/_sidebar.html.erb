@@ -1,6 +1,19 @@
 <!-- Left Sidebar Navigation -->
-<aside class="w-64 shadow-xl flex flex-col" style="background: linear-gradient(to bottom, #1d3e4c, #32505c);">
+<aside
+  id="sidebar"
+  class="w-64 shadow-xl flex flex-col transition-transform duration-300 ease-in-out fixed left-0 top-0 z-50 -translate-x-full md:translate-x-0 md:relative"
+  style="background: linear-gradient(to bottom, #1d3e4c, #32505c); height: 100vh;">
+
   <div class="p-6 text-white flex-1">
+    <!-- Close button for mobile -->
+    <div class="md:hidden flex justify-end mb-4">
+      <button
+        id="sidebar-close"
+        class="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center transition">
+        <i class="fa-solid fa-xmark text-xl"></i>
+      </button>
+    </div>
+
     <!-- Logo Area -->
     <%= link_to root_path, class: "flex items-center gap-3 mb-8 hover:opacity-80 transition" do %>
       <div class="w-12 h-12 bg-yellow-400 rounded-lg flex items-center justify-center" style="background-color: #F8796D;">
@@ -18,10 +31,10 @@
         <i class="fa-solid fa-chart-line text-lg" style="<%= current_page?(root_path) && !@category ? 'color: #F8796D;' : '' %>"></i>
         <span>Dashboard</span>
       <% end %>
-      <a href="#" class="flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-lg transition">
-        <i class="fa-solid fa-list-check text-lg"></i>
-        <span class="font-light">My Habits</span>
-      </a>
+      <%= link_to habits_path, class: "flex items-center gap-3 px-4 py-3 rounded-lg transition #{current_page?(habits_path) ? 'font-medium' : 'font-light hover:bg-white/10'}", style: current_page?(habits_path) ? "background-color: rgba(255, 255, 255, 0.15);" : "" do %>
+        <i class="fa-solid fa-list-check text-lg" style="<%= current_page?(habits_path) ? 'color: #F8796D;' : '' %>"></i>
+        <span>My Habits</span>
+      <% end %>
       <a href="#" class="flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-lg transition">
         <i class="fa-solid fa-chart-column text-lg"></i>
         <span class="font-light">Analytics</span>

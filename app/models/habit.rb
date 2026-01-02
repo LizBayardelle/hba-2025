@@ -7,6 +7,8 @@ class Habit < ApplicationRecord
   validates :frequency_type, presence: true
   validates :target_count, presence: true, numericality: { greater_than: 0 }
 
+  scope :active, -> { where(archived_at: nil) }
+
   def calculate_streak!
     streak = 0
     date = Date.today

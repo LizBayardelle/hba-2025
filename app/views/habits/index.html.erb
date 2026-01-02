@@ -1,0 +1,374 @@
+<div class="flex h-screen relative" style="background-color: #F5F5F5;">
+  <%= render 'shared/sidebar' %>
+
+  <!-- Mobile overlay -->
+  <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 md:hidden hidden"></div>
+
+  <!-- Menu flag button -->
+  <button id="menu-button" class="fixed left-0 z-20 md:hidden rounded-r-lg shadow-lg flex items-center justify-center py-1.5 px-3 cursor-move"
+    style="top: 200px; background: linear-gradient(135deg, #1d3e4c, #45606b); writing-mode: vertical-rl;">
+    <span class="text-white font-bold text-sm tracking-wider">MENU</span>
+  </button>
+
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const menuButton = document.getElementById('menu-button');
+    const closeButton = document.getElementById('sidebar-close');
+
+    function openSidebar() {
+      sidebar.classList.remove('-translate-x-full');
+      sidebar.classList.add('translate-x-0');
+      overlay.classList.remove('hidden');
+      menuButton.classList.add('hidden');
+    }
+
+    function closeSidebar() {
+      sidebar.classList.add('-translate-x-full');
+      sidebar.classList.remove('translate-x-0');
+      overlay.classList.add('hidden');
+      menuButton.classList.remove('hidden');
+    }
+
+    // Draggable menu button
+    let isDragging = false;
+    let startY = 0;
+    let startTop = 200;
+    let dragStartTime = 0;
+
+    menuButton.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      dragStartTime = Date.now();
+      startY = e.clientY;
+      startTop = parseInt(menuButton.style.top) || 200;
+      e.preventDefault();
+    });
+
+    menuButton.addEventListener('touchstart', (e) => {
+      isDragging = true;
+      dragStartTime = Date.now();
+      startY = e.touches[0].clientY;
+      startTop = parseInt(menuButton.style.top) || 200;
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (isDragging) {
+        const deltaY = e.clientY - startY;
+        const newTop = Math.max(0, Math.min(window.innerHeight - menuButton.offsetHeight, startTop + deltaY));
+        menuButton.style.top = newTop + 'px';
+        localStorage.setItem('menuButtonTop', newTop);
+      }
+    });
+
+    document.addEventListener('touchmove', (e) => {
+      if (isDragging) {
+        const deltaY = e.touches[0].clientY - startY;
+        const newTop = Math.max(0, Math.min(window.innerHeight - menuButton.offsetHeight, startTop + deltaY));
+        menuButton.style.top = newTop + 'px';
+        localStorage.setItem('menuButtonTop', newTop);
+      }
+    });
+
+    document.addEventListener('mouseup', (e) => {
+      if (isDragging) {
+        const dragDuration = Date.now() - dragStartTime;
+        const dragDistance = Math.abs(e.clientY - startY);
+
+        // Only trigger click if it was a quick tap with minimal movement
+        if (dragDuration < 200 && dragDistance < 5) {
+          openSidebar();
+        }
+        isDragging = false;
+      }
+    });
+
+    document.addEventListener('touchend', (e) => {
+      if (isDragging) {
+        const dragDuration = Date.now() - dragStartTime;
+        // Touch doesn't have clientY on touchend, so we check duration only
+        if (dragDuration < 200) {
+          openSidebar();
+        }
+        isDragging = false;
+      }
+    });
+
+    closeButton.addEventListener('click', closeSidebar);
+    overlay.addEventListener('click', closeSidebar);
+
+    // Restore saved position
+    const savedTop = localStorage.getItem('menuButtonTop');
+    if (savedTop) {
+      menuButton.style.top = savedTop + 'px';
+    }
+  </script>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 overflow-y-auto" style="background-color: #F5F5F5;">
+    <!-- White Header Section with Shadow -->
+    <div class="bg-white shadow-md sticky top-0 z-10">
+      <div class="p-8 pb-6">
+        <!-- Header -->
+        <div class="mb-4">
+          <h1 class="text-3xl font-bold display-font mb-1" style="color: #1d3e4c;">My Habits</h1>
+          <p class="text-sm font-light" style="color: #657b84;">Track your daily progress</p>
+        </div>
+
+        <!-- Stats Row -->
+        <%
+          # Calculate weekly stats
+          week_start = @selected_date.beginning_of_week
+          week_end = @selected_date.end_of_week
+
+          # Get all completions for the week
+          weekly_completions = HabitCompletion.where(
+            habit_id: @habits.pluck(:id),
+            completed_at: week_start..week_end
+          ).group(:habit_id, "DATE(completed_at)").sum(:count)
+
+          # Count how many habit+date combinations met their target
+          weekly_completed = 0
+          weekly_completions.each do |(habit_id, date), count|
+            habit = @habits.find { |h| h.id == habit_id }
+            weekly_completed += 1 if habit && count >= habit.target_count
+          end
+
+          weekly_total = @habits.count * 7
+          weekly_percentage = weekly_total > 0 ? (weekly_completed * 100.0 / weekly_total).round : 0
+
+          # Lifetime completions
+          lifetime_completions = HabitCompletion.where(habit_id: @habits.pluck(:id)).sum(:count)
+
+          today_percentage = @total_habits > 0 ? (@completed_today * 100 / @total_habits).round : 0
+        %>
+        <div class="grid grid-cols-5 gap-2 sm:gap-4">
+          <!-- Today Completed -->
+          <div class="text-center">
+            <div class="text-xl sm:text-3xl font-bold display-font mb-0.5 sm:mb-1" style="color: #1d3e4c;" id="completion-count">
+              <%= @completed_today %>/<%= @total_habits %>
+            </div>
+            <div class="text-[10px] sm:text-xs font-semibold uppercase tracking-wide" style="color: #657b84;">Today</div>
+          </div>
+
+          <!-- Today Percentage -->
+          <div class="text-center">
+            <div class="text-xl sm:text-3xl font-bold display-font mb-0.5 sm:mb-1" style="color: #1d3e4c;" id="completion-percentage">
+              <%= today_percentage %>%
+            </div>
+            <div class="text-[10px] sm:text-xs font-semibold uppercase tracking-wide" style="color: #657b84;">Today %</div>
+          </div>
+
+          <!-- Weekly Completed -->
+          <div class="text-center">
+            <div class="text-xl sm:text-3xl font-bold display-font mb-0.5 sm:mb-1" style="color: #1d3e4c;">
+              <%= weekly_completed %>
+            </div>
+            <div class="text-[10px] sm:text-xs font-semibold uppercase tracking-wide" style="color: #657b84;"><span class="hidden sm:inline">This </span>Week</div>
+          </div>
+
+          <!-- Weekly Percentage -->
+          <div class="text-center">
+            <div class="text-xl sm:text-3xl font-bold display-font mb-0.5 sm:mb-1" style="color: #1d3e4c;">
+              <%= weekly_percentage %>%
+            </div>
+            <div class="text-[10px] sm:text-xs font-semibold uppercase tracking-wide" style="color: #657b84;">Week %</div>
+          </div>
+
+          <!-- Lifetime Total -->
+          <div class="text-center">
+            <div class="text-xl sm:text-3xl font-bold display-font mb-0.5 sm:mb-1" style="color: #1d3e4c;">
+              <%= lifetime_completions %>
+            </div>
+            <div class="text-[10px] sm:text-xs font-semibold uppercase tracking-wide" style="color: #657b84;"><span class="hidden sm:inline">All </span>Time</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grey Background Content -->
+    <div class="p-8 pt-6">
+
+    <!-- Controls Bar -->
+    <div class="py-2 mb-6 flex gap-2 items-center justify-between">
+      <!-- Date Navigation -->
+      <div class="flex items-center gap-1">
+        <%= link_to habits_path(date: @selected_date - 1.day, view: @view_mode), class: "w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center transition" do %>
+          <i class="fa-solid fa-chevron-left text-sm" style="color: #1d3e4c;"></i>
+        <% end %>
+        <div class="px-2 py-1 text-sm font-semibold whitespace-nowrap" style="color: #1d3e4c;">
+          <%= @selected_date == Date.today ? "Today" : @selected_date.strftime("%m/%d") %>
+        </div>
+        <%= link_to habits_path(date: @selected_date + 1.day, view: @view_mode), class: "w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center transition #{'opacity-50 pointer-events-none' if @selected_date >= Date.today}" do %>
+          <i class="fa-solid fa-chevron-right text-sm" style="color: #1d3e4c;"></i>
+        <% end %>
+        <% if @selected_date != Date.today %>
+          <%= link_to habits_path(view: @view_mode), class: "ml-1 px-2 py-1 text-xs font-semibold rounded-lg hover:bg-gray-100 transition whitespace-nowrap", style: "color: #1d3e4c;" do %>
+            Today
+          <% end %>
+        <% end %>
+      </div>
+
+      <!-- View Toggle -->
+      <div class="flex gap-1 bg-white p-0.5 rounded-lg shadow-sm">
+        <%= link_to habits_path(view: 'category', date: params[:date]), class: "px-2 py-1 rounded-lg text-xs font-semibold transition #{@view_mode == 'category' ? 'shadow-sm' : 'hover:bg-gray-100'}", style: @view_mode == 'category' ? "background-color: #E8EEF1; color: #1d3e4c;" : "color: #1d3e4c;" do %>
+          <i class="fa-solid fa-folder mr-1"></i><span class="hidden sm:inline">Category</span><span class="sm:hidden">Cat</span>
+        <% end %>
+        <%= link_to habits_path(view: 'time', date: params[:date]), class: "px-2 py-1 rounded-lg text-xs font-semibold transition #{@view_mode == 'time' ? 'shadow-sm' : 'hover:bg-gray-100'}", style: @view_mode == 'time' ? "background-color: #E8EEF1; color: #1d3e4c;" : "color: #1d3e4c;" do %>
+          <i class="fa-solid fa-clock mr-1"></i><span class="hidden sm:inline">Time</span><span class="sm:hidden">Time</span>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Habits List -->
+    <% if @habits.any? %>
+      <div class="space-y-4">
+        <% @grouped_habits.each do |group, habits| %>
+          <% if @view_mode == 'category' %>
+            <%
+              category = group
+              dark_color = {
+                '#6B8A99' => '#1d3e4c', '#9C8B7E' => '#5C4F45', '#F8796D' => '#B8352A',
+                '#FFA07A' => '#D66A3E', '#E5C730' => '#B89F0A', '#A8A356' => '#7A7637',
+                '#7CB342' => '#4A6B27', '#6EE7B7' => '#2C9D73', '#22D3EE' => '#0E7490',
+                '#6366F1' => '#3730A3', '#A78BFA' => '#6B21A8', '#E879F9' => '#A21CAF',
+                '#FB7185' => '#BE123C', '#9CA3A8' => '#4A5057'
+              }[category.color] || '#1d3e4c'
+            %>
+            <!-- Category Section -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden border" style="border-color: <%= category.color %>;" data-section-id="category-<%= category.id %>">
+              <button onclick="toggleSection('category-<%= category.id %>')" class="w-full p-4 flex items-center gap-3 hover:opacity-90 transition text-left border-b" style="background-color: <%= category.color %>20; border-color: <%= category.color %>;">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center shadow-sm" style="background-color: <%= category.color %>;">
+                  <i class="fa-solid <%= category.icon %> text-white"></i>
+                </div>
+                <div class="flex-1">
+                  <h2 class="text-lg font-bold display-font" style="color: <%= dark_color %>;">
+                    <%= category.name %>
+                  </h2>
+                  <p class="text-xs font-light" style="color: <%= dark_color %>;">
+                    <span data-section-completed><%= habits.count { |h| (@completions[h.id] || 0) >= h.target_count } %></span>/<%= habits.count %> completed
+                  </p>
+                </div>
+                <div class="flex-shrink-0">
+                  <i class="fa-solid fa-chevron-down section-chevron transition-transform duration-200" style="color: <%= dark_color %>;"></i>
+                </div>
+              </button>
+
+              <!-- Habits in this category -->
+              <div class="section-content">
+                <%
+                  light_color_map = {
+                    '#6B8A99' => '#E8EEF1', '#9C8B7E' => '#E8E0D5', '#F8796D' => '#FFD4CE',
+                    '#FFA07A' => '#FFE4D6', '#E5C730' => '#FEF7C3', '#A8A356' => '#E8EBCD',
+                    '#7CB342' => '#D7EDCB', '#6EE7B7' => '#D1FAF0', '#22D3EE' => '#CFFAFE',
+                    '#6366F1' => '#E0E7FF', '#A78BFA' => '#EDE9FE', '#E879F9' => '#FAE8FF',
+                    '#FB7185' => '#FFE4E6', '#9CA3A8' => '#E8E8E8'
+                  }
+                  light_color = light_color_map[category.color] || '#E8EEF1'
+                %>
+                <% habits.each_with_index do |habit, index| %>
+                  <%= render partial: 'habit_item', locals: { habit: habit, completion_count: @completions[habit.id] || 0, category: category, dark_color: dark_color, border_color: category.color, is_first: index == 0, hover_color: light_color, streak: @streaks[habit.id] || 0 } %>
+                <% end %>
+              </div>
+            </div>
+          <% else %>
+            <!-- Time of Day Section -->
+            <%
+              time_labels = {
+                'morning' => { icon: 'fa-sun', label: 'Morning', color: '#FFA07A' },
+                'afternoon' => { icon: 'fa-cloud-sun', label: 'Afternoon', color: '#E5C730' },
+                'evening' => { icon: 'fa-moon', label: 'Evening', color: '#6366F1' },
+                'anytime' => { icon: 'fa-clock', label: 'Anytime', color: '#9CA3A8' }
+              }
+              time_info = time_labels[group] || time_labels['anytime']
+            %>
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden border" style="border-color: <%= time_info[:color] %>;" data-section-id="time-<%= group %>">
+              <button onclick="toggleSection('time-<%= group %>')" class="w-full p-4 flex items-center gap-3 hover:opacity-90 transition text-left border-b" style="background-color: <%= time_info[:color] %>20; border-color: <%= time_info[:color] %>;">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center shadow-sm" style="background-color: <%= time_info[:color] %>;">
+                  <i class="fa-solid <%= time_info[:icon] %> text-white"></i>
+                </div>
+                <div class="flex-1">
+                  <h2 class="text-lg font-bold display-font" style="color: #1d3e4c;">
+                    <%= time_info[:label] %>
+                  </h2>
+                  <p class="text-xs font-light" style="color: #657b84;">
+                    <span data-section-completed><%= habits.count { |h| (@completions[h.id] || 0) >= h.target_count } %></span>/<%= habits.count %> completed
+                  </p>
+                </div>
+                <div class="flex-shrink-0">
+                  <i class="fa-solid fa-chevron-down section-chevron transition-transform duration-200" style="color: #1d3e4c;"></i>
+                </div>
+              </button>
+
+              <!-- Habits in this time -->
+              <div class="section-content">
+                <% habits.each_with_index do |habit, index| %>
+                  <%
+                    habit_dark_color = {
+                      '#6B8A99' => '#1d3e4c', '#9C8B7E' => '#5C4F45', '#F8796D' => '#B8352A',
+                      '#FFA07A' => '#D66A3E', '#E5C730' => '#B89F0A', '#A8A356' => '#7A7637',
+                      '#7CB342' => '#4A6B27', '#6EE7B7' => '#2C9D73', '#22D3EE' => '#0E7490',
+                      '#6366F1' => '#3730A3', '#A78BFA' => '#6B21A8', '#E879F9' => '#A21CAF',
+                      '#FB7185' => '#BE123C', '#9CA3A8' => '#4A5057'
+                    }[habit.category.color] || '#1d3e4c'
+
+                    habit_light_color = {
+                      '#6B8A99' => '#E8EEF1', '#9C8B7E' => '#E8E0D5', '#F8796D' => '#FFD4CE',
+                      '#FFA07A' => '#FFE4D6', '#E5C730' => '#FEF7C3', '#A8A356' => '#E8EBCD',
+                      '#7CB342' => '#D7EDCB', '#6EE7B7' => '#D1FAF0', '#22D3EE' => '#CFFAFE',
+                      '#6366F1' => '#E0E7FF', '#A78BFA' => '#EDE9FE', '#E879F9' => '#FAE8FF',
+                      '#FB7185' => '#FFE4E6', '#9CA3A8' => '#E8E8E8'
+                    }[habit.category.color] || '#E8EEF1'
+                  %>
+                  <%= render partial: 'habit_item', locals: { habit: habit, completion_count: @completions[habit.id] || 0, category: habit.category, dark_color: habit_dark_color, border_color: time_info[:color], is_first: index == 0, hover_color: habit_light_color, streak: @streaks[habit.id] || 0 } %>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="bg-white rounded-xl shadow-md p-12 text-center">
+        <i class="fa-solid fa-clipboard-list text-6xl mb-4" style="color: #E8EEF1;"></i>
+        <h3 class="text-xl font-bold display-font mb-2" style="color: #1d3e4c;">No Habits Yet</h3>
+        <p class="text-gray-500 font-light mb-4">Start building better habits by creating your first one!</p>
+        <%= link_to "Browse Categories", root_path, class: "inline-block px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition", style: "background: linear-gradient(135deg, #1d3e4c, #45606b);" %>
+      </div>
+    <% end %>
+    </div>
+  </main>
+</div>
+
+<script>
+  let completedCount = <%= @completed_today %>;
+  const totalCount = <%= @total_habits %>;
+
+  function updateStats(change) {
+    completedCount += change;
+
+    // Update the count display
+    document.getElementById('completion-count').textContent = `${completedCount}/${totalCount}`;
+
+    // Update the percentage
+    const percentage = totalCount > 0 ? Math.round((completedCount * 100) / totalCount) : 0;
+    document.getElementById('completion-percentage').textContent = `${percentage}%`;
+  }
+
+  function toggleSection(sectionId) {
+    const section = document.querySelector(`[data-section-id="${sectionId}"]`);
+    if (!section) return;
+
+    const content = section.querySelector('.section-content');
+    const chevron = section.querySelector('.section-chevron');
+    const button = section.querySelector('button');
+
+    if (content.style.display === 'none') {
+      content.style.display = '';
+      chevron.style.transform = '';
+      button.classList.add('border-b');
+    } else {
+      content.style.display = 'none';
+      chevron.style.transform = 'rotate(-90deg)';
+      button.classList.remove('border-b');
+    }
+  }
+</script>

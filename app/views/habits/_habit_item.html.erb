@@ -1,0 +1,160 @@
+<div class="p-4 transition <%= 'border-t' unless defined?(is_first) && is_first %>"
+     style="<%= "border-color: #{border_color};" unless defined?(is_first) && is_first %>"
+     onmouseenter="this.style.backgroundColor='<%= hover_color %>'"
+     onmouseleave="this.style.backgroundColor=''"
+     data-habit-id="<%= habit.id %>"
+     data-count="<%= completion_count %>"
+     data-streak="<%= streak %>"
+     data-target="<%= habit.target_count %>"
+     data-category-color="<%= category.color %>">
+  <div class="flex items-center gap-3">
+    <!-- Completion Indicator -->
+    <div class="flex-shrink-0">
+      <% if habit.target_count == 1 %>
+        <button
+          onclick="habitItem_<%= habit.id %>.toggleButton(0)"
+          class="habit-button w-10 h-10 rounded-lg border-2 flex items-center justify-center font-bold transition hover:scale-110"
+          style="border-color: <%= category.color %>; color: <%= category.color %>;"
+          data-index="0">
+          <i class="fa-solid fa-plus"></i>
+        </button>
+      <% else %>
+        <!-- Counter with +/- buttons -->
+        <div class="flex items-center rounded-lg border-2 overflow-hidden" style="border-color: <%= category.color %>;">
+          <button onclick="habitItem_<%= habit.id %>.decrement()" class="flex-1 h-10 px-[5px] flex items-center justify-center font-bold transition hover:bg-gray-50" style="color: <%= category.color %>;">
+            <i class="fa-solid fa-minus"></i>
+          </button>
+          <div class="habit-count flex-[2] h-10 px-[10px] flex items-center justify-center font-bold" style="color: <%= category.color %>;">
+            <%= completion_count %>
+          </div>
+          <button onclick="habitItem_<%= habit.id %>.increment()" class="flex-1 h-10 px-[5px] flex items-center justify-center font-bold transition hover:bg-gray-50" style="color: <%= category.color %>;">
+            <i class="fa-solid fa-plus"></i>
+          </button>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Habit Name & Info -->
+    <div class="flex-1 min-w-0">
+      <div class="font-semibold" style="color: <%= dark_color %>;">
+        <%= habit.name %>
+      </div>
+      <div class="text-xs font-light flex items-center gap-2" style="color: #657b84;">
+        <span><%= habit.target_count %> <%= habit.target_count == 1 ? 'time' : 'times' %></span>
+        <% if habit.time_of_day.present? %>
+          <span>•</span>
+          <span class="capitalize"><%= habit.time_of_day %></span>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Streak Badge -->
+    <div class="flex-shrink-0">
+      <% if streak > 0 %>
+        <div class="flex flex-col items-center">
+          <div class="habit-streak text-2xl font-bold display-font" style="color: <%= category.color %>;">
+            <%= streak %>
+          </div>
+          <div class="text-xs text-gray-500 font-semibold">day streak</div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const habitItem_<%= habit.id %> = {
+    container: document.querySelector('[data-habit-id="<%= habit.id %>"]'),
+    count: <%= completion_count %>,
+    streak: <%= streak %>,
+    targetCount: <%= habit.target_count %>,
+    categoryColor: '<%= category.color %>',
+
+    async updateCompletion(action) {
+      const response = await fetch(`/habits/<%= habit.id %>/completions/${action}`, {
+        method: 'POST',
+        headers: {
+          'X-CSRF-Token': document.querySelector('[name=csrf-token]').content,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await response.json();
+      const wasComplete = this.count >= this.targetCount;
+      this.count = data.count;
+      this.streak = data.streak;
+      const isComplete = this.count >= this.targetCount;
+
+      this.render();
+
+      // Update stats if completion status changed
+      if (wasComplete !== isComplete) {
+        if (typeof updateStats === 'function') {
+          updateStats(isComplete ? 1 : -1);
+        }
+
+        // Update parent category/time section count
+        const parent = this.container.closest('[data-section-completed]');
+        if (parent) {
+          const completedSpan = parent.querySelector('[data-section-completed]');
+          if (completedSpan) {
+            const current = parseInt(completedSpan.textContent);
+            completedSpan.textContent = current + (isComplete ? 1 : -1);
+          }
+        }
+      }
+    },
+
+    toggleButton(index) {
+      if (this.count > index) {
+        this.updateCompletion('decrement');
+      } else {
+        this.updateCompletion('increment');
+      }
+    },
+
+    increment() {
+      this.updateCompletion('increment');
+    },
+
+    decrement() {
+      this.updateCompletion('decrement');
+    },
+
+    render() {
+      // Update buttons
+      const buttons = this.container.querySelectorAll('.habit-button');
+      buttons.forEach((btn, i) => {
+        const icon = btn.querySelector('i');
+        if (this.count > i) {
+          btn.style.backgroundColor = this.categoryColor;
+          btn.style.color = 'white';
+          icon.className = 'fa-solid fa-check';
+        } else {
+          btn.style.backgroundColor = '';
+          btn.style.color = this.categoryColor;
+          icon.className = 'fa-solid fa-plus';
+        }
+      });
+
+      // Update counter display
+      const counter = this.container.querySelector('.habit-count');
+      if (counter) {
+        counter.textContent = this.count;
+      }
+
+      // Update streak
+      const streakEl = this.container.querySelector('.habit-streak');
+      if (streakEl) {
+        streakEl.textContent = this.streak;
+      }
+    }
+  };
+
+  // Initial render
+  habitItem_<%= habit.id %>.render();
+
+  // Store globally for onclick handlers
+  window.habitItem_<%= habit.id %> = habitItem_<%= habit.id %>;
+})();
+</script>

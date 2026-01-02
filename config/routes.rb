@@ -7,7 +7,7 @@ Rails.application.routes.draw do
     resources :habits, only: [:create, :update, :destroy]
   end
 
-  resources :habits, only: [] do
+  resources :habits, only: [:index] do
     post 'completions/increment', to: 'habit_completions#increment'
     post 'completions/decrement', to: 'habit_completions#decrement'
   end
