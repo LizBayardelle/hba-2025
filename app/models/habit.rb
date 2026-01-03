@@ -3,9 +3,12 @@ class Habit < ApplicationRecord
   belongs_to :user
   has_many :habit_completions, dependent: :destroy
 
+  IMPORTANCE_LEVELS = %w[critical important normal optional].freeze
+
   validates :name, presence: true
   validates :frequency_type, presence: true
   validates :target_count, presence: true, numericality: { greater_than: 0 }
+  validates :importance, inclusion: { in: IMPORTANCE_LEVELS }, allow_nil: true
 
   scope :active, -> { where(archived_at: nil) }
 

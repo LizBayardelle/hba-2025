@@ -36,14 +36,25 @@
 
     <!-- Habit Name & Info -->
     <div class="flex-1 min-w-0">
-      <div class="font-semibold" style="color: <%= dark_color %>;">
-        <%= habit.name %>
+      <div class="flex items-center gap-2">
+        <div class="font-semibold" style="color: <%= dark_color %>;">
+          <%= habit.name %>
+        </div>
+        <% if habit.importance.present? && habit.importance != 'normal' %>
+          <div class="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold" style="background-color: <%= category.color %>; color: white;">
+            <%= case habit.importance
+              when 'critical' then '!!'
+              when 'important' then '!'
+              when 'optional' then '?'
+            end %>
+          </div>
+        <% end %>
       </div>
       <div class="text-xs font-light flex items-center gap-2" style="color: #657b84;">
         <span><%= habit.target_count %> <%= habit.target_count == 1 ? 'time' : 'times' %></span>
-        <% if habit.time_of_day.present? %>
+        <% if habit.time_of_day.present? && !['anytime', 'any'].include?(habit.time_of_day.downcase) %>
           <span>•</span>
-          <span class="capitalize"><%= habit.time_of_day %></span>
+          <span><%= habit.time_of_day.downcase == 'night' ? 'Night' : habit.time_of_day.upcase %></span>
         <% end %>
       </div>
     </div>

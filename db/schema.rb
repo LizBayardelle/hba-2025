@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_01_02_035617) do
+ActiveRecord::Schema[7.2].define(version: 2026_01_03_020231) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -61,6 +61,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_02_035617) do
     t.datetime "archived_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "importance", default: "normal"
     t.index ["category_id"], name: "index_habits_on_category_id"
     t.index ["user_id"], name: "index_habits_on_user_id"
   end

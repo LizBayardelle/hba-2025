@@ -1,10 +1,10 @@
 <!-- Left Sidebar Navigation -->
 <aside
   id="sidebar"
-  class="w-64 shadow-xl flex flex-col transition-transform duration-300 ease-in-out fixed left-0 top-0 z-50 -translate-x-full md:translate-x-0 md:relative"
-  style="background: linear-gradient(to bottom, #1d3e4c, #32505c); height: 100vh;">
+  class="w-64 flex flex-col transition-transform duration-300 ease-in-out fixed left-0 top-0 z-50 -translate-x-full md:translate-x-0 md:relative"
+  style="background: linear-gradient(to bottom, #1d3e4c, #32505c); height: 100vh; box-shadow: 4px 0 15px rgba(0, 0, 0, 0.3);">
 
-  <div class="p-6 text-white flex-1">
+  <div class="p-6 text-white flex-1 overflow-y-auto">
     <!-- Close button for mobile -->
     <div class="md:hidden flex justify-end mb-4">
       <button
@@ -95,8 +95,9 @@
       </div>
 
       <!-- New Category Modal -->
-      <div x-show="showModal" @click.self="showModal = false" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" style="display: none;">
-        <div @click.stop class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4">
+      <template x-teleport="body">
+        <div x-show="showModal" @click.self="showModal = false" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" style="display: none;">
+        <div @click.stop class="bg-white rounded-2xl shadow-2xl p-6 md:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
           <h2 class="text-2xl font-bold mb-6 display-font" style="color: #1d3e4c;">New Category</h2>
 
           <%= form_with model: Category.new, url: categories_path, method: :post, local: true do |f| %>
@@ -132,7 +133,7 @@
             <!-- Icon Selector -->
             <div class="mb-5">
               <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">Icon</label>
-              <div class="grid grid-cols-6 gap-2">
+              <div class="grid grid-cols-6 md:grid-cols-9 gap-2 max-w-md">
                 <button type="button" @click="selectedIcon = 'fa-check'" :class="selectedIcon === 'fa-check' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
                   <i class="fa-solid fa-check text-base" style="color: #1d3e4c;"></i>
                 </button>
@@ -193,7 +194,7 @@
             <!-- Color Selector -->
             <div class="mb-6">
               <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">Color</label>
-              <div class="grid grid-cols-7 gap-2">
+              <div class="grid grid-cols-7 md:grid-cols-14 gap-2 max-w-md">
                 <button type="button" @click="selectedColor = '#6B8A99'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition relative flex items-center justify-center" :class="selectedColor === '#6B8A99' ? 'border-gray-800' : 'border-white'" style="background-color: #6B8A99;">
                   <i x-show="selectedColor === '#6B8A99'" class="fa-solid fa-check text-white text-sm font-black"></i>
                 </button>
@@ -248,7 +249,8 @@
             </div>
           <% end %>
         </div>
-      </div>
+        </div>
+      </template>
     </div>
   </div>
 

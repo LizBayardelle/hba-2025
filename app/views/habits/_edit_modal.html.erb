@@ -28,6 +28,52 @@
         </div>
       </div>
 
+      <!-- Time of Day Toggle -->
+      <div class="mb-5" x-data="{ timeOfDay: '<%= habit.time_of_day || 'any' %>' }">
+        <label class="block text-sm font-semibold mb-2" :style="'color: ' + colorMap[selectedColor].dark">Time of Day</label>
+        <%= f.hidden_field :time_of_day, "x-model": "timeOfDay" %>
+        <div class="grid grid-cols-4 gap-2">
+          <button type="button" @click="timeOfDay = 'am'" class="py-2 px-3 rounded-lg border-2 text-sm font-semibold transition" :style="timeOfDay === 'am' ? ('border-color: ' + selectedColor + '; background-color: ' + colorMap[selectedColor].light + '; color: ' + colorMap[selectedColor].dark) : ('border-color: ' + colorMap[selectedColor].light + '; color: ' + colorMap[selectedColor].dark)">AM</button>
+          <button type="button" @click="timeOfDay = 'pm'" class="py-2 px-3 rounded-lg border-2 text-sm font-semibold transition" :style="timeOfDay === 'pm' ? ('border-color: ' + selectedColor + '; background-color: ' + colorMap[selectedColor].light + '; color: ' + colorMap[selectedColor].dark) : ('border-color: ' + colorMap[selectedColor].light + '; color: ' + colorMap[selectedColor].dark)">PM</button>
+          <button type="button" @click="timeOfDay = 'night'" class="py-2 px-3 rounded-lg border-2 text-sm font-semibold transition" :style="timeOfDay === 'night' ? ('border-color: ' + selectedColor + '; background-color: ' + colorMap[selectedColor].light + '; color: ' + colorMap[selectedColor].dark) : ('border-color: ' + colorMap[selectedColor].light + '; color: ' + colorMap[selectedColor].dark)">Night</button>
+          <button type="button" @click="timeOfDay = 'any'" class="py-2 px-3 rounded-lg border-2 text-sm font-semibold transition" :style="timeOfDay === 'any' ? ('border-color: ' + selectedColor + '; background-color: ' + colorMap[selectedColor].light + '; color: ' + colorMap[selectedColor].dark) : ('border-color: ' + colorMap[selectedColor].light + '; color: ' + colorMap[selectedColor].dark)">Any</button>
+        </div>
+      </div>
+
+      <!-- Importance Slider -->
+      <div class="mb-5" x-data="{
+        importance: <%= case habit.importance
+          when 'optional' then 1
+          when 'normal' then 2
+          when 'important' then 3
+          when 'critical' then 4
+          else 2
+        end %>,
+        importanceLabels: {
+          1: 'Optional',
+          2: 'Normal Priority',
+          3: 'Important',
+          4: 'Critical'
+        },
+        importanceValues: {
+          1: 'optional',
+          2: 'normal',
+          3: 'important',
+          4: 'critical'
+        }
+      }">
+        <label class="block text-sm font-semibold mb-2" :style="'color: ' + selectedColor">Importance</label>
+        <%= f.hidden_field :importance, "x-model": "importanceValues[importance]" %>
+        <div class="flex items-center gap-4 mb-3">
+          <span class="text-xs font-semibold" :style="'color: ' + selectedColor">Low</span>
+          <input type="range" min="1" max="4" x-model="importance" class="flex-1 h-2 rounded-lg appearance-none cursor-pointer" :style="'accent-color: ' + selectedColor + '; background: linear-gradient(to right, ' + colorMap[selectedColor].light + ', ' + selectedColor + ')'">
+          <span class="text-xs font-semibold" :style="'color: ' + selectedColor">High</span>
+        </div>
+        <div class="text-center">
+          <span class="text-sm font-semibold" :style="'color: ' + selectedColor" x-text="importanceLabels[importance]"></span>
+        </div>
+      </div>
+
       <!-- Reminder Toggle -->
       <% reminder_toggle_id = "edit_reminder_toggle_#{habit.id}" %>
       <div class="mb-6" x-data="{ reminderEnabled: <%= habit.reminder_enabled ? 'true' : 'false' %> }">
@@ -67,18 +113,6 @@
                 <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition peer-checked:translate-x-5" style="pointer-events: none;"></div>
               </div>
               <span class="text-sm font-semibold" :style="habitType ? ('color: ' + colorMap[selectedColor].dark) : 'color: #9CA3A8'">Starting a good habit</span>
-            </div>
-          </div>
-
-          <!-- Time of Day Toggle -->
-          <div class="mb-5" x-data="{ timeOfDay: '<%= habit.time_of_day || 'anytime' %>' }">
-            <label class="block text-sm font-semibold mb-2" :style="'color: ' + colorMap[selectedColor].dark">Time of Day</label>
-            <%= f.hidden_field :time_of_day, "x-model": "timeOfDay" %>
-            <div class="grid grid-cols-4 gap-2">
-              <button type="button" @click="timeOfDay = 'morning'" class="py-2 px-3 rounded-lg border-2 text-sm font-semibold transition" :style="timeOfDay === 'morning' ? ('border-color: ' + selectedColor + '; background-color: ' + colorMap[selectedColor].light + '; color: ' + colorMap[selectedColor].dark) : ('border-color: ' + colorMap[selectedColor].light + '; color: ' + colorMap[selectedColor].dark)">Morning</button>
-              <button type="button" @click="timeOfDay = 'afternoon'" class="py-2 px-3 rounded-lg border-2 text-sm font-semibold transition" :style="timeOfDay === 'afternoon' ? ('border-color: ' + selectedColor + '; background-color: ' + colorMap[selectedColor].light + '; color: ' + colorMap[selectedColor].dark) : ('border-color: ' + colorMap[selectedColor].light + '; color: ' + colorMap[selectedColor].dark)">Afternoon</button>
-              <button type="button" @click="timeOfDay = 'evening'" class="py-2 px-3 rounded-lg border-2 text-sm font-semibold transition" :style="timeOfDay === 'evening' ? ('border-color: ' + selectedColor + '; background-color: ' + colorMap[selectedColor].light + '; color: ' + colorMap[selectedColor].dark) : ('border-color: ' + colorMap[selectedColor].light + '; color: ' + colorMap[selectedColor].dark)">Evening</button>
-              <button type="button" @click="timeOfDay = 'anytime'" class="py-2 px-3 rounded-lg border-2 text-sm font-semibold transition" :style="timeOfDay === 'anytime' ? ('border-color: ' + selectedColor + '; background-color: ' + colorMap[selectedColor].light + '; color: ' + colorMap[selectedColor].dark) : ('border-color: ' + colorMap[selectedColor].light + '; color: ' + colorMap[selectedColor].dark)">Anytime</button>
             </div>
           </div>
 

@@ -3,7 +3,32 @@ class CategoriesController < ApplicationController
   before_action :set_category, only: [:show, :update, :destroy]
 
   def show
-    @habits = @category.habits.where(archived_at: nil).order(:position, :created_at)
+    @sort_by = params[:sort] || 'priority'
+    habits = @category.habits.where(archived_at: nil).to_a
+
+    # Define sort orders
+    importance_order = { 'critical' => 1, 'important' => 2, 'normal' => 3, 'optional' => 4 }
+    time_order = { 'am' => 1, 'pm' => 2, 'night' => 3, 'any' => 4, nil => 5 }
+
+    # Sort habits
+    @habits = habits.sort_by do |habit|
+      if @sort_by == 'priority'
+        # Primary: importance, Secondary: time_of_day, Tertiary: alphabetical
+        [
+          importance_order[habit.importance] || 3,
+          time_order[habit.time_of_day&.downcase] || 5,
+          habit.name.downcase
+        ]
+      else # time_of_day
+        # Primary: time_of_day, Secondary: importance, Tertiary: alphabetical
+        [
+          time_order[habit.time_of_day&.downcase] || 5,
+          importance_order[habit.importance] || 3,
+          habit.name.downcase
+        ]
+      end
+    end
+
     @today_completions = current_user.habit_completions
                                       .where(completed_at: Date.today)
                                       .index_by(&:habit_id)

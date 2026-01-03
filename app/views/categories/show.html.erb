@@ -36,7 +36,7 @@
 </script>
 
   <!-- Main Content Area -->
-  <main class="flex-1 overflow-y-auto p-8 md:p-8 pt-20 md:pt-8" style="background-color: #F5F5F5;" x-data="{
+  <main class="flex-1 overflow-y-auto" style="background-color: #F5F5F5;" x-data="{
       showEditModal: false,
       showNewHabitModal: false,
       editHabitId: null,
@@ -61,7 +61,10 @@
         '#9CA3A8': { light: '#E8E8E8', dark: '#4A5057' }
       }
     }">
-      <div class="mb-8">
+    <!-- White Header Section with Shadow -->
+    <div class="bg-white shadow-md sticky top-0 z-10">
+      <div class="p-8 pb-6">
+        <!-- Header -->
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-4">
             <div class="w-12 h-12 rounded-lg flex items-center justify-center shadow-lg" style="background-color: <%= @category.color %>;">
@@ -86,39 +89,52 @@
                 dark_color = color_map[@category.color] || '#1d3e4c'
                 light_color = light_color_map[@category.color] || '#E8EEF1'
               %>
-              <h1 class="text-3xl font-bold display-font" style="color: <%= @category.color %>;"><%= @category.name %></h1>
-              <p class="text-sm font-light" style="color: <%= dark_color %>;">
+              <h1 class="text-4xl font-bold display-font mb-1" style="color: <%= @category.color %>;"><%= @category.name %></h1>
+              <p class="text-sm font-light" style="color: #657b84;">
                 <%= @category.description.present? ? @category.description : "Track Your Habits" %>
               </p>
             </div>
           </div>
-          <button @click="showEditModal = true" class="font-semibold hover:opacity-70 transition" style="color: <%= dark_color %>;">
-            <i class="fa-solid fa-pen-to-square mr-2"></i>Edit Category
-          </button>
+          <div class="gap-3">
+            <button @click="showNewHabitModal = true" class="px-4 py-2 rounded-lg text-white font-semibold shadow-md hover:shadow-lg transition transform hover:scale-[1.02]" style="background-color: <%= @category.color %>;">
+              <i class="fa-solid fa-plus mr-2"></i>Add Habit
+            </button>
+            <button @click="showEditModal = true" class="font-semibold hover:opacity-70 transition" style="color: <%= dark_color %>;">
+              <i class="fa-solid fa-pen-to-square mr-2"></i>Edit Category
+            </button>
+          </div>
         </div>
+      </div>
+    </div>
 
-        <%= render partial: 'categories/edit_modal', locals: { category: @category } %>
-        <%= render partial: 'habits/new_modal', locals: { category: @category } %>
+    <%= render partial: 'categories/edit_modal', locals: { category: @category } %>
+    <%= render partial: 'habits/new_modal', locals: { category: @category } %>
 
-        <!-- Separator -->
-        <div class="my-6 border-t-2" style="border-color: <%= @category.color %>20;"></div>
+    <!-- Grey Background Content -->
+    <div class="p-8 pt-6">
+      <!-- Habits Section -->
+      <div class="flex items-center justify-between mb-6">
+        <%
+          dark_color = {
+            '#6B8A99' => '#1d3e4c', '#9C8B7E' => '#5C4F45', '#F8796D' => '#B8352A',
+            '#FFA07A' => '#D66A3E', '#E5C730' => '#B89F0A', '#A8A356' => '#7A7637',
+            '#7CB342' => '#4A6B27', '#6EE7B7' => '#2C9D73', '#22D3EE' => '#0E7490',
+            '#6366F1' => '#3730A3', '#A78BFA' => '#6B21A8', '#E879F9' => '#A21CAF',
+            '#FB7185' => '#BE123C', '#9CA3A8' => '#4A5057'
+          }[@category.color] || '#1d3e4c'
+        %>
+        <h2 class="text-2xl font-bold display-font" style="color: <%= dark_color %>;">Habits</h2>
 
-        <!-- Habits Section -->
-        <div class="flex items-center justify-between mb-6">
-          <%
-            dark_color = {
-              '#6B8A99' => '#1d3e4c', '#9C8B7E' => '#5C4F45', '#F8796D' => '#B8352A',
-              '#FFA07A' => '#D66A3E', '#E5C730' => '#B89F0A', '#A8A356' => '#7A7637',
-              '#7CB342' => '#4A6B27', '#6EE7B7' => '#2C9D73', '#22D3EE' => '#0E7490',
-              '#6366F1' => '#3730A3', '#A78BFA' => '#6B21A8', '#E879F9' => '#A21CAF',
-              '#FB7185' => '#BE123C', '#9CA3A8' => '#4A5057'
-            }[@category.color] || '#1d3e4c'
-          %>
-          <h2 class="text-2xl font-bold display-font" style="color: <%= dark_color %>;">Habits</h2>
-          <button @click="showNewHabitModal = true" class="px-4 py-2 rounded-lg text-white font-semibold shadow-md hover:shadow-lg transition transform hover:scale-[1.02]" style="background-color: <%= @category.color %>;">
-            <i class="fa-solid fa-plus mr-2"></i>Add Habit
-          </button>
+        <!-- Sort Toggle -->
+        <div class="flex gap-1 bg-white p-0.5 rounded-lg shadow-sm">
+          <%= link_to category_path(@category, sort: 'priority'), class: "px-3 py-1.5 rounded-lg text-xs font-semibold transition #{@sort_by == 'priority' ? 'shadow-sm' : 'hover:bg-gray-100'}", style: @sort_by == 'priority' ? "background-color: #{light_color}; color: #{dark_color};" : "color: #{dark_color};" do %>
+            <i class="fa-solid fa-star mr-1"></i>Priority
+          <% end %>
+          <%= link_to category_path(@category, sort: 'time'), class: "px-3 py-1.5 rounded-lg text-xs font-semibold transition #{@sort_by == 'time' ? 'shadow-sm' : 'hover:bg-gray-100'}", style: @sort_by == 'time' ? "background-color: #{light_color}; color: #{dark_color};" : "color: #{dark_color};" do %>
+            <i class="fa-solid fa-clock mr-1"></i>Time
+          <% end %>
         </div>
+      </div>
 
         <% if @habits.any? %>
           <div class="grid gap-4">
@@ -143,15 +159,13 @@
                   this.streak = data.streak;
                 }
               }">
-                <div class="flex items-start gap-4">
-                  <!-- Completion Checkboxes -->
-                  <div class="flex flex-col gap-2">
-                    <% if habit.target_count <= 4 %>
-                      <% habit.target_count.times do |i| %>
-                        <button @click="count > <%= i %> ? updateCompletion('decrement') : updateCompletion('increment')" class="w-10 h-10 rounded-lg border-2 flex items-center justify-center font-bold transition hover:scale-110" style="border-color: <%= @category.color %>; color: <%= @category.color %>;" :style="count > <%= i %> ? { backgroundColor: '<%= @category.color %>', color: 'white' } : {}">
-                          <i class="fa-solid" :class="count > <%= i %> ? 'fa-check' : 'fa-plus'"></i>
-                        </button>
-                      <% end %>
+                <div class="flex items-center gap-3">
+                  <!-- Completion Indicator -->
+                  <div class="flex-shrink-0">
+                    <% if habit.target_count == 1 %>
+                      <button @click="count > 0 ? updateCompletion('decrement') : updateCompletion('increment')" class="w-10 h-10 rounded-lg border-2 flex items-center justify-center font-bold transition hover:scale-110" style="border-color: <%= @category.color %>; color: <%= @category.color %>;" :style="count > 0 ? { backgroundColor: '<%= @category.color %>', color: 'white' } : {}">
+                        <i class="fa-solid" :class="count > 0 ? 'fa-check' : 'fa-plus'"></i>
+                      </button>
                     <% else %>
                       <!-- Counter with +/- buttons -->
                       <div class="flex items-center rounded-lg border-2 overflow-hidden" style="border-color: <%= @category.color %>;">
@@ -168,37 +182,44 @@
                     <% end %>
                   </div>
 
-                  <!-- Habit Info -->
-                  <div class="flex-1">
-                    <h3 class="text-lg font-bold display-font mb-1" style="color: <%= dark_color %>;">
-                      <%= habit.name %>
-                    </h3>
-                    <% if habit.description.present? %>
-                      <p class="text-sm text-gray-600 mb-3"><%= habit.description %></p>
-                    <% end %>
-                    <div class="flex flex-wrap gap-2 text-xs">
-                      <span class="px-3 py-1 rounded-full font-semibold" style="background-color: <%= @category.color %>20; color: <%= dark_color %>;">
-                        <%= habit.target_count %> <%= habit.target_count == 1 ? 'time' : 'times' %> per <%= habit.frequency_type %>
-                      </span>
-                      <% if habit.time_of_day.present? %>
-                        <span class="px-3 py-1 rounded-full font-semibold" style="background-color: <%= @category.color %>20; color: <%= dark_color %>;">
-                          <i class="fa-solid fa-clock mr-1"></i><%= habit.time_of_day.capitalize %>
-                        </span>
+                  <!-- Habit Name & Info -->
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                      <div class="font-semibold" style="color: <%= dark_color %>;">
+                        <%= habit.name %>
+                      </div>
+                      <% if habit.importance.present? && habit.importance != 'normal' %>
+                        <div class="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold" style="background-color: <%= @category.color %>; color: white;">
+                          <%= case habit.importance
+                            when 'critical' then '!!'
+                            when 'important' then '!'
+                            when 'optional' then '?'
+                          end %>
+                        </div>
+                      <% end %>
+                      <button @click="editHabitId = <%= habit.id %>" class="text-sm hover:opacity-70 transition flex-shrink-0" style="color: <%= @category.color %>40;">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                      </button>
+                    </div>
+                    <div class="text-xs font-light flex items-center gap-2" style="color: #657b84;">
+                      <span><%= habit.target_count %> <%= habit.target_count == 1 ? 'time' : 'times' %></span>
+                      <% if habit.time_of_day.present? && !['anytime', 'any'].include?(habit.time_of_day.downcase) %>
+                        <span>•</span>
+                        <span><%= habit.time_of_day.downcase == 'night' ? 'Night' : habit.time_of_day.upcase %></span>
                       <% end %>
                     </div>
                   </div>
 
-                  <!-- Streak & Edit -->
-                  <div class="text-right flex flex-col items-end gap-2">
-                    <div>
-                      <div class="text-2xl font-bold display-font" style="color: <%= @category.color %>;" x-text="streak">
-                        <%= habit.current_streak %>
+                  <!-- Streak Badge -->
+                  <div class="flex-shrink-0">
+                    <% if habit.current_streak > 0 %>
+                      <div class="flex flex-col items-center">
+                        <div class="text-2xl font-bold display-font" style="color: <%= @category.color %>;" x-text="streak">
+                          <%= habit.current_streak %>
+                        </div>
+                        <div class="text-xs text-gray-500 font-semibold">day streak</div>
                       </div>
-                      <div class="text-xs text-gray-500 font-semibold">day streak</div>
-                    </div>
-                    <button @click="editHabitId = <%= habit.id %>" class="text-xs font-semibold hover:opacity-70 transition" style="color: <%= dark_color %>;">
-                      <i class="fa-solid fa-pen-to-square mr-1"></i>Edit
-                    </button>
+                    <% end %>
                   </div>
                 </div>
 
@@ -206,11 +227,12 @@
               </div>
             <% end %>
           </div>
-        <% else %>
-          <div class="bg-white rounded-xl shadow-md p-12 text-center">
-            <i class="fa-solid fa-check-circle text-6xl mb-4" style="color: <%= @category.color %>40;"></i>
-            <p class="text-gray-500 font-light">No habits yet. Click "Add Habit" to get started!</p>
-          </div>
-        <% end %>
-    </main>
+      <% else %>
+        <div class="bg-white rounded-xl shadow-md p-12 text-center">
+          <i class="fa-solid fa-check-circle text-6xl mb-4" style="color: <%= @category.color %>40;"></i>
+          <p class="text-gray-500 font-light">No habits yet. Click "Add Habit" to get started!</p>
+        </div>
+      <% end %>
+    </div>
+  </main>
 </div>

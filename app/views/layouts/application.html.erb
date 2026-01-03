@@ -36,7 +36,7 @@
   <body>
     <!-- Flash Messages -->
     <% if notice || alert %>
-      <div class="fixed top-4 right-4 z-50 max-w-md" x-data="{ show: true }" x-show="show" x-transition>
+      <div class="fixed top-4 right-4 z-50 max-w-md" x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 5000)">
         <% if notice %>
           <div class="mb-3 flex items-start gap-3 p-4 rounded-lg shadow-lg border-2" style="background-color: #D7EDCB; border-color: #7CB342;">
             <div class="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center" style="background-color: #7CB342;">
@@ -66,16 +66,6 @@
           </div>
         <% end %>
       </div>
-
-      <!-- Auto-dismiss after 5 seconds -->
-      <script>
-        setTimeout(() => {
-          const flashContainer = document.querySelector('[x-data*="show: true"]');
-          if (flashContainer && flashContainer.__x) {
-            flashContainer.__x.$data.show = false;
-          }
-        }, 5000);
-      </script>
     <% end %>
 
     <%= yield %>
