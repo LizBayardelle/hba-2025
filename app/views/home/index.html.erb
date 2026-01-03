@@ -224,16 +224,16 @@
             <!-- Time of Day Section -->
             <%
               time_labels = {
-                'morning' => { icon: 'fa-sun', label: 'Morning', color: '#FFA07A' },
-                'afternoon' => { icon: 'fa-cloud-sun', label: 'Afternoon', color: '#E5C730' },
-                'evening' => { icon: 'fa-moon', label: 'Evening', color: '#6366F1' },
-                'anytime' => { icon: 'fa-clock', label: 'Anytime', color: '#9CA3A8' }
+                'morning' => { icon: 'fa-sun', label: 'Morning' },
+                'afternoon' => { icon: 'fa-cloud-sun', label: 'Afternoon' },
+                'evening' => { icon: 'fa-moon', label: 'Evening' },
+                'anytime' => { icon: 'fa-clock', label: 'Anytime' }
               }
               time_info = time_labels[group] || time_labels['anytime']
             %>
-            <div class="bg-white rounded-xl shadow-lg overflow-hidden border" style="border-color: <%= time_info[:color] %>;" data-section-id="time-<%= group %>">
-              <button onclick="toggleSection('time-<%= group %>')" class="w-full p-4 flex items-center gap-3 hover:opacity-90 transition text-left border-b" style="background-color: <%= time_info[:color] %>20; border-color: <%= time_info[:color] %>;">
-                <div class="w-10 h-10 rounded-lg flex items-center justify-center shadow-sm" style="background-color: <%= time_info[:color] %>;">
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden border" style="border-color: #1d3e4c;" data-section-id="time-<%= group %>">
+              <button onclick="toggleSection('time-<%= group %>')" class="w-full p-4 flex items-center gap-3 hover:opacity-90 transition text-left border-b" style="background-color: #1d3e4c20; border-color: #1d3e4c;">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center shadow-sm" style="background-color: #1d3e4c;">
                   <i class="fa-solid <%= time_info[:icon] %> text-white"></i>
                 </div>
                 <div class="flex-1">
@@ -269,7 +269,7 @@
                       '#FB7185' => '#FFE4E6', '#9CA3A8' => '#E8E8E8'
                     }[habit.category.color] || '#E8EEF1'
                   %>
-                  <%= render partial: 'habits/habit_item', locals: { habit: habit, completion_count: @completions[habit.id] || 0, category: habit.category, dark_color: habit_dark_color, border_color: time_info[:color], is_first: index == 0, hover_color: habit_light_color, streak: @streaks[habit.id] || 0 } %>
+                  <%= render partial: 'habits/habit_item', locals: { habit: habit, completion_count: @completions[habit.id] || 0, category: habit.category, dark_color: habit_dark_color, border_color: habit.category.color, is_first: index == 0, hover_color: habit_light_color, streak: @streaks[habit.id] || 0 } %>
                 <% end %>
               </div>
             </div>

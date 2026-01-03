@@ -4,11 +4,19 @@ class HabitsController < ApplicationController
   before_action :set_habit, only: [:update, :destroy]
 
   def index
-    @view_mode = params[:view] || 'category' # 'category' or 'time'
+    @view_mode = params[:view] || 'category' # 'category', 'time', or 'importance'
     @selected_date = params[:date] ? Date.parse(params[:date]) : Date.today
 
     # Get all active habits for current user
     @habits = current_user.habits.active.includes(:category)
+
+    # Update health for any habits that haven't been checked today
+    @habits.each do |habit|
+      if habit.last_health_check_at.nil? || habit.last_health_check_at.to_date < Date.today
+        habit.calculate_streak!
+        habit.update_health!
+      end
+    end
 
     # Get today's completions
     @completions = HabitCompletion.where(
@@ -42,7 +50,22 @@ class HabitsController < ApplicationController
 
     # Group habits based on view mode
     if @view_mode == 'time'
-      @grouped_habits = @habits.group_by { |h| h.time_of_day || 'anytime' }
+      grouped = @habits.group_by do |h|
+        case h.time_of_day
+        when 'am', 'morning' then 'morning'
+        when 'pm', 'afternoon' then 'afternoon'
+        when 'night', 'evening' then 'evening'
+        else 'anytime'
+        end
+      end
+      # Sort by time of day order
+      time_order = ['morning', 'afternoon', 'evening', 'anytime']
+      @grouped_habits = grouped.sort_by { |time, _| time_order.index(time) || 999 }.to_h
+    elsif @view_mode == 'importance'
+      grouped = @habits.group_by { |h| h.importance || 'normal' }
+      # Sort by importance order
+      importance_order = ['critical', 'important', 'normal', 'optional']
+      @grouped_habits = grouped.sort_by { |importance, _| importance_order.index(importance) || 999 }.to_h
     else
       @grouped_habits = @habits.group_by(&:category)
     end

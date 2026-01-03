@@ -16,7 +16,15 @@ class HabitCompletionsController < ApplicationController
     end
 
     habit.reload
-    render json: { count: completion.count, streak: habit.current_streak }
+    habit.calculate_streak!
+    habit.update_health!
+
+    render json: {
+      count: completion.count,
+      streak: habit.current_streak,
+      health: habit.health,
+      health_state: habit.health_state
+    }
   end
 
   def decrement
@@ -27,14 +35,33 @@ class HabitCompletionsController < ApplicationController
       if completion.count > 1
         completion.decrement!(:count)
         habit.reload
-        render json: { count: completion.count, streak: habit.current_streak }
+        habit.calculate_streak!
+        habit.update_health!
+        render json: {
+          count: completion.count,
+          streak: habit.current_streak,
+          health: habit.health,
+          health_state: habit.health_state
+        }
       else
         completion.destroy
         habit.reload
-        render json: { count: 0, streak: habit.current_streak }
+        habit.calculate_streak!
+        habit.update_health!
+        render json: {
+          count: 0,
+          streak: habit.current_streak,
+          health: habit.health,
+          health_state: habit.health_state
+        }
       end
     else
-      render json: { count: 0, streak: habit.current_streak }
+      render json: {
+        count: 0,
+        streak: habit.current_streak,
+        health: habit.health,
+        health_state: habit.health_state
+      }
     end
   end
 

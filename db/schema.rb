@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_01_03_020231) do
+ActiveRecord::Schema[7.2].define(version: 2026_01_03_184527) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -62,6 +62,11 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_03_020231) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "importance", default: "normal"
+    t.integer "health", default: 100, null: false
+    t.date "last_missed_date"
+    t.integer "consecutive_misses", default: 0, null: false
+    t.integer "misses_this_week", default: 0, null: false
+    t.datetime "last_health_check_at"
     t.index ["category_id"], name: "index_habits_on_category_id"
     t.index ["user_id"], name: "index_habits_on_user_id"
   end

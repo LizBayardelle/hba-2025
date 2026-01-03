@@ -39,7 +39,17 @@ class HomeController < ApplicationController
 
     # Group habits based on view mode
     if @view_mode == 'time'
-      @grouped_habits = @habits.group_by { |h| h.time_of_day || 'anytime' }
+      grouped = @habits.group_by do |h|
+        case h.time_of_day
+        when 'am', 'morning' then 'morning'
+        when 'pm', 'afternoon' then 'afternoon'
+        when 'night', 'evening' then 'evening'
+        else 'anytime'
+        end
+      end
+      # Sort by time of day order
+      time_order = ['morning', 'afternoon', 'evening', 'anytime']
+      @grouped_habits = grouped.sort_by { |time, _| time_order.index(time) || 999 }.to_h
     else
       @grouped_habits = @habits.group_by(&:category)
     end
