@@ -337,6 +337,15 @@
           <!-- Render all habits once with grouping metadata -->
           <div id="focus-habits-container" class="space-y-4">
             <%
+              # Light color mapping
+              light_color_map = {
+                '#6B8A99' => '#E8EEF1', '#9C8B7E' => '#E8E0D5', '#F8796D' => '#FFD4CE',
+                '#FFA07A' => '#FFE4D6', '#E5C730' => '#FEF7C3', '#A8A356' => '#E8EBCD',
+                '#7CB342' => '#D7EDCB', '#6EE7B7' => '#D1FAF0', '#22D3EE' => '#CFFAFE',
+                '#6366F1' => '#E0E7FF', '#A78BFA' => '#EDE9FE', '#E879F9' => '#FAE8FF',
+                '#FB7185' => '#FFE4E6', '#9CA3A8' => '#E8E8E8'
+              }
+
               # Create a single list of all habits with their grouping info
               all_habits_with_groups = @habits.map do |habit|
                 time_group = case habit.time_of_day
@@ -366,14 +375,16 @@
                 completion_count = @today_completions[habit.id] || 0
                 is_complete = completion_count >= habit.target_count
                 category = habit.category
-                light_color = category.color + '20'
+                light_color = light_color_map[category.color] || (category.color + '20')
               %>
               <div class="habit-item flex items-center gap-2"
                    data-habit-id="<%= habit.id %>"
                    data-target="<%= habit.target_count %>"
                    data-health="<%= habit.health %>"
                    data-time-group="<%= habit_data[:time_group] %>"
-                   data-priority-group="<%= habit_data[:priority_group] %>">
+                   data-priority-group="<%= habit_data[:priority_group] %>"
+                   data-category-color="<%= category.color %>"
+                   data-light-color="<%= light_color %>">
                 <button
                   onclick="toggleDashboardHabit(<%= habit.id %>, <%= is_complete ? 'true' : 'false' %>)"
                   class="flex-shrink-0 cursor-pointer transition-transform hover:scale-110">
@@ -383,7 +394,7 @@
                     <i class="fa-regular fa-circle text-sm" style="color: <%= light_color %>;"></i>
                   <% end %>
                 </button>
-                <div class="flex-1 text-sm <%= is_complete ? 'line-through opacity-60' : '' %>" style="color: <%= category.color %>;">
+                <div class="flex-1 text-sm font-semibold <%= is_complete ? 'line-through opacity-60' : '' %>" style="color: <%= is_complete ? light_color : category.color %>;">
                   <%= habit.name %>
                 </div>
                 <div class="text-xs font-light" style="color: #657b84;">
@@ -592,9 +603,9 @@ async function toggleDashboardHabit(habitId, wasComplete) {
     const countDiv = habitRow.querySelector('.text-xs');
     const targetCount = parseInt(habitRow.dataset.target);
 
-    // Get category color and ID
-    const categoryColor = nameDiv.style.color;
-    const lightColor = categoryColor + '20';
+    // Get category colors from data attributes
+    const categoryColor = habitRow.dataset.categoryColor;
+    const lightColor = habitRow.dataset.lightColor;
 
     // Store habit's health data for later updates
     habitRow.dataset.health = data.health;
@@ -615,10 +626,12 @@ async function toggleDashboardHabit(habitId, wasComplete) {
       icon.className = 'fa-solid fa-circle-check text-sm';
       icon.style.color = categoryColor;
       nameDiv.classList.add('line-through', 'opacity-60');
+      nameDiv.style.color = lightColor;
     } else {
       icon.className = 'fa-regular fa-circle text-sm';
       icon.style.color = lightColor;
       nameDiv.classList.remove('line-through', 'opacity-60');
+      nameDiv.style.color = categoryColor;
     }
 
     countDiv.textContent = `${data.count} / ${targetCount}`;
