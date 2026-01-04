@@ -3,7 +3,9 @@ class ApplicationController < ActionController::Base
   allow_browser versions: :modern
 
   before_action :set_cache_headers
+  before_action :set_timezone, if: :user_signed_in?
   before_action :update_habit_health, if: :user_signed_in?
+  before_action :configure_permitted_parameters, if: :devise_controller?
 
   private
 
@@ -13,6 +15,10 @@ class ApplicationController < ActionController::Base
     response.headers["Expires"] = "0"
   end
 
+  def set_timezone
+    Time.zone = current_user.timezone if current_user.timezone.present?
+  end
+
   def update_habit_health
     # Only check habits that haven't been checked today
     # This is efficient because it only queries habits needing updates
@@ -20,5 +26,10 @@ class ApplicationController < ActionController::Base
       habit.calculate_streak!
       habit.update_health!
     end
+  end
+
+  def configure_permitted_parameters
+    devise_parameter_sanitizer.permit(:sign_up, keys: [:timezone])
+    devise_parameter_sanitizer.permit(:account_update, keys: [:timezone])
   end
 end
