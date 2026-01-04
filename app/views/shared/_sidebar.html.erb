@@ -33,12 +33,12 @@
       <% end %>
       <%= link_to habits_path, class: "flex items-center gap-3 px-4 py-3 rounded-lg transition #{current_page?(habits_path) ? 'font-medium' : 'font-light hover:bg-white/10'}", style: current_page?(habits_path) ? "background-color: rgba(255, 255, 255, 0.15);" : "" do %>
         <i class="fa-solid fa-list-check text-lg" style="<%= current_page?(habits_path) ? 'color: #F8796D;' : '' %>"></i>
-        <span>My Habits</span>
+        <span>Habits</span>
       <% end %>
-      <a href="#" class="flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-lg transition">
-        <i class="fa-solid fa-chart-column text-lg"></i>
-        <span class="font-light">Analytics</span>
-      </a>
+      <%= link_to analytics_path, class: "flex items-center gap-3 px-4 py-3 rounded-lg transition #{current_page?(analytics_path) ? 'font-medium' : 'font-light hover:bg-white/10'}", style: current_page?(analytics_path) ? "background-color: rgba(255, 255, 255, 0.15);" : "" do %>
+        <i class="fa-solid fa-chart-column text-lg" style="<%= current_page?(analytics_path) ? 'color: #F8796D;' : '' %>"></i>
+        <span>Analytics</span>
+      <% end %>
       <a href="#" class="flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-lg transition">
         <i class="fa-solid fa-bullseye text-lg"></i>
         <span class="font-light">Goals</span>

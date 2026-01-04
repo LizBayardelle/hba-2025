@@ -1,0 +1,732 @@
+<div class="flex h-screen relative" style="background-color: #F5F5F5;">
+  <%= render 'shared/sidebar' %>
+
+  <!-- Mobile overlay -->
+  <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 md:hidden hidden"></div>
+
+  <!-- Menu flag button -->
+  <button id="menu-button" class="fixed left-0 z-20 md:hidden rounded-r-lg shadow-lg flex items-center justify-center py-1.5 px-3 cursor-move"
+    style="top: 200px; background: linear-gradient(135deg, #1d3e4c, #45606b); writing-mode: vertical-rl;">
+    <span class="text-white font-bold text-sm tracking-wider">MENU</span>
+  </button>
+
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const menuButton = document.getElementById('menu-button');
+    const closeButton = document.getElementById('sidebar-close');
+
+    function openSidebar() {
+      sidebar.classList.remove('-translate-x-full');
+      sidebar.classList.add('translate-x-0');
+      overlay.classList.remove('hidden');
+      menuButton.classList.add('hidden');
+    }
+
+    function closeSidebar() {
+      sidebar.classList.add('-translate-x-full');
+      sidebar.classList.remove('translate-x-0');
+      overlay.classList.add('hidden');
+      menuButton.classList.remove('hidden');
+    }
+
+    // Draggable menu button
+    let isDragging = false;
+    let startY = 0;
+    let startTop = 200;
+    let dragStartTime = 0;
+
+    menuButton.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      dragStartTime = Date.now();
+      startY = e.clientY;
+      startTop = parseInt(menuButton.style.top) || 200;
+      e.preventDefault();
+    });
+
+    menuButton.addEventListener('touchstart', (e) => {
+      isDragging = true;
+      dragStartTime = Date.now();
+      startY = e.touches[0].clientY;
+      startTop = parseInt(menuButton.style.top) || 200;
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (isDragging) {
+        const deltaY = e.clientY - startY;
+        const newTop = Math.max(0, Math.min(window.innerHeight - menuButton.offsetHeight, startTop + deltaY));
+        menuButton.style.top = newTop + 'px';
+        localStorage.setItem('menuButtonTop', newTop);
+      }
+    });
+
+    document.addEventListener('touchmove', (e) => {
+      if (isDragging) {
+        const deltaY = e.touches[0].clientY - startY;
+        const newTop = Math.max(0, Math.min(window.innerHeight - menuButton.offsetHeight, startTop + deltaY));
+        menuButton.style.top = newTop + 'px';
+        localStorage.setItem('menuButtonTop', newTop);
+      }
+    });
+
+    document.addEventListener('mouseup', (e) => {
+      if (isDragging) {
+        const dragDuration = Date.now() - dragStartTime;
+        const dragDistance = Math.abs(e.clientY - startY);
+
+        if (dragDuration < 200 && dragDistance < 5) {
+          openSidebar();
+        }
+        isDragging = false;
+      }
+    });
+
+    document.addEventListener('touchend', (e) => {
+      if (isDragging) {
+        const dragDuration = Date.now() - dragStartTime;
+        if (dragDuration < 200) {
+          openSidebar();
+        }
+        isDragging = false;
+      }
+    });
+
+    closeButton.addEventListener('click', closeSidebar);
+    overlay.addEventListener('click', closeSidebar);
+
+    const savedTop = localStorage.getItem('menuButtonTop');
+    if (savedTop) {
+      menuButton.style.top = savedTop + 'px';
+    }
+  </script>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 overflow-y-auto" style="background-color: #F5F5F5;">
+    <!-- White Header Section with Shadow -->
+    <div class="bg-white shadow-md sticky top-0 z-10">
+      <div class="p-8 pb-6">
+        <div class="mb-4">
+          <h1 class="text-4xl font-bold display-font mb-1" style="color: #1d3e4c;">Dashboard</h1>
+          <p class="text-sm font-light" style="color: #657b84;">Your habit overview</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grey Background Content -->
+    <div class="p-8 pt-6 space-y-6">
+      <!-- Calendar Heatmap -->
+      <div class="bg-white rounded-xl shadow-md p-6">
+        <h2 class="text-xl font-bold display-font mb-4" style="color: #1d3e4c;">Activity</h2>
+
+        <!-- Overall Heatmap -->
+        <div class="mb-6">
+          <h3 class="text-sm font-semibold mb-3" style="color: #1d3e4c;">Overall</h3>
+          <div class="flex flex-col lg:flex-row gap-8">
+            <div class="flex-1 overflow-x-auto">
+              <div class="inline-block">
+                <div class="flex gap-1">
+                  <!-- Day labels -->
+                  <div class="flex flex-col gap-1 mr-1">
+                    <div class="w-4 h-3 text-[10px] flex items-center" style="color: #657b84;">S</div>
+                    <div class="w-4 h-3 text-[10px] flex items-center" style="color: #657b84;">M</div>
+                    <div class="w-4 h-3 text-[10px] flex items-center" style="color: #657b84;">T</div>
+                    <div class="w-4 h-3 text-[10px] flex items-center" style="color: #657b84;">W</div>
+                    <div class="w-4 h-3 text-[10px] flex items-center" style="color: #657b84;">T</div>
+                    <div class="w-4 h-3 text-[10px] flex items-center" style="color: #657b84;">F</div>
+                    <div class="w-4 h-3 text-[10px] flex items-center" style="color: #657b84;">S</div>
+                  </div>
+
+                  <%
+                    # Group heatmap data by week
+                    weeks = []
+                    current_week = []
+                    @heatmap_data.keys.sort.each_with_index do |date_str, index|
+                      date = Date.parse(date_str)
+                      current_week << { date: date, percentage: @heatmap_data[date_str] }
+
+                      # Start new week on Sunday or at the end
+                      if date.wday == 6 || index == @heatmap_data.keys.length - 1
+                        weeks << current_week
+                        current_week = []
+                      end
+                    end
+                  %>
+
+                  <% weeks.each do |week| %>
+                    <div class="flex flex-col gap-1">
+                      <% 7.times do |day_index| %>
+                        <% day_data = week[day_index] %>
+                        <% if day_data %>
+                          <%
+                            percentage = day_data[:percentage]
+                            color = if percentage == 0
+                              '#E8EEF1'
+                            elsif percentage < 25
+                              '#c8dce4'
+                            elsif percentage < 50
+                              '#8fb9ca'
+                            elsif percentage < 75
+                              '#5696b0'
+                            elsif percentage < 100
+                              '#2d7088'
+                            else
+                              '#1d3e4c'
+                            end
+                          %>
+                          <a href="<%= habits_path(date: day_data[:date].to_s, view: 'category') %>"
+                            class="w-3 h-3 rounded-sm transition-all hover:ring-2 hover:ring-offset-1 hover:ring-gray-400 cursor-pointer block"
+                            style="background-color: <%= color %>;"
+                            title="<%= day_data[:date].strftime('%B %d, %Y') %>: <%= percentage %>% complete">
+                          </a>
+                        <% else %>
+                          <div class="w-3 h-3"></div>
+                        <% end %>
+                      <% end %>
+                    </div>
+                  <% end %>
+                </div>
+
+                <!-- Legend -->
+                <div class="flex items-center gap-2 mt-4 text-xs" style="color: #657b84;">
+                  <span>Less</span>
+                  <div class="w-3 h-3 rounded-sm" style="background-color: #E8EEF1;"></div>
+                  <div class="w-3 h-3 rounded-sm" style="background-color: #c8dce4;"></div>
+                  <div class="w-3 h-3 rounded-sm" style="background-color: #8fb9ca;"></div>
+                  <div class="w-3 h-3 rounded-sm" style="background-color: #5696b0;"></div>
+                  <div class="w-3 h-3 rounded-sm" style="background-color: #2d7088;"></div>
+                  <div class="w-3 h-3 rounded-sm" style="background-color: #1d3e4c;"></div>
+                  <span>More</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="flex-shrink-0 lg:w-64 w-full space-y-2 text-sm">
+              <div class="flex items-center justify-between border-b border-dotted pb-2" style="border-color: #E8EEF1;">
+                <span class="font-light" style="color: #657b84;">Current Streak</span>
+                <span class="font-semibold" style="color: #1d3e4c;"><%= @current_streak %> <%= @current_streak == 1 ? 'day' : 'days' %></span>
+              </div>
+              <div class="flex items-center justify-between border-b border-dotted pb-2" style="border-color: #E8EEF1;">
+                <span class="font-light" style="color: #657b84;">This Week</span>
+                <span class="font-semibold" style="color: #1d3e4c;"><%= @weekly_completions %> <%= @weekly_completions == 1 ? 'completion' : 'completions' %></span>
+              </div>
+              <div class="flex items-center justify-between border-b border-dotted pb-2" style="border-color: #E8EEF1;">
+                <div class="flex items-center gap-2">
+                  <span class="font-light" style="color: #657b84;">Overall Health</span>
+                  <div class="relative group">
+                    <i class="fa-solid fa-circle-info text-xs cursor-help" style="color: #657b84;"></i>
+                    <%= render 'shared/health_explanation' %>
+                  </div>
+                </div>
+                <span class="font-semibold" style="color: #1d3e4c;"><%= @overall_health %>%</span>
+              </div>
+              <div class="flex items-center justify-between border-b border-dotted pb-2" style="border-color: #E8EEF1;">
+                <span class="font-light" style="color: #657b84;">Habits at Risk</span>
+                <span class="font-semibold" style="color: #1d3e4c;"><%= @habits_at_risk %></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Per-Category Heatmaps -->
+        <% if @categories.any? %>
+          <%
+            # Calculate gradient colors for category heatmaps
+            def calculate_category_gradient(base_color, percentage)
+              # Convert hex to RGB
+              r = base_color[1..2].to_i(16)
+              g = base_color[3..4].to_i(16)
+              b = base_color[5..6].to_i(16)
+
+              # Create gradient from very light to full color
+              if percentage == 0
+                '#E8EEF1'  # Empty state
+              else
+                # Interpolate between white (255,255,255) and base color
+                intensity = percentage / 100.0
+                new_r = (255 + (r - 255) * intensity).round
+                new_g = (255 + (g - 255) * intensity).round
+                new_b = (255 + (b - 255) * intensity).round
+                "#%02x%02x%02x" % [new_r, new_g, new_b]
+              end
+            end
+          %>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <% @categories.each do |category| %>
+              <div>
+                <div class="flex items-center gap-2 mb-2">
+                  <i class="<%= category.icon %> text-xs" style="color: <%= category.color %>;"></i>
+                  <h3 class="text-xs font-semibold" style="color: <%= category.color %>;"><%= category.name %></h3>
+                </div>
+                <div class="overflow-x-auto">
+                  <div class="inline-block">
+                    <div class="flex gap-1">
+                      <%
+                        # Group category heatmap data by week
+                        cat_weeks = []
+                        cat_current_week = []
+                        @category_heatmap_data[category.id].keys.sort.each_with_index do |date_str, index|
+                          date = Date.parse(date_str)
+                          cat_current_week << { date: date, percentage: @category_heatmap_data[category.id][date_str] }
+
+                          # Start new week on Sunday or at the end
+                          if date.wday == 6 || index == @category_heatmap_data[category.id].keys.length - 1
+                            cat_weeks << cat_current_week
+                            cat_current_week = []
+                          end
+                        end
+                      %>
+
+                      <% cat_weeks.each do |week| %>
+                        <div class="flex flex-col gap-1">
+                          <% 7.times do |day_index| %>
+                            <% day_data = week[day_index] %>
+                            <% if day_data %>
+                              <%
+                                percentage = day_data[:percentage]
+                                color = calculate_category_gradient(category.color, percentage)
+                              %>
+                              <a href="<%= habits_path(date: day_data[:date].to_s, view: 'category') %>"
+                                class="w-3 h-3 rounded-sm transition-all hover:ring-2 hover:ring-offset-1 hover:ring-gray-400 cursor-pointer block"
+                                style="background-color: <%= color %>;"
+                                title="<%= category.name %> - <%= day_data[:date].strftime('%B %d, %Y') %>: <%= percentage %>% complete">
+                              </a>
+                            <% else %>
+                              <div class="w-3 h-3"></div>
+                            <% end %>
+                          <% end %>
+                        </div>
+                      <% end %>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- Today's Focus -->
+      <div class="bg-white rounded-xl shadow-md p-6">
+        <div class="mb-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold display-font" style="color: #1d3e4c;">Today's Focus</h2>
+            <!-- Toggle Buttons -->
+            <div class="flex gap-1 rounded-lg p-1" style="background-color: #E8EEF1;">
+              <button id="focus-time-btn" onclick="switchFocusView('time')" class="px-3 py-1 rounded text-xs font-semibold transition" style="background-color: #1d3e4c; color: white;">
+                Time
+              </button>
+              <button id="focus-priority-btn" onclick="switchFocusView('priority')" class="px-3 py-1 rounded text-xs font-semibold transition" style="color: #657b84;">
+                Priority
+              </button>
+            </div>
+          </div>
+          <div id="today-completion-count" class="text-sm font-light mt-1" style="color: #657b84;">
+            <%= @completed_today %> / <%= @total_habits %> completed (<%= @today_percentage %>%)
+          </div>
+        </div>
+
+        <% if @today_habits.any? %>
+          <!-- Render all habits once with grouping metadata -->
+          <div id="focus-habits-container" class="space-y-4">
+            <%
+              # Create a single list of all habits with their grouping info
+              all_habits_with_groups = @habits.map do |habit|
+                time_group = case habit.time_of_day
+                when 'am', 'morning' then 'morning'
+                when 'pm', 'afternoon' then 'afternoon'
+                when 'night', 'evening' then 'evening'
+                else 'anytime'
+                end
+
+                priority_group = habit.importance || 'normal'
+
+                {
+                  habit: habit,
+                  time_group: time_group,
+                  priority_group: priority_group
+                }
+              end
+
+              # Sort by time order by default
+              time_order = ['morning', 'afternoon', 'evening', 'anytime']
+              all_habits_with_groups.sort_by! { |h| time_order.index(h[:time_group]) || 999 }
+            %>
+
+            <% all_habits_with_groups.each do |habit_data| %>
+              <%
+                habit = habit_data[:habit]
+                completion_count = @today_completions[habit.id] || 0
+                is_complete = completion_count >= habit.target_count
+                category = habit.category
+                light_color = category.color + '20'
+              %>
+              <div class="habit-item flex items-center gap-2"
+                   data-habit-id="<%= habit.id %>"
+                   data-target="<%= habit.target_count %>"
+                   data-health="<%= habit.health %>"
+                   data-time-group="<%= habit_data[:time_group] %>"
+                   data-priority-group="<%= habit_data[:priority_group] %>">
+                <button
+                  onclick="toggleDashboardHabit(<%= habit.id %>, <%= is_complete ? 'true' : 'false' %>)"
+                  class="flex-shrink-0 cursor-pointer transition-transform hover:scale-110">
+                  <% if is_complete %>
+                    <i class="fa-solid fa-circle-check text-sm" style="color: <%= category.color %>;"></i>
+                  <% else %>
+                    <i class="fa-regular fa-circle text-sm" style="color: <%= light_color %>;"></i>
+                  <% end %>
+                </button>
+                <div class="flex-1 text-sm <%= is_complete ? 'line-through opacity-60' : '' %>" style="color: <%= category.color %>;">
+                  <%= habit.name %>
+                </div>
+                <div class="text-xs font-light" style="color: #657b84;">
+                  <%= completion_count %> / <%= habit.target_count %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="text-center py-8">
+            <i class="fa-solid fa-check-circle text-4xl mb-2" style="color: #E8EEF1;"></i>
+            <p class="text-sm font-light" style="color: #657b84;">No habits for today</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// Today's Focus view toggle
+function switchFocusView(view) {
+  const container = document.getElementById('focus-habits-container');
+  const timeBtn = document.getElementById('focus-time-btn');
+  const priorityBtn = document.getElementById('focus-priority-btn');
+
+  // Update button styles
+  if (view === 'time') {
+    timeBtn.style.backgroundColor = '#1d3e4c';
+    timeBtn.style.color = 'white';
+    priorityBtn.style.backgroundColor = '';
+    priorityBtn.style.color = '#657b84';
+  } else {
+    priorityBtn.style.backgroundColor = '#1d3e4c';
+    priorityBtn.style.color = 'white';
+    timeBtn.style.backgroundColor = '';
+    timeBtn.style.color = '#657b84';
+  }
+
+  // Get all habit items
+  const habitItems = Array.from(container.querySelectorAll('.habit-item'));
+
+  // Group and sort based on view
+  let groups = {};
+  let groupOrder = [];
+  let groupIcons = {};
+
+  if (view === 'time') {
+    groupOrder = ['morning', 'afternoon', 'evening', 'anytime'];
+    groupIcons = {
+      'morning': 'fa-sun',
+      'afternoon': 'fa-cloud-sun',
+      'evening': 'fa-moon',
+      'anytime': 'fa-clock'
+    };
+
+    habitItems.forEach(item => {
+      const group = item.dataset.timeGroup;
+      if (!groups[group]) groups[group] = [];
+      groups[group].push(item);
+    });
+  } else {
+    groupOrder = ['critical', 'important', 'normal', 'optional'];
+    groupIcons = {
+      'critical': 'fa-triangle-exclamation',
+      'important': 'fa-circle-exclamation',
+      'normal': 'fa-circle',
+      'optional': 'fa-circle-question'
+    };
+
+    habitItems.forEach(item => {
+      const group = item.dataset.priorityGroup;
+      if (!groups[group]) groups[group] = [];
+      groups[group].push(item);
+    });
+  }
+
+  // Clear container
+  container.innerHTML = '';
+
+  // Rebuild with headers
+  groupOrder.forEach(groupName => {
+    if (!groups[groupName] || groups[groupName].length === 0) return;
+
+    // Create group header
+    const groupDiv = document.createElement('div');
+
+    const headerDiv = document.createElement('div');
+    headerDiv.className = 'flex items-center gap-2 mb-2';
+
+    const icon = document.createElement('i');
+    icon.className = `fa-solid ${groupIcons[groupName]} text-sm`;
+    icon.style.color = '#1d3e4c';
+
+    const title = document.createElement('div');
+    title.className = 'text-sm font-semibold';
+    title.style.color = '#1d3e4c';
+    title.textContent = groupName.charAt(0).toUpperCase() + groupName.slice(1);
+
+    headerDiv.appendChild(icon);
+    headerDiv.appendChild(title);
+
+    // Create habits container
+    const habitsDiv = document.createElement('div');
+    habitsDiv.className = 'space-y-2 ml-6';
+
+    groups[groupName].forEach(habitItem => {
+      habitsDiv.appendChild(habitItem);
+    });
+
+    groupDiv.appendChild(headerDiv);
+    groupDiv.appendChild(habitsDiv);
+    container.appendChild(groupDiv);
+  });
+}
+
+// Track all habits and their completion states
+const habitStates = new Map();
+let totalHabitsCount = 0;
+
+// Initialize habit states on page load
+document.addEventListener('DOMContentLoaded', () => {
+  // Initialize habit states BEFORE reorganizing view
+  document.querySelectorAll('.habit-item[data-habit-id]').forEach(row => {
+    const habitId = parseInt(row.dataset.habitId);
+    const targetCount = parseInt(row.dataset.target);
+    const countText = row.querySelector('.text-xs').textContent.trim();
+    const currentCount = parseInt(countText.split('/')[0]);
+
+    habitStates.set(habitId, {
+      currentCount,
+      targetCount,
+      isComplete: currentCount >= targetCount
+    });
+  });
+  totalHabitsCount = habitStates.size;
+
+  // Now initialize the view to time grouping
+  switchFocusView('time');
+});
+
+function getColorForPercentage(percentage) {
+  if (percentage === 0) return '#E8EEF1';
+  if (percentage < 25) return '#c8dce4';
+  if (percentage < 50) return '#8fb9ca';
+  if (percentage < 75) return '#5696b0';
+  if (percentage < 100) return '#2d7088';
+  return '#1d3e4c';
+}
+
+function getCategoryColorGradient(baseColor, percentage) {
+  if (percentage === 0) return '#E8EEF1';
+
+  // Convert hex to RGB
+  const r = parseInt(baseColor.substring(1, 3), 16);
+  const g = parseInt(baseColor.substring(3, 5), 16);
+  const b = parseInt(baseColor.substring(5, 7), 16);
+
+  // Interpolate between white and base color
+  const intensity = percentage / 100.0;
+  const newR = Math.round(255 + (r - 255) * intensity);
+  const newG = Math.round(255 + (g - 255) * intensity);
+  const newB = Math.round(255 + (b - 255) * intensity);
+
+  return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
+}
+
+async function toggleDashboardHabit(habitId, wasComplete) {
+  const action = wasComplete ? 'decrement' : 'increment';
+
+  try {
+    const response = await fetch(`/habits/${habitId}/completions/${action}`, {
+      method: 'POST',
+      headers: {
+        'X-CSRF-Token': document.querySelector('[name=csrf-token]').content,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const data = await response.json();
+
+    // Find the habit row - use more specific selector
+    const habitRow = document.querySelector(`.habit-item[data-habit-id="${habitId}"]`);
+    if (!habitRow) {
+      console.error('Could not find habit row for ID:', habitId);
+      return;
+    }
+
+    const button = habitRow.querySelector('button');
+    const icon = button.querySelector('i');
+    const nameDiv = habitRow.querySelector('.flex-1');
+    const countDiv = habitRow.querySelector('.text-xs');
+    const targetCount = parseInt(habitRow.dataset.target);
+
+    // Get category color and ID
+    const categoryColor = nameDiv.style.color;
+    const lightColor = categoryColor + '20';
+
+    // Store habit's health data for later updates
+    habitRow.dataset.health = data.health;
+
+    // Update state
+    const oldState = habitStates.get(habitId);
+    const newIsComplete = data.count >= targetCount;
+    const statusChanged = oldState && oldState.isComplete !== newIsComplete;
+
+    habitStates.set(habitId, {
+      currentCount: data.count,
+      targetCount,
+      isComplete: newIsComplete
+    });
+
+    // Update UI
+    if (newIsComplete) {
+      icon.className = 'fa-solid fa-circle-check text-sm';
+      icon.style.color = categoryColor;
+      nameDiv.classList.add('line-through', 'opacity-60');
+    } else {
+      icon.className = 'fa-regular fa-circle text-sm';
+      icon.style.color = lightColor;
+      nameDiv.classList.remove('line-through', 'opacity-60');
+    }
+
+    countDiv.textContent = `${data.count} / ${targetCount}`;
+    button.setAttribute('onclick', `toggleDashboardHabit(${habitId}, ${newIsComplete})`);
+
+    // Recalculate totals
+    let totalComplete = 0;
+    habitStates.forEach(state => {
+      if (state.isComplete) totalComplete++;
+    });
+
+    const percentage = totalHabitsCount > 0 ? Math.round((totalComplete * 100) / totalHabitsCount) : 0;
+
+    // Update header
+    const completionHeader = document.getElementById('today-completion-count');
+    if (completionHeader) {
+      completionHeader.textContent = `${totalComplete} / ${totalHabitsCount} completed (${percentage}%)`;
+    }
+
+    // Update heatmaps if completion status changed
+    if (statusChanged) {
+      updateTodayHeatmaps(percentage);
+    }
+
+    // Update weekly completions stat
+    updateWeeklyCompletions(action);
+
+    // Update health-related stats
+    updateHealthStats();
+
+    // Update streak if completion status changed
+    if (statusChanged) {
+      updateStreak(data.streak);
+    }
+
+  } catch (error) {
+    console.error('Error toggling habit:', error);
+  }
+}
+
+function updateWeeklyCompletions(action) {
+  const statsRows = document.querySelectorAll('.flex.items-center.justify-between.border-b.border-dotted');
+
+  statsRows.forEach(row => {
+    const label = row.querySelector('.font-light');
+    if (label && label.textContent.trim() === 'This Week') {
+      const valueSpan = row.querySelector('.font-semibold');
+      if (valueSpan) {
+        const currentText = valueSpan.textContent.trim();
+        const currentCount = parseInt(currentText.split(' ')[0]);
+        const newCount = action === 'increment' ? currentCount + 1 : currentCount - 1;
+        const label = newCount === 1 ? 'completion' : 'completions';
+        valueSpan.textContent = `${newCount} ${label}`;
+      }
+    }
+  });
+}
+
+function updateHealthStats() {
+  // Calculate average health and habits at risk from all habit rows
+  const habitRows = document.querySelectorAll('.habit-item[data-habit-id][data-health]');
+  let totalHealth = 0;
+  let habitsAtRisk = 0;
+  let count = 0;
+
+  habitRows.forEach(row => {
+    const health = parseInt(row.dataset.health);
+    if (!isNaN(health)) {
+      const cappedHealth = Math.min(health, 100);
+      totalHealth += cappedHealth;
+      if (health < 50) habitsAtRisk++;
+      count++;
+    }
+  });
+
+  const averageHealth = count > 0 ? Math.round(totalHealth / count) : 0;
+
+  // Update Overall Health stat
+  const statsRows = document.querySelectorAll('.flex.items-center.justify-between.border-b.border-dotted');
+  statsRows.forEach(row => {
+    const label = row.querySelector('.font-light');
+    if (label && label.textContent.trim() === 'Overall Health') {
+      const valueSpan = row.querySelector('.font-semibold');
+      if (valueSpan) {
+        valueSpan.textContent = `${averageHealth}%`;
+      }
+    } else if (label && label.textContent.trim() === 'Habits at Risk') {
+      const valueSpan = row.querySelector('.font-semibold');
+      if (valueSpan) {
+        valueSpan.textContent = `${habitsAtRisk}`;
+      }
+    }
+  });
+}
+
+function updateStreak(newStreak) {
+  const statsRows = document.querySelectorAll('.flex.items-center.justify-between.border-b.border-dotted');
+
+  statsRows.forEach(row => {
+    const label = row.querySelector('.font-light');
+    if (label && label.textContent.trim() === 'Current Streak') {
+      const valueSpan = row.querySelector('.font-semibold');
+      if (valueSpan) {
+        const label = newStreak === 1 ? 'day' : 'days';
+        valueSpan.textContent = `${newStreak} ${label}`;
+      }
+    }
+  });
+}
+
+function updateTodayHeatmaps(newPercentage) {
+  const today = new Date().toISOString().split('T')[0];
+
+  // Update overall heatmap
+  const overallLinks = document.querySelectorAll('a[href*="date=' + today + '"]');
+  overallLinks.forEach(link => {
+    if (!link.closest('[data-category-id]')) { // Only overall heatmap
+      const newColor = getColorForPercentage(newPercentage);
+      link.style.backgroundColor = newColor;
+
+      // Update title
+      const titleMatch = link.title.match(/^(.*): \d+% complete$/);
+      if (titleMatch) {
+        link.title = `${titleMatch[1]}: ${newPercentage}% complete`;
+      }
+    }
+  });
+
+  // Note: Category heatmaps would need category-specific data to update accurately
+  // For now, we'll leave them as-is since we'd need to recalculate per-category percentages
+}
+</script>

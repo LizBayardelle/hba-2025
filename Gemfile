@@ -50,3 +50,5 @@ group :development do
   gem "web-console"
 end
 
+
+gem "react-rails", "~> 3.2"

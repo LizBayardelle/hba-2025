@@ -1,22 +1,11 @@
 class HabitsController < ApplicationController
-  before_action :authenticate_user!
-  before_action :set_category, except: [:index]
-  before_action :set_habit, only: [:update, :destroy]
-
   def index
-    @view_mode = params[:view] || 'category' # 'category', 'time', or 'importance'
+    return redirect_to new_user_session_path unless user_signed_in?
+
+    @view_mode = params[:view] || 'category' # 'category' or 'time'
     @selected_date = params[:date] ? Date.parse(params[:date]) : Date.today
 
-    # Get all active habits for current user
-    @habits = current_user.habits.active.includes(:category)
-
-    # Update health for any habits that haven't been checked today
-    @habits.each do |habit|
-      if habit.last_health_check_at.nil? || habit.last_health_check_at.to_date < Date.today
-        habit.calculate_streak!
-        habit.update_health!
-      end
-    end
+    @habits = current_user.habits.active.includes(:category, :habit_completions)
 
     # Get today's completions
     @completions = HabitCompletion.where(
@@ -61,58 +50,13 @@ class HabitsController < ApplicationController
       # Sort by time of day order
       time_order = ['morning', 'afternoon', 'evening', 'anytime']
       @grouped_habits = grouped.sort_by { |time, _| time_order.index(time) || 999 }.to_h
-    elsif @view_mode == 'importance'
-      grouped = @habits.group_by { |h| h.importance || 'normal' }
-      # Sort by importance order
-      importance_order = ['critical', 'important', 'normal', 'optional']
-      @grouped_habits = grouped.sort_by { |importance, _| importance_order.index(importance) || 999 }.to_h
     else
       @grouped_habits = @habits.group_by(&:category)
     end
 
-    # Calculate completion stats
+    # Today's stats
+    @completed_today = @habits.count { |h| (@completions[h.id] || 0) >= h.target_count }
     @total_habits = @habits.count
-    @completed_today = @habits.count { |h|
-      completion_count = @completions[h.id] || 0
-      completion_count >= h.target_count
-    }
-  end
-
-  def create
-    @habit = @category.habits.build(habit_params)
-    @habit.user = current_user
-
-    if @habit.save
-      redirect_to category_path(@category), notice: 'Habit created successfully.'
-    else
-      redirect_to category_path(@category), alert: "Error creating habit: #{@habit.errors.full_messages.join(', ')}"
-    end
-  end
-
-  def update
-    if @habit.update(habit_params)
-      redirect_to category_path(@category), notice: 'Habit updated successfully.'
-    else
-      redirect_to category_path(@category), alert: "Error updating habit: #{@habit.errors.full_messages.join(', ')}"
-    end
-  end
-
-  def destroy
-    @habit.update(archived_at: Time.current)
-    redirect_to category_path(@category), notice: 'Habit archived successfully.'
-  end
-
-  private
-
-  def set_category
-    @category = current_user.categories.find(params[:category_id])
-  end
-
-  def set_habit
-    @habit = @category.habits.find(params[:id])
-  end
-
-  def habit_params
-    params.require(:habit).permit(:name, :description, :positive, :frequency_type, :target_count, :time_of_day, :difficulty, :start_date, :reminder_enabled, :importance)
+    @today_percentage = @total_habits > 0 ? (@completed_today * 100 / @total_habits).round : 0
   end
 end

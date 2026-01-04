@@ -1,13 +1,16 @@
 Rails.application.routes.draw do
   devise_for :users
 
-  root "home#index"
+  root "dashboard#index"
+
+  get 'habits', to: 'habits#index'
+  get 'analytics', to: 'analytics#index'
 
   resources :categories, only: [:create, :update, :destroy, :show] do
     resources :habits, only: [:create, :update, :destroy]
   end
 
-  resources :habits, only: [:index] do
+  resources :habits, only: [] do
     post 'completions/increment', to: 'habit_completions#increment'
     post 'completions/decrement', to: 'habit_completions#decrement'
   end
