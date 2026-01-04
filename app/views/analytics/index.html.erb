@@ -152,36 +152,40 @@
                 <%
                   avg_health = (habits.sum(&:health) / habits.count.to_f).round
                 %>
-                <button onclick="toggleSection('category-<%= category.id %>')" class="w-full flex items-center gap-3 p-4 hover:opacity-80 transition border-b" style="background-color: <%= category.color %>20; border-color: <%= category.color %>;">
-                  <div class="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm" style="background-color: <%= category.color %>;">
-                    <i class="fa-solid <%= category.icon %> text-white text-sm"></i>
-                  </div>
-                  <h2 class="text-2xl font-bold display-font flex-1 text-left" style="color: <%= dark_color %>;">
-                    <%= category.name %>
-                  </h2>
-                  <div class="w-64 flex-shrink-0 ml-auto">
-                    <div class="w-full h-6 rounded-full overflow-hidden" style="background-color: <%= category.color %>20;">
-                      <div class="h-full rounded-full transition-all duration-500 flex items-center justify-end px-2"
-                           style="width: <%= avg_health %>%; background-color: <%= category.color %>;">
-                        <% if avg_health >= 15 %>
-                          <span class="text-xs font-bold" style="color: <%= dark_color %>;"><%= avg_health %>%</span>
-                        <% end %>
-                      </div>
+                <button onclick="toggleSection('category-<%= category.id %>')" class="w-full p-4 hover:opacity-80 transition border-b flex flex-col md:flex-row md:items-center gap-3" style="background-color: <%= category.color %>20; border-color: <%= category.color %>;">
+                  <div class="flex items-center gap-3 flex-1">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm" style="background-color: <%= category.color %>;">
+                      <i class="fa-solid <%= category.icon %> text-white text-sm"></i>
                     </div>
-                    <% if avg_health < 15 %>
-                      <div class="absolute top-0 left-0 right-0 flex items-center justify-center h-6" style="margin-top: -24px;">
-                        <span class="text-xs font-bold" style="color: <%= dark_color %>;"><%= avg_health %>%</span>
-                      </div>
-                    <% end %>
+                    <h2 class="text-2xl font-bold display-font flex-1 text-left" style="color: <%= dark_color %>;">
+                      <%= category.name %>
+                    </h2>
                   </div>
-                  <i class="fa-solid fa-chevron-down section-chevron transition-transform" style="color: <%= dark_color %>;"></i>
+                  <div class="flex items-center gap-3 md:flex-shrink-0">
+                    <div class="w-full md:w-64">
+                      <div class="w-full h-6 rounded-full overflow-hidden" style="background-color: <%= category.color %>20;">
+                        <div class="h-full rounded-full transition-all duration-500 flex items-center justify-end px-2"
+                             style="width: <%= avg_health %>%; background-color: <%= category.color %>;">
+                          <% if avg_health >= 15 %>
+                            <span class="text-xs font-bold" style="color: <%= dark_color %>;"><%= avg_health %>%</span>
+                          <% end %>
+                        </div>
+                      </div>
+                      <% if avg_health < 15 %>
+                        <div class="absolute top-0 left-0 right-0 flex items-center justify-center h-6" style="margin-top: -24px;">
+                          <span class="text-xs font-bold" style="color: <%= dark_color %>;"><%= avg_health %>%</span>
+                        </div>
+                      <% end %>
+                    </div>
+                    <i class="fa-solid fa-chevron-down section-chevron transition-transform" style="color: <%= dark_color %>;"></i>
+                  </div>
                 </button>
 
                 <!-- Habits List -->
                 <div class="section-content space-y-3 p-4">
                   <% habits.each do |habit| %>
                     <% health_state = habit.health_state %>
-                    <div class="flex items-center gap-4">
+                    <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
                       <!-- Habit Name and Info -->
                       <div class="flex-1">
                         <div class="font-semibold text-base mb-0.5 flex items-center gap-2" style="color: <%= dark_color %>;">
@@ -209,7 +213,7 @@
                       </div>
 
                       <!-- Health Bar -->
-                      <div class="w-64 flex-shrink-0">
+                      <div class="w-full md:w-64 md:flex-shrink-0">
                         <div class="relative">
                           <div class="w-full h-8 rounded-full overflow-hidden" style="background-color: <%= category.color %>20;">
                             <div class="h-full rounded-full transition-all duration-500 flex items-center justify-end px-3"
@@ -245,29 +249,33 @@
                 avg_color = habits.first.category.color
               %>
               <div class="bg-white rounded-xl shadow-md overflow-hidden border" style="border-color: #1d3e4c;" data-section-id="time-<%= group %>">
-                <button onclick="toggleSection('time-<%= group %>')" class="w-full flex items-center gap-3 p-4 hover:opacity-80 transition border-b" style="background-color: #1d3e4c20; border-color: #1d3e4c;">
-                  <div class="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm" style="background-color: #1d3e4c;">
-                    <i class="fa-solid <%= time_info[:icon] %> text-white text-sm"></i>
-                  </div>
-                  <h2 class="text-2xl font-bold display-font flex-1 text-left" style="color: #1d3e4c;">
-                    <%= time_info[:label] %>
-                  </h2>
-                  <div class="w-64 flex-shrink-0 ml-auto">
-                    <div class="w-full h-6 rounded-full overflow-hidden" style="background-color: #1d3e4c20;">
-                      <div class="h-full rounded-full transition-all duration-500 flex items-center justify-end px-2"
-                           style="width: <%= avg_health %>%; background-color: #1d3e4c;">
-                        <% if avg_health >= 15 %>
-                          <span class="text-xs font-bold text-white"><%= avg_health %>%</span>
-                        <% end %>
-                      </div>
+                <button onclick="toggleSection('time-<%= group %>')" class="w-full p-4 hover:opacity-80 transition border-b flex flex-col md:flex-row md:items-center gap-3" style="background-color: #1d3e4c20; border-color: #1d3e4c;">
+                  <div class="flex items-center gap-3 flex-1">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm" style="background-color: #1d3e4c;">
+                      <i class="fa-solid <%= time_info[:icon] %> text-white text-sm"></i>
                     </div>
-                    <% if avg_health < 15 %>
-                      <div class="absolute top-0 left-0 right-0 flex items-center justify-center h-6" style="margin-top: -24px;">
-                        <span class="text-xs font-bold" style="color: #1d3e4c;"><%= avg_health %>%</span>
-                      </div>
-                    <% end %>
+                    <h2 class="text-2xl font-bold display-font flex-1 text-left" style="color: #1d3e4c;">
+                      <%= time_info[:label] %>
+                    </h2>
                   </div>
-                  <i class="fa-solid fa-chevron-down section-chevron transition-transform" style="color: #1d3e4c;"></i>
+                  <div class="flex items-center gap-3 md:flex-shrink-0">
+                    <div class="w-full md:w-64">
+                      <div class="w-full h-6 rounded-full overflow-hidden" style="background-color: #1d3e4c20;">
+                        <div class="h-full rounded-full transition-all duration-500 flex items-center justify-end px-2"
+                             style="width: <%= avg_health %>%; background-color: #1d3e4c;">
+                          <% if avg_health >= 15 %>
+                            <span class="text-xs font-bold text-white"><%= avg_health %>%</span>
+                          <% end %>
+                        </div>
+                      </div>
+                      <% if avg_health < 15 %>
+                        <div class="absolute top-0 left-0 right-0 flex items-center justify-center h-6" style="margin-top: -24px;">
+                          <span class="text-xs font-bold" style="color: #1d3e4c;"><%= avg_health %>%</span>
+                        </div>
+                      <% end %>
+                    </div>
+                    <i class="fa-solid fa-chevron-down section-chevron transition-transform" style="color: #1d3e4c;"></i>
+                  </div>
                 </button>
 
                 <!-- Habits List -->
@@ -283,7 +291,7 @@
                         '#FB7185' => '#BE123C', '#9CA3A8' => '#4A5057'
                       }[habit.category.color] || '#1d3e4c'
                     %>
-                    <div class="flex items-center gap-4">
+                    <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
                       <!-- Habit Name and Info -->
                       <div class="flex-1">
                         <div class="font-semibold text-base mb-0.5 flex items-center gap-2" style="color: <%= habit_dark_color %>;">
@@ -307,7 +315,7 @@
                       </div>
 
                       <!-- Health Bar -->
-                      <div class="w-64 flex-shrink-0">
+                      <div class="w-full md:w-64 md:flex-shrink-0">
                         <div class="relative">
                           <div class="w-full h-8 rounded-full overflow-hidden" style="background-color: <%= habit.category.color %>20;">
                             <div class="h-full rounded-full transition-all duration-500 flex items-center justify-end px-3"
@@ -341,35 +349,39 @@
                 avg_health = (habits.sum(&:health) / habits.count.to_f).round
               %>
               <div class="bg-white rounded-xl shadow-md overflow-hidden border" style="border-color: #1d3e4c;" data-section-id="importance-<%= group %>">
-                <button onclick="toggleSection('importance-<%= group %>')" class="w-full flex items-center gap-3 p-4 hover:opacity-80 transition border-b" style="background-color: #1d3e4c20; border-color: #1d3e4c;">
-                  <% if importance_info[:symbol].present? %>
-                    <div class="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm text-sm font-bold text-white" style="background-color: #1d3e4c;">
-                      <%= importance_info[:symbol] %>
-                    </div>
-                  <% else %>
-                    <div class="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm" style="background-color: #1d3e4c;">
-                      <i class="fa-solid fa-circle text-white text-xs"></i>
-                    </div>
-                  <% end %>
-                  <h2 class="text-2xl font-bold display-font flex-1 text-left" style="color: #1d3e4c;">
-                    <%= importance_info[:label] %>
-                  </h2>
-                  <div class="w-64 flex-shrink-0 ml-auto">
-                    <div class="w-full h-6 rounded-full overflow-hidden" style="background-color: #1d3e4c20;">
-                      <div class="h-full rounded-full transition-all duration-500 flex items-center justify-end px-2"
-                           style="width: <%= avg_health %>%; background-color: #1d3e4c;">
-                        <% if avg_health >= 15 %>
-                          <span class="text-xs font-bold text-white"><%= avg_health %>%</span>
-                        <% end %>
+                <button onclick="toggleSection('importance-<%= group %>')" class="w-full p-4 hover:opacity-80 transition border-b flex flex-col md:flex-row md:items-center gap-3" style="background-color: #1d3e4c20; border-color: #1d3e4c;">
+                  <div class="flex items-center gap-3 flex-1">
+                    <% if importance_info[:symbol].present? %>
+                      <div class="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm text-sm font-bold text-white" style="background-color: #1d3e4c;">
+                        <%= importance_info[:symbol] %>
                       </div>
-                    </div>
-                    <% if avg_health < 15 %>
-                      <div class="absolute top-0 left-0 right-0 flex items-center justify-center h-6" style="margin-top: -24px;">
-                        <span class="text-xs font-bold" style="color: #1d3e4c;"><%= avg_health %>%</span>
+                    <% else %>
+                      <div class="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm" style="background-color: #1d3e4c;">
+                        <i class="fa-solid fa-circle text-white text-xs"></i>
                       </div>
                     <% end %>
+                    <h2 class="text-2xl font-bold display-font flex-1 text-left" style="color: #1d3e4c;">
+                      <%= importance_info[:label] %>
+                    </h2>
                   </div>
-                  <i class="fa-solid fa-chevron-down section-chevron transition-transform" style="color: #1d3e4c;"></i>
+                  <div class="flex items-center gap-3 md:flex-shrink-0">
+                    <div class="w-full md:w-64">
+                      <div class="w-full h-6 rounded-full overflow-hidden" style="background-color: #1d3e4c20;">
+                        <div class="h-full rounded-full transition-all duration-500 flex items-center justify-end px-2"
+                             style="width: <%= avg_health %>%; background-color: #1d3e4c;">
+                          <% if avg_health >= 15 %>
+                            <span class="text-xs font-bold text-white"><%= avg_health %>%</span>
+                          <% end %>
+                        </div>
+                      </div>
+                      <% if avg_health < 15 %>
+                        <div class="absolute top-0 left-0 right-0 flex items-center justify-center h-6" style="margin-top: -24px;">
+                          <span class="text-xs font-bold" style="color: #1d3e4c;"><%= avg_health %>%</span>
+                        </div>
+                      <% end %>
+                    </div>
+                    <i class="fa-solid fa-chevron-down section-chevron transition-transform" style="color: #1d3e4c;"></i>
+                  </div>
                 </button>
 
                 <!-- Habits List -->
@@ -385,7 +397,7 @@
                         '#FB7185' => '#BE123C', '#9CA3A8' => '#4A5057'
                       }[habit.category.color] || '#1d3e4c'
                     %>
-                    <div class="flex items-center gap-4">
+                    <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
                       <!-- Habit Name and Info -->
                       <div class="flex-1">
                         <div class="font-semibold text-base mb-0.5 flex items-center gap-2" style="color: <%= habit_dark_color %>;">
@@ -409,7 +421,7 @@
                       </div>
 
                       <!-- Health Bar -->
-                      <div class="w-64 flex-shrink-0">
+                      <div class="w-full md:w-64 md:flex-shrink-0">
                         <div class="relative">
                           <div class="w-full h-8 rounded-full overflow-hidden" style="background-color: <%= habit.category.color %>20;">
                             <div class="h-full rounded-full transition-all duration-500 flex items-center justify-end px-3"
