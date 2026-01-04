@@ -251,7 +251,14 @@
               end
             end
           %>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+          <!-- Toggle button for category heatmaps -->
+          <button id="category-heatmaps-toggle" onclick="toggleCategoryHeatmaps()" class="flex items-center gap-2 text-sm font-semibold mb-3 transition hover:opacity-70" style="color: #1d3e4c;">
+            <i id="category-chevron" class="fa-solid fa-chevron-right text-xs transition-transform"></i>
+            <span>By Category</span>
+          </button>
+
+          <div id="category-heatmaps" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 hidden">
             <% @categories.each do |category| %>
               <div>
                 <div class="flex items-center gap-2 mb-2">
@@ -397,6 +404,20 @@
 </div>
 
 <script>
+// Category heatmaps toggle
+function toggleCategoryHeatmaps() {
+  const container = document.getElementById('category-heatmaps');
+  const chevron = document.getElementById('category-chevron');
+
+  if (container.classList.contains('hidden')) {
+    container.classList.remove('hidden');
+    chevron.classList.add('rotate-90');
+  } else {
+    container.classList.add('hidden');
+    chevron.classList.remove('rotate-90');
+  }
+}
+
 // Today's Focus view toggle
 function switchFocusView(view) {
   const container = document.getElementById('focus-habits-container');
