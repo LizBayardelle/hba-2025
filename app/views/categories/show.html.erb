@@ -108,7 +108,6 @@
     </div>
 
     <%= render partial: 'categories/edit_modal', locals: { category: @category } %>
-    <%= render partial: 'habits/new_modal', locals: { category: @category } %>
 
     <!-- Grey Background Content -->
     <div class="p-8 pt-6">
@@ -223,7 +222,6 @@
                   </div>
                 </div>
 
-                <%= render partial: 'habits/edit_modal', locals: { habit: habit, category: @category } %>
               </div>
             <% end %>
           </div>
