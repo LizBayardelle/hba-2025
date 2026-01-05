@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_01_04_182406) do
+ActiveRecord::Schema[7.2].define(version: 2026_01_05_161251) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -39,6 +39,19 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_04_182406) do
     t.index ["habit_id", "completed_at"], name: "index_habit_completions_on_habit_id_and_completed_at", unique: true
     t.index ["habit_id"], name: "index_habit_completions_on_habit_id"
     t.index ["user_id"], name: "index_habit_completions_on_user_id"
+  end
+
+  create_table "habit_contents", force: :cascade do |t|
+    t.bigint "habit_id", null: false
+    t.string "content_type", null: false
+    t.string "title"
+    t.text "body"
+    t.jsonb "metadata", default: {}
+    t.integer "position", default: 0
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["habit_id", "position"], name: "index_habit_contents_on_habit_id_and_position"
+    t.index ["habit_id"], name: "index_habit_contents_on_habit_id"
   end
 
   create_table "habits", force: :cascade do |t|
@@ -87,6 +100,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_04_182406) do
   add_foreign_key "categories", "users"
   add_foreign_key "habit_completions", "habits"
   add_foreign_key "habit_completions", "users"
+  add_foreign_key "habit_contents", "habits"
   add_foreign_key "habits", "categories"
   add_foreign_key "habits", "users"
 end

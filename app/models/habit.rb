@@ -2,6 +2,7 @@ class Habit < ApplicationRecord
   belongs_to :category
   belongs_to :user
   has_many :habit_completions, dependent: :destroy
+  has_many :habit_contents, dependent: :destroy
 
   IMPORTANCE_LEVELS = %w[critical important normal optional].freeze
 

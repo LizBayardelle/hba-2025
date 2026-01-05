@@ -196,6 +196,20 @@
                           end %>
                         </div>
                       <% end %>
+                      <% if habit.habit_contents.any? %>
+                        <%= link_to habit_habit_content_path(habit, habit.habit_contents.first),
+                            class: "text-sm hover:opacity-70 transition flex-shrink-0",
+                            style: "color: #{@category.color};",
+                            title: "View attached content" do %>
+                          <i class="fa-solid fa-file-alt"></i>
+                        <% end %>
+                      <% end %>
+                      <%= link_to new_habit_habit_content_path(habit),
+                          class: "text-sm hover:opacity-70 transition flex-shrink-0",
+                          style: "color: #{@category.color}40;",
+                          title: "Add content" do %>
+                        <i class="fa-solid fa-plus-circle"></i>
+                      <% end %>
                       <button @click="editHabitId = <%= habit.id %>" class="text-sm hover:opacity-70 transition flex-shrink-0" style="color: <%= @category.color %>40;">
                         <i class="fa-solid fa-pen-to-square"></i>
                       </button>

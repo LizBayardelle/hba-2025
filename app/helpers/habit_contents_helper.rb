@@ -1,0 +1,2 @@
+module HabitContentsHelper
+end

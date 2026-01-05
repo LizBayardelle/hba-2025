@@ -1,0 +1,132 @@
+<div class="flex h-screen bg-gray-50 relative">
+  <%= render 'shared/sidebar' %>
+
+  <!-- Mobile overlay -->
+  <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 md:hidden hidden"></div>
+
+  <!-- Menu flag button -->
+  <button id="menu-button" class="fixed left-0 z-20 md:hidden rounded-r-lg shadow-lg flex items-center justify-center py-1.5 px-3 transition-all"
+    style="top: 200px; background: linear-gradient(135deg, #1d3e4c, #45606b); writing-mode: vertical-rl;">
+    <span class="text-white font-bold text-sm tracking-wider">MENU</span>
+  </button>
+
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const menuButton = document.getElementById('menu-button');
+    const closeButton = document.getElementById('sidebar-close');
+
+    function openSidebar() {
+      sidebar.classList.remove('-translate-x-full');
+      sidebar.classList.add('translate-x-0');
+      overlay.classList.remove('hidden');
+      menuButton.classList.add('hidden');
+    }
+
+    function closeSidebar() {
+      sidebar.classList.add('-translate-x-full');
+      sidebar.classList.remove('translate-x-0');
+      overlay.classList.add('hidden');
+      menuButton.classList.remove('hidden');
+    }
+
+    menuButton.addEventListener('click', openSidebar);
+    closeButton.addEventListener('click', closeSidebar);
+    overlay.addEventListener('click', closeSidebar);
+  </script>
+
+  <!-- Main Content Area -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <%= render 'shared/navbar' %>
+
+    <!-- Scrollable Content -->
+    <main class="flex-1 overflow-y-auto bg-gray-50 p-8">
+      <div class="max-w-3xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+          <h1 class="text-3xl font-bold display-font mb-2" style="color: #1d3e4c;">
+            Add Content to <%= @habit.name %>
+          </h1>
+          <p class="text-sm font-light" style="color: #657b84;">
+            Attach a document, video, or resource to this habit
+          </p>
+        </div>
+
+        <!-- Form Card -->
+        <div class="bg-white rounded-2xl shadow-lg p-8">
+          <%= form_with model: [@habit, @habit_content], local: true do |f| %>
+            <!-- Content Type -->
+            <div class="mb-6">
+              <%= f.label :content_type, "Content Type", class: "block text-sm font-semibold mb-3", style: "color: #1d3e4c;" %>
+              <div class="grid grid-cols-2 gap-3" x-data="{ type: 'youtube' }">
+                <% HabitContent::CONTENT_TYPES.each do |type| %>
+                  <label class="cursor-pointer">
+                    <%= f.radio_button :content_type, type, class: "hidden",
+                        'x-on:change': "type = '#{type}'",
+                        checked: type == 'youtube' %>
+                    <div class="p-4 rounded-lg border-2 transition hover:shadow-md"
+                         :class="type === '<%= type %>' ? 'border-[#6B8A99] bg-[#E8EEF1]' : 'border-gray-200'"
+                         style="cursor: pointer;">
+                      <div class="flex items-center gap-2">
+                        <i class="fa-solid <%= case type
+                          when 'document' then 'fa-file-alt'
+                          when 'youtube' then 'fa-brands fa-youtube'
+                          when 'video' then 'fa-video'
+                          when 'link' then 'fa-link'
+                          end %> text-lg" :style="type === '<%= type %>' ? 'color: #1d3e4c;' : 'color: #9CA3A8;'"></i>
+                        <span class="font-semibold capitalize" :style="type === '<%= type %>' ? 'color: #1d3e4c;' : 'color: #657b84;'">
+                          <%= type %>
+                        </span>
+                      </div>
+                    </div>
+                  </label>
+                <% end %>
+              </div>
+            </div>
+
+            <!-- Title -->
+            <div class="mb-6">
+              <%= f.label :title, class: "block text-sm font-semibold mb-2", style: "color: #1d3e4c;" %>
+              <%= f.text_field :title,
+                  class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light",
+                  style: "border-color: #E8EEF1;",
+                  placeholder: "e.g., Morning Prayer, Spanish Lesson 1" %>
+            </div>
+
+            <!-- URL Field (for youtube, video, link) -->
+            <div class="mb-6" x-show="['youtube', 'video', 'link'].includes(type)">
+              <%= label_tag 'habit_content[metadata][url]', "URL", class: "block text-sm font-semibold mb-2", style: "color: #1d3e4c;" %>
+              <%= text_field_tag 'habit_content[metadata][url]', '',
+                  class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light",
+                  style: "border-color: #E8EEF1;",
+                  placeholder: "https://www.youtube.com/watch?v=..." %>
+              <p class="text-xs font-light mt-2" style="color: #657b84;">
+                Paste the full YouTube URL - we'll handle the rest!
+              </p>
+            </div>
+
+            <!-- Document Body (for document type) -->
+            <div class="mb-6" x-show="type === 'document'">
+              <%= f.label :body, "Document Content", class: "block text-sm font-semibold mb-2", style: "color: #1d3e4c;" %>
+              <%= f.text_area :body,
+                  rows: 10,
+                  class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light",
+                  style: "border-color: #E8EEF1;",
+                  placeholder: "Enter your document content here..." %>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex gap-3">
+              <%= f.submit "Add Content",
+                  class: "px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition cursor-pointer",
+                  style: "background: linear-gradient(135deg, #1d3e4c, #45606b);" %>
+              <%= link_to "Cancel", category_path(@habit.category),
+                  class: "px-6 py-3 rounded-lg font-semibold border-2 transition",
+                  style: "color: #1d3e4c; border-color: #E8EEF1;" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
