@@ -36,31 +36,7 @@
 </script>
 
   <!-- Main Content Area -->
-  <main class="flex-1 overflow-y-auto" style="background-color: #F5F5F5;" x-data="{
-      showEditModal: false,
-      showNewHabitModal: false,
-      editHabitId: null,
-      categoryName: '<%= @category.name.gsub("'", "\\\\'") %>',
-      categoryDescription: '<%= @category.description.to_s.gsub("'", "\\\\'") %>',
-      selectedColor: '<%= @category.color %>',
-      selectedIcon: '<%= @category.icon %>',
-      colorMap: {
-        '#6B8A99': { light: '#E8EEF1', dark: '#1d3e4c' },
-        '#9C8B7E': { light: '#E8E0D5', dark: '#5C4F45' },
-        '#F8796D': { light: '#FFD4CE', dark: '#B8352A' },
-        '#FFA07A': { light: '#FFE4D6', dark: '#D66A3E' },
-        '#E5C730': { light: '#FEF7C3', dark: '#B89F0A' },
-        '#A8A356': { light: '#E8EBCD', dark: '#7A7637' },
-        '#7CB342': { light: '#D7EDCB', dark: '#4A6B27' },
-        '#6EE7B7': { light: '#D1FAF0', dark: '#2C9D73' },
-        '#22D3EE': { light: '#CFFAFE', dark: '#0E7490' },
-        '#6366F1': { light: '#E0E7FF', dark: '#3730A3' },
-        '#A78BFA': { light: '#EDE9FE', dark: '#6B21A8' },
-        '#E879F9': { light: '#FAE8FF', dark: '#A21CAF' },
-        '#FB7185': { light: '#FFE4E6', dark: '#BE123C' },
-        '#9CA3A8': { light: '#E8E8E8', dark: '#4A5057' }
-      }
-    }">
+  <main class="flex-1 overflow-y-auto" style="background-color: #F5F5F5;" x-data="categoryPageData()">
     <!-- White Header Section with Shadow -->
     <div class="bg-white shadow-md sticky top-0 z-10">
       <div class="p-8 pb-6">
@@ -95,11 +71,11 @@
               </p>
             </div>
           </div>
-          <div class="gap-3">
+          <div class="flex flex-col gap-2 items-end">
             <button @click="showNewHabitModal = true" class="px-4 py-2 rounded-lg text-white font-semibold shadow-md hover:shadow-lg transition transform hover:scale-[1.02]" style="background-color: <%= @category.color %>;">
               <i class="fa-solid fa-plus mr-2"></i>Add Habit
             </button>
-            <button @click="showEditModal = true" class="font-semibold hover:opacity-70 transition" style="color: <%= dark_color %>;">
+            <button @click="showEditModal = true" class="text-sm font-light hover:opacity-70 transition" style="color: <%= @category.color %>;">
               <i class="fa-solid fa-pen-to-square mr-2"></i>Edit Category
             </button>
           </div>
@@ -197,19 +173,20 @@
                         </div>
                       <% end %>
                       <% if habit.habit_contents.any? %>
-                        <%= link_to habit_habit_content_path(habit, habit.habit_contents.first),
+                        <%= link_to habit_content_path(habit.habit_contents.first),
                             class: "text-sm hover:opacity-70 transition flex-shrink-0",
                             style: "color: #{@category.color};",
-                            title: "View attached content" do %>
+                            title: "View attached content",
+                            data: { habit_content_modal: true } do %>
                           <i class="fa-solid fa-file-alt"></i>
                         <% end %>
                       <% end %>
-                      <%= link_to new_habit_habit_content_path(habit),
-                          class: "text-sm hover:opacity-70 transition flex-shrink-0",
-                          style: "color: #{@category.color}40;",
-                          title: "Add content" do %>
+                      <button @click="showNewDocumentModal = true; preselectedHabitId = <%= habit.id %>"
+                          class="text-sm hover:opacity-70 transition flex-shrink-0"
+                          style="color: <%= @category.color %>40;"
+                          title="Add content">
                         <i class="fa-solid fa-plus-circle"></i>
-                      <% end %>
+                      </button>
                       <button @click="editHabitId = <%= habit.id %>" class="text-sm hover:opacity-70 transition flex-shrink-0" style="color: <%= @category.color %>40;">
                         <i class="fa-solid fa-pen-to-square"></i>
                       </button>
@@ -246,5 +223,185 @@
         </div>
       <% end %>
     </div>
+
+    <!-- New Habit Modal -->
+    <%= render 'habits/new_modal', category: @category %>
+
+    <!-- Edit Habit Modals -->
+    <% if @habits.any? %>
+      <% @habits.each do |habit| %>
+        <%= render 'habits/edit_modal', habit: habit, category: @category %>
+      <% end %>
+    <% end %>
+
+    <!-- New Document Modal -->
+    <%= render 'documents/new_modal' %>
+
+    <!-- Edit Document Modals -->
+    <% @habits.each do |habit| %>
+      <% habit.habit_contents.each do |content| %>
+        <%= render 'habit_contents/edit_modal', content: content %>
+      <% end %>
+    <% end %>
   </main>
 </div>
+
+<script>
+  function categoryPageData() {
+    return {
+      showEditModal: false,
+      showNewHabitModal: false,
+      showNewDocumentModal: false,
+      editDocumentId: null,
+      editHabitId: null,
+      preselectedHabitId: null,
+      categoryName: '<%= @category.name.gsub("'", "\\\\'") %>',
+      categoryDescription: '<%= @category.description.to_s.gsub("'", "\\\\'") %>',
+      selectedColor: '<%= @category.color %>',
+      selectedIcon: '<%= @category.icon %>',
+      colorMap: {
+        '#6B8A99': { light: '#E8EEF1', dark: '#1d3e4c' },
+        '#9C8B7E': { light: '#E8E0D5', dark: '#5C4F45' },
+        '#F8796D': { light: '#FFD4CE', dark: '#B8352A' },
+        '#FFA07A': { light: '#FFE4D6', dark: '#D66A3E' },
+        '#E5C730': { light: '#FEF7C3', dark: '#B89F0A' },
+        '#A8A356': { light: '#E8EBCD', dark: '#7A7637' },
+        '#7CB342': { light: '#D7EDCB', dark: '#4A6B27' },
+        '#6EE7B7': { light: '#D1FAF0', dark: '#2C9D73' },
+        '#22D3EE': { light: '#CFFAFE', dark: '#0E7490' },
+        '#6366F1': { light: '#E0E7FF', dark: '#3730A3' },
+        '#A78BFA': { light: '#EDE9FE', dark: '#6B21A8' },
+        '#E879F9': { light: '#FAE8FF', dark: '#A21CAF' },
+        '#FB7185': { light: '#FFE4E6', dark: '#BE123C' },
+        '#9CA3A8': { light: '#E8E8E8', dark: '#4A5057' }
+      },
+
+      async submitNewDocument(event) {
+        const form = event.target;
+        const formData = new FormData(form);
+
+        const habitIds = formData.getAll('habit_content[habit_ids][]').filter(id => id);
+
+        const contentType = formData.get('habit_content[content_type]');
+        let bodyContent = formData.get('habit_content[body]');
+        if (contentType === 'document') {
+          const trixEditor = document.querySelector('trix-editor[input="new-document-body-hidden"]');
+          if (trixEditor) {
+            bodyContent = trixEditor.value;
+          }
+        }
+
+        const data = {
+          habit_content: {
+            content_type: contentType,
+            title: formData.get('habit_content[title]'),
+            body: bodyContent,
+            habit_ids: habitIds,
+            metadata: {
+              url: formData.get('habit_content[metadata][url]')
+            }
+          }
+        };
+
+        try {
+          const response = await fetch('/contents', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': document.querySelector('[name=csrf-token]').content
+            },
+            body: JSON.stringify(data)
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            this.showNewDocumentModal = false;
+            this.preselectedHabitId = null;
+            window.location.reload();
+          } else {
+            alert('Error: ' + result.errors.join(', '));
+          }
+        } catch (error) {
+          alert('An error occurred. Please try again.');
+        }
+      },
+
+      async updateDocument(contentId) {
+        const form = document.getElementById(`edit-form-${contentId}`);
+        const formData = new FormData(form);
+
+        const habitIds = formData.getAll('habit_content[habit_ids][]').filter(id => id);
+
+        const contentType = formData.get('habit_content[content_type]');
+        let bodyContent = formData.get('habit_content[body]');
+        if (contentType === 'document') {
+          const trixEditor = document.querySelector(`trix-editor[input="edit-document-body-hidden-${contentId}"]`);
+          if (trixEditor) {
+            bodyContent = trixEditor.value;
+          }
+        }
+
+        const data = {
+          habit_content: {
+            content_type: contentType,
+            title: formData.get('habit_content[title]'),
+            body: bodyContent,
+            habit_ids: habitIds,
+            metadata: {
+              url: formData.get('habit_content[metadata][url]')
+            }
+          }
+        };
+
+        try {
+          const response = await fetch(`/contents/${contentId}`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': document.querySelector('[name=csrf-token]').content
+            },
+            body: JSON.stringify(data)
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            this.editDocumentId = null;
+            window.location.reload();
+          } else {
+            alert('Error: ' + result.errors.join(', '));
+          }
+        } catch (error) {
+          alert('An error occurred. Please try again.');
+        }
+      },
+
+      async deleteDocument(contentId) {
+        if (!confirm('Are you sure you want to delete this document?')) {
+          return;
+        }
+
+        try {
+          const response = await fetch(`/contents/${contentId}`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': document.querySelector('[name=csrf-token]').content
+            }
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            window.location.reload();
+          } else {
+            alert('Error deleting document');
+          }
+        } catch (error) {
+          alert('An error occurred. Please try again.');
+        }
+      }
+    };
+  }
+</script>

@@ -1,14 +1,14 @@
 <!-- Modal for displaying habit content -->
-<div class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" id="content-modal">
-  <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+<div class="fixed inset-0 flex items-center justify-center p-4 z-50" id="content-modal" style="background: rgba(0, 0, 0, 0.6); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);" onclick="if(event.target === this) closeHabitContentModal()">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden" onclick="event.stopPropagation()">
     <!-- Header -->
     <div class="p-6 border-b flex items-center justify-between" style="border-color: #E8EEF1;">
       <h2 class="text-2xl font-bold display-font" style="color: #1d3e4c;">
         <%= @habit_content.title %>
       </h2>
-      <%= link_to category_path(@habit.category), class: "w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center transition" do %>
+      <button onclick="closeHabitContentModal()" class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center transition">
         <i class="fa-solid fa-times" style="color: #657b84;"></i>
-      <% end %>
+      </button>
     </div>
 
     <!-- Content Body -->
@@ -43,7 +43,7 @@
 
       <% when 'document' %>
         <div class="prose max-w-none">
-          <%= simple_format(@habit_content.body) %>
+          <%= @habit_content.body %>
         </div>
       <% end %>
     </div>
@@ -64,9 +64,11 @@
           <i class="fa-solid fa-trash mr-2"></i>Delete
         <% end %>
       </div>
-      <%= link_to "Close", category_path(@habit.category),
-          class: "px-6 py-2 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition",
-          style: "background: linear-gradient(135deg, #1d3e4c, #45606b);" %>
+      <button onclick="closeHabitContentModal()"
+          class="px-6 py-2 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition"
+          style="background: linear-gradient(135deg, #1d3e4c, #45606b);">
+        Close
+      </button>
     </div>
   </div>
 </div>

@@ -394,8 +394,19 @@
                     <i class="fa-regular fa-circle text-sm" style="color: <%= light_color %>;"></i>
                   <% end %>
                 </button>
-                <div class="flex-1 text-sm font-semibold <%= is_complete ? 'line-through opacity-60' : '' %>" style="color: <%= is_complete ? light_color : category.color %>;">
-                  <%= habit.name %>
+                <div class="flex-1 flex items-center gap-2">
+                  <div class="text-sm font-semibold <%= is_complete ? 'line-through opacity-60' : '' %>" style="color: <%= is_complete ? light_color : category.color %>;">
+                    <%= habit.name %>
+                  </div>
+                  <% if habit.habit_contents.any? %>
+                    <%= link_to habit_habit_content_path(habit, habit.habit_contents.first),
+                        class: "flex-shrink-0 text-xs hover:opacity-70 transition",
+                        style: "color: #{category.color};",
+                        title: "View attached content",
+                        data: { habit_content_modal: true } do %>
+                      <i class="fa-solid fa-file-alt"></i>
+                    <% end %>
+                  <% end %>
                 </div>
                 <div class="text-xs font-light" style="color: #657b84;">
                   <%= completion_count %> / <%= habit.target_count %>

@@ -5,6 +5,7 @@ Rails.application.routes.draw do
 
   get 'habits', to: 'habits#index'
   get 'analytics', to: 'analytics#index'
+  get 'documents', to: 'documents#index'
 
   resources :categories, only: [:create, :update, :destroy, :show] do
     resources :habits, only: [:create, :update, :destroy]
@@ -13,7 +14,13 @@ Rails.application.routes.draw do
   resources :habits, only: [] do
     post 'completions/increment', to: 'habit_completions#increment'
     post 'completions/decrement', to: 'habit_completions#decrement'
-    resources :habit_contents, path: 'contents'
+  end
+
+  resources :habit_contents, path: 'contents' do
+    member do
+      post 'attach_habit'
+      delete 'detach_habit/:habit_id', action: :detach_habit, as: :detach_habit
+    end
   end
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

@@ -49,6 +49,15 @@
             end %>
           </div>
         <% end %>
+        <% if habit.habit_contents.any? %>
+          <%= link_to habit_habit_content_path(habit, habit.habit_contents.first),
+              class: "flex-shrink-0 text-sm hover:opacity-70 transition",
+              style: "color: #{category.color};",
+              title: "View attached content",
+              data: { habit_content_modal: true } do %>
+            <i class="fa-solid fa-file-alt"></i>
+          <% end %>
+        <% end %>
       </div>
       <div class="text-xs font-light flex items-center gap-2" style="color: #657b84;">
         <span><%= habit.target_count %> <%= habit.target_count == 1 ? 'time' : 'times' %></span>

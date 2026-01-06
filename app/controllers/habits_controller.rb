@@ -59,4 +59,40 @@ class HabitsController < ApplicationController
     @total_habits = @habits.count
     @today_percentage = @total_habits > 0 ? (@completed_today * 100 / @total_habits).round : 0
   end
+
+  def create
+    @category = current_user.categories.find(params[:category_id])
+    @habit = @category.habits.build(habit_params)
+
+    if @habit.save
+      redirect_to category_path(@category), notice: 'Habit created successfully.'
+    else
+      redirect_to category_path(@category), alert: 'Failed to create habit.'
+    end
+  end
+
+  def update
+    @category = current_user.categories.find(params[:category_id])
+    @habit = @category.habits.find(params[:id])
+
+    if @habit.update(habit_params)
+      redirect_to category_path(@category), notice: 'Habit updated successfully.'
+    else
+      redirect_to category_path(@category), alert: 'Failed to update habit.'
+    end
+  end
+
+  def destroy
+    @category = current_user.categories.find(params[:category_id])
+    @habit = @category.habits.find(params[:id])
+    @habit.destroy
+
+    redirect_to category_path(@category), notice: 'Habit deleted successfully.'
+  end
+
+  private
+
+  def habit_params
+    params.require(:habit).permit(:name, :target_count, :time_of_day, :importance, :category_id)
+  end
 end

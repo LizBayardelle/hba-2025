@@ -1,5 +1,6 @@
 class HabitContent < ApplicationRecord
-  belongs_to :habit
+  has_and_belongs_to_many :habits
+  has_rich_text :body
 
   CONTENT_TYPES = %w[document youtube video link].freeze
 

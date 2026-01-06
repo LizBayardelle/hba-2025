@@ -1,0 +1,50 @@
+<!-- New Habit Modal -->
+<div x-show="showNewHabitModal" @click.self="showNewHabitModal = false" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style="display: none; z-index: 100;">
+  <div @click.stop class="bg-white rounded-2xl shadow-2xl p-6 md:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <h2 class="text-2xl font-bold mb-6 display-font" style="color: #1d3e4c;">New Habit</h2>
+
+    <%= form_with model: Habit.new, url: category_habits_path(category), local: true do |f| %>
+      <%= f.hidden_field :category_id, value: category.id %>
+
+      <!-- Habit Name -->
+      <div class="mb-6">
+        <%= f.label :name, class: "block mb-2" %>
+        <%= f.text_field :name, class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light", style: "border-color: #E8EEF1;", placeholder: "e.g., Morning meditation" %>
+      </div>
+
+      <!-- Target Count -->
+      <div class="mb-6">
+        <%= f.label :target_count, "How many times per day?", class: "block mb-2" %>
+        <%= f.number_field :target_count, class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light", style: "border-color: #E8EEF1;", value: 1, min: 1 %>
+      </div>
+
+      <!-- Time of Day -->
+      <div class="mb-6">
+        <%= f.label :time_of_day, class: "block mb-2" %>
+        <%= f.select :time_of_day,
+            [['Morning', 'morning'], ['Afternoon', 'afternoon'], ['Evening', 'evening'], ['Anytime', 'anytime']],
+            { selected: 'anytime' },
+            class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light",
+            style: "border-color: #E8EEF1;" %>
+      </div>
+
+      <!-- Importance -->
+      <div class="mb-6">
+        <%= f.label :importance, class: "block mb-2" %>
+        <%= f.select :importance,
+            [['Normal', 'normal'], ['Important (!)', 'important'], ['Critical (!!)', 'critical'], ['Optional (?)', 'optional']],
+            { selected: 'normal' },
+            class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light",
+            style: "border-color: #E8EEF1;" %>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-3 justify-end">
+        <button type="button" @click="showNewHabitModal = false" class="px-6 py-3 rounded-lg font-semibold border-2 transition" style="color: #1d3e4c; border-color: #E8EEF1;">
+          Cancel
+        </button>
+        <%= f.submit "Create Habit", class: "px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition cursor-pointer", style: "background: linear-gradient(135deg, #1d3e4c, #45606b);" %>
+      </div>
+    <% end %>
+  </div>
+</div>

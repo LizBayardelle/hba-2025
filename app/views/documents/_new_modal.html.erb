@@ -1,0 +1,112 @@
+<!-- New Document Modal -->
+<div x-show="showNewDocumentModal" @click.self="showNewDocumentModal = false" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style="display: none; z-index: 100;">
+  <div @click.stop class="bg-white rounded-2xl shadow-2xl p-6 md:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto" x-data="{
+    contentType: 'document',
+    selectedHabitIds: preselectedHabitId ? [preselectedHabitId.toString()] : [],
+    showHabitDropdown: false
+  }">
+    <h2 class="text-2xl font-bold mb-6 display-font" style="color: #1d3e4c;">Add New Document</h2>
+
+    <form @submit.prevent="submitNewDocument">
+      <div id="modal-errors"></div>
+
+      <!-- Attach to Habits -->
+      <div class="mb-6">
+        <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">Attach to Habits (optional)</label>
+        <div class="relative">
+          <button type="button" @click="showHabitDropdown = !showHabitDropdown" class="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light text-left flex items-center justify-between" style="border-color: #E8EEF1;">
+            <span x-text="selectedHabitIds.length === 0 ? 'No habits selected' : selectedHabitIds.length + ' habit(s) selected'" style="color: #657b84;"></span>
+            <i class="fa-solid fa-chevron-down text-sm" style="color: #657b84;"></i>
+          </button>
+
+          <!-- Dropdown with checkboxes -->
+          <div x-show="showHabitDropdown" @click.away="showHabitDropdown = false" class="absolute z-10 w-full mt-2 bg-white border-2 rounded-lg shadow-lg max-h-60 overflow-y-auto" style="border-color: #E8EEF1;">
+            <% current_user.habits.active.includes(:category).order('categories.name, habits.name').group_by(&:category).each do |category, habits| %>
+              <div class="p-2 border-b" style="border-color: #E8EEF1;">
+                <div class="text-xs font-semibold uppercase tracking-wide px-2 py-1" style="color: #657b84;">
+                  <%= category.name %>
+                </div>
+                <% habits.each do |habit| %>
+                  <label class="flex items-center gap-2 px-2 py-2 hover:bg-gray-50 rounded cursor-pointer">
+                    <input type="checkbox"
+                           name="habit_content[habit_ids][]"
+                           value="<%= habit.id %>"
+                           x-model="selectedHabitIds"
+                           class="rounded border-gray-300">
+                    <span class="text-sm font-light" style="color: #1d3e4c;"><%= habit.name %></span>
+                  </label>
+                <% end %>
+              </div>
+            <% end %>
+            <% if current_user.habits.active.none? %>
+              <div class="p-4 text-center text-sm font-light" style="color: #657b84;">
+                No habits available
+              </div>
+            <% end %>
+          </div>
+        </div>
+        <p class="text-xs font-light mt-2" style="color: #657b84;">
+          Documents can exist without being attached to any habit
+        </p>
+      </div>
+
+      <!-- Content Type -->
+      <div class="mb-6">
+        <label class="block mb-2">Content Type</label>
+        <div class="grid grid-cols-2 gap-3">
+          <% HabitContent::CONTENT_TYPES.each do |type| %>
+            <label class="cursor-pointer">
+              <input type="radio" name="habit_content[content_type]" value="<%= type %>" class="hidden" x-on:change="contentType = '<%= type %>'" <%= 'checked' if type == 'document' %>>
+              <div class="p-4 rounded-lg border-2 transition hover:shadow-md"
+                   :class="contentType === '<%= type %>' ? 'border-[#6B8A99] bg-[#E8EEF1]' : 'border-gray-200'">
+                <div class="flex items-center gap-2">
+                  <i class="fa-solid <%= case type
+                    when 'document' then 'fa-file-alt'
+                    when 'youtube' then 'fa-brands fa-youtube'
+                    when 'video' then 'fa-video'
+                    when 'link' then 'fa-link'
+                    end %> text-lg" :style="contentType === '<%= type %>' ? 'color: #1d3e4c;' : 'color: #9CA3A8;'"></i>
+                  <span class="font-semibold capitalize" :style="contentType === '<%= type %>' ? 'color: #1d3e4c;' : 'color: #657b84;'">
+                    <%= type %>
+                  </span>
+                </div>
+              </div>
+            </label>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Title -->
+      <div class="mb-6">
+        <label class="block mb-2">Title</label>
+        <input type="text" name="habit_content[title]" required class="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light" style="border-color: #E8EEF1;" placeholder="e.g., Morning Prayer, Spanish Lesson 1">
+      </div>
+
+      <!-- URL Field (for youtube, video, link) -->
+      <div class="mb-6" x-show="['youtube', 'video', 'link'].includes(contentType)">
+        <label class="block mb-2">URL</label>
+        <input type="text" name="habit_content[metadata][url]" class="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light" style="border-color: #E8EEF1;" placeholder="https://www.youtube.com/watch?v=...">
+        <p class="text-xs font-light mt-2" style="color: #657b84;">
+          Paste the full URL - we'll handle the rest!
+        </p>
+      </div>
+
+      <!-- Document Body (for document type) -->
+      <div class="mb-6" x-show="contentType === 'document'">
+        <label class="block mb-2">Document Content</label>
+        <input type="hidden" name="habit_content[body]" id="new-document-body-hidden">
+        <trix-editor input="new-document-body-hidden" class="trix-content"></trix-editor>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-3 justify-end">
+        <button type="button" @click="showNewDocumentModal = false" class="px-6 py-3 rounded-lg font-semibold border-2 transition" style="color: #1d3e4c; border-color: #E8EEF1;">
+          Cancel
+        </button>
+        <button type="submit" class="px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition cursor-pointer" style="background: linear-gradient(135deg, #1d3e4c, #45606b);">
+          Add Document
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
