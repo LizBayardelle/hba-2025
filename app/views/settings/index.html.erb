@@ -1,0 +1,311 @@
+<div class="flex h-screen bg-gray-50 relative">
+  <%= render 'shared/sidebar' %>
+
+  <!-- Mobile overlay -->
+  <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 md:hidden hidden"></div>
+
+  <!-- Menu flag button -->
+  <button id="menu-button" class="fixed left-0 z-20 md:hidden rounded-r-lg shadow-lg flex items-center justify-center py-1.5 px-3 transition-all"
+    style="top: 200px; background: linear-gradient(135deg, #1d3e4c, #45606b); writing-mode: vertical-rl;">
+    <span class="text-white font-bold text-sm tracking-wider">MENU</span>
+  </button>
+
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const menuButton = document.getElementById('menu-button');
+    const closeButton = document.getElementById('sidebar-close');
+
+    function openSidebar() {
+      sidebar.classList.remove('-translate-x-full');
+      sidebar.classList.add('translate-x-0');
+      overlay.classList.remove('hidden');
+      menuButton.classList.add('hidden');
+    }
+
+    function closeSidebar() {
+      sidebar.classList.add('-translate-x-full');
+      sidebar.classList.remove('translate-x-0');
+      overlay.classList.add('hidden');
+      menuButton.classList.remove('hidden');
+    }
+
+    menuButton.addEventListener('click', openSidebar);
+    closeButton.addEventListener('click', closeSidebar);
+    overlay.addEventListener('click', closeSidebar);
+  </script>
+
+  <!-- Main Content Area -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <%= render 'shared/navbar' %>
+
+    <!-- Scrollable Content -->
+    <main class="flex-1 overflow-y-auto bg-gray-50 p-8">
+      <div class="max-w-3xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+          <h1 class="text-3xl font-bold display-font mb-2" style="color: #1d3e4c;">Settings</h1>
+          <p class="text-sm font-light" style="color: #657b84;">Customize your habit tracking experience</p>
+        </div>
+
+        <% if notice %>
+          <div class="mb-6 p-4 rounded-lg border-2" style="background-color: #D1FAF0; border-color: #6EE7B7;">
+            <p class="text-sm font-semibold" style="color: #065F46;"><%= notice %></p>
+          </div>
+        <% end %>
+        <% if alert %>
+          <div class="mb-6 p-4 rounded-lg border-2" style="background-color: #FFE4E6; border-color: #FB7185;">
+            <p class="text-sm font-semibold" style="color: #BE123C;"><%= alert %></p>
+          </div>
+        <% end %>
+
+        <%= form_with model: current_user, url: settings_path, method: :patch, local: false, id: "settings-form" do |f| %>
+          <!-- General Settings Card -->
+          <div class="bg-white rounded-2xl shadow-lg p-8 mb-6">
+            <h2 class="text-xl font-bold display-font mb-6" style="color: #1d3e4c;">
+              <i class="fa-solid fa-sliders mr-2"></i>General Settings
+            </h2>
+
+            <!-- Timezone -->
+            <div class="mb-6 pb-6 border-b setting-group" style="border-color: #E8EEF1;" data-setting="timezone">
+              <%= f.label :timezone, class: "block text-sm font-semibold mb-2", style: "color: #1d3e4c;" do %>
+                <i class="fa-solid fa-globe mr-2"></i>Time Zone
+              <% end %>
+              <p class="text-xs font-light mb-3" style="color: #657b84;">
+                Your timezone affects when habits reset each day
+              </p>
+              <%= f.select :timezone,
+                  ActiveSupport::TimeZone.us_zones.map { |tz| [tz.to_s, tz.name] },
+                  {},
+                  class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light auto-save",
+                  style: "border-color: #E8EEF1;" %>
+              <p class="text-xs font-light mt-2" style="color: #657b84;">
+                Current time: <%= Time.zone.now.strftime("%l:%M %p %Z") %>
+              </p>
+            </div>
+
+            <!-- Week Starts On -->
+            <div class="mb-6 pb-6 border-b setting-group" style="border-color: #E8EEF1;" data-setting="week_starts_on">
+              <%= f.label :week_starts_on, class: "block text-sm font-semibold mb-2", style: "color: #1d3e4c;" do %>
+                <i class="fa-solid fa-calendar-week mr-2"></i>Week Starts On
+              <% end %>
+              <p class="text-xs font-light mb-3" style="color: #657b84;">
+                Choose which day your week starts for weekly stats and streaks
+              </p>
+              <%= f.select :week_starts_on,
+                  [['Monday', 'monday'], ['Sunday', 'sunday'], ['Saturday', 'saturday']],
+                  {},
+                  class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light auto-save",
+                  style: "border-color: #E8EEF1;" %>
+            </div>
+
+            <!-- Date Format -->
+            <div class="mb-6 pb-6 border-b setting-group" style="border-color: #E8EEF1;" data-setting="date_format">
+              <%= f.label :date_format, class: "block text-sm font-semibold mb-2", style: "color: #1d3e4c;" do %>
+                <i class="fa-solid fa-calendar mr-2"></i>Date Format
+              <% end %>
+              <p class="text-xs font-light mb-3" style="color: #657b84;">
+                How dates are displayed throughout the app
+              </p>
+              <%= f.select :date_format,
+                  [['MM/DD/YYYY (01/07/2026)', 'MM/DD/YYYY'],
+                   ['DD/MM/YYYY (07/01/2026)', 'DD/MM/YYYY'],
+                   ['YYYY-MM-DD (2026-01-07)', 'YYYY-MM-DD']],
+                  {},
+                  class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light auto-save",
+                  style: "border-color: #E8EEF1;" %>
+            </div>
+
+            <!-- Time Format -->
+            <div class="mb-6 pb-6 border-b setting-group" style="border-color: #E8EEF1;" data-setting="time_format">
+              <%= f.label :time_format, class: "block text-sm font-semibold mb-2", style: "color: #1d3e4c;" do %>
+                <i class="fa-solid fa-clock mr-2"></i>Time Format
+              <% end %>
+              <p class="text-xs font-light mb-3" style="color: #657b84;">
+                Choose between 12-hour and 24-hour time display
+              </p>
+              <%= f.select :time_format,
+                  [['12-hour (3:45 PM)', '12-hour'], ['24-hour (15:45)', '24-hour']],
+                  {},
+                  class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light auto-save",
+                  style: "border-color: #E8EEF1;" %>
+            </div>
+
+            <!-- Root Location -->
+            <div class="mb-6 setting-group" data-setting="root_location">
+              <%= f.label :root_location, "Home Page", class: "block text-sm font-semibold mb-2", style: "color: #1d3e4c;" do %>
+                <i class="fa-solid fa-home mr-2"></i>Home Page
+              <% end %>
+              <p class="text-xs font-light mb-3" style="color: #657b84;">
+                Choose which page loads when you click the logo or visit the home page
+              </p>
+              <%= f.select :root_location,
+                  [['Dashboard', 'dashboard'], ['Habits', 'habits'], ['Analytics', 'analytics']],
+                  {},
+                  class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light auto-save",
+                  style: "border-color: #E8EEF1;" %>
+            </div>
+          </div>
+
+          <!-- Notifications Card -->
+          <div class="bg-white rounded-2xl shadow-lg p-8 mb-6">
+            <h2 class="text-xl font-bold display-font mb-6" style="color: #1d3e4c;">
+              <i class="fa-solid fa-bell mr-2"></i>Notifications
+            </h2>
+
+            <!-- Email Reminders -->
+            <div class="mb-6 pb-6 border-b setting-group" style="border-color: #E8EEF1;" data-setting="email_reminders">
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="block text-sm font-semibold mb-1" style="color: #1d3e4c;">
+                    Email Reminders
+                  </label>
+                  <p class="text-xs font-light" style="color: #657b84;">
+                    Receive daily email reminders for incomplete habits
+                  </p>
+                </div>
+                <label class="relative inline-block w-14 h-8">
+                  <%= f.check_box :email_reminders, class: "sr-only peer auto-save" %>
+                  <div class="w-14 h-8 bg-gray-300 rounded-full peer peer-checked:bg-[#1d3e4c] transition"></div>
+                  <div class="absolute left-1 top-1 w-6 h-6 bg-white rounded-full transition peer-checked:translate-x-6"></div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Push Notifications -->
+            <div class="mb-6 setting-group" data-setting="push_notifications">
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="block text-sm font-semibold mb-1" style="color: #1d3e4c;">
+                    Push Notifications
+                  </label>
+                  <p class="text-xs font-light" style="color: #657b84;">
+                    Receive browser push notifications for habit reminders
+                  </p>
+                </div>
+                <label class="relative inline-block w-14 h-8">
+                  <%= f.check_box :push_notifications, class: "sr-only peer auto-save" %>
+                  <div class="w-14 h-8 bg-gray-300 rounded-full peer peer-checked:bg-[#1d3e4c] transition"></div>
+                  <div class="absolute left-1 top-1 w-6 h-6 bg-white rounded-full transition peer-checked:translate-x-6"></div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Display Preferences Card -->
+          <div class="bg-white rounded-2xl shadow-lg p-8 mb-6">
+            <h2 class="text-xl font-bold display-font mb-6" style="color: #1d3e4c;">
+              <i class="fa-solid fa-palette mr-2"></i>Display Preferences
+            </h2>
+
+            <!-- Theme -->
+            <div class="mb-6 pb-6 border-b setting-group" style="border-color: #E8EEF1;" data-setting="theme">
+              <%= f.label :theme, class: "block text-sm font-semibold mb-2", style: "color: #1d3e4c;" %>
+              <p class="text-xs font-light mb-3" style="color: #657b84;">
+                Choose your preferred color theme
+              </p>
+              <%= f.select :theme,
+                  [['Light', 'light'], ['Dark', 'dark'], ['Auto (match system)', 'auto']],
+                  {},
+                  class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light auto-save",
+                  style: "border-color: #E8EEF1;" %>
+            </div>
+
+            <!-- Default View -->
+            <div class="mb-6 setting-group" data-setting="default_view">
+              <%= f.label :default_view, "Default Habits View", class: "block text-sm font-semibold mb-2", style: "color: #1d3e4c;" %>
+              <p class="text-xs font-light mb-3" style="color: #657b84;">
+                Choose how habits are organized by default
+              </p>
+              <%= f.select :default_view,
+                  [['By Category', 'category'], ['By Time of Day', 'time'], ['By Importance', 'importance']],
+                  {},
+                  class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light auto-save",
+                  style: "border-color: #E8EEF1;" %>
+            </div>
+          </div>
+        <% end %>
+
+        <script>
+          // Auto-save settings functionality
+          const form = document.getElementById('settings-form');
+          const autoSaveElements = document.querySelectorAll('.auto-save');
+
+          autoSaveElements.forEach(element => {
+            element.addEventListener('change', function(e) {
+              const settingGroup = e.target.closest('.setting-group');
+              const formData = new FormData(form);
+
+              // Get CSRF token
+              const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+              fetch(form.action, {
+                method: 'PATCH',
+                headers: {
+                  'X-CSRF-Token': csrfToken,
+                  'Accept': 'application/json'
+                },
+                body: formData
+              })
+              .then(response => response.json())
+              .then(data => {
+                if (data.success) {
+                  showSuccessNotification(settingGroup);
+                } else {
+                  showErrorNotification(settingGroup, data.message);
+                }
+              })
+              .catch(error => {
+                showErrorNotification(settingGroup, 'An error occurred while saving.');
+              });
+            });
+          });
+
+          function showSuccessNotification(settingGroup) {
+            // Remove any existing notifications in this group
+            const existingNotif = settingGroup.querySelector('.success-notification');
+            if (existingNotif) {
+              existingNotif.remove();
+            }
+
+            // Create success notification
+            const notification = document.createElement('div');
+            notification.className = 'success-notification mt-2 p-2 rounded-lg border-2 text-xs font-semibold transition-opacity duration-300';
+            notification.style.cssText = 'background-color: #D1FAF0; border-color: #6EE7B7; color: #065F46;';
+            notification.innerHTML = '<i class="fa-solid fa-check mr-1"></i>Saved';
+
+            settingGroup.appendChild(notification);
+
+            // Fade out and remove after 3 seconds
+            setTimeout(() => {
+              notification.style.opacity = '0';
+              setTimeout(() => notification.remove(), 300);
+            }, 3000);
+          }
+
+          function showErrorNotification(settingGroup, message) {
+            // Remove any existing notifications in this group
+            const existingNotif = settingGroup.querySelector('.error-notification');
+            if (existingNotif) {
+              existingNotif.remove();
+            }
+
+            // Create error notification
+            const notification = document.createElement('div');
+            notification.className = 'error-notification mt-2 p-2 rounded-lg border-2 text-xs font-semibold transition-opacity duration-300';
+            notification.style.cssText = 'background-color: #FFE4E6; border-color: #FB7185; color: #BE123C;';
+            notification.innerHTML = `<i class="fa-solid fa-exclamation-circle mr-1"></i>${message}`;
+
+            settingGroup.appendChild(notification);
+
+            // Fade out and remove after 5 seconds
+            setTimeout(() => {
+              notification.style.opacity = '0';
+              setTimeout(() => notification.remove(), 300);
+            }, 5000);
+          }
+        </script>
+      </div>
+    </main>
+  </div>
+</div>

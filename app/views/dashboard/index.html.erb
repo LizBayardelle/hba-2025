@@ -399,7 +399,7 @@
                     <%= habit.name %>
                   </div>
                   <% if habit.habit_contents.any? %>
-                    <%= link_to habit_habit_content_path(habit, habit.habit_contents.first),
+                    <%= link_to habit_content_path(habit.habit_contents.first),
                         class: "flex-shrink-0 text-xs hover:opacity-70 transition",
                         style: "color: #{category.color};",
                         title: "View attached content",

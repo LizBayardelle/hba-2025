@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_01_06_203846) do
+ActiveRecord::Schema[7.2].define(version: 2026_01_07_175423) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -137,6 +137,14 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_06_203846) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "timezone", default: "Pacific Time (US & Canada)"
+    t.string "week_starts_on", default: "monday"
+    t.string "date_format", default: "MM/DD/YYYY"
+    t.string "time_format", default: "12-hour"
+    t.boolean "email_reminders", default: false
+    t.boolean "push_notifications", default: false
+    t.string "theme", default: "light"
+    t.string "default_view", default: "category"
+    t.string "root_location", default: "dashboard"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end

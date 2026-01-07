@@ -16,7 +16,7 @@ class DashboardController < ApplicationController
 
       completions = HabitCompletion.where(
         habit_id: @habits.pluck(:id),
-        completed_at: date.beginning_of_day..date.end_of_day
+        completed_at: date
       ).group(:habit_id).sum(:count)
 
       # Overall heatmap
@@ -49,7 +49,7 @@ class DashboardController < ApplicationController
     loop do
       completions = HabitCompletion.where(
         habit_id: @habits.pluck(:id),
-        completed_at: date.beginning_of_day..date.end_of_day
+        completed_at: date
       ).group(:habit_id).sum(:count)
 
       completed_count = @habits.count { |h| (completions[h.id] || 0) >= h.target_count }
@@ -66,7 +66,7 @@ class DashboardController < ApplicationController
     week_start = Time.zone.today.beginning_of_week
     week_completions = HabitCompletion.where(
       habit_id: @habits.pluck(:id),
-      completed_at: week_start.beginning_of_day..Time.zone.today.end_of_day
+      completed_at: week_start..Time.zone.today
     )
     @weekly_completions = week_completions.sum(:count)
 
@@ -86,7 +86,7 @@ class DashboardController < ApplicationController
     @today = Time.zone.today
     @today_completions = HabitCompletion.where(
       habit_id: @habits.pluck(:id),
-      completed_at: @today.beginning_of_day..@today.end_of_day
+      completed_at: @today
     ).group(:habit_id).sum(:count)
 
     # Group by time of day

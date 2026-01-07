@@ -10,7 +10,7 @@ class HabitsController < ApplicationController
     # Get today's completions
     @completions = HabitCompletion.where(
       habit_id: @habits.pluck(:id),
-      completed_at: @selected_date.beginning_of_day..@selected_date.end_of_day
+      completed_at: @selected_date
     ).group(:habit_id).sum(:count)
 
     # Calculate streaks as of the selected date
@@ -23,7 +23,7 @@ class HabitsController < ApplicationController
       loop do
         completion = HabitCompletion.find_by(
           habit_id: habit.id,
-          completed_at: date.beginning_of_day..date.end_of_day
+          completed_at: date
         )
 
         if completion && completion.count >= habit.target_count

@@ -1,11 +1,14 @@
 Rails.application.routes.draw do
   devise_for :users
 
-  root "dashboard#index"
+  root to: 'home#index'
 
+  get 'dashboard', to: 'dashboard#index'
   get 'habits', to: 'habits#index'
   get 'analytics', to: 'analytics#index'
   get 'documents', to: 'documents#index'
+  get 'settings', to: 'settings#index'
+  patch 'settings', to: 'settings#update'
 
   resources :categories, only: [:create, :update, :destroy, :show] do
     resources :habits, only: [:create, :update, :destroy]

@@ -73,10 +73,10 @@
         <i class="fa-solid fa-file-alt text-lg" style="<%= current_page?(documents_path) ? 'color: #F8796D;' : '' %>"></i>
         <span>Documents</span>
       <% end %>
-      <a href="#" class="flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-lg transition">
-        <i class="fa-solid fa-gear text-lg"></i>
-        <span class="font-light">Settings</span>
-      </a>
+      <%= link_to settings_path, class: "flex items-center gap-3 px-4 py-3 rounded-lg transition #{current_page?(settings_path) ? 'font-medium' : 'font-light hover:bg-white/10'}", style: current_page?(settings_path) ? "background-color: rgba(255, 255, 255, 0.15);" : "" do %>
+        <i class="fa-solid fa-gear text-lg" style="<%= current_page?(settings_path) ? 'color: #F8796D;' : '' %>"></i>
+        <span>Settings</span>
+      <% end %>
     </nav>
 
     <!-- Categories Section -->
