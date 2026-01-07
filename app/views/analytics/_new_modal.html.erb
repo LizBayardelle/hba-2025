@@ -42,26 +42,26 @@
 
       <!-- Importance Slider -->
       <div class="mb-5" x-data="{
-        importance: 2,
+        importance: 3,
         importanceLabels: {
-          1: 'Optional',
-          2: 'Normal Priority',
-          3: 'Important',
-          4: 'Critical'
+          1: 'Critical',
+          2: 'Important',
+          3: 'Normal Priority',
+          4: 'Optional'
         },
         importanceValues: {
-          1: 'optional',
-          2: 'normal',
-          3: 'important',
-          4: 'critical'
+          1: 'critical',
+          2: 'important',
+          3: 'normal',
+          4: 'optional'
         }
       }">
         <label class="block text-sm font-semibold mb-2" :style="'color: ' + selectedColor">Importance</label>
         <%= f.hidden_field :importance, value: 'normal', "x-model": "importanceValues[importance]" %>
         <div class="flex items-center gap-4 mb-3">
-          <span class="text-xs font-semibold" :style="'color: ' + selectedColor">Low</span>
-          <input type="range" min="1" max="4" x-model="importance" class="flex-1 h-2 rounded-lg appearance-none cursor-pointer" :style="'accent-color: ' + selectedColor + '; background: linear-gradient(to right, ' + colorMap[selectedColor].light + ', ' + selectedColor + ')'">
           <span class="text-xs font-semibold" :style="'color: ' + selectedColor">High</span>
+          <input type="range" min="1" max="4" x-model="importance" class="flex-1 h-2 rounded-lg appearance-none cursor-pointer" :style="'accent-color: ' + selectedColor + '; background: linear-gradient(to right, ' + colorMap[selectedColor].light + ', ' + selectedColor + ')'">
+          <span class="text-xs font-semibold" :style="'color: ' + selectedColor">Low</span>
         </div>
         <div class="text-center">
           <span class="text-sm font-semibold" :style="'color: ' + selectedColor" x-text="importanceLabels[importance]"></span>

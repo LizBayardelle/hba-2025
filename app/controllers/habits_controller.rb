@@ -63,6 +63,7 @@ class HabitsController < ApplicationController
   def create
     @category = current_user.categories.find(params[:category_id])
     @habit = @category.habits.build(habit_params)
+    @habit.user = current_user
 
     if @habit.save
       redirect_to category_path(@category), notice: 'Habit created successfully.'
@@ -93,6 +94,6 @@ class HabitsController < ApplicationController
   private
 
   def habit_params
-    params.require(:habit).permit(:name, :target_count, :frequency_type, :time_of_day, :importance, :category_id)
+    params.require(:habit).permit(:name, :description, :target_count, :frequency_type, :time_of_day, :importance, :category_id, :reminder_enabled, :start_date, :positive, :difficulty)
   end
 end

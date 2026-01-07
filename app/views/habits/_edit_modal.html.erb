@@ -10,10 +10,23 @@
         <%= f.text_field :name, class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light", style: "border-color: #E8EEF1;" %>
       </div>
 
-      <!-- Target Count -->
+      <!-- Frequency: Times per Period -->
       <div class="mb-6">
-        <%= f.label :target_count, "How many times per day?", class: "block mb-2" %>
-        <%= f.number_field :target_count, class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light", style: "border-color: #E8EEF1;", min: 1 %>
+        <label class="block mb-2">Frequency</label>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <%= f.label :target_count, "Times", class: "block mb-2 text-sm" %>
+            <%= f.number_field :target_count, class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light", style: "border-color: #E8EEF1;", min: 1 %>
+          </div>
+          <div>
+            <%= f.label :frequency_type, "Per", class: "block mb-2 text-sm" %>
+            <%= f.select :frequency_type,
+                [['Day', 'day'], ['Week', 'week'], ['Month', 'month'], ['Year', 'year']],
+                {},
+                class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light",
+                style: "border-color: #E8EEF1;" %>
+          </div>
+        </div>
       </div>
 
       <!-- Time of Day -->
@@ -30,7 +43,7 @@
       <div class="mb-6">
         <%= f.label :importance, class: "block mb-2" %>
         <%= f.select :importance,
-            [['Normal', 'normal'], ['Important (!)', 'important'], ['Critical (!!)', 'critical'], ['Optional (?)', 'optional']],
+            [['Critical (!!)', 'critical'], ['Important (!)', 'important'], ['Normal', 'normal'], ['Optional (?)', 'optional']],
             {},
             class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light",
             style: "border-color: #E8EEF1;" %>
@@ -39,7 +52,7 @@
       <!-- Actions -->
       <div class="flex gap-3 justify-between">
         <div>
-          <%= button_to "Delete", category_habit_path(category, habit), method: :delete, data: { confirm: "Are you sure?" }, class: "px-6 py-3 rounded-lg font-semibold border-2 transition", style: "color: #DC2626; border-color: #FEE2E2;" %>
+          <%= link_to "Delete", category_habit_path(category, habit), method: :delete, data: { confirm: "Are you sure?" }, class: "px-6 py-3 rounded-lg font-semibold border-2 transition inline-block", style: "color: #DC2626; border-color: #FEE2E2;" %>
         </div>
         <div class="flex gap-3">
           <button type="button" @click="editHabitId = null" class="px-6 py-3 rounded-lg font-semibold border-2 transition" style="color: #1d3e4c; border-color: #E8EEF1;">

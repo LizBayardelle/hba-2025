@@ -145,7 +145,7 @@
           </h2>
           <p class="text-sm font-light mb-4" style="color: #566e78;">Once you delete your account, there is no going back. Please be certain.</p>
           <%= button_to "Delete My Account", registration_path(resource_name),
-              data: { confirm: "Are you sure? This action cannot be undone.", turbo_confirm: "Are you sure? This action cannot be undone." },
+              data: { confirm: "Are you sure? This action cannot be undone." },
               method: :delete,
               class: "py-2 px-6 rounded-lg font-semibold border-2 transition hover:bg-red-50",
               style: "color: #DC2626; border-color: #DC2626;" %>
