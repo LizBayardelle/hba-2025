@@ -15,7 +15,7 @@ class Habit < ApplicationRecord
 
   def calculate_streak!
     streak = 0
-    date = Date.today
+    date = Time.zone.today
 
     # Count backwards from today while the target is met each day
     loop do
@@ -36,13 +36,13 @@ class Habit < ApplicationRecord
   end
 
   def target_met_today?
-    completion = habit_completions.find_by(completed_at: Date.today)
+    completion = habit_completions.find_by(completed_at: Time.zone.today)
     completion && completion.count >= target_count
   end
 
   def update_health!
     # Check if we need to update health based on missed days
-    today = Date.today
+    today = Time.zone.today
 
     # Check if target was met yesterday
     yesterday = today - 1.day
@@ -117,7 +117,7 @@ class Habit < ApplicationRecord
 
   def was_yesterday_missed?
     return false unless last_missed_date
-    yesterday = Date.today - 1.day
+    yesterday = Time.zone.today - 1.day
     last_missed_date == yesterday
   end
 

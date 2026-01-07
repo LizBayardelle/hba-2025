@@ -22,7 +22,7 @@ class ApplicationController < ActionController::Base
   def update_habit_health
     # Only check habits that haven't been checked today
     # This is efficient because it only queries habits needing updates
-    current_user.habits.active.where("last_health_check_at < ? OR last_health_check_at IS NULL", Date.today.beginning_of_day).find_each do |habit|
+    current_user.habits.active.where("last_health_check_at < ? OR last_health_check_at IS NULL", Time.zone.today.beginning_of_day).find_each do |habit|
       habit.calculate_streak!
       habit.update_health!
     end

@@ -12,7 +12,7 @@ class DashboardController < ApplicationController
     categories = current_user.categories.includes(:habits)
 
     90.downto(0) do |days_ago|
-      date = Date.today - days_ago.days
+      date = Time.zone.today - days_ago.days
 
       completions = HabitCompletion.where(
         habit_id: @habits.pluck(:id),
@@ -45,7 +45,7 @@ class DashboardController < ApplicationController
     # === Quick Stats ===
     # Current streak (consecutive days of 100% completion)
     @current_streak = 0
-    date = Date.today
+    date = Time.zone.today
     loop do
       completions = HabitCompletion.where(
         habit_id: @habits.pluck(:id),
@@ -63,10 +63,10 @@ class DashboardController < ApplicationController
     end
 
     # Total habits completed this week
-    week_start = Date.today.beginning_of_week
+    week_start = Time.zone.today.beginning_of_week
     week_completions = HabitCompletion.where(
       habit_id: @habits.pluck(:id),
-      completed_at: week_start.beginning_of_day..Date.today.end_of_day
+      completed_at: week_start.beginning_of_day..Time.zone.today.end_of_day
     )
     @weekly_completions = week_completions.sum(:count)
 
@@ -83,7 +83,7 @@ class DashboardController < ApplicationController
     @habits_at_risk = @habits.count { |h| h.health < 50 }
 
     # === Today's Focus ===
-    @today = Date.today
+    @today = Time.zone.today
     @today_completions = HabitCompletion.where(
       habit_id: @habits.pluck(:id),
       completed_at: @today.beginning_of_day..@today.end_of_day

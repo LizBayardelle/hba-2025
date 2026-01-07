@@ -3,14 +3,14 @@ class HabitCompletionsController < ApplicationController
 
   def increment
     habit = current_user.habits.find(params[:habit_id])
-    completion = habit.habit_completions.find_by(user: current_user, completed_at: Date.today)
+    completion = habit.habit_completions.find_by(user: current_user, completed_at: Time.zone.today)
 
     if completion
       completion.increment!(:count)
     else
       completion = habit.habit_completions.create!(
         user: current_user,
-        completed_at: Date.today,
+        completed_at: Time.zone.today,
         count: 1
       )
     end
@@ -29,7 +29,7 @@ class HabitCompletionsController < ApplicationController
 
   def decrement
     habit = current_user.habits.find(params[:habit_id])
-    completion = habit.habit_completions.find_by(user: current_user, completed_at: Date.today)
+    completion = habit.habit_completions.find_by(user: current_user, completed_at: Time.zone.today)
 
     if completion
       if completion.count > 1

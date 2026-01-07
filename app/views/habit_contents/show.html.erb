@@ -49,21 +49,7 @@
     </div>
 
     <!-- Footer -->
-    <div class="p-6 border-t flex justify-between" style="border-color: #E8EEF1;">
-      <div class="flex gap-2">
-        <%= link_to edit_habit_habit_content_path(@habit, @habit_content),
-            class: "px-4 py-2 rounded-lg font-semibold border-2 transition",
-            style: "color: #1d3e4c; border-color: #E8EEF1;" do %>
-          <i class="fa-solid fa-edit mr-2"></i>Edit
-        <% end %>
-        <%= button_to habit_habit_content_path(@habit, @habit_content),
-            method: :delete,
-            data: { confirm: 'Are you sure?' },
-            class: "px-4 py-2 rounded-lg font-semibold border-2 transition",
-            style: "color: #DC2626; border-color: #FEE2E2;" do %>
-          <i class="fa-solid fa-trash mr-2"></i>Delete
-        <% end %>
-      </div>
+    <div class="p-6 border-t flex justify-end" style="border-color: #E8EEF1;">
       <button onclick="closeHabitContentModal()"
           class="px-6 py-2 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition"
           style="background: linear-gradient(135deg, #1d3e4c, #45606b);">

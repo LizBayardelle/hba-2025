@@ -1,12 +1,13 @@
 <!-- Edit Document Modal -->
-<div x-show="editDocumentId === <%= content.id %>" @click.self="editDocumentId = null" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style="display: none; z-index: 100;">
-  <div @click.stop class="bg-white rounded-2xl shadow-2xl p-6 md:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto" x-data="{
+<div x-show="editDocumentId === <%= content.id %>" @click.self="editDocumentId = null" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style="z-index: 100;" x-cloak>
+  <div @click.stop class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col" x-data="{
     selectedHabitIds: <%= content.habit_ids.to_json %>,
     showHabitDropdown: false
   }">
-    <h2 class="text-2xl font-bold mb-6 display-font" style="color: #1d3e4c;">Edit Document</h2>
+    <div class="p-6 md:p-8 overflow-y-auto flex-1">
+      <h2 class="text-2xl font-bold mb-6 display-font" style="color: #1d3e4c;">Edit Document</h2>
 
-    <form @submit.prevent="updateDocument(<%= content.id %>)" id="edit-form-<%= content.id %>">
+      <form @submit.prevent="updateDocument(<%= content.id %>)" id="edit-form-<%= content.id %>">
       <div id="edit-modal-errors-<%= content.id %>"></div>
 
       <!-- Attach to Habits -->
@@ -75,27 +76,28 @@
       <% if content.content_type == 'document' %>
         <div class="mb-6">
           <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">Document Content</label>
-          <input type="hidden" name="habit_content[body]" id="edit-document-body-hidden-<%= content.id %>" value="<%= content.body.to_s %>">
-          <trix-editor input="edit-document-body-hidden-<%= content.id %>" class="trix-content"></trix-editor>
+          <input type="hidden" name="habit_content[body]" id="edit-document-body-hidden-<%= content.id %>" value="<%= content.body.to_s.gsub('"', '&quot;') %>">
+          <trix-editor input="edit-document-body-hidden-<%= content.id %>" class="trix-content" style="min-height: 200px;"></trix-editor>
         </div>
       <% end %>
 
-      <!-- Actions -->
-      <div class="flex gap-3 justify-between">
-        <div>
-          <button type="button" @click="deleteDocument(<%= content.id %>)" class="px-6 py-3 rounded-lg font-semibold border-2 transition" style="color: #DC2626; border-color: #FEE2E2;">
-            Delete
-          </button>
+        <!-- Actions -->
+        <div class="flex gap-3 justify-between">
+          <div>
+            <button type="button" @click="deleteDocument(<%= content.id %>)" class="px-6 py-3 rounded-lg font-semibold border-2 transition" style="color: #DC2626; border-color: #FEE2E2;">
+              Delete
+            </button>
+          </div>
+          <div class="flex gap-3">
+            <button type="button" @click="editDocumentId = null" class="px-6 py-3 rounded-lg font-semibold border-2 transition" style="color: #1d3e4c; border-color: #E8EEF1;">
+              Cancel
+            </button>
+            <button type="submit" class="px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition cursor-pointer" style="background: linear-gradient(135deg, #1d3e4c, #45606b);">
+              Update Document
+            </button>
+          </div>
         </div>
-        <div class="flex gap-3">
-          <button type="button" @click="editDocumentId = null" class="px-6 py-3 rounded-lg font-semibold border-2 transition" style="color: #1d3e4c; border-color: #E8EEF1;">
-            Cancel
-          </button>
-          <button type="submit" class="px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition cursor-pointer" style="background: linear-gradient(135deg, #1d3e4c, #45606b);">
-            Update Document
-          </button>
-        </div>
-      </div>
-    </form>
+      </form>
+    </div>
   </div>
 </div>

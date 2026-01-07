@@ -81,7 +81,7 @@
       </div>
 
       <!-- Hidden Start Date Field (always today) -->
-      <%= f.hidden_field :start_date, value: Date.today %>
+      <%= f.hidden_field :start_date, value: Time.zone.today %>
 
       <!-- Advanced Options Toggle -->
       <button type="button" @click="showAdvanced = !showAdvanced" class="flex items-center gap-2 mb-4 text-sm font-semibold transition hover:opacity-70" :style="'color: ' + colorMap[selectedColor].dark">

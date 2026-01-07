@@ -15,7 +15,7 @@
     </div>
 
     <!-- Logo Area -->
-    <%= link_to root_path, class: "flex items-center gap-3 mb-8 hover:opacity-80 transition" do %>
+    <%= link_to root_path, class: "flex items-center gap-3 mb-6 hover:opacity-80 transition" do %>
       <div class="w-12 h-12 bg-yellow-400 rounded-lg flex items-center justify-center" style="background-color: #F8796D;">
         <i class="fa-solid fa-otter text-2xl text-white"></i>
       </div>
@@ -23,6 +23,36 @@
         <h1 class="text-xl font-bold display-font">Habit Beaver</h1>
         <p class="text-xs" style="color: #657b84;">Build better habits</p>
       </div>
+    <% end %>
+
+    <!-- Current Time Display -->
+    <% if user_signed_in? %>
+      <div class="mb-8 px-4 py-2 rounded-lg" style="background-color: rgba(255, 255, 255, 0.08);">
+        <div class="text-xs font-light" style="color: #657b84;">Current Time</div>
+        <div class="text-sm font-semibold" id="current-time" data-timezone="<%= ActiveSupport::TimeZone::MAPPING[current_user.timezone] %>">
+          <%= Time.zone.now.strftime("%l:%M %p") %>
+        </div>
+        <div class="text-xs font-light" style="color: #657b84;"><%= Time.zone.now.strftime("%Z") %></div>
+      </div>
+      <script>
+        (function() {
+          const timeElement = document.getElementById('current-time');
+          if (timeElement) {
+            function updateTime() {
+              const now = new Date();
+              const timezone = timeElement.dataset.timezone;
+              const options = {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true,
+                timeZone: timezone
+              };
+              timeElement.textContent = now.toLocaleTimeString('en-US', options);
+            }
+            setInterval(updateTime, 1000);
+          }
+        })();
+      </script>
     <% end %>
 
     <!-- Navigation Items -->

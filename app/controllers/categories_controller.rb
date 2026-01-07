@@ -30,7 +30,7 @@ class CategoriesController < ApplicationController
     end
 
     @today_completions = current_user.habit_completions
-                                      .where(completed_at: Date.today)
+                                      .where(completed_at: Time.zone.today)
                                       .index_by(&:habit_id)
   end
 

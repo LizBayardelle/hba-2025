@@ -5,14 +5,14 @@ class AnalyticsController < ApplicationController
 
   def index
     @view_mode = params[:view] || 'category' # 'category', 'time', or 'importance'
-    @selected_date = params[:date] ? Date.parse(params[:date]) : Date.today
+    @selected_date = params[:date] ? Date.parse(params[:date]) : Time.zone.today
 
     # Get all active habits for current user
     @habits = current_user.habits.active.includes(:category)
 
     # Update health for any habits that haven't been checked today
     @habits.each do |habit|
-      if habit.last_health_check_at.nil? || habit.last_health_check_at.to_date < Date.today
+      if habit.last_health_check_at.nil? || habit.last_health_check_at.to_date < Time.zone.today
         habit.calculate_streak!
         habit.update_health!
       end

@@ -25,14 +25,19 @@ class HabitContentsController < ApplicationController
     # Attach selected habits if any
     habit_ids = params[:habit_content][:habit_ids].reject(&:blank?) if params[:habit_content][:habit_ids]
 
-    respond_to do |format|
-      if @habit_content.save
-        @habit_content.habit_ids = habit_ids if habit_ids.present?
-        format.html { redirect_back fallback_location: documents_path, notice: 'Content added successfully.' }
-        format.json { render json: { success: true, message: 'Content added successfully.', content: @habit_content }, status: :created }
+    if @habit_content.save
+      @habit_content.habit_ids = habit_ids if habit_ids.present?
+
+      if request.format.json? || request.content_type == 'application/json'
+        render json: { success: true, message: 'Content added successfully.', content: @habit_content }, status: :created
       else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: { success: false, errors: @habit_content.errors.full_messages }, status: :unprocessable_entity }
+        redirect_back fallback_location: documents_path, notice: 'Content added successfully.'
+      end
+    else
+      if request.format.json? || request.content_type == 'application/json'
+        render json: { success: false, errors: @habit_content.errors.full_messages }, status: :unprocessable_entity
+      else
+        render :new, status: :unprocessable_entity
       end
     end
   end
@@ -44,14 +49,19 @@ class HabitContentsController < ApplicationController
     # Handle habit associations separately
     habit_ids = params[:habit_content][:habit_ids].reject(&:blank?) if params[:habit_content][:habit_ids]
 
-    respond_to do |format|
-      if @habit_content.update(habit_content_params.except(:habit_ids))
-        @habit_content.habit_ids = habit_ids if habit_ids
-        format.html { redirect_back fallback_location: documents_path, notice: 'Content updated successfully.' }
-        format.json { render json: { success: true, message: 'Content updated successfully.', content: @habit_content }, status: :ok }
+    if @habit_content.update(habit_content_params.except(:habit_ids))
+      @habit_content.habit_ids = habit_ids if habit_ids
+
+      if request.format.json? || request.content_type == 'application/json'
+        render json: { success: true, message: 'Content updated successfully.', content: @habit_content }, status: :ok
       else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: { success: false, errors: @habit_content.errors.full_messages }, status: :unprocessable_entity }
+        redirect_back fallback_location: documents_path, notice: 'Content updated successfully.'
+      end
+    else
+      if request.format.json? || request.content_type == 'application/json'
+        render json: { success: false, errors: @habit_content.errors.full_messages }, status: :unprocessable_entity
+      else
+        render :edit, status: :unprocessable_entity
       end
     end
   end
@@ -76,9 +86,11 @@ class HabitContentsController < ApplicationController
 
   def destroy
     @habit_content.destroy
-    respond_to do |format|
-      format.html { redirect_back fallback_location: documents_path, notice: 'Content deleted successfully.' }
-      format.json { render json: { success: true, message: 'Content deleted successfully.' }, status: :ok }
+
+    if request.format.json? || request.content_type == 'application/json'
+      render json: { success: true, message: 'Content deleted successfully.' }, status: :ok
+    else
+      redirect_back fallback_location: documents_path, notice: 'Content deleted successfully.'
     end
   end
 

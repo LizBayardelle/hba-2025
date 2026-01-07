@@ -197,6 +197,13 @@
             body: JSON.stringify(data)
           });
 
+          if (!response.ok) {
+            const text = await response.text();
+            console.error('Response not OK:', response.status, text);
+            alert(`Error: Server returned ${response.status}`);
+            return;
+          }
+
           const result = await response.json();
 
           if (result.success) {
@@ -207,7 +214,8 @@
             alert('Error: ' + result.errors.join(', '));
           }
         } catch (error) {
-          alert('An error occurred. Please try again.');
+          console.error('Caught error:', error);
+          alert('An error occurred. Please try again. Check console for details.');
         }
       },
 

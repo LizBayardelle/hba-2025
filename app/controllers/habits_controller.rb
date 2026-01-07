@@ -3,7 +3,7 @@ class HabitsController < ApplicationController
     return redirect_to new_user_session_path unless user_signed_in?
 
     @view_mode = params[:view] || 'category' # 'category' or 'time'
-    @selected_date = params[:date] ? Date.parse(params[:date]) : Date.today
+    @selected_date = params[:date] ? Date.parse(params[:date]) : Time.zone.today
 
     @habits = current_user.habits.active.includes(:category, :habit_completions)
 

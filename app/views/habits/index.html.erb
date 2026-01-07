@@ -146,12 +146,12 @@
           <i class="fa-solid fa-chevron-left text-sm" style="color: #1d3e4c;"></i>
         <% end %>
         <div class="px-2 py-1 text-sm font-semibold whitespace-nowrap" style="color: #1d3e4c;">
-          <%= @selected_date == Date.today ? "Today" : @selected_date.strftime("%m/%d") %>
+          <%= @selected_date == Time.zone.today ? "Today" : @selected_date.strftime("%m/%d") %>
         </div>
-        <%= link_to habits_path(date: @selected_date + 1.day, view: @view_mode), class: "w-8 h-8 rounded-lg hover:bg-white flex items-center justify-center transition #{'opacity-50 pointer-events-none' if @selected_date >= Date.today}" do %>
+        <%= link_to habits_path(date: @selected_date + 1.day, view: @view_mode), class: "w-8 h-8 rounded-lg hover:bg-white flex items-center justify-center transition #{'opacity-50 pointer-events-none' if @selected_date >= Time.zone.today}" do %>
           <i class="fa-solid fa-chevron-right text-sm" style="color: #1d3e4c;"></i>
         <% end %>
-        <% if @selected_date != Date.today %>
+        <% if @selected_date != Time.zone.today %>
           <%= link_to habits_path(view: @view_mode), class: "ml-1 px-2 py-1 text-xs font-semibold rounded-lg hover:bg-white transition whitespace-nowrap", style: "color: #1d3e4c;" do %>
             Today
           <% end %>
