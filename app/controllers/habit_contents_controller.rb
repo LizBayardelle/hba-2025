@@ -3,15 +3,35 @@ class HabitContentsController < ApplicationController
   before_action :set_habit_content, only: [:show, :edit, :update, :destroy, :attach_habit, :detach_habit]
 
   def index
-    # Redirect to documents page if accessed directly
-    redirect_to documents_path
+    respond_to do |format|
+      format.html { redirect_to documents_path }
+      format.json {
+        @habit_contents = HabitContent.left_joins(:habits)
+                                       .where('habits.id IS NULL OR habits.user_id = ?', current_user.id)
+                                       .distinct
+                                       .includes(habits: :category)
+                                       .order(created_at: :desc)
+
+        render json: @habit_contents.map { |content|
+          content.as_json(
+            include: { habits: { only: [:id, :name] } },
+            methods: [:youtube_embed_url]
+          ).merge(body: content.body.to_s)
+        }
+      }
+    end
   end
 
   def show
     # For modal display
     respond_to do |format|
       format.html { render layout: false }
-      format.json { render json: @habit_content }
+      format.json {
+        render json: @habit_content.as_json(
+          include: { habits: { only: [:id, :name] } },
+          methods: [:youtube_embed_url]
+        ).merge(body: @habit_content.body.to_s)
+      }
     end
   end
 
