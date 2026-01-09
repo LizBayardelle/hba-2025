@@ -4,7 +4,7 @@ class CategoriesController < ApplicationController
 
   def show
     @sort_by = params[:sort] || 'priority'
-    habits = @category.habits.where(archived_at: nil).to_a
+    habits = @category.habits.where(archived_at: nil).includes(:habit_contents).to_a
 
     # Define sort orders
     importance_order = { 'critical' => 1, 'important' => 2, 'normal' => 3, 'optional' => 4 }
@@ -32,6 +32,27 @@ class CategoriesController < ApplicationController
     @today_completions = current_user.habit_completions
                                       .where(completed_at: Time.zone.today)
                                       .index_by(&:habit_id)
+
+    respond_to do |format|
+      format.html
+      format.json {
+        render json: {
+          category: @category.as_json(only: [:id, :name, :description, :color, :icon]),
+          habits: @habits.map { |habit|
+            completion = @today_completions[habit.id]
+            habit.as_json(
+              only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :category_id],
+              methods: [:current_streak]
+            ).merge(
+              today_count: completion ? completion.count : 0,
+              habit_contents: habit.habit_contents.map { |content|
+                { id: content.id, title: content.title, content_type: content.content_type }
+              }
+            )
+          }
+        }
+      }
+    end
   end
 
   def create
@@ -46,15 +67,24 @@ class CategoriesController < ApplicationController
 
   def update
     if @category.update(category_params)
-      redirect_to category_path(@category), notice: 'Category updated successfully.'
+      respond_to do |format|
+        format.html { redirect_to category_path(@category), notice: 'Category updated successfully.' }
+        format.json { render json: { success: true, message: 'Category updated successfully.' }, status: :ok }
+      end
     else
-      redirect_to category_path(@category), alert: "Error updating category: #{@category.errors.full_messages.join(', ')}"
+      respond_to do |format|
+        format.html { redirect_to category_path(@category), alert: "Error updating category: #{@category.errors.full_messages.join(', ')}" }
+        format.json { render json: { success: false, errors: @category.errors.full_messages }, status: :unprocessable_entity }
+      end
     end
   end
 
   def destroy
     @category.update(archived: true)
-    redirect_to root_path, notice: 'Category archived successfully.'
+    respond_to do |format|
+      format.html { redirect_to root_path, notice: 'Category archived successfully.' }
+      format.json { render json: { success: true, message: 'Category archived successfully.' }, status: :ok }
+    end
   end
 
   private

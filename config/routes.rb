@@ -11,7 +11,7 @@ Rails.application.routes.draw do
   patch 'settings', to: 'settings#update'
 
   resources :categories, only: [:create, :update, :destroy, :show] do
-    resources :habits, only: [:create, :update, :destroy]
+    resources :habits, only: [:show, :create, :update, :destroy]
   end
 
   resources :habits, only: [] do

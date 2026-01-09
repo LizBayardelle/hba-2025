@@ -60,15 +60,34 @@ class HabitsController < ApplicationController
     @today_percentage = @total_habits > 0 ? (@completed_today * 100 / @total_habits).round : 0
   end
 
+  def show
+    @category = current_user.categories.find(params[:category_id])
+    @habit = @category.habits.find(params[:id])
+
+    respond_to do |format|
+      format.json {
+        render json: @habit.as_json(
+          only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :category_id]
+        )
+      }
+    end
+  end
+
   def create
     @category = current_user.categories.find(params[:category_id])
     @habit = @category.habits.build(habit_params)
     @habit.user = current_user
 
     if @habit.save
-      redirect_to category_path(@category), notice: 'Habit created successfully.'
+      respond_to do |format|
+        format.html { redirect_to category_path(@category), notice: 'Habit created successfully.' }
+        format.json { render json: { success: true, message: 'Habit created successfully.', habit: @habit }, status: :created }
+      end
     else
-      redirect_to category_path(@category), alert: 'Failed to create habit.'
+      respond_to do |format|
+        format.html { redirect_to category_path(@category), alert: 'Failed to create habit.' }
+        format.json { render json: { success: false, errors: @habit.errors.full_messages }, status: :unprocessable_entity }
+      end
     end
   end
 
@@ -77,9 +96,15 @@ class HabitsController < ApplicationController
     @habit = @category.habits.find(params[:id])
 
     if @habit.update(habit_params)
-      redirect_to category_path(@category), notice: 'Habit updated successfully.'
+      respond_to do |format|
+        format.html { redirect_to category_path(@category), notice: 'Habit updated successfully.' }
+        format.json { render json: { success: true, message: 'Habit updated successfully.', habit: @habit }, status: :ok }
+      end
     else
-      redirect_to category_path(@category), alert: 'Failed to update habit.'
+      respond_to do |format|
+        format.html { redirect_to category_path(@category), alert: 'Failed to update habit.' }
+        format.json { render json: { success: false, errors: @habit.errors.full_messages }, status: :unprocessable_entity }
+      end
     end
   end
 
@@ -88,7 +113,10 @@ class HabitsController < ApplicationController
     @habit = @category.habits.find(params[:id])
     @habit.destroy
 
-    redirect_to category_path(@category), notice: 'Habit deleted successfully.'
+    respond_to do |format|
+      format.html { redirect_to category_path(@category), notice: 'Habit deleted successfully.' }
+      format.json { render json: { success: true, message: 'Habit deleted successfully.' }, status: :ok }
+    end
   end
 
   private

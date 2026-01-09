@@ -7,6 +7,7 @@ const getCsrfToken = () => {
 const apiRequest = async (url, options = {}) => {
   const defaultHeaders = {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
     'X-CSRF-Token': getCsrfToken(),
   };
 
