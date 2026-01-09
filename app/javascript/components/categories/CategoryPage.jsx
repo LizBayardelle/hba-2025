@@ -6,6 +6,7 @@ import HabitFormModal from './HabitFormModal';
 import CategoryEditModal from './CategoryEditModal';
 import DocumentViewModal from '../documents/DocumentViewModal';
 import DocumentFormModal from '../documents/DocumentFormModal';
+import { tagsApi } from '../../utils/api';
 
 const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
   const [sortBy, setSortBy] = useState(initialSort);
@@ -19,6 +20,12 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
       if (!response.ok) throw new Error('Failed to fetch category');
       return response.json();
     },
+  });
+
+  // Fetch all user tags for autocomplete
+  const { data: allTags = [] } = useQuery({
+    queryKey: ['tags'],
+    queryFn: tagsApi.fetchAll,
   });
 
   // Color mapping for light/dark variants
@@ -188,7 +195,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
       <HabitFormModal categoryColor={categoryColor} />
       <CategoryEditModal />
       <DocumentViewModal />
-      <DocumentFormModal habits={formattedHabits} />
+      <DocumentFormModal habits={formattedHabits} allTags={allTags} />
     </>
   );
 };

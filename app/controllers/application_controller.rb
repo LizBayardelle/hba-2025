@@ -4,6 +4,7 @@ class ApplicationController < ActionController::Base
 
   before_action :set_cache_headers
   before_action :set_timezone, if: :user_signed_in?
+  before_action :clear_daily_habits, if: :user_signed_in?
   before_action :update_habit_health, if: :user_signed_in?
   before_action :configure_permitted_parameters, if: :devise_controller?
 
@@ -17,6 +18,10 @@ class ApplicationController < ActionController::Base
 
   def set_timezone
     Time.zone = current_user.timezone if current_user.timezone.present?
+  end
+
+  def clear_daily_habits
+    current_user.clear_daily_habits_if_needed!
   end
 
   def update_habit_health

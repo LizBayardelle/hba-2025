@@ -1,0 +1,240 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import BaseModal from '../shared/BaseModal';
+import { journalsApi } from '../../utils/api';
+import useJournalStore from '../../stores/journalStore';
+
+const JournalFormModal = ({ allTags }) => {
+  const { formModal, closeFormModal } = useJournalStore();
+  const { isOpen, mode, journalId } = formModal;
+  const queryClient = useQueryClient();
+  const trixEditorRef = useRef(null);
+
+  const [tagInput, setTagInput] = useState('');
+  const [selectedTags, setSelectedTags] = useState([]);
+
+  // Fetch journal data if editing
+  const { data: journal } = useQuery({
+    queryKey: ['journal', journalId],
+    queryFn: () => journalsApi.fetchOne(journalId),
+    enabled: isOpen && mode === 'edit' && !!journalId,
+  });
+
+  // Load journal data when editing
+  useEffect(() => {
+    if (journal && mode === 'edit') {
+      setSelectedTags(journal.tags?.map(t => t.name) || []);
+
+      // Set Trix content
+      if (trixEditorRef.current) {
+        setTimeout(() => {
+          const trixEditor = trixEditorRef.current?.editor;
+          if (trixEditor && journal.content) {
+            trixEditor.loadHTML(journal.content || '');
+          }
+        }, 100);
+      }
+    }
+  }, [journal, mode]);
+
+  // Reset form when modal opens for new journal
+  useEffect(() => {
+    if (isOpen && mode === 'new') {
+      setSelectedTags([]);
+      setTagInput('');
+      if (trixEditorRef.current?.editor) {
+        trixEditorRef.current.editor.loadHTML('');
+      }
+    }
+  }, [isOpen, mode]);
+
+  // Create mutation
+  const createMutation = useMutation({
+    mutationFn: (data) => journalsApi.create({ journal: data }),
+    onSuccess: async () => {
+      const queries = queryClient.getQueriesData({ queryKey: ['journals'] });
+      queries.forEach(([queryKey]) => {
+        queryClient.invalidateQueries({ queryKey });
+      });
+      closeFormModal();
+    },
+  });
+
+  // Update mutation
+  const updateMutation = useMutation({
+    mutationFn: (data) => journalsApi.update(journalId, { journal: data }),
+    onSuccess: async () => {
+      const queries = queryClient.getQueriesData({ queryKey: ['journals'] });
+      queries.forEach(([queryKey]) => {
+        queryClient.invalidateQueries({ queryKey });
+      });
+      queryClient.invalidateQueries({ queryKey: ['journal', journalId] });
+      closeFormModal();
+    },
+  });
+
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: () => journalsApi.delete(journalId),
+    onSuccess: async () => {
+      const queries = queryClient.getQueriesData({ queryKey: ['journals'] });
+      queries.forEach(([queryKey]) => {
+        queryClient.invalidateQueries({ queryKey });
+      });
+      closeFormModal();
+    },
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const data = {
+      content: trixEditorRef.current?.value || '',
+      tag_names: selectedTags,
+    };
+
+    if (mode === 'edit') {
+      updateMutation.mutate(data);
+    } else {
+      createMutation.mutate(data);
+    }
+  };
+
+  const handleDelete = () => {
+    if (window.confirm('Are you sure you want to delete this journal entry?')) {
+      deleteMutation.mutate();
+    }
+  };
+
+  const handleAddTag = (e) => {
+    if (e.key === 'Enter' && tagInput.trim()) {
+      e.preventDefault();
+      if (!selectedTags.includes(tagInput.trim())) {
+        setSelectedTags([...selectedTags, tagInput.trim()]);
+      }
+      setTagInput('');
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove) => {
+    setSelectedTags(selectedTags.filter(tag => tag !== tagToRemove));
+  };
+
+  const currentMutation = mode === 'edit' ? updateMutation : createMutation;
+
+  const footer = (
+    <>
+      {mode === 'edit' && (
+        <button
+          type="button"
+          onClick={handleDelete}
+          className="mr-auto px-6 py-3 rounded-lg font-semibold transition"
+          style={{ color: '#DC2626' }}
+          disabled={deleteMutation.isPending}
+        >
+          {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+        </button>
+      )}
+      <button
+        type="button"
+        onClick={closeFormModal}
+        className="px-6 py-3 rounded-lg font-semibold border-2 transition"
+        style={{ color: '#1d3e4c', borderColor: '#E8EEF1' }}
+        disabled={currentMutation.isPending}
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        form="journal-form"
+        className="px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition cursor-pointer disabled:opacity-50"
+        style={{ background: 'linear-gradient(135deg, #1d3e4c, #45606b)' }}
+        disabled={currentMutation.isPending}
+      >
+        {currentMutation.isPending
+          ? 'Saving...'
+          : mode === 'edit'
+          ? 'Update Entry'
+          : 'Save Entry'}
+      </button>
+    </>
+  );
+
+  return (
+    <BaseModal
+      isOpen={isOpen}
+      onClose={closeFormModal}
+      title={mode === 'edit' ? 'Edit Journal Entry' : 'New Journal Entry'}
+      footer={footer}
+      maxWidth="max-w-4xl"
+    >
+      <form id="journal-form" onSubmit={handleSubmit}>
+        {currentMutation.isError && (
+          <div
+            className="mb-4 p-4 rounded-lg"
+            style={{ backgroundColor: '#FEE2E2', color: '#DC2626' }}
+          >
+            <i className="fa-solid fa-exclamation-circle mr-2"></i>
+            {currentMutation.error?.message || 'An error occurred'}
+          </div>
+        )}
+
+        {/* Tags */}
+        <div className="mb-6">
+          <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
+            Tags (optional)
+          </label>
+          <input
+            type="text"
+            value={tagInput}
+            onChange={(e) => setTagInput(e.target.value)}
+            onKeyDown={handleAddTag}
+            className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
+            style={{ borderColor: '#E8EEF1' }}
+            placeholder="Type and press Enter to add tags"
+            list="tag-suggestions"
+          />
+          <datalist id="tag-suggestions">
+            {allTags.map(tag => (
+              <option key={tag.id} value={tag.name} />
+            ))}
+          </datalist>
+          {selectedTags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              {selectedTags.map((tag) => (
+                <span
+                  key={tag}
+                  className="text-xs px-3 py-1.5 rounded-full font-semibold flex items-center gap-2"
+                  style={{
+                    backgroundColor: '#E8EEF1',
+                    color: '#1d3e4c',
+                  }}
+                >
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveTag(tag)}
+                    className="hover:opacity-70"
+                  >
+                    <i className="fa-solid fa-times text-xs"></i>
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="mb-6">
+          <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
+            Entry
+          </label>
+          <input type="hidden" name="content" id="journal-form-content-hidden" />
+          <trix-editor ref={trixEditorRef} input="journal-form-content-hidden" className="trix-content"></trix-editor>
+        </div>
+      </form>
+    </BaseModal>
+  );
+};
+
+export default JournalFormModal;

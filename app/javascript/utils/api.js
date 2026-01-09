@@ -54,3 +54,52 @@ export const documentsApi = {
     method: 'DELETE',
   }),
 };
+
+// Journal API methods
+export const journalsApi = {
+  // Fetch all journals
+  fetchAll: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return apiRequest(`/journals.json${query ? `?${query}` : ''}`);
+  },
+
+  // Fetch single journal
+  fetchOne: (id) => apiRequest(`/journals/${id}.json`),
+
+  // Create journal
+  create: (data) => apiRequest('/journals', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+
+  // Update journal
+  update: (id, data) => apiRequest(`/journals/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  }),
+
+  // Delete journal
+  delete: (id) => apiRequest(`/journals/${id}`, {
+    method: 'DELETE',
+  }),
+};
+
+// Tags API methods
+export const tagsApi = {
+  // Fetch all tags
+  fetchAll: () => apiRequest('/tags.json'),
+
+  // Fetch single tag with all associated items
+  fetchOne: (id) => apiRequest(`/tags/${id}.json`),
+
+  // Update tag
+  update: (id, data) => apiRequest(`/tags/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  }),
+
+  // Delete tag
+  delete: (id) => apiRequest(`/tags/${id}`, {
+    method: 'DELETE',
+  }),
+};

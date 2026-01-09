@@ -3,6 +3,8 @@ class Habit < ApplicationRecord
   belongs_to :user
   has_many :habit_completions, dependent: :destroy
   has_and_belongs_to_many :habit_contents
+  has_many :taggings, as: :taggable, dependent: :destroy
+  has_many :tags, through: :taggings
 
   IMPORTANCE_LEVELS = %w[critical important normal optional].freeze
 
@@ -12,6 +14,17 @@ class Habit < ApplicationRecord
   validates :importance, inclusion: { in: IMPORTANCE_LEVELS }, allow_nil: true
 
   scope :active, -> { where(archived_at: nil) }
+
+  # Helper method to assign tags by name
+  def tag_names=(names)
+    self.tags = names.map do |name|
+      user.tags.find_or_create_by(name: name.strip)
+    end
+  end
+
+  def tag_names
+    tags.pluck(:name)
+  end
 
   def calculate_streak!
     streak = 0

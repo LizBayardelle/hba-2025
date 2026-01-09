@@ -73,6 +73,14 @@
         <i class="fa-solid fa-file-alt text-lg" style="<%= current_page?(documents_path) ? 'color: #F8796D;' : '' %>"></i>
         <span>Documents</span>
       <% end %>
+      <%= link_to journal_path, class: "flex items-center gap-3 px-4 py-3 rounded-lg transition #{current_page?(journal_path) ? 'font-medium' : 'font-light hover:bg-white/10'}", style: current_page?(journal_path) ? "background-color: rgba(255, 255, 255, 0.15);" : "" do %>
+        <i class="fa-solid fa-book text-lg" style="<%= current_page?(journal_path) ? 'color: #F8796D;' : '' %>"></i>
+        <span>Journal</span>
+      <% end %>
+      <%= link_to tags_path, class: "flex items-center gap-3 px-4 py-3 rounded-lg transition #{current_page?(tags_path) ? 'font-medium' : 'font-light hover:bg-white/10'}", style: current_page?(tags_path) ? "background-color: rgba(255, 255, 255, 0.15);" : "" do %>
+        <i class="fa-solid fa-tags text-lg" style="<%= current_page?(tags_path) ? 'color: #F8796D;' : '' %>"></i>
+        <span>Tags</span>
+      <% end %>
       <%= link_to settings_path, class: "flex items-center gap-3 px-4 py-3 rounded-lg transition #{current_page?(settings_path) ? 'font-medium' : 'font-light hover:bg-white/10'}", style: current_page?(settings_path) ? "background-color: rgba(255, 255, 255, 0.15);" : "" do %>
         <i class="fa-solid fa-gear text-lg" style="<%= current_page?(settings_path) ? 'color: #F8796D;' : '' %>"></i>
         <span>Settings</span>

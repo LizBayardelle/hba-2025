@@ -7,8 +7,13 @@ Rails.application.routes.draw do
   get 'habits', to: 'habits#index'
   get 'analytics', to: 'analytics#index'
   get 'documents', to: 'documents#index'
+  get 'journal', to: 'journals#index'
+  get 'tags', to: 'tags#index'
   get 'settings', to: 'settings#index'
   patch 'settings', to: 'settings#update'
+
+  resources :journals, only: [:index, :show, :create, :update, :destroy]
+  resources :tags, only: [:index, :show, :update, :destroy]
 
   resources :categories, only: [:create, :update, :destroy, :show] do
     resources :habits, only: [:show, :create, :update, :destroy]

@@ -9,12 +9,15 @@ class HabitContentsController < ApplicationController
         @habit_contents = HabitContent.left_joins(:habits)
                                        .where('habits.id IS NULL OR habits.user_id = ?', current_user.id)
                                        .distinct
-                                       .includes(habits: :category)
+                                       .includes(habits: :category, tags: [])
                                        .order(created_at: :desc)
 
         render json: @habit_contents.map { |content|
           content.as_json(
-            include: { habits: { only: [:id, :name] } },
+            include: {
+              habits: { only: [:id, :name] },
+              tags: { only: [:id, :name] }
+            },
             methods: [:youtube_embed_url]
           ).merge(body: content.body.to_s)
         }
@@ -28,7 +31,10 @@ class HabitContentsController < ApplicationController
       format.html { render layout: false }
       format.json {
         render json: @habit_content.as_json(
-          include: { habits: { only: [:id, :name] } },
+          include: {
+            habits: { only: [:id, :name] },
+            tags: { only: [:id, :name] }
+          },
           methods: [:youtube_embed_url]
         ).merge(body: @habit_content.body.to_s)
       }
@@ -40,13 +46,22 @@ class HabitContentsController < ApplicationController
   end
 
   def create
-    @habit_content = HabitContent.new(habit_content_params.except(:habit_ids))
+    @habit_content = HabitContent.new(habit_content_params.except(:habit_ids, :tag_names))
 
     # Attach selected habits if any
     habit_ids = params[:habit_content][:habit_ids].reject(&:blank?) if params[:habit_content][:habit_ids]
 
     if @habit_content.save
       @habit_content.habit_ids = habit_ids if habit_ids.present?
+
+      # Handle tags
+      if params[:habit_content][:tag_names].present?
+        tag_names = params[:habit_content][:tag_names].reject(&:blank?)
+        tag_names.each do |tag_name|
+          tag = current_user.tags.find_or_create_by(name: tag_name.strip)
+          @habit_content.tags << tag unless @habit_content.tags.include?(tag)
+        end
+      end
 
       if request.format.json? || request.content_type == 'application/json'
         render json: { success: true, message: 'Content added successfully.', content: @habit_content }, status: :created
@@ -69,8 +84,18 @@ class HabitContentsController < ApplicationController
     # Handle habit associations separately
     habit_ids = params[:habit_content][:habit_ids].reject(&:blank?) if params[:habit_content][:habit_ids]
 
-    if @habit_content.update(habit_content_params.except(:habit_ids))
+    if @habit_content.update(habit_content_params.except(:habit_ids, :tag_names))
       @habit_content.habit_ids = habit_ids if habit_ids
+
+      # Handle tags
+      if params[:habit_content][:tag_names]
+        @habit_content.tags.clear
+        tag_names = params[:habit_content][:tag_names].reject(&:blank?)
+        tag_names.each do |tag_name|
+          tag = current_user.tags.find_or_create_by(name: tag_name.strip)
+          @habit_content.tags << tag unless @habit_content.tags.include?(tag)
+        end
+      end
 
       if request.format.json? || request.content_type == 'application/json'
         render json: { success: true, message: 'Content updated successfully.', content: @habit_content }, status: :ok
@@ -125,6 +150,6 @@ class HabitContentsController < ApplicationController
   end
 
   def habit_content_params
-    params.require(:habit_content).permit(:content_type, :title, :body, :position, metadata: {}, habit_ids: [])
+    params.require(:habit_content).permit(:content_type, :title, :body, :position, metadata: {}, habit_ids: [], tag_names: [])
   end
 end

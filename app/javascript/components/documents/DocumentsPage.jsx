@@ -1,6 +1,6 @@
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { documentsApi } from '../../utils/api';
+import { documentsApi, tagsApi } from '../../utils/api';
 import useDocumentsStore from '../../stores/documentsStore';
 import DocumentViewModal from './DocumentViewModal';
 import DocumentFormModal from './DocumentFormModal';
@@ -13,6 +13,12 @@ const DocumentsPage = ({ habits }) => {
   const { data: documents = [], isLoading, error } = useQuery({
     queryKey: ['documents'],
     queryFn: documentsApi.fetchAll,
+  });
+
+  // Fetch all user tags for autocomplete
+  const { data: allTags = [] } = useQuery({
+    queryKey: ['tags'],
+    queryFn: tagsApi.fetchAll,
   });
 
   // Delete mutation
@@ -135,10 +141,25 @@ const DocumentsPage = ({ habits }) => {
                           )}
                         </div>
 
-                        {/* Habit Badges */}
-                        {content.habits && content.habits.length > 0 && (
+                        {/* Tags and Habit Badges */}
+                        {(content.tags?.length > 0 || content.habits?.length > 0) && (
                           <div className="flex flex-wrap items-center gap-2 mt-2">
-                            {content.habits.map((habit) => {
+                            {/* Tags */}
+                            {content.tags?.map((tag) => (
+                              <span
+                                key={tag.id}
+                                className="text-xs px-2 py-1 rounded-full font-semibold"
+                                style={{
+                                  backgroundColor: '#E8EEF1',
+                                  color: '#1d3e4c',
+                                }}
+                              >
+                                {tag.name}
+                              </span>
+                            ))}
+
+                            {/* Habits */}
+                            {content.habits?.map((habit) => {
                               // Get category color from the habits prop
                               const habitWithCategory = habits.find(h => h.id === habit.id);
                               const categoryColor = habitWithCategory?.category_color || '#6B8A99';
@@ -188,7 +209,7 @@ const DocumentsPage = ({ habits }) => {
 
       {/* Modals */}
       <DocumentViewModal />
-      <DocumentFormModal habits={habits} />
+      <DocumentFormModal habits={habits} allTags={allTags} />
     </>
   );
 };

@@ -4,7 +4,7 @@ import BaseModal from '../shared/BaseModal';
 import { documentsApi } from '../../utils/api';
 import useDocumentsStore from '../../stores/documentsStore';
 
-const DocumentFormModal = ({ habits }) => {
+const DocumentFormModal = ({ habits, allTags }) => {
   const { formModal, closeFormModal } = useDocumentsStore();
   const { isOpen, mode, documentId } = formModal;
   const queryClient = useQueryClient();
@@ -17,6 +17,9 @@ const DocumentFormModal = ({ habits }) => {
     habit_ids: [],
   });
   const [showHabitDropdown, setShowHabitDropdown] = useState(false);
+  const [tagInput, setTagInput] = useState('');
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [showTagSuggestions, setShowTagSuggestions] = useState(false);
 
   // Fetch document data if editing
   const { data: document } = useQuery({
@@ -34,6 +37,7 @@ const DocumentFormModal = ({ habits }) => {
         url: document.metadata?.url || '',
         habit_ids: document.habits?.map(h => h.id.toString()) || [],
       });
+      setSelectedTags(document.tags?.map(t => t.name) || []);
 
       // Set Trix content if document type
       if (document.content_type === 'document' && trixEditorRef.current) {
@@ -57,6 +61,8 @@ const DocumentFormModal = ({ habits }) => {
         url: '',
         habit_ids: [],
       });
+      setSelectedTags([]);
+      setTagInput('');
       if (trixEditorRef.current?.editor) {
         trixEditorRef.current.editor.loadHTML('');
       }
@@ -91,6 +97,7 @@ const DocumentFormModal = ({ habits }) => {
       content_type: formData.content_type,
       title: formData.title,
       habit_ids: formData.habit_ids,
+      tag_names: selectedTags,
       metadata: {
         url: formData.url,
       },
@@ -107,6 +114,39 @@ const DocumentFormModal = ({ habits }) => {
       createMutation.mutate(data);
     }
   };
+
+  const handleAddTag = (tagName) => {
+    const trimmedTag = tagName.trim();
+    // Case insensitive check for duplicates
+    if (trimmedTag && !selectedTags.some(tag => tag.toLowerCase() === trimmedTag.toLowerCase())) {
+      setSelectedTags([...selectedTags, trimmedTag]);
+    }
+    setTagInput('');
+    setShowTagSuggestions(false);
+  };
+
+  const handleTagInputKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (tagInput.trim()) {
+        handleAddTag(tagInput);
+      }
+    } else if (e.key === 'Escape') {
+      setShowTagSuggestions(false);
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove) => {
+    setSelectedTags(selectedTags.filter(tag => tag !== tagToRemove));
+  };
+
+  // Filter suggestions based on input (case insensitive)
+  const filteredSuggestions = (allTags || [])
+    .filter(tag =>
+      tag.name.toLowerCase().includes(tagInput.toLowerCase()) &&
+      !selectedTags.some(selectedTag => selectedTag.toLowerCase() === tag.name.toLowerCase())
+    )
+    .slice(0, 5);
 
   const currentMutation = mode === 'edit' ? updateMutation : createMutation;
 
@@ -223,6 +263,88 @@ const DocumentFormModal = ({ habits }) => {
           <p className="text-xs font-light mt-2" style={{ color: '#657b84' }}>
             Documents can exist without being attached to any habit
           </p>
+        </div>
+
+        {/* Tags */}
+        <div className="mb-6">
+          <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
+            Tags (optional)
+          </label>
+          <div className="relative">
+            <input
+              type="text"
+              value={tagInput}
+              onChange={(e) => {
+                setTagInput(e.target.value);
+                setShowTagSuggestions(e.target.value.length > 0);
+              }}
+              onKeyDown={handleTagInputKeyDown}
+              onFocus={() => tagInput.length > 0 && setShowTagSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
+              className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
+              style={{ borderColor: '#E8EEF1' }}
+              placeholder="Type to search or add new tag"
+            />
+
+            {/* Tag suggestions dropdown */}
+            {showTagSuggestions && (filteredSuggestions.length > 0 || tagInput.trim()) && (
+              <div
+                className="absolute z-10 w-full mt-2 bg-white border-2 rounded-lg shadow-lg max-h-48 overflow-y-auto"
+                style={{ borderColor: '#E8EEF1' }}
+              >
+                {filteredSuggestions.map((tag) => (
+                  <button
+                    key={tag.id}
+                    type="button"
+                    onClick={() => handleAddTag(tag.name)}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-50 transition font-light"
+                    style={{ color: '#1d3e4c' }}
+                  >
+                    {tag.name}
+                  </button>
+                ))}
+                {tagInput.trim() && !filteredSuggestions.find(t => t.name.toLowerCase() === tagInput.toLowerCase()) && (
+                  <button
+                    type="button"
+                    onClick={() => handleAddTag(tagInput)}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-50 transition font-light border-t"
+                    style={{ borderColor: '#E8EEF1', color: '#1d3e4c' }}
+                  >
+                    <i className="fa-solid fa-plus mr-2" style={{ color: '#1d3e4c' }}></i>
+                    Create "<strong>{tagInput.trim()}</strong>"
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          <p className="text-xs font-light mt-2" style={{ color: '#657b84' }}>
+            Type to search existing tags or create a new one. Press Enter or click to add.
+          </p>
+
+          {selectedTags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              {selectedTags.map((tag) => (
+                <span
+                  key={tag}
+                  className="text-xs px-3 py-1.5 rounded-full font-semibold flex items-center gap-2"
+                  style={{
+                    backgroundColor: '#E8EEF1',
+                    color: '#1d3e4c',
+                  }}
+                >
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveTag(tag)}
+                    className="hover:opacity-70"
+                  >
+                    <i className="fa-solid fa-times text-xs"></i>
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Content Type */}

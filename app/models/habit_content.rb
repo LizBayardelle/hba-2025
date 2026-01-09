@@ -1,6 +1,8 @@
 class HabitContent < ApplicationRecord
   has_and_belongs_to_many :habits
   has_rich_text :body
+  has_many :taggings, as: :taggable, dependent: :destroy
+  has_many :tags, through: :taggings
 
   CONTENT_TYPES = %w[document youtube video link].freeze
 
@@ -11,6 +13,21 @@ class HabitContent < ApplicationRecord
   validate :content_type_requirements
 
   scope :ordered, -> { order(:position) }
+
+  # Helper method to assign tags by name
+  def tag_names=(names)
+    # Get user from the first associated habit
+    user = habits.first&.user
+    return unless user
+
+    self.tags = names.map do |name|
+      user.tags.find_or_create_by(name: name.strip)
+    end
+  end
+
+  def tag_names
+    tags.pluck(:name)
+  end
 
   # Extract YouTube video ID from various URL formats
   def youtube_id
