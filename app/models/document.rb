@@ -1,4 +1,4 @@
-class HabitContent < ApplicationRecord
+class Document < ApplicationRecord
   has_and_belongs_to_many :habits
   has_rich_text :body
   has_many :taggings, as: :taggable, dependent: :destroy

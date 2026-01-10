@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title><%= content_for(:title) || "Hba 2025" %></title>
+    <title><%= content_for(:title) || "Habit Beaver" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -75,7 +75,9 @@
         border: 2px solid #E8EEF1;
         border-radius: 0.5rem;
         padding: 1rem;
-        min-height: 300px;
+        height: 300px;
+        max-height: 300px;
+        overflow-y: auto;
         position: relative;
         z-index: 1;
       }

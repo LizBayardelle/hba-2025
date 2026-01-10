@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { journalsApi } from '../../utils/api';
+import { journalsApi, tagsApi } from '../../utils/api';
 import useJournalStore from '../../stores/journalStore';
 import JournalCard from './JournalCard';
 import JournalFormModal from './JournalFormModal';
@@ -16,18 +16,11 @@ const JournalPage = () => {
     queryFn: () => journalsApi.fetchAll(searchQuery ? { search: searchQuery } : {}),
   });
 
-  // Get all unique tags for autocomplete
-  const allTags = useMemo(() => {
-    const tagMap = new Map();
-    journals.forEach(journal => {
-      journal.tags?.forEach(tag => {
-        if (!tagMap.has(tag.id)) {
-          tagMap.set(tag.id, tag);
-        }
-      });
-    });
-    return Array.from(tagMap.values());
-  }, [journals]);
+  // Fetch all user tags for autocomplete
+  const { data: allTags = [] } = useQuery({
+    queryKey: ['tags'],
+    queryFn: tagsApi.fetchAll,
+  });
 
   // Group journals by date
   const groupedJournals = useMemo(() => {

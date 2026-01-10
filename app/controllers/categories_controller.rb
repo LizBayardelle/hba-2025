@@ -2,6 +2,16 @@ class CategoriesController < ApplicationController
   before_action :authenticate_user!
   before_action :set_category, only: [:show, :update, :destroy]
 
+  def index
+    @categories = current_user.categories.where(archived: false).order(:position, :name)
+
+    respond_to do |format|
+      format.json {
+        render json: @categories.as_json(only: [:id, :name, :color, :icon, :description])
+      }
+    end
+  end
+
   def show
     @sort_by = params[:sort] || 'priority'
     habits = @category.habits.where(archived_at: nil).includes(:habit_contents, :tags).to_a

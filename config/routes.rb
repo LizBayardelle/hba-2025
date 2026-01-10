@@ -8,14 +8,16 @@ Rails.application.routes.draw do
   get 'analytics', to: 'analytics#index'
   get 'documents', to: 'documents#index'
   get 'journal', to: 'journals#index'
+  get 'tasks', to: 'tasks#index'
   get 'tags', to: 'tags#index'
   get 'settings', to: 'settings#index'
   patch 'settings', to: 'settings#update'
 
   resources :journals, only: [:index, :show, :create, :update, :destroy]
+  resources :tasks, only: [:index, :show, :create, :update, :destroy]
   resources :tags, only: [:index, :show, :update, :destroy]
 
-  resources :categories, only: [:create, :update, :destroy, :show] do
+  resources :categories, only: [:index, :create, :update, :destroy, :show] do
     resources :habits, only: [:show, :create, :update, :destroy]
   end
 

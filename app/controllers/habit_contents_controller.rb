@@ -6,7 +6,7 @@ class HabitContentsController < ApplicationController
     respond_to do |format|
       format.html { redirect_to documents_path }
       format.json {
-        @habit_contents = HabitContent.left_joins(:habits)
+        @habit_contents = Document.left_joins(:habits)
                                        .where('habits.id IS NULL OR habits.user_id = ?', current_user.id)
                                        .distinct
                                        .includes(habits: :category, tags: [])
@@ -46,7 +46,7 @@ class HabitContentsController < ApplicationController
   end
 
   def create
-    @habit_content = HabitContent.new(habit_content_params.except(:habit_ids, :tag_names))
+    @habit_content = Document.new(habit_content_params.except(:habit_ids, :tag_names))
 
     # Attach selected habits if any
     habit_ids = params[:habit_content][:habit_ids].reject(&:blank?) if params[:habit_content][:habit_ids]
@@ -142,7 +142,7 @@ class HabitContentsController < ApplicationController
   private
 
   def set_habit_content
-    @habit_content = HabitContent.find(params[:id])
+    @habit_content = Document.find(params[:id])
     # Ensure user has access through at least one of their habits, or if unattached
     unless @habit_content.habits.empty? ? true : @habit_content.habits.joins(:user).where(users: { id: current_user.id }).exists?
       redirect_to documents_path, alert: 'Access denied'

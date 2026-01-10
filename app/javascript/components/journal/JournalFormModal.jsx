@@ -12,6 +12,7 @@ const JournalFormModal = ({ allTags }) => {
 
   const [tagInput, setTagInput] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
+  const [showTagSuggestions, setShowTagSuggestions] = useState(false);
 
   // Fetch journal data if editing
   const { data: journal } = useQuery({
@@ -106,19 +107,38 @@ const JournalFormModal = ({ allTags }) => {
     }
   };
 
-  const handleAddTag = (e) => {
-    if (e.key === 'Enter' && tagInput.trim()) {
+  const handleAddTag = (tagName) => {
+    const trimmedTag = tagName.trim();
+    // Case insensitive check for duplicates
+    if (trimmedTag && !selectedTags.some(tag => tag.toLowerCase() === trimmedTag.toLowerCase())) {
+      setSelectedTags([...selectedTags, trimmedTag]);
+    }
+    setTagInput('');
+    setShowTagSuggestions(false);
+  };
+
+  const handleTagInputKeyDown = (e) => {
+    if (e.key === 'Enter') {
       e.preventDefault();
-      if (!selectedTags.includes(tagInput.trim())) {
-        setSelectedTags([...selectedTags, tagInput.trim()]);
+      if (tagInput.trim()) {
+        handleAddTag(tagInput);
       }
-      setTagInput('');
+    } else if (e.key === 'Escape') {
+      setShowTagSuggestions(false);
     }
   };
 
   const handleRemoveTag = (tagToRemove) => {
     setSelectedTags(selectedTags.filter(tag => tag !== tagToRemove));
   };
+
+  // Filter suggestions based on input (case insensitive)
+  const filteredSuggestions = (allTags || [])
+    .filter(tag =>
+      tag.name.toLowerCase().includes(tagInput.toLowerCase()) &&
+      !selectedTags.some(selectedTag => selectedTag.toLowerCase() === tag.name.toLowerCase())
+    )
+    .slice(0, 5);
 
   const currentMutation = mode === 'edit' ? updateMutation : createMutation;
 
@@ -184,21 +204,58 @@ const JournalFormModal = ({ allTags }) => {
           <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
             Tags (optional)
           </label>
-          <input
-            type="text"
-            value={tagInput}
-            onChange={(e) => setTagInput(e.target.value)}
-            onKeyDown={handleAddTag}
-            className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
-            style={{ borderColor: '#E8EEF1' }}
-            placeholder="Type and press Enter to add tags"
-            list="tag-suggestions"
-          />
-          <datalist id="tag-suggestions">
-            {allTags.map(tag => (
-              <option key={tag.id} value={tag.name} />
-            ))}
-          </datalist>
+          <div className="relative">
+            <input
+              type="text"
+              value={tagInput}
+              onChange={(e) => {
+                setTagInput(e.target.value);
+                setShowTagSuggestions(e.target.value.length > 0);
+              }}
+              onKeyDown={handleTagInputKeyDown}
+              onFocus={() => tagInput.length > 0 && setShowTagSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
+              className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
+              style={{ borderColor: '#E8EEF1', color: '#1d3e4c' }}
+              placeholder="Type to search or add new tag"
+            />
+
+            {/* Tag suggestions dropdown */}
+            {showTagSuggestions && (filteredSuggestions.length > 0 || tagInput.trim()) && (
+              <div
+                className="absolute z-10 w-full mt-2 bg-white border-2 rounded-lg shadow-lg max-h-48 overflow-y-auto"
+                style={{ borderColor: '#E8EEF1' }}
+              >
+                {filteredSuggestions.map((tag) => (
+                  <button
+                    key={tag.id}
+                    type="button"
+                    onClick={() => handleAddTag(tag.name)}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-50 transition font-light"
+                    style={{ color: '#1d3e4c' }}
+                  >
+                    {tag.name}
+                  </button>
+                ))}
+                {tagInput.trim() && !filteredSuggestions.find(t => t.name.toLowerCase() === tagInput.toLowerCase()) && (
+                  <button
+                    type="button"
+                    onClick={() => handleAddTag(tagInput)}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-50 transition font-light border-t"
+                    style={{ borderColor: '#E8EEF1', color: '#1d3e4c' }}
+                  >
+                    <i className="fa-solid fa-plus mr-2" style={{ color: '#1d3e4c' }}></i>
+                    Create "<strong>{tagInput.trim()}</strong>"
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          <p className="text-xs font-light mt-2" style={{ color: '#657b84' }}>
+            Type to search existing tags or create a new one. Press Enter or click to add.
+          </p>
+
           {selectedTags.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-3">
               {selectedTags.map((tag) => (

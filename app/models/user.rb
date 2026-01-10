@@ -8,6 +8,7 @@ class User < ApplicationRecord
   has_many :habits, dependent: :destroy
   has_many :habit_completions, dependent: :destroy
   has_many :journals, dependent: :destroy
+  has_many :tasks, dependent: :destroy
   has_many :tags, dependent: :destroy
 
   def clear_daily_habits_if_needed!

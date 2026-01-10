@@ -103,3 +103,38 @@ export const tagsApi = {
     method: 'DELETE',
   }),
 };
+
+// Tasks API methods
+export const tasksApi = {
+  // Fetch all tasks
+  fetchAll: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return apiRequest(`/tasks.json${query ? `?${query}` : ''}`);
+  },
+
+  // Fetch single task
+  fetchOne: (id) => apiRequest(`/tasks/${id}.json`),
+
+  // Create task
+  create: (data) => apiRequest('/tasks', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+
+  // Update task
+  update: (id, data) => apiRequest(`/tasks/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  }),
+
+  // Delete task
+  delete: (id) => apiRequest(`/tasks/${id}`, {
+    method: 'DELETE',
+  }),
+};
+
+// Categories API methods
+export const categoriesApi = {
+  // Fetch all categories
+  fetchAll: () => apiRequest('/categories.json'),
+};
