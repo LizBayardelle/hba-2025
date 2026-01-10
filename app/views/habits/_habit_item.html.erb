@@ -6,7 +6,8 @@
      data-count="<%= completion_count %>"
      data-streak="<%= streak %>"
      data-target="<%= habit.target_count %>"
-     data-category-color="<%= category.color %>">
+     data-category-color="<%= category.color %>"
+     data-selected-date="<%= defined?(@selected_date) ? @selected_date.to_s : Time.zone.today.to_s %>">
   <div class="flex items-center gap-3">
     <!-- Completion Indicator -->
     <div class="flex-shrink-0">

@@ -5,7 +5,7 @@ class HabitsController < ApplicationController
     @view_mode = params[:view] || 'category' # 'category' or 'time'
     @selected_date = params[:date] ? Date.parse(params[:date]) : Time.zone.today
 
-    @habits = current_user.habits.active.includes(:category, :habit_completions)
+    @habits = current_user.habits.active.includes(:category, :habit_completions, :tags, :habit_contents)
 
     # Get today's completions
     @completions = HabitCompletion.where(
@@ -16,10 +16,10 @@ class HabitsController < ApplicationController
     # Calculate streaks as of the selected date
     @streaks = {}
     @habits.each do |habit|
-      streak = 0
+      # Calculate current streak (including selected date if completed)
+      current_streak = 0
       date = @selected_date
 
-      # Count backwards from selected date while the target is met each day
       loop do
         completion = HabitCompletion.find_by(
           habit_id: habit.id,
@@ -27,14 +27,48 @@ class HabitsController < ApplicationController
         )
 
         if completion && completion.count >= habit.target_count
-          streak += 1
+          current_streak += 1
           date -= 1.day
         else
           break
         end
       end
 
-      @streaks[habit.id] = streak
+      # If selected date is not completed, check if there's a streak from yesterday
+      # This shows the "at risk" streak that could continue if they complete today
+      if current_streak == 0
+        yesterday = @selected_date - 1.day
+        yesterday_completion = HabitCompletion.find_by(
+          habit_id: habit.id,
+          completed_at: yesterday
+        )
+
+        if yesterday_completion && yesterday_completion.count >= habit.target_count
+          # Count the streak from yesterday backwards
+          streak_from_yesterday = 0
+          date = yesterday
+
+          loop do
+            completion = HabitCompletion.find_by(
+              habit_id: habit.id,
+              completed_at: date
+            )
+
+            if completion && completion.count >= habit.target_count
+              streak_from_yesterday += 1
+              date -= 1.day
+            else
+              break
+            end
+          end
+
+          @streaks[habit.id] = streak_from_yesterday
+        else
+          @streaks[habit.id] = 0
+        end
+      else
+        @streaks[habit.id] = current_streak
+      end
     end
 
     # Group habits based on view mode
@@ -58,6 +92,27 @@ class HabitsController < ApplicationController
     @completed_today = @habits.count { |h| (@completions[h.id] || 0) >= h.target_count }
     @total_habits = @habits.count
     @today_percentage = @total_habits > 0 ? (@completed_today * 100 / @total_habits).round : 0
+
+    respond_to do |format|
+      format.html
+      format.json {
+        render json: {
+          habits: @habits.map { |habit|
+            habit.as_json(
+              only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :category_id]
+            ).merge(
+              today_count: @completions[habit.id] || 0,
+              current_streak: @streaks[habit.id] || 0,
+              category_name: habit.category.name,
+              category_icon: habit.category.icon,
+              category_color: habit.category.color,
+              tags: habit.tags.map { |t| { id: t.id, name: t.name } },
+              habit_contents: habit.habit_contents.map { |c| { id: c.id, title: c.title, content_type: c.content_type } }
+            )
+          }
+        }
+      }
+    end
   end
 
   def show

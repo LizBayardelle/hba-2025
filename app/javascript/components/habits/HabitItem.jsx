@@ -1,15 +1,18 @@
-import React, { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import useCategoryStore from '../../stores/categoryStore';
+import React, { useState, useEffect } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import useDocumentsStore from '../../stores/documentsStore';
 
-const HabitCard = ({ habit, categoryColor, categoryDarkColor }) => {
-  const queryClient = useQueryClient();
-  const { openEditHabitModal } = useCategoryStore();
-  const { openViewModal, openNewModal } = useDocumentsStore();
+const HabitItem = ({ habit, categoryColor, categoryDarkColor, isFirst, onCompletionChange, selectedDate }) => {
+  const { openViewModal } = useDocumentsStore();
 
   const [count, setCount] = useState(habit.today_count || 0);
   const [streak, setStreak] = useState(habit.current_streak || 0);
+
+  // Update local state when habit data changes (e.g., when navigating to different dates)
+  useEffect(() => {
+    setCount(habit.today_count || 0);
+    setStreak(habit.current_streak || 0);
+  }, [habit.today_count, habit.current_streak]);
 
   // Increment mutation
   const incrementMutation = useMutation({
@@ -20,20 +23,25 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor }) => {
           'Content-Type': 'application/json',
           'X-CSRF-Token': document.querySelector('[name=csrf-token]').content,
         },
+        body: JSON.stringify({ date: selectedDate }),
       });
       if (!response.ok) throw new Error('Failed to increment');
       return response.json();
     },
     onMutate: () => {
-      // Optimistic update
-      setCount((prev) => prev + 1);
+      const wasComplete = count >= habit.target_count;
+      const newCount = count + 1;
+      setCount(newCount);
+      const isComplete = newCount >= habit.target_count;
+      if (wasComplete !== isComplete && onCompletionChange) {
+        onCompletionChange(isComplete ? 1 : -1);
+      }
     },
     onSuccess: (data) => {
       setCount(data.count);
       setStreak(data.streak);
     },
     onError: () => {
-      // Revert on error
       setCount(habit.today_count || 0);
     },
   });
@@ -47,20 +55,25 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor }) => {
           'Content-Type': 'application/json',
           'X-CSRF-Token': document.querySelector('[name=csrf-token]').content,
         },
+        body: JSON.stringify({ date: selectedDate }),
       });
       if (!response.ok) throw new Error('Failed to decrement');
       return response.json();
     },
     onMutate: () => {
-      // Optimistic update
-      setCount((prev) => Math.max(0, prev - 1));
+      const wasComplete = count >= habit.target_count;
+      const newCount = Math.max(0, count - 1);
+      setCount(newCount);
+      const isComplete = newCount >= habit.target_count;
+      if (wasComplete !== isComplete && onCompletionChange) {
+        onCompletionChange(isComplete ? 1 : -1);
+      }
     },
     onSuccess: (data) => {
       setCount(data.count);
       setStreak(data.streak);
     },
     onError: () => {
-      // Revert on error
       setCount(habit.today_count || 0);
     },
   });
@@ -81,9 +94,10 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor }) => {
 
   return (
     <div
-      className="px-6 py-4 transition flex items-center gap-3"
+      className={`p-4 transition ${!isFirst ? 'border-t' : ''}`}
+      style={!isFirst ? { borderColor: categoryColor } : {}}
     >
-      <div className="flex items-start gap-3 flex-1">
+      <div className="flex items-start gap-3">
         {/* Completion Indicator */}
         <div className="flex-shrink-0">
           {habit.target_count === 1 ? (
@@ -98,7 +112,11 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor }) => {
                 backgroundColor: count > 0 ? categoryColor : 'transparent',
               }}
             >
-              <i className={`fa-solid ${count > 0 ? 'fa-check' : 'fa-plus'}`}></i>
+              {incrementMutation.isPending || decrementMutation.isPending ? (
+                <i className="fa-solid fa-spinner fa-spin"></i>
+              ) : (
+                <i className={`fa-solid ${count > 0 ? 'fa-check' : 'fa-plus'}`}></i>
+              )}
             </button>
           ) : (
             // Counter with +/- buttons
@@ -108,25 +126,37 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor }) => {
             >
               <button
                 onClick={() => decrementMutation.mutate()}
-                disabled={decrementMutation.isPending}
+                disabled={decrementMutation.isPending || incrementMutation.isPending}
                 className="flex-1 h-10 px-[5px] flex items-center justify-center font-bold transition hover:bg-gray-50"
                 style={{ color: categoryColor }}
               >
-                <i className="fa-solid fa-minus"></i>
+                {decrementMutation.isPending ? (
+                  <i className="fa-solid fa-spinner fa-spin"></i>
+                ) : (
+                  <i className="fa-solid fa-minus"></i>
+                )}
               </button>
               <div
                 className="flex-[2] h-10 px-[10px] flex items-center justify-center font-bold"
                 style={{ color: categoryColor }}
               >
-                {count}
+                {incrementMutation.isPending || decrementMutation.isPending ? (
+                  <i className="fa-solid fa-spinner fa-spin"></i>
+                ) : (
+                  count
+                )}
               </div>
               <button
                 onClick={() => incrementMutation.mutate()}
-                disabled={incrementMutation.isPending}
+                disabled={incrementMutation.isPending || decrementMutation.isPending}
                 className="flex-1 h-10 px-[5px] flex items-center justify-center font-bold transition hover:bg-gray-50"
                 style={{ color: categoryColor }}
               >
-                <i className="fa-solid fa-plus"></i>
+                {incrementMutation.isPending ? (
+                  <i className="fa-solid fa-spinner fa-spin"></i>
+                ) : (
+                  <i className="fa-solid fa-plus"></i>
+                )}
               </button>
             </div>
           )}
@@ -219,37 +249,29 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor }) => {
         {streak > 0 && (
           <div className="flex-shrink-0">
             <div className="flex flex-col items-center">
+              {/* Show semi-transparent if not completed, full opacity if completed */}
               <div
-                className="text-2xl font-bold display-font"
+                className={`text-2xl font-bold display-font transition-opacity ${
+                  count >= habit.target_count ? 'opacity-100' : 'opacity-30'
+                }`}
                 style={{ color: categoryColor }}
               >
                 {streak}
               </div>
-              <div className="text-xs text-gray-500 font-semibold">day streak</div>
+              <div
+                className={`text-xs font-semibold transition-opacity ${
+                  count >= habit.target_count ? 'opacity-100' : 'opacity-40'
+                }`}
+                style={{ color: '#657b84' }}
+              >
+                day streak
+              </div>
             </div>
           </div>
         )}
-      </div>
-
-      {/* Actions (inline on the right) */}
-      <div className="flex gap-2 flex-shrink-0">
-        <button
-          onClick={openNewModal}
-          className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center transition"
-          title="Add content"
-        >
-          <i className="fa-solid fa-plus-circle" style={{ color: categoryColor }}></i>
-        </button>
-        <button
-          onClick={() => openEditHabitModal(habit.id, habit.category_id)}
-          className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center transition"
-          title="Edit"
-        >
-          <i className="fa-solid fa-edit" style={{ color: categoryColor }}></i>
-        </button>
       </div>
     </div>
   );
 };
 
-export default HabitCard;
+export default HabitItem;

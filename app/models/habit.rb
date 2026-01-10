@@ -26,11 +26,11 @@ class Habit < ApplicationRecord
     tags.pluck(:name)
   end
 
-  def calculate_streak!
+  def calculate_streak!(as_of_date = nil)
     streak = 0
-    date = Time.zone.today
+    date = as_of_date || Time.zone.today
 
-    # Count backwards from today while the target is met each day
+    # Count backwards from the specified date while the target is met each day
     loop do
       completion = habit_completions.find_by(completed_at: date)
 
@@ -43,8 +43,11 @@ class Habit < ApplicationRecord
       end
     end
 
-    # Update the current streak
-    update_column(:current_streak, streak)
+    # Only update the column if calculating for today
+    if as_of_date.nil? || as_of_date == Time.zone.today
+      update_column(:current_streak, streak)
+    end
+
     streak
   end
 
