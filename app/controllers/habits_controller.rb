@@ -67,7 +67,10 @@ class HabitsController < ApplicationController
     respond_to do |format|
       format.json {
         render json: @habit.as_json(
-          only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :category_id]
+          only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :category_id],
+          include: {
+            tags: { only: [:id, :name] }
+          }
         )
       }
     end
@@ -122,6 +125,6 @@ class HabitsController < ApplicationController
   private
 
   def habit_params
-    params.require(:habit).permit(:name, :description, :target_count, :frequency_type, :time_of_day, :importance, :category_id, :reminder_enabled, :start_date, :positive, :difficulty)
+    params.require(:habit).permit(:name, :description, :target_count, :frequency_type, :time_of_day, :importance, :category_id, :reminder_enabled, :start_date, :positive, :difficulty, tag_names: [])
   end
 end

@@ -82,7 +82,7 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor }) => {
   return (
     <div className="flex items-center gap-3">
       <div
-        className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition flex-1"
+        className="bg-white rounded-xl shadow-md px-6 py-4 hover:shadow-lg transition flex-1"
         style={{ borderLeft: `4px solid ${categoryColor}` }}
       >
         <div className="flex items-start gap-3">
@@ -150,22 +150,24 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor }) => {
                 {importanceSymbol}
               </div>
             )}
-
-            {/* Document icon */}
-            {habit.habit_contents && habit.habit_contents.length > 0 && (
-              <button
-                onClick={() => openViewModal(habit.habit_contents[0].id)}
-                className="text-sm hover:opacity-70 transition flex-shrink-0"
-                style={{ color: categoryColor }}
-                title="View attached content"
-              >
-                <i className="fa-solid fa-file-alt"></i>
-              </button>
-            )}
           </div>
 
           {/* Frequency and time info */}
           <div className="text-xs font-light flex items-center gap-2" style={{ color: '#657b84' }}>
+            {/* Document icon */}
+            {habit.habit_contents && habit.habit_contents.length > 0 && (
+              <>
+                <button
+                  onClick={() => openViewModal(habit.habit_contents[0].id)}
+                  className="text-sm hover:opacity-70 transition flex-shrink-0"
+                  style={{ color: categoryColor }}
+                  title="View attached content"
+                >
+                  <i className="fa-solid fa-file-alt"></i>
+                </button>
+                <span>•</span>
+              </>
+            )}
             <span>
               {habit.target_count} {habit.target_count === 1 ? 'time' : 'times'}
             </span>
@@ -181,6 +183,26 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor }) => {
                 </>
               )}
           </div>
+
+          {/* Tags */}
+          {habit.tags && habit.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {habit.tags.map((tag) => (
+                <a
+                  key={tag.id}
+                  href={`/tags?tag_id=${tag.id}`}
+                  className="text-xs px-2 py-1 rounded-full font-semibold hover:opacity-70 transition cursor-pointer flex items-center gap-1"
+                  style={{
+                    backgroundColor: '#E8EEF1',
+                    color: '#1d3e4c',
+                  }}
+                >
+                  <i className="fa-solid fa-tags text-[10px]"></i>
+                  {tag.name}
+                </a>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Streak Badge */}

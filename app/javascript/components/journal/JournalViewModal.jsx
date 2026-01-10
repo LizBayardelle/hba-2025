@@ -62,16 +62,18 @@ const JournalViewModal = () => {
         {journal.tags && journal.tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-6">
             {journal.tags.map((tag) => (
-              <span
+              <a
                 key={tag.id}
-                className="text-xs px-3 py-1.5 rounded-full font-semibold"
+                href={`/tags?tag_id=${tag.id}`}
+                className="text-xs px-3 py-1.5 rounded-full font-semibold hover:opacity-70 transition cursor-pointer flex items-center gap-1"
                 style={{
                   backgroundColor: '#E8EEF1',
                   color: '#1d3e4c',
                 }}
               >
+                <i className="fa-solid fa-tags text-[10px]"></i>
                 {tag.name}
-              </span>
+              </a>
             ))}
           </div>
         )}

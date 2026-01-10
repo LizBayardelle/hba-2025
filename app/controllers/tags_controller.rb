@@ -24,6 +24,7 @@ class TagsController < ApplicationController
 
   def show
     respond_to do |format|
+      format.html
       format.json do
         render json: {
           id: @tag.id,

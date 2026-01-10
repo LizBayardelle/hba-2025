@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import BaseModal from '../shared/BaseModal';
 import useCategoryStore from '../../stores/categoryStore';
+import { tagsApi } from '../../utils/api';
 
 const HabitFormModal = ({ categoryColor }) => {
   const queryClient = useQueryClient();
@@ -14,6 +15,16 @@ const HabitFormModal = ({ categoryColor }) => {
     frequency_type: 'day',
     time_of_day: 'anytime',
     importance: 'normal',
+  });
+
+  const [tagInput, setTagInput] = useState('');
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [showTagSuggestions, setShowTagSuggestions] = useState(false);
+
+  // Fetch all user tags for autocomplete
+  const { data: allTags = [] } = useQuery({
+    queryKey: ['tags'],
+    queryFn: tagsApi.fetchAll,
   });
 
   // Fetch habit data if editing
@@ -37,6 +48,7 @@ const HabitFormModal = ({ categoryColor }) => {
         time_of_day: habit.time_of_day || 'anytime',
         importance: habit.importance || 'normal',
       });
+      setSelectedTags(habit.tags?.map(t => t.name) || []);
     }
   }, [habit, mode]);
 
@@ -50,6 +62,8 @@ const HabitFormModal = ({ categoryColor }) => {
         time_of_day: 'anytime',
         importance: 'normal',
       });
+      setSelectedTags([]);
+      setTagInput('');
     }
   }, [isOpen, mode]);
 
@@ -69,17 +83,8 @@ const HabitFormModal = ({ categoryColor }) => {
       return response.json();
     },
     onSuccess: async (responseData) => {
-      // Add the new habit to the category query data
-      queryClient.setQueriesData(
-        { queryKey: ['category', categoryId], exact: false },
-        (oldData) => {
-          if (!oldData) return oldData;
-          return {
-            ...oldData,
-            habits: [...oldData.habits, { ...responseData.habit, today_count: 0, habit_contents: [] }]
-          };
-        }
-      );
+      // Invalidate and refetch to get fresh data with tags
+      await queryClient.invalidateQueries({ queryKey: ['category', categoryId] });
       closeHabitFormModal();
     },
   });
@@ -100,27 +105,8 @@ const HabitFormModal = ({ categoryColor }) => {
       return response.json();
     },
     onSuccess: async (responseData, variables) => {
-      // Update the category query data directly with the new habit data
-      const allQueries = queryClient.getQueriesData({ queryKey: ['category'] });
-      console.log('All category queries:', allQueries.map(([key]) => key));
-      console.log('Looking for categoryId:', categoryId, typeof categoryId);
-      console.log('habitId:', habitId, typeof habitId);
-
-      const queries = queryClient.getQueriesData({ queryKey: ['category', categoryId] });
-      console.log('Found queries:', queries.length);
-
-      queries.forEach(([queryKey, data]) => {
-        if (data) {
-          console.log('Updating query:', queryKey);
-          queryClient.setQueryData(queryKey, {
-            ...data,
-            habits: data.habits.map(h =>
-              h.id === habitId ? { ...h, ...variables } : h
-            )
-          });
-        }
-      });
-
+      // Invalidate and refetch to get fresh data with tags
+      await queryClient.invalidateQueries({ queryKey: ['category', categoryId] });
       closeHabitFormModal();
     },
   });
@@ -155,12 +141,47 @@ const HabitFormModal = ({ categoryColor }) => {
     },
   });
 
+  const handleAddTag = (tagName) => {
+    const trimmedTag = tagName.trim();
+    if (trimmedTag && !selectedTags.some(tag => tag.toLowerCase() === trimmedTag.toLowerCase())) {
+      setSelectedTags([...selectedTags, trimmedTag]);
+    }
+    setTagInput('');
+    setShowTagSuggestions(false);
+  };
+
+  const handleTagInputKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (tagInput.trim()) {
+        handleAddTag(tagInput);
+      }
+    } else if (e.key === 'Escape') {
+      setShowTagSuggestions(false);
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove) => {
+    setSelectedTags(selectedTags.filter(tag => tag !== tagToRemove));
+  };
+
+  const filteredSuggestions = (allTags || [])
+    .filter(tag =>
+      tag.name.toLowerCase().includes(tagInput.toLowerCase()) &&
+      !selectedTags.some(selectedTag => selectedTag.toLowerCase() === tag.name.toLowerCase())
+    )
+    .slice(0, 5);
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    const submitData = {
+      ...formData,
+      tag_names: selectedTags,
+    };
     if (mode === 'edit') {
-      updateMutation.mutate(formData);
+      updateMutation.mutate(submitData);
     } else {
-      createMutation.mutate(formData);
+      createMutation.mutate(submitData);
     }
   };
 
@@ -290,6 +311,87 @@ const HabitFormModal = ({ categoryColor }) => {
             <option value="evening">Evening</option>
             <option value="anytime">Anytime</option>
           </select>
+        </div>
+
+        {/* Tags */}
+        <div className="mb-6">
+          <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
+            Tags (optional)
+          </label>
+          <div className="relative">
+            <input
+              type="text"
+              value={tagInput}
+              onChange={(e) => {
+                setTagInput(e.target.value);
+                setShowTagSuggestions(e.target.value.length > 0);
+              }}
+              onKeyDown={handleTagInputKeyDown}
+              onFocus={() => tagInput.length > 0 && setShowTagSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
+              className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
+              style={{ borderColor: '#E8EEF1' }}
+              placeholder="Type to search or add new tag"
+            />
+
+            {showTagSuggestions && (filteredSuggestions.length > 0 || tagInput.trim()) && (
+              <div
+                className="absolute z-10 w-full mt-2 bg-white border-2 rounded-lg shadow-lg max-h-48 overflow-y-auto"
+                style={{ borderColor: '#E8EEF1' }}
+              >
+                {filteredSuggestions.map((tag) => (
+                  <button
+                    key={tag.id}
+                    type="button"
+                    onClick={() => handleAddTag(tag.name)}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-50 transition font-light"
+                    style={{ color: '#1d3e4c' }}
+                  >
+                    {tag.name}
+                  </button>
+                ))}
+                {tagInput.trim() && !filteredSuggestions.find(t => t.name.toLowerCase() === tagInput.toLowerCase()) && (
+                  <button
+                    type="button"
+                    onClick={() => handleAddTag(tagInput)}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-50 transition font-light border-t"
+                    style={{ borderColor: '#E8EEF1', color: '#1d3e4c' }}
+                  >
+                    <i className="fa-solid fa-plus mr-2" style={{ color: '#1d3e4c' }}></i>
+                    Create "<strong>{tagInput.trim()}</strong>"
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          <p className="text-xs font-light mt-2" style={{ color: '#657b84' }}>
+            Type to search existing tags or create a new one. Press Enter or click to add.
+          </p>
+
+          {selectedTags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              {selectedTags.map((tag) => (
+                <span
+                  key={tag}
+                  className="text-xs px-3 py-1.5 rounded-full font-semibold flex items-center gap-2"
+                  style={{
+                    backgroundColor: '#E8EEF1',
+                    color: '#1d3e4c',
+                  }}
+                >
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveTag(tag)}
+                    className="hover:opacity-70"
+                  >
+                    <i className="fa-solid fa-times text-xs"></i>
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Importance */}

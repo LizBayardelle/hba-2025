@@ -146,16 +146,18 @@ const DocumentsPage = ({ habits }) => {
                           <div className="flex flex-wrap items-center gap-2 mt-2">
                             {/* Tags */}
                             {content.tags?.map((tag) => (
-                              <span
+                              <a
                                 key={tag.id}
-                                className="text-xs px-2 py-1 rounded-full font-semibold"
+                                href={`/tags?tag_id=${tag.id}`}
+                                className="text-xs px-2 py-1 rounded-full font-semibold hover:opacity-70 transition cursor-pointer flex items-center gap-1"
                                 style={{
                                   backgroundColor: '#E8EEF1',
                                   color: '#1d3e4c',
                                 }}
                               >
+                                <i className="fa-solid fa-tags text-[10px]"></i>
                                 {tag.name}
-                              </span>
+                              </a>
                             ))}
 
                             {/* Habits */}
@@ -166,12 +168,13 @@ const DocumentsPage = ({ habits }) => {
                               return (
                                 <span
                                   key={habit.id}
-                                  className="text-xs px-2 py-1 rounded-full font-semibold"
+                                  className="text-xs px-2 py-1 rounded-full font-semibold flex items-center gap-1"
                                   style={{
                                     backgroundColor: `${categoryColor}20`,
                                     color: categoryColor,
                                   }}
                                 >
+                                  <i className="fa-solid fa-chart-line text-[10px]"></i>
                                   {habit.name}
                                 </span>
                               );

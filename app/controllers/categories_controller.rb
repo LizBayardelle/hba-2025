@@ -4,7 +4,7 @@ class CategoriesController < ApplicationController
 
   def show
     @sort_by = params[:sort] || 'priority'
-    habits = @category.habits.where(archived_at: nil).includes(:habit_contents).to_a
+    habits = @category.habits.where(archived_at: nil).includes(:habit_contents, :tags).to_a
 
     # Define sort orders
     importance_order = { 'critical' => 1, 'important' => 2, 'normal' => 3, 'optional' => 4 }
@@ -42,7 +42,10 @@ class CategoriesController < ApplicationController
             completion = @today_completions[habit.id]
             habit.as_json(
               only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :category_id],
-              methods: [:current_streak]
+              methods: [:current_streak],
+              include: {
+                tags: { only: [:id, :name] }
+              }
             ).merge(
               today_count: completion ? completion.count : 0,
               habit_contents: habit.habit_contents.map { |content|

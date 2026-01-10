@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { tagsApi } from '../../utils/api';
 import useTagsStore from '../../stores/tagsStore';
@@ -10,6 +10,15 @@ import DocumentViewModal from '../documents/DocumentViewModal';
 const TagsPage = () => {
   const { selectedTagId, setSelectedTagId, openEditModal, clearSelectedTag } = useTagsStore();
   const queryClient = useQueryClient();
+
+  // Check URL params for tag_id on mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tagIdFromUrl = urlParams.get('tag_id');
+    if (tagIdFromUrl) {
+      setSelectedTagId(parseInt(tagIdFromUrl, 10));
+    }
+  }, [setSelectedTagId]);
 
   // Fetch all tags
   const { data: tags = [], isLoading, error } = useQuery({
