@@ -183,9 +183,9 @@ const HabitItem = ({ habit, categoryColor, categoryDarkColor, isFirst, onComplet
           {/* Badges: Document, Frequency, Time, Tags */}
           <div className="flex flex-wrap items-center gap-1.5 mt-1">
             {/* Document badge */}
-            {habit.habit_contents && habit.habit_contents.length > 0 && (
+            {habit.documents && habit.documents.length > 0 && (
               <button
-                onClick={() => openViewModal(habit.habit_contents[0].id)}
+                onClick={() => openViewModal(habit.documents[0].id)}
                 className="text-xs px-2 py-0.5 rounded-full font-semibold hover:opacity-70 transition cursor-pointer flex items-center gap-1"
                 style={{
                   backgroundColor: `${categoryColor}15`,
@@ -194,7 +194,7 @@ const HabitItem = ({ habit, categoryColor, categoryDarkColor, isFirst, onComplet
                 title="View attached content"
               >
                 <i className="fa-solid fa-file-alt text-[10px]"></i>
-                {habit.habit_contents[0].title}
+                {habit.documents[0].title}
               </button>
             )}
 

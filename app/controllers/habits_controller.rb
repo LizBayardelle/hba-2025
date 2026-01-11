@@ -5,7 +5,7 @@ class HabitsController < ApplicationController
     @view_mode = params[:view] || 'category' # 'category' or 'time'
     @selected_date = params[:date] ? Date.parse(params[:date]) : Time.zone.today
 
-    @habits = current_user.habits.active.includes(:category, :habit_completions, :tags, :habit_contents)
+    @habits = current_user.habits.active.includes(:category, :habit_completions, :tags, :documents)
 
     # Get today's completions
     @completions = HabitCompletion.where(
@@ -107,7 +107,7 @@ class HabitsController < ApplicationController
               category_icon: habit.category.icon,
               category_color: habit.category.color,
               tags: habit.tags.map { |t| { id: t.id, name: t.name } },
-              habit_contents: habit.habit_contents.map { |c| { id: c.id, title: c.title, content_type: c.content_type } }
+              documents: habit.documents.map { |c| { id: c.id, title: c.title, content_type: c.content_type } }
             )
           }
         }

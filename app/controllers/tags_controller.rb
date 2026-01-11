@@ -14,7 +14,8 @@ class TagsController < ApplicationController
             name: tag.name,
             journals_count: tag.journals.count,
             habits_count: tag.habits.count,
-            habit_contents_count: tag.habit_contents.count,
+            documents_count: tag.documents.count,
+            tasks_count: tag.tasks.count,
             total_count: tag.taggings.count
           }
         }
@@ -47,13 +48,24 @@ class TagsController < ApplicationController
               category_color: h.category.color
             }
           },
-          habit_contents: @tag.habit_contents.ordered.map { |hc|
+          documents: @tag.documents.ordered.map { |doc|
             {
-              id: hc.id,
-              type: 'habit_content',
-              title: hc.title,
-              content_type: hc.content_type,
-              habits: hc.habits.map { |h| { id: h.id, name: h.name, category_id: h.category_id } }
+              id: doc.id,
+              type: 'document',
+              title: doc.title,
+              content_type: doc.content_type,
+              habits: doc.habits.map { |h| { id: h.id, name: h.name, category_id: h.category_id } }
+            }
+          },
+          tasks: @tag.tasks.order(created_at: :desc).map { |t|
+            {
+              id: t.id,
+              type: 'task',
+              name: t.name,
+              completed: t.completed,
+              category_id: t.category_id,
+              category_name: t.category&.name,
+              category_color: t.category&.color
             }
           }
         }

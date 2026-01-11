@@ -110,18 +110,21 @@ const DocumentsPage = ({ habits }) => {
         )}
 
         {!isLoading && !error && documents.length > 0 && (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {documents.map((content) => {
               const iconData = getIconData(content.content_type);
               return (
-                <div key={content.id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition">
-                  <div className="p-6">
-                    <div className="flex items-start justify-between gap-4">
+                <div key={content.id} className="flex items-start gap-3">
+                  <div
+                    onClick={() => openViewModal(content.id)}
+                    className="bg-white rounded-lg p-4 border shadow-md hover:shadow-lg transition cursor-pointer flex-1"
+                    style={{ borderColor: '#E8EEF1' }}
+                  >
+                    <div className="flex items-start gap-4">
                       {/* Content Info */}
                       <div className="flex-1 min-w-0">
                         <h3
-                          onClick={() => openViewModal(content.id)}
-                          className="text-lg font-bold display-font cursor-pointer hover:opacity-70 transition"
+                          className="text-lg font-bold display-font"
                           style={{ color: '#1d3e4c' }}
                         >
                           {content.title}
@@ -149,13 +152,14 @@ const DocumentsPage = ({ habits }) => {
                               <a
                                 key={tag.id}
                                 href={`/tags?tag_id=${tag.id}`}
-                                className="text-xs px-2 py-1 rounded-full font-semibold hover:opacity-70 transition cursor-pointer flex items-center gap-1"
+                                onClick={(e) => e.stopPropagation()}
+                                className="text-xs px-2 py-1 rounded-lg font-medium hover:opacity-70 transition cursor-pointer flex items-center gap-1"
                                 style={{
                                   backgroundColor: '#E8EEF1',
                                   color: '#1d3e4c',
                                 }}
                               >
-                                <i className="fa-solid fa-tags text-[10px]"></i>
+                                <i className="fa-solid fa-tag text-[10px]"></i>
                                 {tag.name}
                               </a>
                             ))}
@@ -168,7 +172,7 @@ const DocumentsPage = ({ habits }) => {
                               return (
                                 <span
                                   key={habit.id}
-                                  className="text-xs px-2 py-1 rounded-full font-semibold flex items-center gap-1"
+                                  className="text-xs px-2 py-1 rounded-lg font-medium flex items-center gap-1"
                                   style={{
                                     backgroundColor: `${categoryColor}20`,
                                     color: categoryColor,
@@ -182,27 +186,20 @@ const DocumentsPage = ({ habits }) => {
                           </div>
                         )}
                       </div>
-
-                      {/* Actions */}
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => openEditModal(content.id)}
-                          className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center transition"
-                          title="Edit"
-                        >
-                          <i className="fa-solid fa-edit" style={{ color: '#657b84' }}></i>
-                        </button>
-                        <button
-                          onClick={() => handleDelete(content.id)}
-                          className="w-8 h-8 rounded-lg hover:bg-red-50 flex items-center justify-center transition"
-                          title="Delete"
-                          disabled={deleteMutation.isPending}
-                        >
-                          <i className="fa-solid fa-trash" style={{ color: '#DC2626' }}></i>
-                        </button>
-                      </div>
                     </div>
                   </div>
+
+                  {/* Edit button outside card */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openEditModal(content.id);
+                    }}
+                    className="w-5 h-5 flex items-center justify-center transition hover:opacity-70 mt-0.5"
+                    title="Edit"
+                  >
+                    <i className="fa-solid fa-pen text-sm" style={{ color: '#9CA3A8' }}></i>
+                  </button>
                 </div>
               );
             })}

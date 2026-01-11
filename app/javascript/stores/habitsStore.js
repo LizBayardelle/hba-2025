@@ -37,6 +37,7 @@ const getInitialView = () => {
 const useHabitsStore = create((set) => ({
   viewMode: getInitialView(),
   selectedDate: getInitialDate(),
+  viewModal: { isOpen: false, habitId: null },
 
   setViewMode: (mode) => set((state) => {
     updateURL(state.selectedDate, mode);
@@ -69,6 +70,9 @@ const useHabitsStore = create((set) => ({
     updateURL(newDate, state.viewMode);
     return { selectedDate: newDate };
   }),
+
+  openViewModal: (habitId) => set({ viewModal: { isOpen: true, habitId } }),
+  closeViewModal: () => set({ viewModal: { isOpen: false, habitId: null } }),
 }));
 
 export default useHabitsStore;

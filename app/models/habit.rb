@@ -2,7 +2,7 @@ class Habit < ApplicationRecord
   belongs_to :category
   belongs_to :user
   has_many :habit_completions, dependent: :destroy
-  has_and_belongs_to_many :habit_contents
+  has_and_belongs_to_many :documents
   has_many :taggings, as: :taggable, dependent: :destroy
   has_many :tags, through: :taggings
 
@@ -24,6 +24,11 @@ class Habit < ApplicationRecord
 
   def tag_names
     tags.pluck(:name)
+  end
+
+  def completions_for_date(date)
+    completion = habit_completions.find_by(completed_at: date)
+    completion ? completion.count : 0
   end
 
   def calculate_streak!(as_of_date = nil)

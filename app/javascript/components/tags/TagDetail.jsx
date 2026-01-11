@@ -3,10 +3,14 @@ import { useQuery } from '@tanstack/react-query';
 import { tagsApi } from '../../utils/api';
 import useJournalStore from '../../stores/journalStore';
 import useDocumentsStore from '../../stores/documentsStore';
+import useTasksStore from '../../stores/tasksStore';
+import useHabitsStore from '../../stores/habitsStore';
 
 const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
   const { openViewModal: openJournalViewModal } = useJournalStore();
   const { openViewModal: openDocumentViewModal } = useDocumentsStore();
+  const { openViewModal: openTaskViewModal } = useTasksStore();
+  const { openViewModal: openHabitViewModal } = useHabitsStore();
   const { data: tag, isLoading, error } = useQuery({
     queryKey: ['tag', tagId],
     queryFn: () => tagsApi.fetchOne(tagId),
@@ -24,7 +28,7 @@ const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl shadow-md p-12">
+      <div className="bg-white rounded-lg shadow-md p-12">
         <div className="flex items-center justify-center">
           <div
             className="animate-spin rounded-full h-12 w-12 border-b-2"
@@ -37,7 +41,7 @@ const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
 
   if (error) {
     return (
-      <div className="bg-white rounded-xl shadow-md p-12 text-center">
+      <div className="bg-white rounded-lg shadow-md p-12 text-center">
         <i className="fa-solid fa-exclamation-circle text-5xl mb-4" style={{ color: '#DC2626' }}></i>
         <p style={{ color: '#DC2626' }}>Error loading tag: {error.message}</p>
       </div>
@@ -46,10 +50,10 @@ const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
 
   if (!tag) return null;
 
-  const totalItems = tag.journals.length + tag.habits.length + tag.habit_contents.length;
+  const totalItems = (tag.journals?.length || 0) + (tag.habits?.length || 0) + (tag.documents?.length || 0) + (tag.tasks?.length || 0);
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-6">
+    <div className="bg-white rounded-lg shadow-md p-6">
       <div className="mb-6">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3 mb-2">
@@ -92,7 +96,7 @@ const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
 
       <div className="space-y-6">
         {/* Journals Section */}
-        {tag.journals.length > 0 && (
+        {tag.journals?.length > 0 && (
           <div>
             <h3 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: '#1d3e4c' }}>
               <i className="fa-solid fa-book"></i>
@@ -103,7 +107,7 @@ const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
                 <button
                   key={journal.id}
                   onClick={() => openJournalViewModal(journal.id)}
-                  className="w-full text-left p-4 rounded-lg border-2 transition hover:shadow-md"
+                  className="w-full text-left p-4 rounded-lg border shadow-md hover:shadow-lg transition"
                   style={{ borderColor: '#E8EEF1' }}
                 >
                   <div className="flex items-start justify-between mb-2">
@@ -124,18 +128,20 @@ const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
         )}
 
         {/* Habits Section */}
-        {tag.habits.length > 0 && (
+        {tag.habits?.length > 0 && (
           <div>
             <h3 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: '#1d3e4c' }}>
-              <i className="fa-solid fa-check-circle"></i>
-              Habits ({tag.habits.length})
+              <i className="fa-solid fa-chart-line"></i>
+              Habits ({tag.habits?.length})
             </h3>
             <div className="space-y-3">
               {tag.habits.map((habit) => (
-                <a
+                <button
                   key={habit.id}
-                  href={`/categories/${habit.category_id}`}
-                  className="block p-4 rounded-lg border-2 transition hover:shadow-md"
+                  onClick={() => openHabitViewModal(habit.id)}
+                  data-habit-id={habit.id}
+                  data-category-id={habit.category_id}
+                  className="w-full text-left p-4 rounded-lg border shadow-md hover:shadow-lg transition"
                   style={{ borderColor: '#E8EEF1' }}
                 >
                   <div className="flex items-center justify-between">
@@ -157,31 +163,31 @@ const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
                     </div>
                     <i className="fa-solid fa-arrow-right text-xs" style={{ color: '#1d3e4c' }}></i>
                   </div>
-                </a>
+                </button>
               ))}
             </div>
           </div>
         )}
 
         {/* Documents Section */}
-        {tag.habit_contents.length > 0 && (
+        {tag.documents?.length > 0 && (
           <div>
             <h3 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: '#1d3e4c' }}>
               <i className="fa-solid fa-file-alt"></i>
-              Documents ({tag.habit_contents.length})
+              Documents ({tag.documents?.length})
             </h3>
             <div className="space-y-3">
-              {tag.habit_contents.map((content) => (
+              {tag.documents.map((content) => (
                 <button
                   key={content.id}
                   onClick={() => openDocumentViewModal(content.id)}
-                  className="w-full text-left p-4 rounded-lg border-2 transition hover:shadow-md"
+                  className="w-full text-left p-4 rounded-lg border shadow-md hover:shadow-lg transition"
                   style={{ borderColor: '#E8EEF1' }}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span
-                        className="text-xs px-2 py-1 rounded font-semibold"
+                        className="text-xs px-2 py-1 rounded-lg font-medium"
                         style={{ backgroundColor: '#E8EEF1', color: '#1d3e4c' }}
                       >
                         {content.content_type}
@@ -197,6 +203,51 @@ const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
                       Used in: {content.habits.map(h => h.name).join(', ')}
                     </div>
                   )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Tasks Section */}
+        {tag.tasks?.length > 0 && (
+          <div>
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2" style={{ color: '#1d3e4c' }}>
+              <i className="fa-solid fa-check"></i>
+              Tasks ({tag.tasks?.length})
+            </h3>
+            <div className="space-y-3">
+              {tag.tasks.map((task) => (
+                <button
+                  key={task.id}
+                  onClick={() => openTaskViewModal(task.id)}
+                  className="w-full text-left p-4 rounded-lg border shadow-md hover:shadow-lg transition"
+                  style={{ borderColor: '#E8EEF1', opacity: task.completed ? 0.6 : 1 }}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        {task.completed && (
+                          <i className="fa-solid fa-check-circle text-sm" style={{ color: '#6B8A99' }}></i>
+                        )}
+                        <span className="font-semibold" style={{ color: '#1d3e4c' }}>
+                          {task.name}
+                        </span>
+                      </div>
+                      {task.category && (
+                        <span
+                          className="text-xs px-2 py-1 rounded-lg font-medium"
+                          style={{
+                            backgroundColor: `${task.category_color}20`,
+                            color: task.category_color,
+                          }}
+                        >
+                          {task.category_name}
+                        </span>
+                      )}
+                    </div>
+                    <i className="fa-solid fa-arrow-right text-xs" style={{ color: '#1d3e4c' }}></i>
+                  </div>
                 </button>
               ))}
             </div>

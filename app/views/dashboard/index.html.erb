@@ -398,8 +398,8 @@
                   <div class="text-sm font-semibold <%= is_complete ? 'line-through opacity-60' : '' %>" style="color: <%= is_complete ? light_color : category.color %>;">
                     <%= habit.name %>
                   </div>
-                  <% if habit.habit_contents.any? %>
-                    <%= link_to habit_content_path(habit.habit_contents.first),
+                  <% if habit.documents.any? %>
+                    <%= link_to habit_content_path(habit.documents.first),
                         class: "flex-shrink-0 text-xs hover:opacity-70 transition",
                         style: "color: #{category.color};",
                         title: "View attached content",

@@ -6,6 +6,8 @@ import TagDetail from './TagDetail';
 import TagEditModal from './TagEditModal';
 import JournalViewModal from '../journal/JournalViewModal';
 import DocumentViewModal from '../documents/DocumentViewModal';
+import TaskViewModal from '../tasks/TaskViewModal';
+import HabitViewModal from '../habits/HabitViewModal';
 
 const TagsPage = () => {
   const { selectedTagId, setSelectedTagId, openEditModal, clearSelectedTag } = useTagsStore();
@@ -19,6 +21,18 @@ const TagsPage = () => {
       setSelectedTagId(parseInt(tagIdFromUrl, 10));
     }
   }, [setSelectedTagId]);
+
+  // Update URL when selected tag changes
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (selectedTagId) {
+      params.set('tag_id', selectedTagId);
+    } else {
+      params.delete('tag_id');
+    }
+    const newUrl = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
+    window.history.replaceState({}, '', newUrl);
+  }, [selectedTagId]);
 
   // Fetch all tags
   const { data: tags = [], isLoading, error } = useQuery({
@@ -83,7 +97,7 @@ const TagsPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Tags List */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-md p-6">
+            <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-lg font-semibold mb-4" style={{ color: '#1d3e4c' }}>
                 All Tags ({tags.length})
               </h2>
@@ -111,7 +125,7 @@ const TagsPage = () => {
                     style={{ color: '#1d3e4c40' }}
                   ></i>
                   <p className="text-sm font-light" style={{ color: '#657b84' }}>
-                    No tags yet. Tags will appear here as you add them to journals, habits, and documents.
+                    No tags yet. Tags will appear here as you add them to journals, habits, documents, and tasks.
                   </p>
                 </div>
               )}
@@ -154,14 +168,20 @@ const TagsPage = () => {
                           )}
                           {tag.habits_count > 0 && (
                             <span>
-                              <i className="fa-solid fa-check-circle mr-1"></i>
+                              <i className="fa-solid fa-chart-line mr-1"></i>
                               {tag.habits_count}
                             </span>
                           )}
-                          {tag.habit_contents_count > 0 && (
+                          {tag.documents_count > 0 && (
                             <span>
                               <i className="fa-solid fa-file-alt mr-1"></i>
-                              {tag.habit_contents_count}
+                              {tag.documents_count}
+                            </span>
+                          )}
+                          {tag.tasks_count > 0 && (
+                            <span>
+                              <i className="fa-solid fa-check mr-1"></i>
+                              {tag.tasks_count}
                             </span>
                           )}
                         </div>
@@ -183,7 +203,7 @@ const TagsPage = () => {
                 deletePending={deleteMutation.isPending}
               />
             ) : (
-              <div className="bg-white rounded-xl shadow-md p-12 text-center">
+              <div className="bg-white rounded-lg shadow-md p-12 text-center">
                 <i
                   className="fa-solid fa-hand-pointer text-6xl mb-4"
                   style={{ color: '#1d3e4c40' }}
@@ -201,6 +221,8 @@ const TagsPage = () => {
       <TagEditModal />
       <JournalViewModal />
       <DocumentViewModal />
+      <TaskViewModal />
+      <HabitViewModal />
     </>
   );
 };

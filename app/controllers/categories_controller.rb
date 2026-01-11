@@ -7,14 +7,29 @@ class CategoriesController < ApplicationController
 
     respond_to do |format|
       format.json {
-        render json: @categories.as_json(only: [:id, :name, :color, :icon, :description])
+        render json: @categories.map { |category|
+          category.as_json(only: [:id, :name, :color, :icon, :description]).merge(
+            habits: category.habits.active.map { |habit|
+              habit.as_json(
+                only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :category_id],
+                include: {
+                  tags: { only: [:id, :name] },
+                  documents: { only: [:id, :title, :content_type] }
+                }
+              ).merge(
+                today_count: habit.completions_for_date(Date.today),
+                current_streak: habit.current_streak
+              )
+            }
+          )
+        }
       }
     end
   end
 
   def show
     @sort_by = params[:sort] || 'priority'
-    habits = @category.habits.where(archived_at: nil).includes(:habit_contents, :tags).to_a
+    habits = @category.habits.where(archived_at: nil).includes(:documents, :tags).to_a
 
     # Define sort orders
     importance_order = { 'critical' => 1, 'important' => 2, 'normal' => 3, 'optional' => 4 }
@@ -58,7 +73,7 @@ class CategoriesController < ApplicationController
               }
             ).merge(
               today_count: completion ? completion.count : 0,
-              habit_contents: habit.habit_contents.map { |content|
+              documents: habit.documents.map { |content|
                 { id: content.id, title: content.title, content_type: content.content_type }
               }
             )

@@ -138,3 +138,9 @@ export const categoriesApi = {
   // Fetch all categories
   fetchAll: () => apiRequest('/categories.json'),
 };
+
+// Habits API methods
+export const habitsApi = {
+  // Fetch single habit
+  fetchOne: (categoryId, habitId) => apiRequest(`/categories/${categoryId}/habits/${habitId}.json`),
+};
