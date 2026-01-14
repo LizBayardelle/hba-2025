@@ -355,12 +355,14 @@
                 else 'anytime'
                 end
 
-                priority_group = habit.importance || 'normal'
+                priority_group = habit.importance_level_id ? "level_#{habit.importance_level_id}" : 'none'
 
                 {
                   habit: habit,
                   time_group: time_group,
-                  priority_group: priority_group
+                  priority_group: priority_group,
+                  priority_name: habit.importance_level&.name || 'No Priority',
+                  priority_rank: habit.importance_level&.rank || 999
                 }
               end
 
@@ -383,6 +385,8 @@
                    data-health="<%= habit.health %>"
                    data-time-group="<%= habit_data[:time_group] %>"
                    data-priority-group="<%= habit_data[:priority_group] %>"
+                   data-priority-name="<%= habit_data[:priority_name] %>"
+                   data-priority-rank="<%= habit_data[:priority_rank] %>"
                    data-category-color="<%= category.color %>"
                    data-light-color="<%= light_color %>">
                 <button
@@ -482,19 +486,36 @@ function switchFocusView(view) {
       groups[group].push(item);
     });
   } else {
-    groupOrder = ['critical', 'important', 'normal', 'optional'];
-    groupIcons = {
-      'critical': 'fa-triangle-exclamation',
-      'important': 'fa-circle-exclamation',
-      'normal': 'fa-circle',
-      'optional': 'fa-circle-question'
-    };
+    // Group by user-defined importance levels
+    const priorityGroups = {};
 
     habitItems.forEach(item => {
       const group = item.dataset.priorityGroup;
-      if (!groups[group]) groups[group] = [];
-      groups[group].push(item);
+      const name = item.dataset.priorityName;
+      const rank = parseInt(item.dataset.priorityRank);
+
+      if (!priorityGroups[group]) {
+        priorityGroups[group] = {
+          name: name,
+          rank: rank,
+          items: []
+        };
+      }
+      priorityGroups[group].items.push(item);
     });
+
+    // Sort groups by rank
+    groupOrder = Object.keys(priorityGroups).sort((a, b) => {
+      return priorityGroups[a].rank - priorityGroups[b].rank;
+    });
+
+    // Build groups object
+    groupOrder.forEach(key => {
+      groups[key] = priorityGroups[key].items;
+    });
+
+    // No icons needed - we'll just use group names
+    groupIcons = {};
   }
 
   // Clear container
@@ -510,16 +531,25 @@ function switchFocusView(view) {
     const headerDiv = document.createElement('div');
     headerDiv.className = 'flex items-center gap-2 mb-2';
 
-    const icon = document.createElement('i');
-    icon.className = `fa-solid ${groupIcons[groupName]} text-sm`;
-    icon.style.color = '#1d3e4c';
+    // Only add icon for time view
+    if (view === 'time' && groupIcons[groupName]) {
+      const icon = document.createElement('i');
+      icon.className = `fa-solid ${groupIcons[groupName]} text-sm`;
+      icon.style.color = '#1d3e4c';
+      headerDiv.appendChild(icon);
+    }
 
     const title = document.createElement('div');
     title.className = 'text-sm font-semibold';
     title.style.color = '#1d3e4c';
-    title.textContent = groupName.charAt(0).toUpperCase() + groupName.slice(1);
 
-    headerDiv.appendChild(icon);
+    // For priority view, use the priority name from the first item in the group
+    if (view === 'priority' && groups[groupName].length > 0) {
+      title.textContent = groups[groupName][0].dataset.priorityName;
+    } else {
+      title.textContent = groupName.charAt(0).toUpperCase() + groupName.slice(1);
+    }
+
     headerDiv.appendChild(title);
 
     // Create habits container

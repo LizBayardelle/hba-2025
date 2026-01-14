@@ -13,6 +13,12 @@ Rails.application.routes.draw do
   get 'settings', to: 'settings#index'
   patch 'settings', to: 'settings#update'
 
+  get 'settings/importance_levels', to: 'settings#importance_levels'
+  post 'settings/importance_levels', to: 'settings#create_importance_level'
+  get 'settings/importance_levels/:id', to: 'settings#show_importance_level'
+  patch 'settings/importance_levels/:id', to: 'settings#update_importance_level'
+  delete 'settings/importance_levels/:id', to: 'settings#destroy_importance_level'
+
   resources :journals, only: [:index, :show, :create, :update, :destroy]
   resources :tasks, only: [:index, :show, :create, :update, :destroy]
   resources :tags, only: [:index, :show, :update, :destroy]

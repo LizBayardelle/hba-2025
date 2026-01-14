@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_01_10_225944) do
+ActiveRecord::Schema[7.2].define(version: 2026_01_11_042525) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -124,8 +124,22 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_10_225944) do
     t.integer "consecutive_misses", default: 0, null: false
     t.integer "misses_this_week", default: 0, null: false
     t.datetime "last_health_check_at"
+    t.bigint "importance_level_id"
     t.index ["category_id"], name: "index_habits_on_category_id"
+    t.index ["importance_level_id"], name: "index_habits_on_importance_level_id"
     t.index ["user_id"], name: "index_habits_on_user_id"
+  end
+
+  create_table "importance_levels", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "name", null: false
+    t.integer "rank", null: false
+    t.string "icon"
+    t.string "color"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "rank"], name: "index_importance_levels_on_user_id_and_rank", unique: true
+    t.index ["user_id"], name: "index_importance_levels_on_user_id"
   end
 
   create_table "journals", force: :cascade do |t|
@@ -173,11 +187,13 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_10_225944) do
     t.datetime "archived_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "importance_level_id"
     t.index ["archived_at"], name: "index_tasks_on_archived_at"
     t.index ["attached_document_id"], name: "index_tasks_on_attached_document_id"
     t.index ["category_id"], name: "index_tasks_on_category_id"
     t.index ["completed"], name: "index_tasks_on_completed"
     t.index ["due_date"], name: "index_tasks_on_due_date"
+    t.index ["importance_level_id"], name: "index_tasks_on_importance_level_id"
     t.index ["user_id"], name: "index_tasks_on_user_id"
   end
 
@@ -209,10 +225,13 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_10_225944) do
   add_foreign_key "habit_completions", "habits"
   add_foreign_key "habit_completions", "users"
   add_foreign_key "habits", "categories"
+  add_foreign_key "habits", "importance_levels"
   add_foreign_key "habits", "users"
+  add_foreign_key "importance_levels", "users"
   add_foreign_key "journals", "users"
   add_foreign_key "taggings", "tags"
   add_foreign_key "tags", "users"
   add_foreign_key "tasks", "categories"
+  add_foreign_key "tasks", "importance_levels"
   add_foreign_key "tasks", "users"
 end

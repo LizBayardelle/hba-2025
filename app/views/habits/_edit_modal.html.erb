@@ -39,12 +39,14 @@
             style: "border-color: #E8EEF1;" %>
       </div>
 
-      <!-- Importance -->
+      <!-- Importance Level -->
       <div class="mb-6">
-        <%= f.label :importance, class: "block mb-2" %>
-        <%= f.select :importance,
-            [['Critical (!!)', 'critical'], ['Important (!)', 'important'], ['Normal', 'normal'], ['Optional (?)', 'optional']],
-            {},
+        <%= f.label :importance_level_id, "Importance Level", class: "block mb-2" %>
+        <%= f.collection_select :importance_level_id,
+            current_user.importance_levels.order(:rank),
+            :id,
+            :name,
+            { include_blank: "Select importance level" },
             class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light",
             style: "border-color: #E8EEF1;" %>
       </div>

@@ -86,12 +86,6 @@ const HabitItem = ({ habit, categoryColor, categoryDarkColor, isFirst, onComplet
     }
   };
 
-  const importanceSymbol = {
-    critical: '!!',
-    important: '!',
-    optional: '?',
-  }[habit.importance];
-
   return (
     <div
       className={`p-4 transition ${!isFirst ? 'border-t' : ''}`}
@@ -169,13 +163,14 @@ const HabitItem = ({ habit, categoryColor, categoryDarkColor, isFirst, onComplet
               {habit.name}
             </div>
 
-            {/* Importance badge */}
-            {importanceSymbol && (
+            {/* Importance Level badge */}
+            {habit.importance_level && (
               <div
-                className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold"
-                style={{ backgroundColor: categoryColor, color: 'white' }}
+                className="flex-shrink-0 w-6 h-6 rounded flex items-center justify-center"
+                style={{ backgroundColor: habit.importance_level.color }}
+                title={habit.importance_level.name}
               >
-                {importanceSymbol}
+                <i className={`${habit.importance_level.icon} text-white text-xs`}></i>
               </div>
             )}
           </div>

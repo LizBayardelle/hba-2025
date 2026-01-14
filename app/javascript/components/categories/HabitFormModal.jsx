@@ -14,7 +14,7 @@ const HabitFormModal = ({ categoryColor }) => {
     target_count: 1,
     frequency_type: 'day',
     time_of_day: 'anytime',
-    importance: 'normal',
+    importance_level_id: '',
   });
 
   const [tagInput, setTagInput] = useState('');
@@ -25,6 +25,16 @@ const HabitFormModal = ({ categoryColor }) => {
   const { data: allTags = [] } = useQuery({
     queryKey: ['tags'],
     queryFn: tagsApi.fetchAll,
+  });
+
+  // Fetch user's importance levels
+  const { data: importanceLevels = [] } = useQuery({
+    queryKey: ['importanceLevels'],
+    queryFn: async () => {
+      const response = await fetch('/settings/importance_levels');
+      if (!response.ok) throw new Error('Failed to fetch importance levels');
+      return response.json();
+    },
   });
 
   // Fetch habit data if editing
@@ -46,7 +56,7 @@ const HabitFormModal = ({ categoryColor }) => {
         target_count: habit.target_count || 1,
         frequency_type: habit.frequency_type || 'day',
         time_of_day: habit.time_of_day || 'anytime',
-        importance: habit.importance || 'normal',
+        importance_level_id: habit.importance_level_id || '',
       });
       setSelectedTags(habit.tags?.map(t => t.name) || []);
     }
@@ -60,7 +70,7 @@ const HabitFormModal = ({ categoryColor }) => {
         target_count: 1,
         frequency_type: 'day',
         time_of_day: 'anytime',
-        importance: 'normal',
+        importance_level_id: '',
       });
       setSelectedTags([]);
       setTagInput('');
@@ -235,7 +245,7 @@ const HabitFormModal = ({ categoryColor }) => {
     <BaseModal
       isOpen={isOpen}
       onClose={closeHabitFormModal}
-      title={mode === 'edit' ? 'Edit Habit' : 'New Habit'}
+      title={mode === 'edit' ? 'Edit Habit' : 'Create a New Habit'}
       footer={footer}
     >
       <form id="habit-form" onSubmit={handleSubmit}>
@@ -394,20 +404,38 @@ const HabitFormModal = ({ categoryColor }) => {
           )}
         </div>
 
-        {/* Importance */}
+        {/* Importance Level */}
         <div className="mb-6">
-          <label className="block mb-2">Importance</label>
-          <select
-            value={formData.importance}
-            onChange={(e) => setFormData({ ...formData, importance: e.target.value })}
-            className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
-            style={{ borderColor: '#E8EEF1' }}
-          >
-            <option value="critical">Critical (!!)</option>
-            <option value="important">Important (!)</option>
-            <option value="normal">Normal</option>
-            <option value="optional">Optional (?)</option>
-          </select>
+          <label className="block mb-2">Importance Level</label>
+          <div className="overflow-x-auto pb-2 pt-2">
+            <div className="flex gap-4 min-w-max">
+              {importanceLevels.map((level) => (
+                <div
+                  key={level.id}
+                  className="flex flex-col items-center gap-2 cursor-pointer transition-transform hover:scale-105"
+                  onClick={() => setFormData({ ...formData, importance_level_id: level.id })}
+                >
+                  <div
+                    className={`w-16 h-16 rounded-lg flex items-center justify-center shadow-md transition ${
+                      formData.importance_level_id === level.id ? 'ring-4 ring-offset-2' : ''
+                    }`}
+                    style={{
+                      backgroundColor: level.color,
+                      ringColor: formData.importance_level_id === level.id ? level.color : 'transparent',
+                    }}
+                  >
+                    <i className={`${level.icon} text-white text-2xl`}></i>
+                  </div>
+                  <span
+                    className="text-xs font-medium text-center max-w-[80px]"
+                    style={{ color: '#1d3e4c' }}
+                  >
+                    {level.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </form>
     </BaseModal>

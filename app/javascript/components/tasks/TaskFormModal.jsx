@@ -12,7 +12,7 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
 
   const [formData, setFormData] = useState({
     name: '',
-    importance: 'normal',
+    importance_level_id: '',
     category_id: '',
     on_hold: false,
     url: '',
@@ -28,6 +28,16 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false); // Default closed
 
+  // Fetch user's importance levels
+  const { data: importanceLevels = [] } = useQuery({
+    queryKey: ['importanceLevels'],
+    queryFn: async () => {
+      const response = await fetch('/settings/importance_levels');
+      if (!response.ok) throw new Error('Failed to fetch importance levels');
+      return response.json();
+    },
+  });
+
   // Fetch task data if editing
   const { data: task } = useQuery({
     queryKey: ['task', taskId],
@@ -40,7 +50,7 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
     if (task && mode === 'edit') {
       setFormData({
         name: task.name || '',
-        importance: task.importance || 'normal',
+        importance_level_id: task.importance_level_id || '',
         category_id: task.category_id || '',
         on_hold: task.on_hold || false,
         url: task.url || '',
@@ -70,7 +80,7 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
     if (isOpen && mode === 'new') {
       setFormData({
         name: '',
-        importance: 'normal',
+        importance_level_id: '',
         category_id: '',
         on_hold: false,
         url: '',
@@ -245,26 +255,44 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
           />
         </div>
 
-        {/* Three columns: Importance, Category, and Due Date */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
-              Importance
-            </label>
-            <select
-              name="importance"
-              value={formData.importance}
-              onChange={handleChange}
-              className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
-              style={{ borderColor: '#E8EEF1', color: '#1d3e4c' }}
-            >
-              <option value="critical">Critical</option>
-              <option value="important">Important</option>
-              <option value="normal">Normal</option>
-              <option value="optional">Optional</option>
-            </select>
+        {/* Importance Level Slider */}
+        <div className="mb-4">
+          <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
+            Importance Level
+          </label>
+          <div className="overflow-x-auto pb-2 pt-2">
+            <div className="flex gap-4 min-w-max">
+              {importanceLevels.map((level) => (
+                <div
+                  key={level.id}
+                  className="flex flex-col items-center gap-2 cursor-pointer transition-transform hover:scale-105"
+                  onClick={() => setFormData({ ...formData, importance_level_id: level.id })}
+                >
+                  <div
+                    className={`w-16 h-16 rounded-lg flex items-center justify-center shadow-md transition ${
+                      formData.importance_level_id === level.id ? 'ring-4 ring-offset-2' : ''
+                    }`}
+                    style={{
+                      backgroundColor: level.color,
+                      ringColor: formData.importance_level_id === level.id ? level.color : 'transparent',
+                    }}
+                  >
+                    <i className={`${level.icon} text-white text-2xl`}></i>
+                  </div>
+                  <span
+                    className="text-xs font-medium text-center max-w-[80px]"
+                    style={{ color: '#1d3e4c' }}
+                  >
+                    {level.name}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
+        </div>
 
+        {/* Two columns: Category and Due Date */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
               Category

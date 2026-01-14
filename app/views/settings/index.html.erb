@@ -226,6 +226,263 @@
           </div>
         <% end %>
 
+        <!-- Importance Levels Card -->
+        <div class="bg-white rounded-2xl shadow-lg p-8 mb-6">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-bold display-font" style="color: #1d3e4c;">
+              <i class="fa-solid fa-star mr-2"></i>Importance Levels
+            </h2>
+            <button id="add-importance-level-btn" class="px-4 py-2 rounded-lg text-sm font-semibold transition hover:opacity-80" style="background-color: #1d3e4c; color: white;">
+              <i class="fa-solid fa-plus mr-2"></i>Add Level
+            </button>
+          </div>
+
+          <p class="text-xs font-light mb-6" style="color: #657b84;">
+            Customize your priority levels for tasks and habits. Drag to reorder.
+          </p>
+
+          <div id="importance-levels-list" class="space-y-3">
+            <!-- Importance levels will be loaded here -->
+          </div>
+        </div>
+
+        <!-- Add/Edit Importance Level Modal -->
+        <div id="importance-level-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div class="bg-white rounded-2xl shadow-xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <h3 id="modal-title" class="text-xl font-bold display-font mb-6" style="color: #1d3e4c;">Add Importance Level</h3>
+
+            <form id="importance-level-form">
+              <input type="hidden" id="importance-level-id">
+
+              <div class="mb-4">
+                <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">Name</label>
+                <input type="text" id="importance-level-name" class="w-full px-4 py-3 rounded-lg border-2 focus:outline-none" style="border-color: #E8EEF1;" required>
+              </div>
+
+              <div class="mb-4">
+                <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">Icon</label>
+                <input type="hidden" id="importance-level-icon" required>
+
+                <!-- Icon Picker Grid (always visible) -->
+                <div id="icon-picker" class="p-3 rounded-lg border-2 bg-white max-h-48 overflow-y-auto flex flex-wrap gap-2" style="border-color: #E8EEF1; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr));">
+                  <!-- Exclamation & Alerts -->
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-circle-exclamation">
+                    <i class="fa-solid fa-circle-exclamation text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-triangle-exclamation">
+                    <i class="fa-solid fa-triangle-exclamation text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-exclamation">
+                    <i class="fa-solid fa-exclamation text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-question">
+                    <i class="fa-solid fa-question text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-circle-question">
+                    <i class="fa-solid fa-circle-question text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-info">
+                    <i class="fa-solid fa-info text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-circle-info">
+                    <i class="fa-solid fa-circle-info text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-xmark">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-circle-xmark">
+                    <i class="fa-solid fa-circle-xmark text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-ban">
+                    <i class="fa-solid fa-ban text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-skull-crossbones">
+                    <i class="fa-solid fa-skull-crossbones text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-radiation">
+                    <i class="fa-solid fa-radiation text-sm"></i>
+                  </button>
+
+                  <!-- Energy & Urgency -->
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-fire">
+                    <i class="fa-solid fa-fire text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-bolt">
+                    <i class="fa-solid fa-bolt text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-bolt-lightning">
+                    <i class="fa-solid fa-bolt-lightning text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-bomb">
+                    <i class="fa-solid fa-bomb text-sm"></i>
+                  </button>
+
+                  <!-- Stars & Priority -->
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-star">
+                    <i class="fa-solid fa-star text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-star-half-stroke">
+                    <i class="fa-solid fa-star-half-stroke text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-regular fa-star">
+                    <i class="fa-regular fa-star text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-certificate">
+                    <i class="fa-solid fa-certificate text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-award">
+                    <i class="fa-solid fa-award text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-medal">
+                    <i class="fa-solid fa-medal text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-trophy">
+                    <i class="fa-solid fa-trophy text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-crown">
+                    <i class="fa-solid fa-crown text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-ranking-star">
+                    <i class="fa-solid fa-ranking-star text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-check">
+                    <i class="fa-solid fa-check text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-circle-check">
+                    <i class="fa-solid fa-circle-check text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-square-check">
+                    <i class="fa-solid fa-square-check text-sm"></i>
+                  </button>
+
+                  <!-- Markers & Flags -->
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-flag">
+                    <i class="fa-solid fa-flag text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-bookmark">
+                    <i class="fa-solid fa-bookmark text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-bullseye">
+                    <i class="fa-solid fa-bullseye text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-location-pin">
+                    <i class="fa-solid fa-location-pin text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-thumbtack">
+                    <i class="fa-solid fa-thumbtack text-sm"></i>
+                  </button>
+
+                  <!-- Shapes -->
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-circle">
+                    <i class="fa-solid fa-circle text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-square">
+                    <i class="fa-solid fa-square text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-diamond">
+                    <i class="fa-solid fa-diamond text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-heart">
+                    <i class="fa-solid fa-heart text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-gem">
+                    <i class="fa-solid fa-gem text-sm"></i>
+                  </button>
+
+                  <!-- Arrows & Direction -->
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-angles-up">
+                    <i class="fa-solid fa-angles-up text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-angle-up">
+                    <i class="fa-solid fa-angle-up text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-chevron-up">
+                    <i class="fa-solid fa-chevron-up text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-arrow-up">
+                    <i class="fa-solid fa-arrow-up text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-circle-up">
+                    <i class="fa-solid fa-circle-up text-sm"></i>
+                  </button>
+
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-minus">
+                    <i class="fa-solid fa-minus text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-equals">
+                    <i class="fa-solid fa-equals text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-circle-dot">
+                    <i class="fa-solid fa-circle-dot text-sm"></i>
+                  </button>
+
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-angle-down">
+                    <i class="fa-solid fa-angle-down text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-angles-down">
+                    <i class="fa-solid fa-angles-down text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-chevron-down">
+                    <i class="fa-solid fa-chevron-down text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-arrow-down">
+                    <i class="fa-solid fa-arrow-down text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-circle-down">
+                    <i class="fa-solid fa-circle-down text-sm"></i>
+                  </button>
+
+                  <!-- Numbers -->
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-0">
+                    <i class="fa-solid fa-0 text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-1">
+                    <i class="fa-solid fa-1 text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-2">
+                    <i class="fa-solid fa-2 text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-3">
+                    <i class="fa-solid fa-3 text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-4">
+                    <i class="fa-solid fa-4 text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-5">
+                    <i class="fa-solid fa-5 text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-6">
+                    <i class="fa-solid fa-6 text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-7">
+                    <i class="fa-solid fa-7 text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-8">
+                    <i class="fa-solid fa-8 text-sm"></i>
+                  </button>
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-9">
+                    <i class="fa-solid fa-9 text-sm"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="mb-6">
+                <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">Color</label>
+                <input type="color" id="importance-level-color" class="w-full h-12 rounded-lg border-2 cursor-pointer" style="border-color: #E8EEF1;">
+              </div>
+
+              <div class="flex gap-3">
+                <button type="button" id="cancel-modal-btn" class="flex-1 px-4 py-3 rounded-lg border-2 font-semibold transition hover:bg-gray-50" style="border-color: #E8EEF1; color: #1d3e4c;">
+                  Cancel
+                </button>
+                <button type="submit" class="flex-1 px-4 py-3 rounded-lg font-semibold transition hover:opacity-80" style="background-color: #1d3e4c; color: white;">
+                  Save
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
         <script>
           // Auto-save settings functionality
           const form = document.getElementById('settings-form');
@@ -304,6 +561,290 @@
               setTimeout(() => notification.remove(), 300);
             }, 5000);
           }
+
+          // Importance Levels Management
+          const modal = document.getElementById('importance-level-modal');
+          const modalTitle = document.getElementById('modal-title');
+          const modalForm = document.getElementById('importance-level-form');
+          const addBtn = document.getElementById('add-importance-level-btn');
+          const cancelBtn = document.getElementById('cancel-modal-btn');
+          const levelsList = document.getElementById('importance-levels-list');
+          let importanceLevels = [];
+          const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+          // Load importance levels
+          function loadImportanceLevels() {
+            fetch('/settings/importance_levels', {
+              headers: { 'Accept': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+              importanceLevels = data;
+              renderImportanceLevels();
+            });
+          }
+
+          function renderImportanceLevels() {
+            levelsList.innerHTML = importanceLevels.map(level => `
+              <div class="flex items-center gap-4 p-4 rounded-lg border-2 bg-gray-50 hover:bg-gray-100 transition" style="border-color: #E8EEF1;" data-level-id="${level.id}">
+                <div class="cursor-move text-gray-400">
+                  <i class="fa-solid fa-grip-vertical"></i>
+                </div>
+                <div class="text-xl" style="color: ${level.color};">
+                  <i class="${level.icon || 'fa-solid fa-star'}"></i>
+                </div>
+                <div class="flex-1">
+                  <div class="font-semibold" style="color: #1d3e4c;">${level.name}</div>
+                  <div class="text-xs font-light" style="color: #657b84;">Rank: ${level.rank}</div>
+                </div>
+                <div class="w-8 h-8 rounded border-2" style="background-color: ${level.color}; border-color: #E8EEF1;"></div>
+                <button onclick="editImportanceLevel(${level.id})" class="px-3 py-2 rounded-lg text-sm font-semibold transition hover:bg-gray-200">
+                  <i class="fa-solid fa-edit"></i>
+                </button>
+                <button onclick="deleteImportanceLevel(${level.id})" class="px-3 py-2 rounded-lg text-sm font-semibold transition hover:bg-red-100 text-red-600">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            `).join('');
+          }
+
+          // Icon picker functionality
+          const iconPicker = document.getElementById('icon-picker');
+          const iconInput = document.getElementById('importance-level-icon');
+          const iconOptions = document.querySelectorAll('.icon-option');
+
+          iconOptions.forEach(option => {
+            option.addEventListener('click', function() {
+              const iconClass = this.getAttribute('data-icon');
+              iconInput.value = iconClass;
+
+              // Remove selected state from all options
+              iconOptions.forEach(opt => {
+                opt.classList.remove('bg-blue-100', 'border-blue-500');
+                opt.style.borderColor = '#E8EEF1';
+              });
+              // Add selected state to this option
+              this.classList.add('bg-blue-100', 'border-blue-500');
+              this.style.borderColor = '#6366F1';
+            });
+          });
+
+          // Open modal for adding
+          addBtn.addEventListener('click', () => {
+            modalTitle.textContent = 'Add Importance Level';
+            modalForm.reset();
+            document.getElementById('importance-level-id').value = '';
+            iconOptions.forEach(opt => {
+              opt.classList.remove('bg-blue-100', 'border-blue-500');
+              opt.style.borderColor = '#E8EEF1';
+            });
+            modal.classList.remove('hidden');
+          });
+
+          // Edit importance level
+          window.editImportanceLevel = function(id) {
+            const level = importanceLevels.find(l => l.id === id);
+            if (!level) return;
+
+            modalTitle.textContent = 'Edit Importance Level';
+            document.getElementById('importance-level-id').value = level.id;
+            document.getElementById('importance-level-name').value = level.name;
+            document.getElementById('importance-level-icon').value = level.icon || '';
+            document.getElementById('importance-level-color').value = level.color || '#000000';
+
+            // Highlight selected icon in picker
+            iconOptions.forEach(opt => {
+              opt.classList.remove('bg-blue-100', 'border-blue-500');
+              opt.style.borderColor = '#E8EEF1';
+              if (level.icon && opt.getAttribute('data-icon') === level.icon) {
+                opt.classList.add('bg-blue-100', 'border-blue-500');
+                opt.style.borderColor = '#6366F1';
+              }
+            });
+
+            modal.classList.remove('hidden');
+          };
+
+          // Delete importance level
+          window.deleteImportanceLevel = function(id) {
+            if (!confirm('Are you sure you want to delete this importance level?')) return;
+
+            fetch(`/settings/importance_levels/${id}`, {
+              method: 'DELETE',
+              headers: {
+                'X-CSRF-Token': csrfToken,
+                'Accept': 'application/json'
+              }
+            })
+            .then(response => response.json())
+            .then(() => loadImportanceLevels())
+            .catch(error => alert('Error deleting importance level'));
+          };
+
+          // Close modal
+          cancelBtn.addEventListener('click', () => {
+            modal.classList.add('hidden');
+          });
+
+          modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+              modal.classList.add('hidden');
+            }
+          });
+
+          // Save importance level
+          modalForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById('importance-level-id').value;
+            const name = document.getElementById('importance-level-name').value;
+            const icon = document.getElementById('importance-level-icon').value;
+            const color = document.getElementById('importance-level-color').value;
+            const rank = id ? importanceLevels.find(l => l.id == id).rank : (Math.max(...importanceLevels.map(l => l.rank), 0) + 1);
+
+            const url = id ? `/settings/importance_levels/${id}` : '/settings/importance_levels';
+            const method = id ? 'PATCH' : 'POST';
+
+            fetch(url, {
+              method: method,
+              headers: {
+                'X-CSRF-Token': csrfToken,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              },
+              body: JSON.stringify({
+                importance_level: { name, icon, color, rank }
+              })
+            })
+            .then(response => response.json())
+            .then(() => {
+              loadImportanceLevels();
+              modal.classList.add('hidden');
+            })
+            .catch(error => alert('Error saving importance level'));
+          });
+
+          // Load on page load
+          loadImportanceLevels();
+
+          // Drag and drop functionality
+          let draggedElement = null;
+          let draggedId = null;
+
+          function initializeDragAndDrop() {
+            const levelItems = document.querySelectorAll('[data-level-id]');
+
+            levelItems.forEach(item => {
+              item.setAttribute('draggable', 'true');
+
+              item.addEventListener('dragstart', function(e) {
+                draggedElement = this;
+                draggedId = this.getAttribute('data-level-id');
+                this.style.opacity = '0.5';
+              });
+
+              item.addEventListener('dragend', function(e) {
+                this.style.opacity = '1';
+              });
+
+              item.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.style.borderColor = '#1d3e4c';
+              });
+
+              item.addEventListener('dragleave', function(e) {
+                this.style.borderColor = '#E8EEF1';
+              });
+
+              item.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.style.borderColor = '#E8EEF1';
+
+                if (draggedElement !== this) {
+                  // Get all level elements
+                  const allLevels = Array.from(levelsList.children);
+                  const draggedIndex = allLevels.indexOf(draggedElement);
+                  const targetIndex = allLevels.indexOf(this);
+
+                  // Reorder in DOM
+                  if (draggedIndex < targetIndex) {
+                    this.parentNode.insertBefore(draggedElement, this.nextSibling);
+                  } else {
+                    this.parentNode.insertBefore(draggedElement, this);
+                  }
+
+                  // Update ranks based on new order
+                  updateRanksAfterDrag();
+                }
+              });
+            });
+          }
+
+          function updateRanksAfterDrag() {
+            const levelItems = Array.from(document.querySelectorAll('[data-level-id]'));
+            const updates = levelItems.map((item, index) => {
+              const id = item.getAttribute('data-level-id');
+              const level = importanceLevels.find(l => l.id == id);
+              return {
+                id: id,
+                rank: index + 1,
+                level: level
+              };
+            });
+
+            // Update ranks sequentially with temporary values first to avoid conflicts
+            // First, set all to negative temporary values
+            const tempUpdates = updates.map(update => {
+              return fetch(`/settings/importance_levels/${update.id}`, {
+                method: 'PATCH',
+                headers: {
+                  'X-CSRF-Token': csrfToken,
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                  importance_level: {
+                    name: update.level.name,
+                    icon: update.level.icon,
+                    color: update.level.color,
+                    rank: -(parseInt(update.id) + 1000)
+                  }
+                })
+              });
+            });
+
+            // Then set final values
+            Promise.all(tempUpdates)
+              .then(() => {
+                return Promise.all(updates.map(update => {
+                  return fetch(`/settings/importance_levels/${update.id}`, {
+                    method: 'PATCH',
+                    headers: {
+                      'X-CSRF-Token': csrfToken,
+                      'Content-Type': 'application/json',
+                      'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                      importance_level: {
+                        name: update.level.name,
+                        icon: update.level.icon,
+                        color: update.level.color,
+                        rank: update.rank
+                      }
+                    })
+                  });
+                }));
+              })
+              .then(() => loadImportanceLevels())
+              .catch(error => alert('Error updating ranks'));
+          }
+
+          // Re-initialize drag and drop after rendering
+          const originalRender = renderImportanceLevels;
+          renderImportanceLevels = function() {
+            originalRender();
+            initializeDragAndDrop();
+          };
         </script>
       </div>
     </main>

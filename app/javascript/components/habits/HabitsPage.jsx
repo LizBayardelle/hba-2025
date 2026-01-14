@@ -104,7 +104,7 @@ const HabitsPage = () => {
         groups[catId].habits.push(habit);
       });
       return Object.values(groups);
-    } else {
+    } else if (viewMode === 'time') {
       // Group by time of day
       const timeGroups = {
         morning: { title: 'Morning', icon: 'fa-sun', habits: [] },
@@ -136,6 +136,33 @@ const HabitsPage = () => {
           darkColor: '#1d3e4c',
           habits: group.habits,
         }));
+    } else {
+      // Group by priority (importance_level)
+      const groups = {};
+      habitsData.habits.forEach(habit => {
+        const levelId = habit.importance_level?.id || 'none';
+        if (!groups[levelId]) {
+          groups[levelId] = {
+            id: levelId,
+            title: habit.importance_level?.name || 'No Priority',
+            icon: habit.importance_level?.icon || 'fa-circle',
+            color: habit.importance_level?.color || '#9CA3A8',
+            darkColor: '#1d3e4c',
+            rank: habit.importance_level?.rank || 999,
+            habits: [],
+          };
+        }
+
+        const habitWithColor = {
+          ...habit,
+          category_color: habit.category_color,
+          category_dark_color: colorMap[habit.category_color]?.dark || '#1d3e4c',
+        };
+        groups[levelId].habits.push(habitWithColor);
+      });
+
+      // Sort groups by rank
+      return Object.values(groups).sort((a, b) => a.rank - b.rank);
     }
   }, [habitsData, viewMode, colorMap]);
 
@@ -236,6 +263,19 @@ const HabitsPage = () => {
               <i className="fa-solid fa-clock mr-1"></i>
               <span className="hidden sm:inline">Time</span>
               <span className="sm:hidden">Time</span>
+            </button>
+            <button
+              onClick={() => setViewMode('priority')}
+              className={`px-2 py-1 rounded-lg text-xs font-semibold transition ${viewMode === 'priority' ? 'shadow-sm' : 'hover:bg-gray-100'}`}
+              style={
+                viewMode === 'priority'
+                  ? { backgroundColor: '#E8EEF1', color: '#1d3e4c' }
+                  : { color: '#1d3e4c' }
+              }
+            >
+              <i className="fa-solid fa-star mr-1"></i>
+              <span className="hidden sm:inline">Priority</span>
+              <span className="sm:hidden">Pri</span>
             </button>
           </div>
         </div>

@@ -41,13 +41,9 @@
         <div class="font-semibold" style="color: <%= dark_color %>;">
           <%= habit.name %>
         </div>
-        <% if habit.importance.present? && habit.importance != 'normal' %>
-          <div class="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold" style="background-color: <%= category.color %>; color: white;">
-            <%= case habit.importance
-              when 'critical' then '!!'
-              when 'important' then '!'
-              when 'optional' then '?'
-            end %>
+        <% if habit.importance_level.present? %>
+          <div class="flex-shrink-0 w-6 h-6 rounded flex items-center justify-center" style="background-color: <%= habit.importance_level.color %>;" title="<%= habit.importance_level.name %>">
+            <i class="<%= habit.importance_level.icon %> text-white text-xs"></i>
           </div>
         <% end %>
         <% if habit.documents.any? %>

@@ -2,14 +2,12 @@ class Task < ApplicationRecord
   belongs_to :user
   belongs_to :category, optional: true
   belongs_to :document, optional: true, foreign_key: :attached_document_id
+  belongs_to :importance_level, optional: true
   has_many :taggings, as: :taggable, dependent: :destroy
   has_many :tags, through: :taggings
   has_rich_text :notes
 
-  IMPORTANCE_LEVELS = %w[critical important normal optional].freeze
-
   validates :name, presence: true
-  validates :importance, inclusion: { in: IMPORTANCE_LEVELS }, allow_nil: true
 
   # Set completed_at when task is marked as completed
   before_save :set_completed_at

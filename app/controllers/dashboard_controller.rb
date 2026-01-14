@@ -2,7 +2,7 @@ class DashboardController < ApplicationController
   def index
     return redirect_to new_user_session_path unless user_signed_in?
 
-    @habits = current_user.habits.active.includes(:category, :habit_completions)
+    @habits = current_user.habits.active.includes(:category, :habit_completions, :importance_level)
 
     # === Calendar Heatmap Data (last 90 days) ===
     @heatmap_data = {}
@@ -106,5 +106,8 @@ class DashboardController < ApplicationController
     @completed_today = @habits.count { |h| (@today_completions[h.id] || 0) >= h.target_count }
     @total_habits = @habits.count
     @today_percentage = @total_habits > 0 ? (@completed_today * 100 / @total_habits).round : 0
+
+    # Get importance levels for priority grouping
+    @importance_levels = current_user.importance_levels.order(:rank)
   end
 end

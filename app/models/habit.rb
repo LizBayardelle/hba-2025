@@ -1,17 +1,15 @@
 class Habit < ApplicationRecord
   belongs_to :category
   belongs_to :user
+  belongs_to :importance_level, optional: true
   has_many :habit_completions, dependent: :destroy
   has_and_belongs_to_many :documents
   has_many :taggings, as: :taggable, dependent: :destroy
   has_many :tags, through: :taggings
 
-  IMPORTANCE_LEVELS = %w[critical important normal optional].freeze
-
   validates :name, presence: true
   validates :frequency_type, presence: true
   validates :target_count, presence: true, numericality: { greater_than: 0 }
-  validates :importance, inclusion: { in: IMPORTANCE_LEVELS }, allow_nil: true
 
   scope :active, -> { where(archived_at: nil) }
 

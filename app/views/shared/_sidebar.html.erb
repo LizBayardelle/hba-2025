@@ -16,9 +16,7 @@
 
     <!-- Logo Area -->
     <%= link_to root_path, class: "flex items-center gap-3 mb-6 hover:opacity-80 transition" do %>
-      <div class="w-12 h-12 bg-yellow-400 rounded-lg flex items-center justify-center" style="background-color: #F8796D;">
-        <i class="fa-solid fa-otter text-2xl text-white"></i>
-      </div>
+      <%= image_tag "Logo Salmon.png", class: "w-12 h-12", alt: "Habit Beaver Logo" %>
       <div>
         <h1 class="text-xl font-bold display-font">Habit Beaver</h1>
         <p class="text-xs" style="color: #657b84;">Build better habits</p>
@@ -177,60 +175,60 @@
             <!-- Icon Selector -->
             <div class="mb-5">
               <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">Icon</label>
-              <div class="grid grid-cols-6 md:grid-cols-9 gap-2 max-w-md">
-                <button type="button" @click="selectedIcon = 'fa-check'" :class="selectedIcon === 'fa-check' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-check text-base" style="color: #1d3e4c;"></i>
+              <div class="grid grid-cols-8 md:grid-cols-12 gap-2 max-h-48 overflow-y-auto p-2 border rounded-lg" style="border-color: #E8EEF1;">
+                <button type="button" @click="selectedIcon = 'fa-check'" :class="selectedIcon === 'fa-check' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-check text-sm" style="color: #1d3e4c;"></i>
                 </button>
-                <button type="button" @click="selectedIcon = 'fa-dumbbell'" :class="selectedIcon === 'fa-dumbbell' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-dumbbell text-base" style="color: #1d3e4c;"></i>
+                <button type="button" @click="selectedIcon = 'fa-dumbbell'" :class="selectedIcon === 'fa-dumbbell' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-dumbbell text-sm" style="color: #1d3e4c;"></i>
                 </button>
-                <button type="button" @click="selectedIcon = 'fa-book'" :class="selectedIcon === 'fa-book' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-book text-base" style="color: #1d3e4c;"></i>
+                <button type="button" @click="selectedIcon = 'fa-book'" :class="selectedIcon === 'fa-book' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-book text-sm" style="color: #1d3e4c;"></i>
                 </button>
-                <button type="button" @click="selectedIcon = 'fa-heart'" :class="selectedIcon === 'fa-heart' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-heart text-base" style="color: #1d3e4c;"></i>
+                <button type="button" @click="selectedIcon = 'fa-heart'" :class="selectedIcon === 'fa-heart' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-heart text-sm" style="color: #1d3e4c;"></i>
                 </button>
-                <button type="button" @click="selectedIcon = 'fa-briefcase'" :class="selectedIcon === 'fa-briefcase' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-briefcase text-base" style="color: #1d3e4c;"></i>
+                <button type="button" @click="selectedIcon = 'fa-briefcase'" :class="selectedIcon === 'fa-briefcase' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-briefcase text-sm" style="color: #1d3e4c;"></i>
                 </button>
-                <button type="button" @click="selectedIcon = 'fa-utensils'" :class="selectedIcon === 'fa-utensils' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-utensils text-base" style="color: #1d3e4c;"></i>
+                <button type="button" @click="selectedIcon = 'fa-utensils'" :class="selectedIcon === 'fa-utensils' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-utensils text-sm" style="color: #1d3e4c;"></i>
                 </button>
-                <button type="button" @click="selectedIcon = 'fa-bed'" :class="selectedIcon === 'fa-bed' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-bed text-base" style="color: #1d3e4c;"></i>
+                <button type="button" @click="selectedIcon = 'fa-bed'" :class="selectedIcon === 'fa-bed' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-bed text-sm" style="color: #1d3e4c;"></i>
                 </button>
-                <button type="button" @click="selectedIcon = 'fa-apple-whole'" :class="selectedIcon === 'fa-apple-whole' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-apple-whole text-base" style="color: #1d3e4c;"></i>
+                <button type="button" @click="selectedIcon = 'fa-apple-whole'" :class="selectedIcon === 'fa-apple-whole' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-apple-whole text-sm" style="color: #1d3e4c;"></i>
                 </button>
-                <button type="button" @click="selectedIcon = 'fa-mug-hot'" :class="selectedIcon === 'fa-mug-hot' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-mug-hot text-base" style="color: #1d3e4c;"></i>
+                <button type="button" @click="selectedIcon = 'fa-mug-hot'" :class="selectedIcon === 'fa-mug-hot' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-mug-hot text-sm" style="color: #1d3e4c;"></i>
                 </button>
-                <button type="button" @click="selectedIcon = 'fa-person-running'" :class="selectedIcon === 'fa-person-running' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-person-running text-base" style="color: #1d3e4c;"></i>
+                <button type="button" @click="selectedIcon = 'fa-person-running'" :class="selectedIcon === 'fa-person-running' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-person-running text-sm" style="color: #1d3e4c;"></i>
                 </button>
-                <button type="button" @click="selectedIcon = 'fa-pills'" :class="selectedIcon === 'fa-pills' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-pills text-base" style="color: #1d3e4c;"></i>
+                <button type="button" @click="selectedIcon = 'fa-pills'" :class="selectedIcon === 'fa-pills' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-pills text-sm" style="color: #1d3e4c;"></i>
                 </button>
-                <button type="button" @click="selectedIcon = 'fa-brain'" :class="selectedIcon === 'fa-brain' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-brain text-base" style="color: #1d3e4c;"></i>
+                <button type="button" @click="selectedIcon = 'fa-brain'" :class="selectedIcon === 'fa-brain' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-brain text-sm" style="color: #1d3e4c;"></i>
                 </button>
-                <button type="button" @click="selectedIcon = 'fa-music'" :class="selectedIcon === 'fa-music' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-music text-base" style="color: #1d3e4c;"></i>
+                <button type="button" @click="selectedIcon = 'fa-music'" :class="selectedIcon === 'fa-music' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-music text-sm" style="color: #1d3e4c;"></i>
                 </button>
-                <button type="button" @click="selectedIcon = 'fa-paintbrush'" :class="selectedIcon === 'fa-paintbrush' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-paintbrush text-base" style="color: #1d3e4c;"></i>
+                <button type="button" @click="selectedIcon = 'fa-paintbrush'" :class="selectedIcon === 'fa-paintbrush' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-paintbrush text-sm" style="color: #1d3e4c;"></i>
                 </button>
-                <button type="button" @click="selectedIcon = 'fa-droplet'" :class="selectedIcon === 'fa-droplet' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-droplet text-base" style="color: #1d3e4c;"></i>
+                <button type="button" @click="selectedIcon = 'fa-droplet'" :class="selectedIcon === 'fa-droplet' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-droplet text-sm" style="color: #1d3e4c;"></i>
                 </button>
-                <button type="button" @click="selectedIcon = 'fa-users'" :class="selectedIcon === 'fa-users' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-users text-base" style="color: #1d3e4c;"></i>
+                <button type="button" @click="selectedIcon = 'fa-users'" :class="selectedIcon === 'fa-users' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-users text-sm" style="color: #1d3e4c;"></i>
                 </button>
-                <button type="button" @click="selectedIcon = 'fa-star'" :class="selectedIcon === 'fa-star' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-star text-base" style="color: #1d3e4c;"></i>
+                <button type="button" @click="selectedIcon = 'fa-star'" :class="selectedIcon === 'fa-star' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-star text-sm" style="color: #1d3e4c;"></i>
                 </button>
-                <button type="button" @click="selectedIcon = 'fa-pen'" :class="selectedIcon === 'fa-pen' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-10 h-10 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-pen text-base" style="color: #1d3e4c;"></i>
+                <button type="button" @click="selectedIcon = 'fa-pen'" :class="selectedIcon === 'fa-pen' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
+                  <i class="fa-solid fa-pen text-sm" style="color: #1d3e4c;"></i>
                 </button>
               </div>
             </div>
@@ -238,7 +236,7 @@
             <!-- Color Selector -->
             <div class="mb-6">
               <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">Color</label>
-              <div class="grid grid-cols-7 md:grid-cols-14 gap-2 max-w-md">
+              <div class="grid grid-cols-7 gap-2 p-2 border rounded-lg" style="border-color: #E8EEF1;">
                 <button type="button" @click="selectedColor = '#6B8A99'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition relative flex items-center justify-center" :class="selectedColor === '#6B8A99' ? 'border-gray-800' : 'border-white'" style="background-color: #6B8A99;">
                   <i x-show="selectedColor === '#6B8A99'" class="fa-solid fa-check text-white text-sm font-black"></i>
                 </button>

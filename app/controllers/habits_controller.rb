@@ -5,7 +5,7 @@ class HabitsController < ApplicationController
     @view_mode = params[:view] || 'category' # 'category' or 'time'
     @selected_date = params[:date] ? Date.parse(params[:date]) : Time.zone.today
 
-    @habits = current_user.habits.active.includes(:category, :habit_completions, :tags, :documents)
+    @habits = current_user.habits.active.includes(:category, :habit_completions, :tags, :documents, :importance_level)
 
     # Get today's completions
     @completions = HabitCompletion.where(
@@ -99,13 +99,20 @@ class HabitsController < ApplicationController
         render json: {
           habits: @habits.map { |habit|
             habit.as_json(
-              only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :category_id]
+              only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :importance_level_id, :category_id]
             ).merge(
               today_count: @completions[habit.id] || 0,
               current_streak: @streaks[habit.id] || 0,
               category_name: habit.category.name,
               category_icon: habit.category.icon,
               category_color: habit.category.color,
+              importance_level: habit.importance_level ? {
+                id: habit.importance_level.id,
+                name: habit.importance_level.name,
+                icon: habit.importance_level.icon,
+                color: habit.importance_level.color,
+                rank: habit.importance_level.rank
+              } : nil,
               tags: habit.tags.map { |t| { id: t.id, name: t.name } },
               documents: habit.documents.map { |c| { id: c.id, title: c.title, content_type: c.content_type } }
             )
@@ -180,6 +187,6 @@ class HabitsController < ApplicationController
   private
 
   def habit_params
-    params.require(:habit).permit(:name, :description, :target_count, :frequency_type, :time_of_day, :importance, :category_id, :reminder_enabled, :start_date, :positive, :difficulty, tag_names: [])
+    params.require(:habit).permit(:name, :description, :target_count, :frequency_type, :time_of_day, :importance, :importance_level_id, :category_id, :reminder_enabled, :start_date, :positive, :difficulty, tag_names: [])
   end
 end

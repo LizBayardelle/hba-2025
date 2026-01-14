@@ -99,6 +99,31 @@ const TaskItem = ({ task }) => {
 
           {/* Metadata row */}
           <div className="flex flex-wrap items-center gap-2">
+            {/* Importance Level */}
+            {task.importance_level && (
+              <div
+                className="flex-shrink-0 w-6 h-6 rounded flex items-center justify-center"
+                style={{ backgroundColor: task.importance_level.color }}
+                title={task.importance_level.name}
+              >
+                <i className={`${task.importance_level.icon} text-white text-xs`}></i>
+              </div>
+            )}
+
+            {/* Category */}
+            {task.category && (
+              <div
+                className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium"
+                style={{
+                  backgroundColor: task.category.color,
+                  color: 'white',
+                }}
+              >
+                <i className={`fa-solid ${task.category.icon}`}></i>
+                <span>{task.category.name}</span>
+              </div>
+            )}
+
             {/* Document Badge */}
             {task.document && (
               <button
@@ -117,31 +142,6 @@ const TaskItem = ({ task }) => {
                 {task.document.title}
               </button>
             )}
-
-            {/* Category */}
-            {task.category && (
-              <div
-                className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium"
-                style={{
-                  backgroundColor: task.category.color,
-                  color: 'white',
-                }}
-              >
-                <i className={`fa-solid ${task.category.icon}`}></i>
-                <span>{task.category.name}</span>
-              </div>
-            )}
-
-            {/* Importance */}
-            <div
-              className="px-2 py-1 rounded-lg text-xs font-medium"
-              style={{
-                backgroundColor: themeBgColor,
-                color: themeColor,
-              }}
-            >
-              {task.importance?.charAt(0).toUpperCase() + task.importance?.slice(1)}
-            </div>
 
             {/* Due Date */}
             {dueDateStatus && (

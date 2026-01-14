@@ -10,6 +10,7 @@ class User < ApplicationRecord
   has_many :journals, dependent: :destroy
   has_many :tasks, dependent: :destroy
   has_many :tags, dependent: :destroy
+  has_many :importance_levels, dependent: :destroy
 
   def clear_daily_habits_if_needed!
     # Only clear if we haven't cleared today yet

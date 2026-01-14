@@ -1,5 +1,6 @@
 class SettingsController < ApplicationController
   before_action :authenticate_user!
+  before_action :set_importance_level, only: [:show_importance_level, :update_importance_level, :destroy_importance_level]
 
   def index
   end
@@ -18,7 +19,51 @@ class SettingsController < ApplicationController
     end
   end
 
+  # Importance Levels actions
+  def importance_levels
+    @importance_levels = current_user.importance_levels.ordered
+    render json: @importance_levels
+  end
+
+  def show_importance_level
+    render json: @importance_level
+  end
+
+  def create_importance_level
+    @importance_level = current_user.importance_levels.build(importance_level_params)
+
+    if @importance_level.save
+      render json: @importance_level, status: :created
+    else
+      render json: { errors: @importance_level.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
+  def update_importance_level
+    if @importance_level.update(importance_level_params)
+      render json: @importance_level
+    else
+      render json: { errors: @importance_level.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
+  def destroy_importance_level
+    if @importance_level.destroy
+      render json: { message: 'Importance level deleted successfully' }
+    else
+      render json: { errors: @importance_level.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
   private
+
+  def set_importance_level
+    @importance_level = current_user.importance_levels.find(params[:id])
+  end
+
+  def importance_level_params
+    params.require(:importance_level).permit(:name, :rank, :icon, :color)
+  end
 
   def settings_params
     params.require(:user).permit(
