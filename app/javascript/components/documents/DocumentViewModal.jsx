@@ -116,8 +116,8 @@ const DocumentViewModal = () => {
   const footer = (
     <button
       onClick={closeViewModal}
-      className="px-6 py-2 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition"
-      style={{ background: 'linear-gradient(135deg, #1d3e4c, #45606b)' }}
+      className="px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition hover:opacity-90"
+      style={{ backgroundColor: '#E8EEF1', color: '#1d3e4c' }}
     >
       Close
     </button>

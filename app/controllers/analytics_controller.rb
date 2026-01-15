@@ -76,6 +76,83 @@ class AnalyticsController < ApplicationController
       completion_count = @completions[h.id] || 0
       completion_count >= h.target_count
     }
+
+    # === Calendar Heatmap Data (last 90 days) ===
+    @heatmap_data = {}
+    @category_heatmap_data = {}
+
+    # Get all categories
+    categories = current_user.categories.includes(:habits)
+
+    90.downto(0) do |days_ago|
+      date = Time.zone.today - days_ago.days
+
+      completions = HabitCompletion.where(
+        habit_id: @habits.pluck(:id),
+        completed_at: date
+      ).group(:habit_id).sum(:count)
+
+      # Overall heatmap
+      completed_count = @habits.count { |h| (completions[h.id] || 0) >= h.target_count }
+      total_count = @habits.count
+      percentage = total_count > 0 ? (completed_count * 100 / total_count) : 0
+      @heatmap_data[date.to_s] = percentage
+
+      # Per-category heatmap
+      categories.each do |category|
+        category_habits = @habits.select { |h| h.category_id == category.id }
+        next if category_habits.empty?
+
+        @category_heatmap_data[category.id] ||= {}
+
+        completed_in_category = category_habits.count { |h| (completions[h.id] || 0) >= h.target_count }
+        category_total = category_habits.count
+        category_percentage = category_total > 0 ? (completed_in_category * 100 / category_total) : 0
+
+        @category_heatmap_data[category.id][date.to_s] = category_percentage
+      end
+    end
+
+    @categories = categories.select { |c| @category_heatmap_data[c.id].present? }
+
+    # === Quick Stats ===
+    # Current streak (consecutive days of 100% completion)
+    @current_streak = 0
+    date = Time.zone.today
+    loop do
+      completions = HabitCompletion.where(
+        habit_id: @habits.pluck(:id),
+        completed_at: date
+      ).group(:habit_id).sum(:count)
+
+      completed_count = @habits.count { |h| (completions[h.id] || 0) >= h.target_count }
+
+      if completed_count == @habits.count && @habits.count > 0
+        @current_streak += 1
+        date -= 1.day
+      else
+        break
+      end
+    end
+
+    # Total habits completed this week
+    week_start = Time.zone.today.beginning_of_week
+    week_completions = HabitCompletion.where(
+      habit_id: @habits.pluck(:id),
+      completed_at: week_start..Time.zone.today
+    )
+    @weekly_completions = week_completions.sum(:count)
+
+    # Overall health score (average of all habits)
+    if @habits.count > 0
+      total_health = @habits.sum { |h| [h.health, 100].min }
+      @overall_health = (total_health.to_f / @habits.count).round
+    else
+      @overall_health = 0
+    end
+
+    # Habits at risk (health < 50)
+    @habits_at_risk = @habits.count { |h| h.health < 50 }
   end
 
   def create

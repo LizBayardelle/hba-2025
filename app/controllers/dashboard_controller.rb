@@ -2,50 +2,40 @@ class DashboardController < ApplicationController
   def index
     return redirect_to new_user_session_path unless user_signed_in?
 
-    @habits = current_user.habits.active.includes(:category, :habit_completions, :importance_level)
+    # === Today's Date ===
+    @today = Time.zone.today
 
-    # === Calendar Heatmap Data (last 90 days) ===
-    @heatmap_data = {}
-    @category_heatmap_data = {}
+    # === Today's Habits ===
+    @habits = current_user.habits.active.includes(:category, :habit_completions, :importance_level, :time_block)
 
-    # Get all categories
-    categories = current_user.categories.includes(:habits)
+    @today_completions = HabitCompletion.where(
+      habit_id: @habits.pluck(:id),
+      completed_at: @today
+    ).group(:habit_id).sum(:count)
 
-    90.downto(0) do |days_ago|
-      date = Time.zone.today - days_ago.days
+    # Group by time_block
+    grouped = @habits.group_by { |h| h.time_block || 'anytime' }
+    @today_habits = grouped.sort_by { |key, _| key == 'anytime' ? Float::INFINITY : key.rank }.to_h
 
-      completions = HabitCompletion.where(
-        habit_id: @habits.pluck(:id),
-        completed_at: date
-      ).group(:habit_id).sum(:count)
+    # Today's completion stats
+    @completed_today = @habits.count { |h| (@today_completions[h.id] || 0) >= h.target_count }
+    @total_habits = @habits.count
+    @today_percentage = @total_habits > 0 ? (@completed_today * 100 / @total_habits).round : 0
 
-      # Overall heatmap
-      completed_count = @habits.count { |h| (completions[h.id] || 0) >= h.target_count }
-      total_count = @habits.count
-      percentage = total_count > 0 ? (completed_count * 100 / total_count) : 0
-      @heatmap_data[date.to_s] = percentage
+    # Get importance levels and time blocks for grouping
+    @importance_levels = current_user.importance_levels.order(:rank)
+    @time_blocks = current_user.time_blocks.order(:rank)
 
-      # Per-category heatmap
-      categories.each do |category|
-        category_habits = @habits.select { |h| h.category_id == category.id }
-        next if category_habits.empty?
+    # === Today's Tasks ===
+    @tasks = current_user.tasks.active.includes(:category, :importance_level)
+    @tasks_due_today = @tasks.where(due_date: @today)
+    @tasks_overdue = @tasks.where('due_date < ?', @today)
+    @tasks_no_date = @tasks.where(due_date: nil)
 
-        @category_heatmap_data[category.id] ||= {}
-
-        completed_in_category = category_habits.count { |h| (completions[h.id] || 0) >= h.target_count }
-        category_total = category_habits.count
-        category_percentage = category_total > 0 ? (completed_in_category * 100 / category_total) : 0
-
-        @category_heatmap_data[category.id][date.to_s] = category_percentage
-      end
-    end
-
-    @categories = categories.select { |c| @category_heatmap_data[c.id].present? }
-
-    # === Quick Stats ===
-    # Current streak (consecutive days of 100% completion)
+    # === Quick Stats for Today ===
+    # Current streak
     @current_streak = 0
-    date = Time.zone.today
+    date = @today
     loop do
       completions = HabitCompletion.where(
         habit_id: @habits.pluck(:id),
@@ -62,52 +52,7 @@ class DashboardController < ApplicationController
       end
     end
 
-    # Total habits completed this week
-    week_start = Time.zone.today.beginning_of_week
-    week_completions = HabitCompletion.where(
-      habit_id: @habits.pluck(:id),
-      completed_at: week_start..Time.zone.today
-    )
-    @weekly_completions = week_completions.sum(:count)
-
-    # Overall health score (average of all habits)
-    # Each habit's health should be capped at 100, then averaged
-    if @habits.count > 0
-      total_health = @habits.sum { |h| [h.health, 100].min }
-      @overall_health = (total_health.to_f / @habits.count).round
-    else
-      @overall_health = 0
-    end
-
-    # Habits at risk (health < 50)
-    @habits_at_risk = @habits.count { |h| h.health < 50 }
-
-    # === Today's Focus ===
-    @today = Time.zone.today
-    @today_completions = HabitCompletion.where(
-      habit_id: @habits.pluck(:id),
-      completed_at: @today
-    ).group(:habit_id).sum(:count)
-
-    # Group by time of day
-    grouped = @habits.group_by do |h|
-      case h.time_of_day
-      when 'am', 'morning' then 'morning'
-      when 'pm', 'afternoon' then 'afternoon'
-      when 'night', 'evening' then 'evening'
-      else 'anytime'
-      end
-    end
-
-    time_order = ['morning', 'afternoon', 'evening', 'anytime']
-    @today_habits = grouped.sort_by { |time, _| time_order.index(time) || 999 }.to_h
-
-    # Today's completion stats
-    @completed_today = @habits.count { |h| (@today_completions[h.id] || 0) >= h.target_count }
-    @total_habits = @habits.count
-    @today_percentage = @total_habits > 0 ? (@completed_today * 100 / @total_habits).round : 0
-
-    # Get importance levels for priority grouping
-    @importance_levels = current_user.importance_levels.order(:rank)
+    # Tasks completed today
+    @tasks_completed_today = current_user.tasks.where(completed_at: @today.beginning_of_day..@today.end_of_day).count
   end
 end

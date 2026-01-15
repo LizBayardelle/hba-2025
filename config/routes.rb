@@ -19,6 +19,12 @@ Rails.application.routes.draw do
   patch 'settings/importance_levels/:id', to: 'settings#update_importance_level'
   delete 'settings/importance_levels/:id', to: 'settings#destroy_importance_level'
 
+  get 'settings/time_blocks', to: 'settings#time_blocks'
+  post 'settings/time_blocks', to: 'settings#create_time_block'
+  get 'settings/time_blocks/:id', to: 'settings#show_time_block'
+  patch 'settings/time_blocks/:id', to: 'settings#update_time_block'
+  delete 'settings/time_blocks/:id', to: 'settings#destroy_time_block'
+
   resources :journals, only: [:index, :show, :create, :update, :destroy]
   resources :tasks, only: [:index, :show, :create, :update, :destroy]
   resources :tags, only: [:index, :show, :update, :destroy]

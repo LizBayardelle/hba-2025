@@ -1,3 +1,12 @@
+// Import the documentsStore
+import useDocumentsStore from './stores/documentsStore';
+
+// Expose the store globally for dashboard usage
+window.openDocumentViewModal = (documentId) => {
+  const { openViewModal } = useDocumentsStore.getState();
+  openViewModal(documentId);
+};
+
 // Handle habit content modal display
 document.addEventListener('click', function(e) {
   const contentLink = e.target.closest('[data-habit-content-modal]');
@@ -6,35 +15,18 @@ document.addEventListener('click', function(e) {
     e.preventDefault();
     const url = contentLink.href;
 
-    // Fetch the content
-    fetch(url)
-      .then(response => response.text())
-      .then(html => {
-        // Create modal container if it doesn't exist
-        let modalContainer = document.getElementById('habit-content-modal-container');
-        if (!modalContainer) {
-          modalContainer = document.createElement('div');
-          modalContainer.id = 'habit-content-modal-container';
-          document.body.appendChild(modalContainer);
-        }
-
-        // Insert the modal HTML
-        modalContainer.innerHTML = html;
-
-        // Prevent body scroll
-        document.body.style.overflow = 'hidden';
-      })
-      .catch(error => {
-        console.error('Error loading content:', error);
-      });
+    // Extract document ID from URL (e.g., /contents/123 or /habit_contents/123)
+    const matches = url.match(/\/(?:habit_)?contents\/(\d+)/);
+    if (matches && matches[1]) {
+      const documentId = parseInt(matches[1]);
+      window.openDocumentViewModal(documentId);
+    } else {
+      console.error('Could not extract document ID from URL:', url);
+    }
   }
 });
 
-// Function to close modal
+// Keep the old function for backwards compatibility but make it do nothing
 window.closeHabitContentModal = function() {
-  const modalContainer = document.getElementById('habit-content-modal-container');
-  if (modalContainer) {
-    modalContainer.innerHTML = '';
-    document.body.style.overflow = '';
-  }
+  // No longer needed - React modal handles its own closing
 };

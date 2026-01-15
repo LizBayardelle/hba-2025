@@ -35,32 +35,32 @@ const BaseModal = ({ isOpen, onClose, title, children, footer, maxWidth = 'max-w
       }}
     >
       <div
-        className={`bg-white rounded-2xl shadow-2xl ${maxWidth} w-full max-h-[90vh] overflow-hidden`}
+        className={`rounded-2xl shadow-2xl ${maxWidth} w-full max-h-[90vh] overflow-hidden flex flex-col`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         {title && (
-          <div className="p-6 border-b flex items-center justify-between" style={{ borderColor: '#E8EEF1' }}>
-            <h2 className="text-2xl font-bold display-font" style={{ color: '#1d3e4c' }}>
+          <div className="p-6 flex items-center justify-between" style={{ background: 'linear-gradient(135deg, #1d3e4c, #45606b)' }}>
+            <h2 className="text-2xl font-bold display-font text-white">
               {title}
             </h2>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center transition"
+              className="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center transition"
             >
-              <i className="fa-solid fa-times" style={{ color: '#657b84' }}></i>
+              <i className="fa-solid fa-times text-white"></i>
             </button>
           </div>
         )}
 
         {/* Body */}
-        <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 140px)' }}>
+        <div className="p-6 overflow-y-auto bg-white flex-1" style={{ maxHeight: 'calc(90vh - 180px)' }}>
           {children}
         </div>
 
         {/* Footer */}
         {footer && (
-          <div className="p-6 border-t flex justify-end gap-3" style={{ borderColor: '#E8EEF1' }}>
+          <div className="p-6 flex justify-end gap-3" style={{ background: 'linear-gradient(135deg, #1d3e4c, #45606b)' }}>
             {footer}
           </div>
         )}

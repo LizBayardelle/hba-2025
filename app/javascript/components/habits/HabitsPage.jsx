@@ -2,10 +2,14 @@ import React, { useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import useHabitsStore from '../../stores/habitsStore';
 import HabitGroup from './HabitGroup';
+import HabitEditModal from './HabitEditModal';
+import HabitFormModal from '../categories/HabitFormModal';
 import DocumentViewModal from '../documents/DocumentViewModal';
+import DocumentFormModal from '../documents/DocumentFormModal';
+import { tagsApi } from '../../utils/api';
 
 const HabitsPage = () => {
-  const { viewMode, selectedDate, setViewMode, goToPreviousDay, goToNextDay, goToToday } = useHabitsStore();
+  const { viewMode, selectedDate, setViewMode, goToPreviousDay, goToNextDay, goToToday, openNewModal } = useHabitsStore();
 
   // Update sidebar date when selectedDate changes
   useEffect(() => {
@@ -41,6 +45,12 @@ const HabitsPage = () => {
       if (!response.ok) throw new Error('Failed to fetch habits');
       return response.json();
     },
+  });
+
+  // Fetch all user tags for DocumentFormModal
+  const { data: allTags = [] } = useQuery({
+    queryKey: ['tags'],
+    queryFn: tagsApi.fetchAll,
   });
 
   // Color mapping
@@ -105,17 +115,23 @@ const HabitsPage = () => {
       });
       return Object.values(groups);
     } else if (viewMode === 'time') {
-      // Group by time of day
-      const timeGroups = {
-        morning: { title: 'Morning', icon: 'fa-sun', habits: [] },
-        afternoon: { title: 'Afternoon', icon: 'fa-cloud-sun', habits: [] },
-        evening: { title: 'Evening', icon: 'fa-moon', habits: [] },
-        anytime: { title: 'Anytime', icon: 'fa-clock', habits: [] },
-      };
+      // Group by time_block
+      const groups = {};
 
       habitsData.habits.forEach(habit => {
-        const time = (habit.time_of_day || 'anytime').toLowerCase();
-        const group = ['morning', 'afternoon', 'evening'].includes(time) ? time : 'anytime';
+        const blockId = habit.time_block_id || 'anytime';
+
+        if (!groups[blockId]) {
+          groups[blockId] = {
+            id: blockId,
+            title: habit.time_block_name || 'Anytime',
+            icon: habit.time_block_icon || 'fa-clock',
+            color: habit.time_block_color || '#1d3e4c',
+            darkColor: colorMap[habit.time_block_color]?.dark || '#1d3e4c',
+            rank: habit.time_block_rank !== undefined ? habit.time_block_rank : 999,
+            habits: [],
+          };
+        }
 
         // Add category color info to habit for display
         const habitWithColor = {
@@ -123,19 +139,11 @@ const HabitsPage = () => {
           category_color: habit.category_color,
           category_dark_color: colorMap[habit.category_color]?.dark || '#1d3e4c',
         };
-        timeGroups[group].habits.push(habitWithColor);
+        groups[blockId].habits.push(habitWithColor);
       });
 
-      return Object.entries(timeGroups)
-        .filter(([_, group]) => group.habits.length > 0)
-        .map(([key, group]) => ({
-          id: key,
-          title: group.title,
-          icon: group.icon,
-          color: '#1d3e4c',
-          darkColor: '#1d3e4c',
-          habits: group.habits,
-        }));
+      // Sort groups by rank (anytime will have rank 999)
+      return Object.values(groups).sort((a, b) => a.rank - b.rank);
     } else {
       // Group by priority (importance_level)
       const groups = {};
@@ -169,114 +177,91 @@ const HabitsPage = () => {
   return (
     <>
       {/* Header Section */}
-      <div className="bg-white shadow-md sticky top-0 z-10">
-        <div className="p-8 pb-6">
-          {/* Header */}
-          <div className="mb-4">
-            <h1 className="text-4xl font-bold display-font mb-1" style={{ color: '#1d3e4c' }}>
-              Dashboard
-            </h1>
-            <p className="text-sm font-light" style={{ color: '#657b84' }}>
-              Check off your daily habits
-            </p>
+      <div className="bg-white shadow-md">
+        <div className="p-8">
+          <div className="flex items-start justify-between mb-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-4 mb-2">
+                <div
+                  className="w-16 h-16 rounded-xl flex items-center justify-center shadow-md"
+                  style={{ background: 'linear-gradient(135deg, #1d3e4c, #45606b)' }}
+                >
+                  <i className="fa-solid fa-chart-line text-white text-2xl"></i>
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold display-font" style={{ color: '#1d3e4c' }}>
+                    Habits
+                  </h1>
+                  <p className="text-sm font-light" style={{ color: '#566e78' }}>
+                    {stats.completed}/{stats.total} completed ({stats.percentage}%)
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={openNewModal}
+              className="px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition transform hover:scale-105"
+              style={{ background: 'linear-gradient(135deg, #1d3e4c, #45606b)' }}
+            >
+              <i className="fa-solid fa-plus mr-2"></i>
+              New Habit
+            </button>
           </div>
 
-          {/* Stats Row */}
-          <div className="flex items-center gap-6">
-            {/* Today Completed */}
-            <div className="text-center">
-              <div className="text-2xl sm:text-3xl font-bold display-font mb-0.5 sm:mb-1" style={{ color: '#1d3e4c' }}>
-                {stats.completed}/{stats.total}
-              </div>
-              <div className="text-[10px] sm:text-xs font-semibold uppercase tracking-wide" style={{ color: '#657b84' }}>
-                Today
-              </div>
+          {/* Filters */}
+          <div className="flex flex-wrap gap-4 items-center">
+            {/* View Toggle */}
+            <div className="flex gap-2">
+              {[
+                { value: 'category', label: 'Category', icon: 'fa-folder' },
+                { value: 'time', label: 'Time', icon: 'fa-clock' },
+                { value: 'priority', label: 'Priority', icon: 'fa-star' },
+              ].map(({ value, label, icon }) => (
+                <button
+                  key={value}
+                  onClick={() => setViewMode(value)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                    viewMode === value
+                      ? 'text-white shadow-md'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                  style={viewMode === value ? { backgroundColor: '#1d3e4c' } : {}}
+                >
+                  <i className={`fa-solid ${icon} mr-2`}></i>
+                  {label}
+                </button>
+              ))}
             </div>
 
-            {/* Today Percentage */}
-            <div className="text-center">
-              <div className="text-2xl sm:text-3xl font-bold display-font mb-0.5 sm:mb-1" style={{ color: '#1d3e4c' }}>
-                {stats.percentage}%
-              </div>
-              <div className="text-[10px] sm:text-xs font-semibold uppercase tracking-wide" style={{ color: '#657b84' }}>
-                Complete
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Controls Bar - Now inside header for sticky behavior */}
-        <div className="px-8 py-3 border-t flex gap-2 items-center justify-between" style={{ borderColor: '#E8EEF1' }}>
-          {/* Date Navigation */}
-          <div className="flex items-center gap-1">
-            <button
-              onClick={goToPreviousDay}
-              className="w-8 h-8 rounded-lg hover:bg-white flex items-center justify-center transition"
-            >
-              <i className="fa-solid fa-chevron-left text-sm" style={{ color: '#1d3e4c' }}></i>
-            </button>
-            <div className="px-2 py-1 text-sm font-semibold whitespace-nowrap" style={{ color: '#1d3e4c' }}>
-              {formatDate(selectedDate)}
-            </div>
-            <button
-              onClick={goToNextDay}
-              disabled={isToday || isFuture}
-              className={`w-8 h-8 rounded-lg hover:bg-white flex items-center justify-center transition ${isToday || isFuture ? 'opacity-50 pointer-events-none' : ''}`}
-            >
-              <i className="fa-solid fa-chevron-right text-sm" style={{ color: '#1d3e4c' }}></i>
-            </button>
-            {!isToday && (
+            {/* Date Navigation */}
+            <div className="flex items-center gap-2 ml-auto">
               <button
-                onClick={goToToday}
-                className="ml-1 px-2 py-1 text-xs font-semibold rounded-lg hover:bg-white transition whitespace-nowrap"
-                style={{ color: '#1d3e4c' }}
+                onClick={goToPreviousDay}
+                className="w-10 h-10 rounded-lg hover:bg-gray-100 flex items-center justify-center transition"
               >
-                Today
+                <i className="fa-solid fa-chevron-left" style={{ color: '#1d3e4c' }}></i>
               </button>
-            )}
-          </div>
-
-          {/* View Toggle */}
-          <div className="flex gap-1 bg-white p-0.5 rounded-lg shadow-sm">
-            <button
-              onClick={() => setViewMode('category')}
-              className={`px-2 py-1 rounded-lg text-xs font-semibold transition ${viewMode === 'category' ? 'shadow-sm' : 'hover:bg-gray-100'}`}
-              style={
-                viewMode === 'category'
-                  ? { backgroundColor: '#E8EEF1', color: '#1d3e4c' }
-                  : { color: '#1d3e4c' }
-              }
-            >
-              <i className="fa-solid fa-folder mr-1"></i>
-              <span className="hidden sm:inline">Category</span>
-              <span className="sm:hidden">Cat</span>
-            </button>
-            <button
-              onClick={() => setViewMode('time')}
-              className={`px-2 py-1 rounded-lg text-xs font-semibold transition ${viewMode === 'time' ? 'shadow-sm' : 'hover:bg-gray-100'}`}
-              style={
-                viewMode === 'time'
-                  ? { backgroundColor: '#E8EEF1', color: '#1d3e4c' }
-                  : { color: '#1d3e4c' }
-              }
-            >
-              <i className="fa-solid fa-clock mr-1"></i>
-              <span className="hidden sm:inline">Time</span>
-              <span className="sm:hidden">Time</span>
-            </button>
-            <button
-              onClick={() => setViewMode('priority')}
-              className={`px-2 py-1 rounded-lg text-xs font-semibold transition ${viewMode === 'priority' ? 'shadow-sm' : 'hover:bg-gray-100'}`}
-              style={
-                viewMode === 'priority'
-                  ? { backgroundColor: '#E8EEF1', color: '#1d3e4c' }
-                  : { color: '#1d3e4c' }
-              }
-            >
-              <i className="fa-solid fa-star mr-1"></i>
-              <span className="hidden sm:inline">Priority</span>
-              <span className="sm:hidden">Pri</span>
-            </button>
+              <div className="px-2 text-sm font-semibold" style={{ color: '#1d3e4c' }}>
+                {formatDate(selectedDate)}
+              </div>
+              <button
+                onClick={goToNextDay}
+                disabled={isToday || isFuture}
+                className={`w-10 h-10 rounded-lg hover:bg-gray-100 flex items-center justify-center transition ${isToday || isFuture ? 'opacity-50 pointer-events-none' : ''}`}
+              >
+                <i className="fa-solid fa-chevron-right" style={{ color: '#1d3e4c' }}></i>
+              </button>
+              {!isToday && (
+                <button
+                  onClick={goToToday}
+                  className="ml-2 px-4 py-2 rounded-lg hover:bg-gray-100 text-sm font-semibold transition"
+                  style={{ color: '#1d3e4c' }}
+                >
+                  Today
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -341,7 +326,10 @@ const HabitsPage = () => {
       </div>
 
       {/* Modals */}
+      <HabitFormModal useHabitsPage={true} />
+      <HabitEditModal />
       <DocumentViewModal />
+      <DocumentFormModal habits={habitsData?.habits || []} allTags={allTags} />
     </>
   );
 };

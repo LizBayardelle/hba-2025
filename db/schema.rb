@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_01_11_042525) do
+ActiveRecord::Schema[7.2].define(version: 2026_01_14_233932) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -125,8 +125,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_11_042525) do
     t.integer "misses_this_week", default: 0, null: false
     t.datetime "last_health_check_at"
     t.bigint "importance_level_id"
+    t.bigint "time_block_id"
     t.index ["category_id"], name: "index_habits_on_category_id"
     t.index ["importance_level_id"], name: "index_habits_on_importance_level_id"
+    t.index ["time_block_id"], name: "index_habits_on_time_block_id"
     t.index ["user_id"], name: "index_habits_on_user_id"
   end
 
@@ -197,6 +199,18 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_11_042525) do
     t.index ["user_id"], name: "index_tasks_on_user_id"
   end
 
+  create_table "time_blocks", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "name", null: false
+    t.integer "rank", null: false
+    t.string "icon"
+    t.string "color"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "rank"], name: "index_time_blocks_on_user_id_and_rank", unique: true
+    t.index ["user_id"], name: "index_time_blocks_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
@@ -226,6 +240,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_11_042525) do
   add_foreign_key "habit_completions", "users"
   add_foreign_key "habits", "categories"
   add_foreign_key "habits", "importance_levels"
+  add_foreign_key "habits", "time_blocks"
   add_foreign_key "habits", "users"
   add_foreign_key "importance_levels", "users"
   add_foreign_key "journals", "users"
@@ -234,4 +249,5 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_11_042525) do
   add_foreign_key "tasks", "categories"
   add_foreign_key "tasks", "importance_levels"
   add_foreign_key "tasks", "users"
+  add_foreign_key "time_blocks", "users"
 end

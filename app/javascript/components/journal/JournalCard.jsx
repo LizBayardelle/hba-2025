@@ -16,6 +16,18 @@ const JournalCard = ({ journal }) => {
     });
   };
 
+  const getWordCount = (htmlContent) => {
+    if (!htmlContent) return 0;
+    // Strip HTML tags and count words
+    const text = htmlContent.replace(/<[^>]*>/g, ' ').trim();
+    const words = text.split(/\s+/).filter(word => word.length > 0);
+    return words.length;
+  };
+
+  const formatWordCount = (count) => {
+    return count === 1 ? '1 Word' : `${count} Words`;
+  };
+
   return (
     <div className="flex items-center gap-3">
       <div
@@ -25,6 +37,9 @@ const JournalCard = ({ journal }) => {
       >
         <div className="flex items-center justify-between">
           <div className="flex-1">
+            <h3 className="text-lg font-bold display-font mb-1" style={{ color: '#1d3e4c' }}>
+              {formatWordCount(getWordCount(journal.content))}
+            </h3>
             <div className="text-sm font-light mb-2" style={{ color: '#657b84' }}>
               {formatDate(journal.created_at)}
             </div>

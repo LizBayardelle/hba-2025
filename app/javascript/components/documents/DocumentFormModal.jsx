@@ -165,8 +165,7 @@ const DocumentFormModal = ({ habits, allTags }) => {
       <button
         type="button"
         onClick={closeFormModal}
-        className="px-6 py-3 rounded-lg font-semibold border-2 transition"
-        style={{ color: '#1d3e4c', borderColor: '#E8EEF1' }}
+        className="px-6 py-3 rounded-lg font-semibold transition text-white hover:opacity-70"
         disabled={currentMutation.isPending}
       >
         Cancel
@@ -174,8 +173,8 @@ const DocumentFormModal = ({ habits, allTags }) => {
       <button
         type="submit"
         form="document-form"
-        className="px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition cursor-pointer disabled:opacity-50"
-        style={{ background: 'linear-gradient(135deg, #1d3e4c, #45606b)' }}
+        className="px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition cursor-pointer disabled:opacity-50 hover:opacity-90"
+        style={{ backgroundColor: '#E8EEF1', color: '#1d3e4c' }}
         disabled={currentMutation.isPending}
       >
         {currentMutation.isPending ? 'Saving...' : mode === 'edit' ? 'Update Document' : 'Add Document'}

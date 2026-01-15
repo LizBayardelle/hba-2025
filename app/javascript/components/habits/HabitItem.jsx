@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import useDocumentsStore from '../../stores/documentsStore';
+import useHabitsStore from '../../stores/habitsStore';
 
 const HabitItem = ({ habit, categoryColor, categoryDarkColor, isFirst, onCompletionChange, selectedDate }) => {
   const { openViewModal } = useDocumentsStore();
+  const { openEditModal } = useHabitsStore();
 
   const [count, setCount] = useState(habit.today_count || 0);
   const [streak, setStreak] = useState(habit.current_streak || 0);
@@ -86,12 +88,18 @@ const HabitItem = ({ habit, categoryColor, categoryDarkColor, isFirst, onComplet
     }
   };
 
+  const handleEdit = (e) => {
+    e.stopPropagation();
+    openEditModal(habit.id, habit.category_id);
+  };
+
   return (
-    <div
-      className={`p-4 transition ${!isFirst ? 'border-t' : ''}`}
-      style={!isFirst ? { borderColor: categoryColor } : {}}
-    >
-      <div className="flex items-start gap-3">
+    <div className="flex items-start gap-3">
+      <div
+        className={`flex-1 p-4 transition ${!isFirst ? 'border-t' : ''}`}
+        style={!isFirst ? { borderColor: categoryColor } : {}}
+      >
+        <div className="flex items-start gap-3">
         {/* Completion Indicator */}
         <div className="flex-shrink-0">
           {habit.target_count === 1 ? (
@@ -264,7 +272,18 @@ const HabitItem = ({ habit, categoryColor, categoryDarkColor, isFirst, onComplet
             </div>
           </div>
         )}
+
+        </div>
       </div>
+
+      {/* Edit button outside card on right */}
+      <button
+        onClick={handleEdit}
+        className="w-5 h-5 flex items-center justify-center transition hover:opacity-70 mt-4"
+        title="Edit"
+      >
+        <i className="fa-solid fa-pen text-sm" style={{ color: '#9CA3A8' }}></i>
+      </button>
     </div>
   );
 };

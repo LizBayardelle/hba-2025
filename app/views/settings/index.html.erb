@@ -246,6 +246,216 @@
           </div>
         </div>
 
+        <!-- Time Blocks Card -->
+        <div class="bg-white rounded-2xl shadow-lg p-8 mb-6">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-bold display-font" style="color: #1d3e4c;">
+              <i class="fa-solid fa-clock mr-2"></i>Time Blocks
+            </h2>
+            <button id="add-time-block-btn" class="px-4 py-2 rounded-lg text-sm font-semibold transition hover:opacity-80" style="background-color: #1d3e4c; color: white;">
+              <i class="fa-solid fa-plus mr-2"></i>Add Time Block
+            </button>
+          </div>
+
+          <p class="text-xs font-light mb-6" style="color: #657b84;">
+            Customize your time blocks for organizing habits by time of day. Drag to reorder.
+          </p>
+
+          <div id="time-blocks-list" class="space-y-3">
+            <!-- Time blocks will be loaded here -->
+          </div>
+        </div>
+
+        <!-- Add/Edit Time Block Modal -->
+        <div id="time-block-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div class="bg-white rounded-2xl shadow-xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <h3 id="time-block-modal-title" class="text-xl font-bold display-font mb-6" style="color: #1d3e4c;">Add Time Block</h3>
+
+            <form id="time-block-form">
+              <input type="hidden" id="time-block-id">
+
+              <div class="mb-4">
+                <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">Name</label>
+                <input type="text" id="time-block-name" class="w-full px-4 py-3 rounded-lg border-2 focus:outline-none" style="border-color: #E8EEF1;" required>
+              </div>
+
+              <div class="mb-4">
+                <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">Icon</label>
+                <input type="hidden" id="time-block-icon" required>
+
+                <!-- Icon Picker Grid (time-specific icons) -->
+                <div id="time-block-icon-picker" class="p-3 rounded-lg border-2 bg-white max-h-64 overflow-y-auto flex flex-wrap gap-2" style="border-color: #E8EEF1; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr));">
+                  <!-- Row 1: Time & Sky -->
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-sun">
+                    <i class="fa-solid fa-sun text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-cloud-sun">
+                    <i class="fa-solid fa-cloud-sun text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-moon">
+                    <i class="fa-solid fa-moon text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-cloud-moon">
+                    <i class="fa-solid fa-cloud-moon text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-regular fa-sun">
+                    <i class="fa-regular fa-sun text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-regular fa-moon">
+                    <i class="fa-regular fa-moon text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-cloud">
+                    <i class="fa-solid fa-cloud text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-star">
+                    <i class="fa-solid fa-star text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-snowflake">
+                    <i class="fa-solid fa-snowflake text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-rainbow">
+                    <i class="fa-solid fa-rainbow text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-meteor">
+                    <i class="fa-solid fa-meteor text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-bolt">
+                    <i class="fa-solid fa-bolt text-sm"></i>
+                  </button>
+
+                  <!-- Row 2: Clocks & Time -->
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-clock">
+                    <i class="fa-solid fa-clock text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-regular fa-clock">
+                    <i class="fa-regular fa-clock text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-stopwatch">
+                    <i class="fa-solid fa-stopwatch text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-hourglass">
+                    <i class="fa-solid fa-hourglass text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-hourglass-half">
+                    <i class="fa-solid fa-hourglass-half text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-hourglass-end">
+                    <i class="fa-solid fa-hourglass-end text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-bell-concierge">
+                    <i class="fa-solid fa-bell-concierge text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-calendar">
+                    <i class="fa-solid fa-calendar text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-calendar-day">
+                    <i class="fa-solid fa-calendar-day text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-calendar-week">
+                    <i class="fa-solid fa-calendar-week text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-regular fa-calendar">
+                    <i class="fa-regular fa-calendar text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-watch">
+                    <i class="fa-solid fa-watch text-sm"></i>
+                  </button>
+
+                  <!-- Row 3: Activities & Lifestyle -->
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-mug-hot">
+                    <i class="fa-solid fa-mug-hot text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-coffee">
+                    <i class="fa-solid fa-coffee text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-bed">
+                    <i class="fa-solid fa-bed text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-utensils">
+                    <i class="fa-solid fa-utensils text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-plate-wheat">
+                    <i class="fa-solid fa-plate-wheat text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-bowl-rice">
+                    <i class="fa-solid fa-bowl-rice text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-pizza-slice">
+                    <i class="fa-solid fa-pizza-slice text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-champagne-glasses">
+                    <i class="fa-solid fa-champagne-glasses text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-dumbbell">
+                    <i class="fa-solid fa-dumbbell text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-person-running">
+                    <i class="fa-solid fa-person-running text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-person-walking">
+                    <i class="fa-solid fa-person-walking text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-spa">
+                    <i class="fa-solid fa-spa text-sm"></i>
+                  </button>
+
+                  <!-- Row 4: Places & Context -->
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-home">
+                    <i class="fa-solid fa-home text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-briefcase">
+                    <i class="fa-solid fa-briefcase text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-school">
+                    <i class="fa-solid fa-school text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-building">
+                    <i class="fa-solid fa-building text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-car">
+                    <i class="fa-solid fa-car text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-plane">
+                    <i class="fa-solid fa-plane text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-bell">
+                    <i class="fa-solid fa-bell text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-laptop">
+                    <i class="fa-solid fa-laptop text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-book">
+                    <i class="fa-solid fa-book text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-music">
+                    <i class="fa-solid fa-music text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-gamepad">
+                    <i class="fa-solid fa-gamepad text-sm"></i>
+                  </button>
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-tv">
+                    <i class="fa-solid fa-tv text-sm"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="mb-6">
+                <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">Color</label>
+                <input type="color" id="time-block-color" class="w-full h-12 rounded-lg border-2 cursor-pointer" style="border-color: #E8EEF1;">
+              </div>
+
+              <div class="flex gap-3">
+                <button type="button" id="cancel-time-block-modal-btn" class="flex-1 px-4 py-3 rounded-lg border-2 font-semibold transition hover:bg-gray-50" style="border-color: #E8EEF1; color: #1d3e4c;">
+                  Cancel
+                </button>
+                <button type="submit" class="flex-1 px-4 py-3 rounded-lg font-semibold transition hover:opacity-80" style="background-color: #1d3e4c; color: white;">
+                  Save
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
         <!-- Add/Edit Importance Level Modal -->
         <div id="importance-level-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div class="bg-white rounded-2xl shadow-xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -741,36 +951,52 @@
                 draggedElement = this;
                 draggedId = this.getAttribute('data-level-id');
                 this.style.opacity = '0.5';
+                e.dataTransfer.effectAllowed = 'move';
               });
 
               item.addEventListener('dragend', function(e) {
                 this.style.opacity = '1';
+                // Remove all drag indicators
+                levelItems.forEach(level => {
+                  level.style.borderColor = '#E8EEF1';
+                });
               });
 
               item.addEventListener('dragover', function(e) {
                 e.preventDefault();
-                this.style.borderColor = '#1d3e4c';
+                e.stopPropagation();
+                e.dataTransfer.dropEffect = 'move';
+
+                if (draggedElement && draggedElement !== this) {
+                  this.style.borderColor = '#1d3e4c';
+                }
               });
 
               item.addEventListener('dragleave', function(e) {
-                this.style.borderColor = '#E8EEF1';
+                // Only reset if we're actually leaving this element
+                if (!this.contains(e.relatedTarget)) {
+                  this.style.borderColor = '#E8EEF1';
+                }
               });
 
               item.addEventListener('drop', function(e) {
                 e.preventDefault();
+                e.stopPropagation();
                 this.style.borderColor = '#E8EEF1';
 
-                if (draggedElement !== this) {
-                  // Get all level elements
+                if (draggedElement && draggedElement !== this) {
                   const allLevels = Array.from(levelsList.children);
                   const draggedIndex = allLevels.indexOf(draggedElement);
                   const targetIndex = allLevels.indexOf(this);
 
-                  // Reorder in DOM
+                  // Remove the dragged element first
+                  draggedElement.remove();
+
+                  // Insert at the correct position
                   if (draggedIndex < targetIndex) {
-                    this.parentNode.insertBefore(draggedElement, this.nextSibling);
+                    this.after(draggedElement);
                   } else {
-                    this.parentNode.insertBefore(draggedElement, this);
+                    this.before(draggedElement);
                   }
 
                   // Update ranks based on new order
@@ -845,6 +1071,291 @@
             originalRender();
             initializeDragAndDrop();
           };
+
+          // ===== TIME BLOCKS MANAGEMENT =====
+          const timeBlockModal = document.getElementById('time-block-modal');
+          const timeBlockModalTitle = document.getElementById('time-block-modal-title');
+          const timeBlockForm = document.getElementById('time-block-form');
+          const addTimeBlockBtn = document.getElementById('add-time-block-btn');
+          const cancelTimeBlockBtn = document.getElementById('cancel-time-block-modal-btn');
+          const timeBlocksList = document.getElementById('time-blocks-list');
+          let timeBlocks = [];
+
+          // Load time blocks
+          function loadTimeBlocks() {
+            fetch('/settings/time_blocks', {
+              headers: { 'Accept': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+              timeBlocks = data;
+              renderTimeBlocks();
+            });
+          }
+
+          function renderTimeBlocks() {
+            timeBlocksList.innerHTML = timeBlocks.map(block => `
+              <div class="flex items-center gap-4 p-4 rounded-lg border-2 bg-gray-50 hover:bg-gray-100 transition" style="border-color: #E8EEF1;" data-block-id="${block.id}">
+                <div class="cursor-move text-gray-400">
+                  <i class="fa-solid fa-grip-vertical"></i>
+                </div>
+                <div class="text-xl" style="color: ${block.color};">
+                  <i class="${block.icon || 'fa-solid fa-clock'}"></i>
+                </div>
+                <div class="flex-1">
+                  <div class="font-semibold" style="color: #1d3e4c;">${block.name}</div>
+                  <div class="text-xs font-light" style="color: #657b84;">Rank: ${block.rank}</div>
+                </div>
+                <div class="w-8 h-8 rounded border-2" style="background-color: ${block.color}; border-color: #E8EEF1;"></div>
+                <button onclick="editTimeBlock(${block.id})" class="px-3 py-2 rounded-lg text-sm font-semibold transition hover:bg-gray-200">
+                  <i class="fa-solid fa-edit"></i>
+                </button>
+                <button onclick="deleteTimeBlock(${block.id})" class="px-3 py-2 rounded-lg text-sm font-semibold transition hover:bg-red-100 text-red-600">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            `).join('');
+            initializeTimeBlockDragAndDrop();
+          }
+
+          // Icon picker for time blocks
+          const timeBlockIconPicker = document.getElementById('time-block-icon-picker');
+          const timeBlockIconInput = document.getElementById('time-block-icon');
+          const timeBlockIconOptions = document.querySelectorAll('.time-block-icon-option');
+
+          timeBlockIconOptions.forEach(option => {
+            option.addEventListener('click', function() {
+              const iconClass = this.getAttribute('data-icon');
+              timeBlockIconInput.value = iconClass;
+
+              timeBlockIconOptions.forEach(opt => {
+                opt.classList.remove('bg-blue-100', 'border-blue-500');
+                opt.style.borderColor = '#E8EEF1';
+              });
+              this.classList.add('bg-blue-100', 'border-blue-500');
+              this.style.borderColor = '#6366F1';
+            });
+          });
+
+          // Open modal for adding
+          addTimeBlockBtn.addEventListener('click', () => {
+            timeBlockModalTitle.textContent = 'Add Time Block';
+            timeBlockForm.reset();
+            document.getElementById('time-block-id').value = '';
+            timeBlockIconOptions.forEach(opt => {
+              opt.classList.remove('bg-blue-100', 'border-blue-500');
+              opt.style.borderColor = '#E8EEF1';
+            });
+            timeBlockModal.classList.remove('hidden');
+          });
+
+          // Edit time block
+          window.editTimeBlock = function(id) {
+            const block = timeBlocks.find(b => b.id === id);
+            if (!block) return;
+
+            timeBlockModalTitle.textContent = 'Edit Time Block';
+            document.getElementById('time-block-id').value = block.id;
+            document.getElementById('time-block-name').value = block.name;
+            document.getElementById('time-block-icon').value = block.icon || '';
+            document.getElementById('time-block-color').value = block.color || '#000000';
+
+            timeBlockIconOptions.forEach(opt => {
+              opt.classList.remove('bg-blue-100', 'border-blue-500');
+              opt.style.borderColor = '#E8EEF1';
+              if (block.icon && opt.getAttribute('data-icon') === block.icon) {
+                opt.classList.add('bg-blue-100', 'border-blue-500');
+                opt.style.borderColor = '#6366F1';
+              }
+            });
+
+            timeBlockModal.classList.remove('hidden');
+          };
+
+          // Delete time block
+          window.deleteTimeBlock = function(id) {
+            if (!confirm('Are you sure you want to delete this time block?')) return;
+
+            fetch(`/settings/time_blocks/${id}`, {
+              method: 'DELETE',
+              headers: {
+                'X-CSRF-Token': csrfToken,
+                'Accept': 'application/json'
+              }
+            })
+            .then(response => response.json())
+            .then(() => loadTimeBlocks())
+            .catch(error => alert('Error deleting time block'));
+          };
+
+          // Close modal
+          cancelTimeBlockBtn.addEventListener('click', () => {
+            timeBlockModal.classList.add('hidden');
+          });
+
+          timeBlockModal.addEventListener('click', (e) => {
+            if (e.target === timeBlockModal) {
+              timeBlockModal.classList.add('hidden');
+            }
+          });
+
+          // Save time block
+          timeBlockForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById('time-block-id').value;
+            const name = document.getElementById('time-block-name').value;
+            const icon = document.getElementById('time-block-icon').value;
+            const color = document.getElementById('time-block-color').value;
+            const rank = id ? timeBlocks.find(b => b.id == id).rank : (Math.max(...timeBlocks.map(b => b.rank), 0) + 1);
+
+            const url = id ? `/settings/time_blocks/${id}` : '/settings/time_blocks';
+            const method = id ? 'PATCH' : 'POST';
+
+            fetch(url, {
+              method: method,
+              headers: {
+                'X-CSRF-Token': csrfToken,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              },
+              body: JSON.stringify({
+                time_block: { name, icon, color, rank }
+              })
+            })
+            .then(response => response.json())
+            .then(() => {
+              loadTimeBlocks();
+              timeBlockModal.classList.add('hidden');
+            })
+            .catch(error => alert('Error saving time block'));
+          });
+
+          // Drag and drop for time blocks
+          function initializeTimeBlockDragAndDrop() {
+            const blockItems = document.querySelectorAll('[data-block-id]');
+            let draggedBlockElement = null;
+
+            blockItems.forEach(item => {
+              item.setAttribute('draggable', 'true');
+
+              item.addEventListener('dragstart', function(e) {
+                draggedBlockElement = this;
+                this.style.opacity = '0.5';
+                e.dataTransfer.effectAllowed = 'move';
+              });
+
+              item.addEventListener('dragend', function(e) {
+                this.style.opacity = '1';
+                // Remove all drag indicators
+                blockItems.forEach(block => {
+                  block.style.borderColor = '#E8EEF1';
+                });
+              });
+
+              item.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.dataTransfer.dropEffect = 'move';
+
+                if (draggedBlockElement && draggedBlockElement !== this) {
+                  this.style.borderColor = '#1d3e4c';
+                }
+              });
+
+              item.addEventListener('dragleave', function(e) {
+                // Only reset if we're actually leaving this element
+                if (!this.contains(e.relatedTarget)) {
+                  this.style.borderColor = '#E8EEF1';
+                }
+              });
+
+              item.addEventListener('drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.style.borderColor = '#E8EEF1';
+
+                if (draggedBlockElement && draggedBlockElement !== this) {
+                  const allBlocks = Array.from(timeBlocksList.children);
+                  const draggedIndex = allBlocks.indexOf(draggedBlockElement);
+                  const targetIndex = allBlocks.indexOf(this);
+
+                  // Remove the dragged element first
+                  draggedBlockElement.remove();
+
+                  // Insert at the correct position
+                  if (draggedIndex < targetIndex) {
+                    this.after(draggedBlockElement);
+                  } else {
+                    this.before(draggedBlockElement);
+                  }
+
+                  updateTimeBlockRanksAfterDrag();
+                }
+              });
+            });
+          }
+
+          function updateTimeBlockRanksAfterDrag() {
+            const blockItems = Array.from(document.querySelectorAll('[data-block-id]'));
+            const updates = blockItems.map((item, index) => {
+              const id = item.getAttribute('data-block-id');
+              const block = timeBlocks.find(b => b.id == id);
+              return {
+                id: id,
+                rank: index + 1,
+                block: block
+              };
+            });
+
+            // First set temporary values
+            const tempUpdates = updates.map(update => {
+              return fetch(`/settings/time_blocks/${update.id}`, {
+                method: 'PATCH',
+                headers: {
+                  'X-CSRF-Token': csrfToken,
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                  time_block: {
+                    name: update.block.name,
+                    icon: update.block.icon,
+                    color: update.block.color,
+                    rank: -(parseInt(update.id) + 1000)
+                  }
+                })
+              });
+            });
+
+            // Then set final values
+            Promise.all(tempUpdates)
+              .then(() => {
+                return Promise.all(updates.map(update => {
+                  return fetch(`/settings/time_blocks/${update.id}`, {
+                    method: 'PATCH',
+                    headers: {
+                      'X-CSRF-Token': csrfToken,
+                      'Content-Type': 'application/json',
+                      'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                      time_block: {
+                        name: update.block.name,
+                        icon: update.block.icon,
+                        color: update.block.color,
+                        rank: update.rank
+                      }
+                    })
+                  });
+                }));
+              })
+              .then(() => loadTimeBlocks())
+              .catch(error => alert('Error updating ranks'));
+          }
+
+          // Load time blocks on page load
+          loadTimeBlocks();
         </script>
       </div>
     </main>

@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import useCategoryStore from '../../stores/categoryStore';
+import useHabitsStore from '../../stores/habitsStore';
 import useDocumentsStore from '../../stores/documentsStore';
 
-const HabitCard = ({ habit, categoryColor, categoryDarkColor }) => {
+const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = false }) => {
   const queryClient = useQueryClient();
-  const { openEditHabitModal } = useCategoryStore();
+  const categoryStore = useCategoryStore();
+  const habitsStore = useHabitsStore();
   const { openViewModal, openNewModal } = useDocumentsStore();
+
+  // Use the appropriate store based on context
+  const openEditModal = useHabitsPage
+    ? (habitId, categoryId) => habitsStore.openEditModal(habitId, categoryId)
+    : (habitId, categoryId) => categoryStore.openEditHabitModal(habitId, categoryId);
 
   const [count, setCount] = useState(habit.today_count || 0);
   const [streak, setStreak] = useState(habit.current_streak || 0);
@@ -74,12 +81,11 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor }) => {
   };
 
   return (
-    <div
-      className="px-6 py-4 transition flex items-center gap-3"
-    >
-      <div className="flex items-start gap-3 flex-1">
-        {/* Completion Indicator */}
-        <div className="flex-shrink-0">
+    <div className="flex items-start gap-3">
+      <div className="bg-white rounded-lg p-4 border shadow-md hover:shadow-lg transition flex-1" style={{ borderColor: '#E8EEF1' }}>
+        <div className="flex items-start gap-3">
+          {/* Completion Indicator */}
+          <div className="flex-shrink-0">
           {habit.target_count === 1 ? (
             // Single toggle button
             <button
@@ -176,21 +182,19 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor }) => {
               </span>
             )}
 
-            {/* Time of day badge */}
-            {habit.time_of_day &&
-              !['anytime', 'any'].includes(habit.time_of_day.toLowerCase()) && (
-                <span
-                  className="text-xs px-2 py-0.5 rounded-full font-semibold flex items-center gap-1"
-                  style={{
-                    backgroundColor: `${categoryColor}15`,
-                    color: categoryColor,
-                  }}
-                >
-                  {habit.time_of_day.toLowerCase() === 'night'
-                    ? 'Night'
-                    : habit.time_of_day.toUpperCase()}
-                </span>
-              )}
+            {/* Time block badge */}
+            {habit.time_block && (
+              <span
+                className="text-xs px-2 py-0.5 rounded-full font-semibold flex items-center gap-1"
+                style={{
+                  backgroundColor: `${habit.time_block.color}20`,
+                  color: habit.time_block.color,
+                }}
+              >
+                <i className={`${habit.time_block.icon} text-[10px]`}></i>
+                {habit.time_block.name}
+              </span>
+            )}
 
             {/* Tags */}
             {habit.tags && habit.tags.length > 0 && habit.tags.map((tag) => (
@@ -224,25 +228,17 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor }) => {
             </div>
           </div>
         )}
+        </div>
       </div>
 
-      {/* Actions (inline on the right) */}
-      <div className="flex gap-2 flex-shrink-0">
-        <button
-          onClick={openNewModal}
-          className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center transition"
-          title="Add content"
-        >
-          <i className="fa-solid fa-plus-circle" style={{ color: categoryColor }}></i>
-        </button>
-        <button
-          onClick={() => openEditHabitModal(habit.id, habit.category_id)}
-          className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center transition"
-          title="Edit"
-        >
-          <i className="fa-solid fa-edit" style={{ color: categoryColor }}></i>
-        </button>
-      </div>
+      {/* Actions (outside the white card) */}
+      <button
+        onClick={() => openEditModal(habit.id, habit.category_id)}
+        className="w-5 h-5 flex items-center justify-center transition hover:opacity-70"
+        title="Edit"
+      >
+        <i className="fa-solid fa-pen text-sm" style={{ color: '#9CA3A8' }}></i>
+      </button>
     </div>
   );
 };

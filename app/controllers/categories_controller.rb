@@ -9,12 +9,14 @@ class CategoriesController < ApplicationController
       format.json {
         render json: @categories.map { |category|
           category.as_json(only: [:id, :name, :color, :icon, :description]).merge(
-            habits: category.habits.active.map { |habit|
+            habits: category.habits.active.includes(:time_block, :importance_level).map { |habit|
               habit.as_json(
-                only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :category_id],
+                only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :category_id, :time_block_id, :importance_level_id],
                 include: {
                   tags: { only: [:id, :name] },
-                  documents: { only: [:id, :title, :content_type] }
+                  documents: { only: [:id, :title, :content_type] },
+                  time_block: { only: [:id, :name, :icon, :color, :rank] },
+                  importance_level: { only: [:id, :name, :icon, :color, :rank] }
                 }
               ).merge(
                 today_count: habit.completions_for_date(Date.today),
@@ -29,26 +31,22 @@ class CategoriesController < ApplicationController
 
   def show
     @sort_by = params[:sort] || 'priority'
-    habits = @category.habits.where(archived_at: nil).includes(:documents, :tags, :importance_level).to_a
-
-    # Define sort orders
-    importance_order = { 'critical' => 1, 'important' => 2, 'normal' => 3, 'optional' => 4 }
-    time_order = { 'am' => 1, 'pm' => 2, 'night' => 3, 'any' => 4, nil => 5 }
+    habits = @category.habits.where(archived_at: nil).includes(:documents, :tags, :importance_level, :time_block).to_a
 
     # Sort habits
     @habits = habits.sort_by do |habit|
       if @sort_by == 'priority'
-        # Primary: importance, Secondary: time_of_day, Tertiary: alphabetical
+        # Primary: importance_level rank, Secondary: time_block rank, Tertiary: alphabetical
         [
-          importance_order[habit.importance] || 3,
-          time_order[habit.time_of_day&.downcase] || 5,
+          habit.importance_level&.rank || 999,
+          habit.time_block&.rank || 999,
           habit.name.downcase
         ]
-      else # time_of_day
-        # Primary: time_of_day, Secondary: importance, Tertiary: alphabetical
+      else # time
+        # Primary: time_block rank, Secondary: importance_level rank, Tertiary: alphabetical
         [
-          time_order[habit.time_of_day&.downcase] || 5,
-          importance_order[habit.importance] || 3,
+          habit.time_block&.rank || 999,
+          habit.importance_level&.rank || 999,
           habit.name.downcase
         ]
       end
@@ -66,11 +64,12 @@ class CategoriesController < ApplicationController
           habits: @habits.map { |habit|
             completion = @today_completions[habit.id]
             habit.as_json(
-              only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :category_id, :importance_level_id],
+              only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :category_id, :importance_level_id, :time_block_id],
               methods: [:current_streak],
               include: {
                 tags: { only: [:id, :name] },
-                importance_level: { only: [:id, :name, :icon, :color, :rank] }
+                importance_level: { only: [:id, :name, :icon, :color, :rank] },
+                time_block: { only: [:id, :name, :icon, :color, :rank] }
               }
             ).merge(
               today_count: completion ? completion.count : 0,

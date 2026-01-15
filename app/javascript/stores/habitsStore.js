@@ -38,6 +38,8 @@ const useHabitsStore = create((set) => ({
   viewMode: getInitialView(),
   selectedDate: getInitialDate(),
   viewModal: { isOpen: false, habitId: null },
+  editModal: { isOpen: false, habitId: null, categoryId: null },
+  newModal: { isOpen: false },
 
   setViewMode: (mode) => set((state) => {
     updateURL(state.selectedDate, mode);
@@ -73,6 +75,12 @@ const useHabitsStore = create((set) => ({
 
   openViewModal: (habitId) => set({ viewModal: { isOpen: true, habitId } }),
   closeViewModal: () => set({ viewModal: { isOpen: false, habitId: null } }),
+
+  openEditModal: (habitId, categoryId) => set({ editModal: { isOpen: true, habitId, categoryId } }),
+  closeEditModal: () => set({ editModal: { isOpen: false, habitId: null, categoryId: null } }),
+
+  openNewModal: () => set({ newModal: { isOpen: true } }),
+  closeNewModal: () => set({ newModal: { isOpen: false } }),
 }));
 
 export default useHabitsStore;

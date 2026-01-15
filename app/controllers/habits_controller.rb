@@ -5,7 +5,7 @@ class HabitsController < ApplicationController
     @view_mode = params[:view] || 'category' # 'category' or 'time'
     @selected_date = params[:date] ? Date.parse(params[:date]) : Time.zone.today
 
-    @habits = current_user.habits.active.includes(:category, :habit_completions, :tags, :documents, :importance_level)
+    @habits = current_user.habits.active.includes(:category, :habit_completions, :tags, :documents, :importance_level, :time_block)
 
     # Get today's completions
     @completions = HabitCompletion.where(
@@ -73,17 +73,10 @@ class HabitsController < ApplicationController
 
     # Group habits based on view mode
     if @view_mode == 'time'
-      grouped = @habits.group_by do |h|
-        case h.time_of_day
-        when 'am', 'morning' then 'morning'
-        when 'pm', 'afternoon' then 'afternoon'
-        when 'night', 'evening' then 'evening'
-        else 'anytime'
-        end
-      end
-      # Sort by time of day order
-      time_order = ['morning', 'afternoon', 'evening', 'anytime']
-      @grouped_habits = grouped.sort_by { |time, _| time_order.index(time) || 999 }.to_h
+      # Group by time_block, with "Anytime" for null time_blocks
+      @grouped_habits = @habits.group_by { |h| h.time_block || 'anytime' }
+                               .sort_by { |key, _| key == 'anytime' ? Float::INFINITY : key.rank }
+                               .to_h
     else
       @grouped_habits = @habits.group_by(&:category)
     end
@@ -99,13 +92,17 @@ class HabitsController < ApplicationController
         render json: {
           habits: @habits.map { |habit|
             habit.as_json(
-              only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :importance_level_id, :category_id]
+              only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :importance_level_id, :category_id, :time_block_id]
             ).merge(
               today_count: @completions[habit.id] || 0,
               current_streak: @streaks[habit.id] || 0,
               category_name: habit.category.name,
               category_icon: habit.category.icon,
               category_color: habit.category.color,
+              time_block_name: habit.time_block&.name,
+              time_block_icon: habit.time_block&.icon,
+              time_block_color: habit.time_block&.color,
+              time_block_rank: habit.time_block&.rank,
               importance_level: habit.importance_level ? {
                 id: habit.importance_level.id,
                 name: habit.importance_level.name,
@@ -114,7 +111,8 @@ class HabitsController < ApplicationController
                 rank: habit.importance_level.rank
               } : nil,
               tags: habit.tags.map { |t| { id: t.id, name: t.name } },
-              documents: habit.documents.map { |c| { id: c.id, title: c.title, content_type: c.content_type } }
+              documents: habit.documents.map { |c| { id: c.id, title: c.title, content_type: c.content_type } },
+              habit_contents: habit.documents.map { |c| { id: c.id, title: c.title } }
             )
           }
         }
@@ -129,10 +127,13 @@ class HabitsController < ApplicationController
     respond_to do |format|
       format.json {
         render json: @habit.as_json(
-          only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :category_id],
+          only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :category_id, :time_block_id, :importance_level_id],
           include: {
-            tags: { only: [:id, :name] }
+            tags: { only: [:id, :name] },
+            documents: { only: [:id, :title] }
           }
+        ).merge(
+          habit_contents: @habit.documents.map { |doc| { id: doc.id, title: doc.title } }
         )
       }
     end
@@ -187,6 +188,6 @@ class HabitsController < ApplicationController
   private
 
   def habit_params
-    params.require(:habit).permit(:name, :description, :target_count, :frequency_type, :time_of_day, :importance, :importance_level_id, :category_id, :reminder_enabled, :start_date, :positive, :difficulty, tag_names: [])
+    params.require(:habit).permit(:name, :description, :target_count, :frequency_type, :time_of_day, :time_block_id, :importance, :importance_level_id, :category_id, :reminder_enabled, :start_date, :positive, :difficulty, tag_names: [], habit_content_ids: [])
   end
 end

@@ -1,23 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import BaseModal from '../shared/BaseModal';
-import useCategoryStore from '../../stores/categoryStore';
 import useHabitsStore from '../../stores/habitsStore';
 import useDocumentsStore from '../../stores/documentsStore';
-import { tagsApi, categoriesApi, documentsApi } from '../../utils/api';
+import { tagsApi, documentsApi } from '../../utils/api';
 
-const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
+const HabitEditModal = () => {
   const queryClient = useQueryClient();
-  const categoryStore = useCategoryStore();
-  const habitsStore = useHabitsStore();
-
-  // Use appropriate store based on context
-  const modalState = useHabitsPage ? habitsStore.newModal : categoryStore.habitFormModal;
-  const closeModal = useHabitsPage ? habitsStore.closeNewModal : categoryStore.closeHabitFormModal;
-
-  const { isOpen, mode, habitId, categoryId: propsCategory } = useHabitsPage
-    ? { isOpen: modalState.isOpen, mode: 'new', habitId: null, categoryId: null }
-    : modalState;
+  const { editModal, closeEditModal } = useHabitsStore();
+  const { isOpen, habitId, categoryId } = editModal;
 
   const [formData, setFormData] = useState({
     name: '',
@@ -25,7 +16,6 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
     frequency_type: 'day',
     time_block_id: '',
     importance_level_id: '',
-    category_id: propsCategory || '',
   });
 
   const [tagInput, setTagInput] = useState('');
@@ -62,95 +52,42 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
     },
   });
 
-  // Fetch categories (only when on habits page)
-  const { data: categories = [] } = useQuery({
-    queryKey: ['categories'],
-    queryFn: categoriesApi.fetchAll,
-    enabled: useHabitsPage,
-  });
-
   // Fetch all documents
   const { data: documents = [] } = useQuery({
     queryKey: ['documents'],
     queryFn: documentsApi.fetchAll,
   });
 
-  // Fetch habit data if editing
+  // Fetch habit data
   const { data: habit } = useQuery({
     queryKey: ['habit', habitId],
     queryFn: async () => {
-      const response = await fetch(`/categories/${formData.category_id || propsCategory}/habits/${habitId}.json`);
+      const response = await fetch(`/categories/${categoryId}/habits/${habitId}.json`);
       if (!response.ok) throw new Error('Failed to fetch habit');
       return response.json();
     },
-    enabled: isOpen && mode === 'edit' && !!habitId && !!(formData.category_id || propsCategory),
+    enabled: isOpen && !!habitId && !!categoryId,
   });
 
   // Load habit data when editing
   useEffect(() => {
-    if (habit && mode === 'edit') {
+    if (habit && isOpen) {
       setFormData({
         name: habit.name || '',
         target_count: habit.target_count || 1,
         frequency_type: habit.frequency_type || 'day',
         time_block_id: habit.time_block_id || '',
         importance_level_id: habit.importance_level_id || '',
-        category_id: habit.category_id || propsCategory || '',
       });
       setSelectedTags(habit.tags?.map(t => t.name) || []);
       setSelectedDocumentIds(habit.habit_contents?.map(hc => hc.id) || []);
     }
-  }, [habit, mode, propsCategory]);
-
-  // Reset form when modal opens for new habit
-  useEffect(() => {
-    if (isOpen && mode === 'new') {
-      setFormData({
-        name: '',
-        target_count: 1,
-        frequency_type: 'day',
-        time_block_id: '',
-        importance_level_id: '',
-        category_id: propsCategory || '',
-      });
-      setSelectedTags([]);
-      setSelectedDocumentIds([]);
-      setTagInput('');
-    }
-  }, [isOpen, mode, propsCategory]);
-
-  // Create mutation
-  const createMutation = useMutation({
-    mutationFn: async (data) => {
-      const targetCategoryId = data.category_id || propsCategory;
-      const response = await fetch(`/categories/${targetCategoryId}/habits`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-CSRF-Token': document.querySelector('[name=csrf-token]').content,
-        },
-        body: JSON.stringify({ habit: data }),
-      });
-      if (!response.ok) throw new Error('Failed to create habit');
-      return response.json();
-    },
-    onSuccess: async (responseData) => {
-      // Invalidate and refetch to get fresh data with tags
-      if (useHabitsPage) {
-        await queryClient.invalidateQueries({ queryKey: ['habits'] });
-      } else {
-        await queryClient.invalidateQueries({ queryKey: ['category', propsCategory] });
-      }
-      closeModal();
-    },
-  });
+  }, [habit, isOpen]);
 
   // Update mutation
   const updateMutation = useMutation({
     mutationFn: async (data) => {
-      const targetCategoryId = data.category_id || propsCategory;
-      const response = await fetch(`/categories/${targetCategoryId}/habits/${habitId}`, {
+      const response = await fetch(`/categories/${categoryId}/habits/${habitId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -162,22 +99,16 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
       if (!response.ok) throw new Error('Failed to update habit');
       return response.json();
     },
-    onSuccess: async (responseData, variables) => {
-      // Invalidate and refetch to get fresh data with tags
-      if (useHabitsPage) {
-        await queryClient.invalidateQueries({ queryKey: ['habits'] });
-      } else {
-        await queryClient.invalidateQueries({ queryKey: ['category', propsCategory] });
-      }
-      closeModal();
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['habits'] });
+      closeEditModal();
     },
   });
 
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      const targetCategoryId = formData.category_id || propsCategory;
-      const response = await fetch(`/categories/${targetCategoryId}/habits/${habitId}`, {
+      const response = await fetch(`/categories/${categoryId}/habits/${habitId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -189,22 +120,8 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
       return response.json();
     },
     onSuccess: async () => {
-      // Invalidate queries
-      if (useHabitsPage) {
-        await queryClient.invalidateQueries({ queryKey: ['habits'] });
-      } else {
-        queryClient.setQueriesData(
-          { queryKey: ['category', propsCategory], exact: false },
-          (oldData) => {
-            if (!oldData) return oldData;
-            return {
-              ...oldData,
-              habits: oldData.habits.filter(h => h.id !== habitId)
-            };
-          }
-        );
-      }
-      closeModal();
+      await queryClient.invalidateQueries({ queryKey: ['habits'] });
+      closeEditModal();
     },
   });
 
@@ -246,11 +163,7 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
       tag_names: selectedTags,
       habit_content_ids: selectedDocumentIds,
     };
-    if (mode === 'edit') {
-      updateMutation.mutate(submitData);
-    } else {
-      createMutation.mutate(submitData);
-    }
+    updateMutation.mutate(submitData);
   };
 
   const handleDelete = () => {
@@ -259,45 +172,37 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
     }
   };
 
-  const currentMutation = mode === 'edit' ? updateMutation : createMutation;
-
   const footer = (
     <>
-      {mode === 'edit' && (
-        <button
-          type="button"
-          onClick={handleDelete}
-          className="mr-auto w-10 h-10 rounded-lg transition hover:bg-white/10 flex items-center justify-center"
-          disabled={deleteMutation.isPending}
-          title="Delete habit"
-        >
-          {deleteMutation.isPending ? (
-            <i className="fa-solid fa-spinner fa-spin text-white"></i>
-          ) : (
-            <i className="fa-solid fa-trash text-white text-lg"></i>
-          )}
-        </button>
-      )}
       <button
         type="button"
-        onClick={closeModal}
+        onClick={handleDelete}
+        className="mr-auto w-10 h-10 rounded-lg transition hover:bg-white/10 flex items-center justify-center"
+        disabled={deleteMutation.isPending}
+        title="Delete habit"
+      >
+        {deleteMutation.isPending ? (
+          <i className="fa-solid fa-spinner fa-spin text-white"></i>
+        ) : (
+          <i className="fa-solid fa-trash text-white text-lg"></i>
+        )}
+      </button>
+      <button
+        type="button"
+        onClick={closeEditModal}
         className="px-6 py-3 rounded-lg font-semibold transition text-white hover:opacity-70"
-        disabled={currentMutation.isPending}
+        disabled={updateMutation.isPending}
       >
         Cancel
       </button>
       <button
         type="submit"
-        form="habit-form"
+        form="habit-edit-form"
         className="px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition cursor-pointer disabled:opacity-50 hover:opacity-90"
         style={{ backgroundColor: '#E8EEF1', color: '#1d3e4c' }}
-        disabled={currentMutation.isPending}
+        disabled={updateMutation.isPending}
       >
-        {currentMutation.isPending
-          ? 'Saving...'
-          : mode === 'edit'
-          ? 'Update Habit'
-          : 'Create Habit'}
+        {updateMutation.isPending ? 'Saving...' : 'Update Habit'}
       </button>
     </>
   );
@@ -305,18 +210,18 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
   return (
     <BaseModal
       isOpen={isOpen}
-      onClose={closeModal}
-      title={mode === 'edit' ? 'Edit Habit' : 'Create a New Habit'}
+      onClose={closeEditModal}
+      title="Edit Habit"
       footer={footer}
     >
-      <form id="habit-form" onSubmit={handleSubmit}>
-        {currentMutation.isError && (
+      <form id="habit-edit-form" onSubmit={handleSubmit}>
+        {updateMutation.isError && (
           <div
             className="mb-4 p-4 rounded-lg"
             style={{ backgroundColor: '#FEE2E2', color: '#DC2626' }}
           >
             <i className="fa-solid fa-exclamation-circle mr-2"></i>
-            {currentMutation.error?.message || 'An error occurred'}
+            {updateMutation.error?.message || 'An error occurred'}
           </div>
         )}
 
@@ -333,41 +238,6 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
             placeholder="e.g., Morning meditation"
           />
         </div>
-
-        {/* Category Picker (only on habits page) */}
-        {useHabitsPage && (
-          <div className="mb-6">
-            <label className="block mb-2">Category</label>
-            <div className="grid grid-cols-2 gap-3">
-              {categories?.map((category) => (
-                <button
-                  key={category.id}
-                  type="button"
-                  onClick={() => setFormData({ ...formData, category_id: category.id })}
-                  className={`p-3 rounded-lg border-2 transition transform hover:scale-105 text-left ${
-                    formData.category_id === category.id ? 'shadow-lg' : ''
-                  }`}
-                  style={{
-                    borderColor: formData.category_id === category.id ? category.color : '#E8EEF1',
-                    backgroundColor: formData.category_id === category.id ? `${category.color}10` : 'white',
-                  }}
-                >
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="w-8 h-8 rounded flex items-center justify-center shadow-sm"
-                      style={{ backgroundColor: category.color }}
-                    >
-                      <i className={`fa-solid ${category.icon} text-white text-sm`}></i>
-                    </div>
-                    <div className="font-semibold text-sm" style={{ color: category.color }}>
-                      {category.name}
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Frequency: Times per Period */}
         <div className="mb-6">
@@ -657,4 +527,4 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
   );
 };
 
-export default HabitFormModal;
+export default HabitEditModal;

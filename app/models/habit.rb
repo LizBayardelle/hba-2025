@@ -2,6 +2,7 @@ class Habit < ApplicationRecord
   belongs_to :category
   belongs_to :user
   belongs_to :importance_level, optional: true
+  belongs_to :time_block, optional: true
   has_many :habit_completions, dependent: :destroy
   has_and_belongs_to_many :documents
   has_many :taggings, as: :taggable, dependent: :destroy
@@ -22,6 +23,11 @@ class Habit < ApplicationRecord
 
   def tag_names
     tags.pluck(:name)
+  end
+
+  # Helper method to assign documents by ID
+  def habit_content_ids=(ids)
+    self.document_ids = ids.reject(&:blank?)
   end
 
   def completions_for_date(date)

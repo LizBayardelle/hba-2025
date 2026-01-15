@@ -168,19 +168,14 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
 
         {/* Habits Grid */}
         {habits && habits.length > 0 ? (
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden border" style={{ borderColor: categoryColor }}>
-            {habits.map((habit, index) => (
-              <div
+          <div className="space-y-3">
+            {habits.map((habit) => (
+              <HabitCard
                 key={habit.id}
-                className={index > 0 ? 'border-t' : ''}
-                style={index > 0 ? { borderColor: categoryColor } : {}}
-              >
-                <HabitCard
-                  habit={habit}
-                  categoryColor={categoryColor}
-                  categoryDarkColor={colors.dark}
-                />
-              </div>
+                habit={habit}
+                categoryColor={categoryColor}
+                categoryDarkColor={colors.dark}
+              />
             ))}
           </div>
         ) : (

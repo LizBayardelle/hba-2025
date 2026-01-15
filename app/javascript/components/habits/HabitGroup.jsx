@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import HabitItem from './HabitItem';
+import HabitCard from '../categories/HabitCard';
 
 const HabitGroup = ({ title, icon, color, darkColor, habits, viewMode, selectedDate }) => {
   const [isExpanded, setIsExpanded] = useState(true);
@@ -12,15 +12,11 @@ const HabitGroup = ({ title, icon, color, darkColor, habits, viewMode, selectedD
   };
 
   return (
-    <div
-      className="bg-white rounded-xl shadow-lg overflow-hidden border"
-      style={{ borderColor: color }}
-    >
+    <div className="mb-8">
       {/* Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className={`w-full p-4 flex items-center gap-3 hover:opacity-90 transition text-left ${isExpanded ? 'border-b' : ''}`}
-        style={{ backgroundColor: `${color}20`, borderColor: color }}
+        className="w-full px-2 py-3 mb-2 flex items-center gap-3 hover:opacity-70 transition text-left"
       >
         <div
           className="w-10 h-10 rounded-lg flex items-center justify-center shadow-sm"
@@ -28,34 +24,34 @@ const HabitGroup = ({ title, icon, color, darkColor, habits, viewMode, selectedD
         >
           <i className={`fa-solid ${icon} text-white`}></i>
         </div>
-        <div className="flex-1">
-          <h2 className="text-lg font-bold display-font" style={{ color: darkColor }}>
-            {title}
-          </h2>
-          <p className="text-xs font-light" style={{ color: darkColor }}>
-            {completedCount}/{habits.length} completed
-          </p>
-        </div>
+        <h2 className="text-2xl font-bold display-font flex-1" style={{ color: color }}>
+          {title}
+        </h2>
         <div className="flex-shrink-0">
           <i
-            className={`fa-solid fa-chevron-down transition-transform duration-200 ${!isExpanded ? '-rotate-90' : ''}`}
-            style={{ color: darkColor }}
+            className="fa-solid fa-chevron-down transition-transform duration-200"
+            style={{
+              color: color,
+              transform: !isExpanded ? 'rotate(-90deg)' : 'rotate(0deg)'
+            }}
           ></i>
         </div>
       </button>
 
       {/* Habits List */}
       {isExpanded && (
-        <div>
-          {habits.map((habit, index) => (
-            <HabitItem
+        <div className="space-y-3">
+          {habits.map((habit) => (
+            <HabitCard
               key={habit.id}
-              habit={habit}
+              habit={{
+                ...habit,
+                today_count: habit.today_count || 0,
+                current_streak: habit.current_streak || 0,
+              }}
               categoryColor={viewMode === 'category' ? color : habit.category_color}
               categoryDarkColor={viewMode === 'category' ? darkColor : habit.category_dark_color}
-              isFirst={index === 0}
-              onCompletionChange={handleCompletionChange}
-              selectedDate={selectedDate}
+              useHabitsPage={true}
             />
           ))}
         </div>
