@@ -68,6 +68,15 @@ class GoogleCalendarController < ApplicationController
     redirect_to settings_path, notice: 'Google Calendar disconnected'
   end
 
+  def refresh
+    date = params[:date].present? ? Date.parse(params[:date]) : Time.zone.today
+
+    service = GoogleCalendarService.new(current_user)
+    service.refresh_events_for_date(date)
+
+    redirect_to dashboard_path(date: date.strftime('%Y-%m-%d')), notice: 'Calendar refreshed'
+  end
+
   private
 
   def exchange_code_for_tokens(code)

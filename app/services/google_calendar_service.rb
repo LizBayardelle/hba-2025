@@ -35,10 +35,76 @@ class GoogleCalendarService
     []
   end
 
-  def events_for_date(date)
+  def events_for_date(date, use_cache: true)
     return [] unless client
     return [] if @user.google_calendar_id.blank?
 
+    # Check cache if enabled
+    if use_cache && cache_valid_for_date?(date)
+      return cached_events_for_date(date)
+    end
+
+    # Fetch fresh data from Google
+    events = fetch_events_from_google(date)
+
+    # Update cache
+    update_cache_for_date(date, events)
+
+    events
+  end
+
+  def refresh_events_for_date(date)
+    events_for_date(date, use_cache: false)
+  end
+
+  def cache_valid_for_date?(date)
+    return false unless @user.calendar_events_cached_at
+    return false unless @user.calendar_events_cache
+
+    # Cache is valid for 15 minutes
+    cache_age = Time.current - @user.calendar_events_cached_at
+    cache_age < 15.minutes
+  end
+
+  def cached_events_for_date(date)
+    cache = @user.calendar_events_cache || {}
+    date_key = date.to_s
+
+    events = cache[date_key] || []
+
+    # Parse dates back from strings
+    events.map do |event|
+      event.symbolize_keys.tap do |e|
+        e[:start_time] = parse_cached_time(e[:start_time]) if e[:start_time]
+        e[:end_time] = parse_cached_time(e[:end_time]) if e[:end_time]
+      end
+    end
+  end
+
+  def update_cache_for_date(date, events)
+    cache = @user.calendar_events_cache || {}
+    date_key = date.to_s
+
+    # Store events with serialized times
+    serialized_events = events.map do |event|
+      event.merge(
+        start_time: event[:start_time]&.iso8601,
+        end_time: event[:end_time]&.iso8601
+      )
+    end
+
+    cache[date_key] = serialized_events
+
+    # Keep only last 7 days of cache to prevent bloat
+    cache = cache.select { |k, _| Date.parse(k) >= 7.days.ago }
+
+    @user.update_columns(
+      calendar_events_cache: cache,
+      calendar_events_cached_at: Time.current
+    )
+  end
+
+  def fetch_events_from_google(date)
     # Convert date to RFC3339 format with timezone
     time_min = date.beginning_of_day.rfc3339
     time_max = date.end_of_day.rfc3339
@@ -87,6 +153,16 @@ class GoogleCalendarService
   rescue Google::Apis::Error => e
     Rails.logger.error("Error fetching events: #{e.message}")
     []
+  end
+
+  def parse_cached_time(time_string)
+    return nil unless time_string
+
+    begin
+      Time.zone.parse(time_string)
+    rescue
+      Date.parse(time_string)
+    end
   end
 
   private

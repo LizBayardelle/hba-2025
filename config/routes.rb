@@ -31,6 +31,7 @@ Rails.application.routes.draw do
   get 'google_calendar/calendars', to: 'google_calendar#calendars', as: :google_calendar_calendars
   patch 'google_calendar/select', to: 'google_calendar#select_calendar', as: :google_calendar_select
   delete 'google_calendar/disconnect', to: 'google_calendar#disconnect', as: :google_calendar_disconnect
+  post 'google_calendar/refresh', to: 'google_calendar#refresh', as: :google_calendar_refresh
 
   # Legal pages
   get 'privacy', to: 'legal#privacy', as: :privacy

@@ -2,8 +2,15 @@ class DashboardController < ApplicationController
   def index
     return redirect_to new_user_session_path unless user_signed_in?
 
-    # === Today's Date ===
-    @today = Time.zone.today
+    # === Selected Date ===
+    # Allow date parameter for navigation, but default to today
+    if params[:date].present?
+      @today = Date.parse(params[:date])
+      # Don't allow future dates
+      @today = Time.zone.today if @today > Time.zone.today
+    else
+      @today = Time.zone.today
+    end
 
     # === Today's Habits ===
     @habits = current_user.habits.active.includes(:category, :habit_completions, :importance_level, :time_block)

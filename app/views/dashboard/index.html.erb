@@ -105,45 +105,141 @@
     <!-- White Header Section with Shadow -->
     <div class="bg-white shadow-md sticky top-0 z-10">
       <div class="p-8 pb-6">
-        <div class="mb-4">
-          <h1 class="text-4xl font-bold display-font mb-1" style="color: #1d3e4c;">Daily Briefing</h1>
-          <p class="text-sm font-light" style="color: #657b84;"><%= @today.strftime('%A, %B %d, %Y') %></p>
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h1 class="text-4xl font-bold display-font mb-1" style="color: #1d3e4c;">Daily Briefing</h1>
+            <p class="text-sm font-light" style="color: #657b84;"><%= @today.strftime('%A, %B %d, %Y') %></p>
+          </div>
+
+          <!-- Date Navigation -->
+          <div class="flex items-center gap-2">
+            <%= link_to dashboard_path(date: (@today - 1.day).strftime('%Y-%m-%d')),
+                class: "w-10 h-10 rounded-lg hover:bg-gray-100 flex items-center justify-center transition" do %>
+              <i class="fa-solid fa-chevron-left" style="color: #1d3e4c;"></i>
+            <% end %>
+
+            <div class="px-2 text-sm font-semibold" style="color: #1d3e4c;">
+              <%= @today == Time.zone.today ? 'Today' : @today.strftime('%m/%d') %>
+            </div>
+
+            <% if @today < Time.zone.today %>
+              <%= link_to dashboard_path(date: (@today + 1.day).strftime('%Y-%m-%d')),
+                  class: "w-10 h-10 rounded-lg hover:bg-gray-100 flex items-center justify-center transition" do %>
+                <i class="fa-solid fa-chevron-right" style="color: #1d3e4c;"></i>
+              <% end %>
+            <% else %>
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center opacity-50 pointer-events-none">
+                <i class="fa-solid fa-chevron-right" style="color: #1d3e4c;"></i>
+              </div>
+            <% end %>
+
+            <% if @today != Time.zone.today %>
+              <%= link_to dashboard_path,
+                  class: "ml-2 px-4 py-2 rounded-lg hover:bg-gray-100 text-sm font-semibold transition",
+                  style: "color: #1d3e4c;" do %>
+                Today
+              <% end %>
+            <% end %>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Grey Background Content -->
     <div class="p-8 pt-6 space-y-6">
-      <!-- Today's Calendar (Full Width) -->
+      <!-- Top Row: Today's Calendar (2/3) + Quick Links (1/3) -->
       <% if current_user.google_sync_enabled && current_user.google_calendar_id.present? %>
-        <% if @calendar_events.any? %>
-          <div class="bg-white rounded-xl shadow-md p-6">
-            <h2 class="text-xl font-bold display-font mb-4" style="color: #1d3e4c;">
-              <i class="fa-solid fa-calendar mr-2"></i>Today's Calendar
-            </h2>
-            <div class="space-y-1">
-              <% @calendar_events.each do |event| %>
-                <div class="flex items-center gap-4 py-2 hover:bg-gray-50 transition rounded px-2">
-                  <% if event[:all_day] %>
-                    <div class="text-xs font-semibold w-20" style="color: #657b84;">All Day</div>
-                  <% else %>
-                    <div class="text-xs font-semibold w-20" style="color: #1d3e4c;">
-                      <%= event[:start_time].strftime('%l:%M %p') %>
-                    </div>
-                  <% end %>
-                  <div class="flex-1 text-sm" style="color: #1d3e4c;">
-                    <%= event[:summary] || 'Untitled Event' %>
-                    <% if current_user.google_calendar_id.length > 1 %>
-                      <span class="text-xs font-light ml-2" style="color: #657b84;">
-                        (<%= event[:calendar_name] %>)
-                      </span>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Today's Calendar -->
+          <div class="md:col-span-2 bg-white rounded-xl shadow-md p-4">
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-xl font-bold display-font" style="color: #1d3e4c;">
+                <i class="fa-solid fa-calendar mr-2"></i>Today's Calendar
+              </h2>
+              <%= link_to "https://calendar.google.com", target: "_blank", rel: "noopener noreferrer",
+                  class: "text-xs font-light hover:underline",
+                  style: "color: #657b84;" do %>
+                Open in Google
+              <% end %>
+            </div>
+            <% if @calendar_events.any? %>
+              <div class="space-y-0">
+                <% @calendar_events.each do |event| %>
+                  <div class="flex items-center gap-4 py-1 hover:bg-gray-50 transition rounded px-2">
+                    <% if event[:all_day] %>
+                      <div class="text-xs font-semibold w-20" style="color: #657b84;">All Day</div>
+                    <% else %>
+                      <div class="text-xs font-semibold w-20" style="color: #1d3e4c;">
+                        <%= event[:start_time].strftime('%l:%M %p') %>
+                      </div>
                     <% end %>
+                    <div class="flex-1 text-sm" style="color: #1d3e4c;">
+                      <%= event[:summary] || 'Untitled Event' %>
+                      <% if current_user.google_calendar_id.length > 1 %>
+                        <span class="text-xs font-light ml-2" style="color: #657b84;">
+                          (<%= event[:calendar_name] %>)
+                        </span>
+                      <% end %>
+                    </div>
                   </div>
-                </div>
+                <% end %>
+              </div>
+            <% else %>
+              <div class="text-center py-8">
+                <p class="text-sm font-light" style="color: #657b84;">Nothing planned for today.</p>
+              </div>
+            <% end %>
+            <!-- Footer with refresh and timestamp -->
+            <div class="flex items-center justify-between mt-3 pt-2 border-t border-gray-100">
+              <%= form_with url: google_calendar_refresh_path(date: @today.strftime('%Y-%m-%d')), method: :post, local: true, id: "calendar-refresh-form", style: "display: inline; margin: 0;" do %>
+                <button type="submit" id="calendar-refresh-btn" class="text-xs font-light hover:underline flex items-center gap-1" style="color: #657b84; background: none; border: none; padding: 0; cursor: pointer;" title="Refresh calendar">
+                  <i class="fa-solid fa-refresh text-xs" style="color: #657b84;"></i>
+                  <span>Refresh</span>
+                </button>
+              <% end %>
+              <% if current_user.calendar_events_cached_at %>
+                <span class="text-xs font-light" style="color: #657b84;">
+                  Updated <%= time_ago_in_words(current_user.calendar_events_cached_at) %> ago
+                </span>
               <% end %>
             </div>
           </div>
-        <% end %>
+
+          <script>
+            document.addEventListener('DOMContentLoaded', () => {
+              const refreshForm = document.getElementById('calendar-refresh-form');
+              if (refreshForm) {
+                refreshForm.addEventListener('submit', (e) => {
+                  const btn = document.getElementById('calendar-refresh-btn');
+                  const icon = btn.querySelector('i');
+                  const text = btn.querySelector('span');
+                  icon.classList.add('fa-spin');
+                  text.textContent = 'Refreshing...';
+                  btn.disabled = true;
+                });
+              }
+            });
+          </script>
+
+          <!-- Quick Links -->
+          <div class="bg-white rounded-xl shadow-md p-4">
+            <h2 class="text-xl font-bold display-font mb-3" style="color: #1d3e4c;">Quick Links</h2>
+            <div class="space-y-1">
+              <%= link_to habits_path, class: "flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition" do %>
+                <i class="fa-solid fa-chart-line text-lg" style="color: #1d3e4c;"></i>
+                <span class="text-sm font-semibold" style="color: #1d3e4c;">View Analytics</span>
+              <% end %>
+              <%= link_to root_path, class: "flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition" do %>
+                <i class="fa-solid fa-folder text-lg" style="color: #1d3e4c;"></i>
+                <span class="text-sm font-semibold" style="color: #1d3e4c;">Browse Categories</span>
+              <% end %>
+              <%= link_to tasks_path, class: "flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition" do %>
+                <i class="fa-solid fa-tasks text-lg" style="color: #1d3e4c;"></i>
+                <span class="text-sm font-semibold" style="color: #1d3e4c;">All Tasks</span>
+              <% end %>
+            </div>
+          </div>
+        </div>
       <% end %>
 
       <!-- Main Content Grid: Habits and Tasks -->
@@ -391,27 +487,6 @@
         </div>
       </div>
 
-      <!-- Bottom Row: Quick Links -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Quick Links -->
-        <div class="bg-white rounded-xl shadow-md p-6">
-          <h2 class="text-xl font-bold display-font mb-4" style="color: #1d3e4c;">Quick Links</h2>
-          <div class="space-y-2">
-            <%= link_to habits_path, class: "flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition" do %>
-              <i class="fa-solid fa-chart-line text-lg" style="color: #1d3e4c;"></i>
-              <span class="text-sm font-semibold" style="color: #1d3e4c;">View Analytics</span>
-            <% end %>
-            <%= link_to root_path, class: "flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition" do %>
-              <i class="fa-solid fa-folder text-lg" style="color: #1d3e4c;"></i>
-              <span class="text-sm font-semibold" style="color: #1d3e4c;">Browse Categories</span>
-            <% end %>
-            <%= link_to tasks_path, class: "flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition" do %>
-              <i class="fa-solid fa-tasks text-lg" style="color: #1d3e4c;"></i>
-              <span class="text-sm font-semibold" style="color: #1d3e4c;">All Tasks</span>
-            <% end %>
-          </div>
-        </div>
-      </div>
     </div>
   </main>
 </div>
