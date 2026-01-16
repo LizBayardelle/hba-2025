@@ -25,6 +25,17 @@ Rails.application.routes.draw do
   patch 'settings/time_blocks/:id', to: 'settings#update_time_block'
   delete 'settings/time_blocks/:id', to: 'settings#destroy_time_block'
 
+  # Google Calendar routes
+  get 'google_calendar/connect', to: 'google_calendar#connect', as: :google_calendar_connect
+  get 'google_calendar/callback', to: 'google_calendar#callback', as: :google_calendar_callback
+  get 'google_calendar/calendars', to: 'google_calendar#calendars', as: :google_calendar_calendars
+  patch 'google_calendar/select', to: 'google_calendar#select_calendar', as: :google_calendar_select
+  delete 'google_calendar/disconnect', to: 'google_calendar#disconnect', as: :google_calendar_disconnect
+
+  # Legal pages
+  get 'privacy', to: 'legal#privacy', as: :privacy
+  get 'terms', to: 'legal#terms', as: :terms
+
   resources :journals, only: [:index, :show, :create, :update, :destroy]
   resources :tasks, only: [:index, :show, :create, :update, :destroy]
   resources :tags, only: [:index, :show, :update, :destroy]
