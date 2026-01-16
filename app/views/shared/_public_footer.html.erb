@@ -1,0 +1,18 @@
+<!-- Public Footer -->
+<footer class="bg-white border-t-2" style="border-color: #E8EEF1;">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-2">
+        <%= image_tag "Logo Blue.png", alt: "HabitBeaver", style: "height: 24px; width: auto;" %>
+        <div class="text-sm" style="color: #657b84;">
+          © <%= Date.today.year %> HabitBeaver. All rights reserved.
+        </div>
+      </div>
+      <div class="flex gap-6">
+        <%= link_to "Privacy Policy", privacy_path, class: "text-sm hover:opacity-70", style: "color: #657b84;" %>
+        <%= link_to "Terms of Service", terms_path, class: "text-sm hover:opacity-70", style: "color: #657b84;" %>
+        <a href="mailto:help@linchpinindustries.com" class="text-sm hover:opacity-70" style="color: #657b84;">Contact</a>
+      </div>
+    </div>
+  </div>
+</footer>
