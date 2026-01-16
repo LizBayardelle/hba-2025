@@ -1,5 +1,4 @@
 class GoogleCalendarController < ApplicationController
-  before_action :authenticate_user!
 
   def connect
     # Generate OAuth URL
@@ -51,7 +50,9 @@ class GoogleCalendarController < ApplicationController
   end
 
   def select_calendar
-    if current_user.update(google_calendar_id: params[:calendar_id])
+    calendar_ids = params[:calendar_ids] || []
+
+    if current_user.update(google_calendar_id: calendar_ids)
       render json: { success: true }
     else
       render json: { success: false, errors: current_user.errors.full_messages }, status: :unprocessable_entity
@@ -61,7 +62,7 @@ class GoogleCalendarController < ApplicationController
   def disconnect
     current_user.update(
       google_refresh_token: nil,
-      google_calendar_id: nil,
+      google_calendar_id: [],
       google_sync_enabled: false
     )
     redirect_to settings_path, notice: 'Google Calendar disconnected'

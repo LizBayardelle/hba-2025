@@ -114,6 +114,38 @@
 
     <!-- Grey Background Content -->
     <div class="p-8 pt-6 space-y-6">
+      <!-- Today's Calendar (Full Width) -->
+      <% if current_user.google_sync_enabled && current_user.google_calendar_id.present? %>
+        <% if @calendar_events.any? %>
+          <div class="bg-white rounded-xl shadow-md p-6">
+            <h2 class="text-xl font-bold display-font mb-4" style="color: #1d3e4c;">
+              <i class="fa-solid fa-calendar mr-2"></i>Today's Calendar
+            </h2>
+            <div class="space-y-1">
+              <% @calendar_events.each do |event| %>
+                <div class="flex items-center gap-4 py-2 hover:bg-gray-50 transition rounded px-2">
+                  <% if event[:all_day] %>
+                    <div class="text-xs font-semibold w-20" style="color: #657b84;">All Day</div>
+                  <% else %>
+                    <div class="text-xs font-semibold w-20" style="color: #1d3e4c;">
+                      <%= event[:start_time].strftime('%l:%M %p') %>
+                    </div>
+                  <% end %>
+                  <div class="flex-1 text-sm" style="color: #1d3e4c;">
+                    <%= event[:summary] || 'Untitled Event' %>
+                    <% if current_user.google_calendar_id.length > 1 %>
+                      <span class="text-xs font-light ml-2" style="color: #657b84;">
+                        (<%= event[:calendar_name] %>)
+                      </span>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+
       <!-- Main Content Grid: Habits and Tasks -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Today's Habits -->
@@ -359,66 +391,8 @@
         </div>
       </div>
 
-      <!-- Bottom Row: Calendar and Quick Links -->
+      <!-- Bottom Row: Quick Links -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Calendar Events -->
-        <div class="md:col-span-2 bg-white rounded-xl shadow-md p-6">
-          <h2 class="text-xl font-bold display-font mb-4" style="color: #1d3e4c;">Today's Calendar</h2>
-
-          <% if current_user.google_sync_enabled && current_user.google_calendar_id %>
-            <% if @calendar_events.any? %>
-              <div class="space-y-3">
-                <% @calendar_events.each do |event| %>
-                  <div class="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition">
-                    <div class="flex-shrink-0 w-12 text-center">
-                      <% if event[:all_day] %>
-                        <div class="text-xs font-semibold" style="color: #1d3e4c;">All Day</div>
-                      <% else %>
-                        <div class="text-xs font-semibold" style="color: #1d3e4c;">
-                          <%= event[:start_time].strftime('%l:%M') %>
-                        </div>
-                        <div class="text-xs font-light" style="color: #657b84;">
-                          <%= event[:start_time].strftime('%p').downcase %>
-                        </div>
-                      <% end %>
-                    </div>
-                    <div class="flex-1">
-                      <div class="text-sm font-semibold mb-1" style="color: #1d3e4c;">
-                        <%= event[:summary] || 'Untitled Event' %>
-                      </div>
-                      <% if event[:location] %>
-                        <div class="flex items-center gap-1 text-xs" style="color: #657b84;">
-                          <i class="fa-solid fa-location-dot"></i>
-                          <span><%= event[:location] %></span>
-                        </div>
-                      <% end %>
-                    </div>
-                    <% unless event[:all_day] %>
-                      <div class="text-xs font-light" style="color: #657b84;">
-                        <%= ((event[:end_time] - event[:start_time]) / 3600).round %>h
-                      </div>
-                    <% end %>
-                  </div>
-                <% end %>
-              </div>
-            <% else %>
-              <div class="text-center py-8">
-                <i class="fa-solid fa-calendar-check text-4xl mb-2" style="color: #E8EEF1;"></i>
-                <p class="text-sm font-light" style="color: #657b84;">No events scheduled for today</p>
-              </div>
-            <% end %>
-          <% else %>
-            <div class="text-center py-8 border-2 border-dashed rounded-lg" style="border-color: #E8EEF1;">
-              <i class="fa-solid fa-calendar text-4xl mb-2" style="color: #E8EEF1;"></i>
-              <p class="text-xs font-light mb-3" style="color: #657b84;">Connect your Google Calendar to see events here</p>
-              <%= link_to settings_path, class: "inline-block px-4 py-2 rounded-lg text-xs font-semibold text-white transition hover:opacity-90", style: "background-color: #1d3e4c;" do %>
-                <i class="fa-brands fa-google mr-1"></i>
-                Go to Settings
-              <% end %>
-            </div>
-          <% end %>
-        </div>
-
         <!-- Quick Links -->
         <div class="bg-white rounded-xl shadow-md p-6">
           <h2 class="text-xl font-bold display-font mb-4" style="color: #1d3e4c;">Quick Links</h2>

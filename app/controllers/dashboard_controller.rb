@@ -56,7 +56,7 @@ class DashboardController < ApplicationController
     @tasks_completed_today = current_user.tasks.where(completed_at: @today.beginning_of_day..@today.end_of_day).count
 
     # === Google Calendar Events ===
-    if current_user.google_sync_enabled && current_user.google_calendar_id
+    if current_user.google_sync_enabled && current_user.google_calendar_id.present?
       calendar_service = GoogleCalendarService.new(current_user)
       @calendar_events = calendar_service.events_for_date(@today)
     else

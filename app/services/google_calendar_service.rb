@@ -37,31 +37,53 @@ class GoogleCalendarService
 
   def events_for_date(date)
     return [] unless client
-    return [] unless @user.google_calendar_id
+    return [] if @user.google_calendar_id.blank?
 
     # Convert date to RFC3339 format with timezone
     time_min = date.beginning_of_day.rfc3339
     time_max = date.end_of_day.rfc3339
 
-    result = client.list_events(
-      @user.google_calendar_id,
-      time_min: time_min,
-      time_max: time_max,
-      single_events: true,
-      order_by: 'startTime'
-    )
-
-    result.items.map do |event|
-      {
-        id: event.id,
-        summary: event.summary,
-        description: event.description,
-        start_time: parse_event_time(event.start),
-        end_time: parse_event_time(event.end),
-        location: event.location,
-        all_day: event.start.date.present?
-      }
+    # Get calendar names for reference
+    calendar_names = {}
+    calendars.each do |cal|
+      calendar_names[cal[:id]] = cal[:name]
     end
+
+    all_events = []
+
+    # Fetch events from all selected calendars
+    @user.google_calendar_id.each do |calendar_id|
+      begin
+        result = client.list_events(
+          calendar_id,
+          time_min: time_min,
+          time_max: time_max,
+          single_events: true,
+          order_by: 'startTime'
+        )
+
+        calendar_events = result.items.map do |event|
+          {
+            id: event.id,
+            summary: event.summary,
+            description: event.description,
+            start_time: parse_event_time(event.start),
+            end_time: parse_event_time(event.end),
+            location: event.location,
+            all_day: event.start.date.present?,
+            calendar_id: calendar_id,
+            calendar_name: calendar_names[calendar_id] || 'Calendar'
+          }
+        end
+
+        all_events.concat(calendar_events)
+      rescue Google::Apis::Error => e
+        Rails.logger.error("Error fetching events from calendar #{calendar_id}: #{e.message}")
+      end
+    end
+
+    # Sort all events by start time
+    all_events.sort_by { |event| event[:start_time] || Date.today }
   rescue Google::Apis::Error => e
     Rails.logger.error("Error fetching events: #{e.message}")
     []

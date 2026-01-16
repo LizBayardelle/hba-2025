@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HabitBeaver - Build Better Habits, Track Your Progress</title>
+</head>
+<body class="min-h-screen bg-gray-50">
+  <!-- Navigation -->
+  <nav class="bg-white shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center">
+          <h1 class="text-2xl font-bold display-font" style="color: #1d3e4c;">
+            HabitBeaver
+          </h1>
+        </div>
+        <div class="flex items-center gap-4">
+          <%= link_to "Privacy Policy", privacy_path, class: "text-sm hover:opacity-70", style: "color: #657b84;" %>
+          <%= link_to "Terms of Service", terms_path, class: "text-sm hover:opacity-70", style: "color: #657b84;" %>
+          <%= link_to "Sign In", new_user_session_path, class: "px-4 py-2 rounded-lg text-sm font-semibold text-white transition hover:opacity-90", style: "background-color: #1d3e4c;" %>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+    <div class="text-center">
+      <h1 class="text-5xl font-bold display-font mb-6" style="color: #1d3e4c;">
+        Build Better Habits, Track Your Progress
+      </h1>
+      <p class="text-xl mb-8" style="color: #657b84;">
+        A simple, powerful habit tracking app that helps you stay consistent and achieve your goals.
+      </p>
+      <%= link_to new_user_registration_path, class: "inline-block px-8 py-4 rounded-lg text-lg font-semibold text-white transition hover:opacity-90", style: "background-color: #1d3e4c;" do %>
+        Get Started Free
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Features Section -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <h2 class="text-3xl font-bold display-font text-center mb-12" style="color: #1d3e4c;">
+      Everything You Need to Build Better Habits
+    </h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- Feature 1 -->
+      <div class="bg-white rounded-xl shadow-md p-8 text-center">
+        <div class="text-4xl mb-4">
+          <i class="fa-solid fa-check-circle" style="color: #1d3e4c;"></i>
+        </div>
+        <h3 class="text-xl font-bold mb-3" style="color: #1d3e4c;">Daily Habit Tracking</h3>
+        <p class="text-sm" style="color: #657b84;">
+          Track your habits by time of day, category, or priority. Check off completions and build streaks.
+        </p>
+      </div>
+
+      <!-- Feature 2 -->
+      <div class="bg-white rounded-xl shadow-md p-8 text-center">
+        <div class="text-4xl mb-4">
+          <i class="fa-solid fa-chart-line" style="color: #1d3e4c;"></i>
+        </div>
+        <h3 class="text-xl font-bold mb-3" style="color: #1d3e4c;">Visual Analytics</h3>
+        <p class="text-sm" style="color: #657b84;">
+          See your progress with beautiful charts and statistics. Monitor your streaks and consistency.
+        </p>
+      </div>
+
+      <!-- Feature 3 -->
+      <div class="bg-white rounded-xl shadow-md p-8 text-center">
+        <div class="text-4xl mb-4">
+          <i class="fa-brands fa-google" style="color: #1d3e4c;"></i>
+        </div>
+        <h3 class="text-xl font-bold mb-3" style="color: #1d3e4c;">Google Calendar Integration</h3>
+        <p class="text-sm" style="color: #657b84;">
+          Connect your Google Calendar to see your schedule alongside your habits for better planning.
+        </p>
+      </div>
+
+      <!-- Feature 4 -->
+      <div class="bg-white rounded-xl shadow-md p-8 text-center">
+        <div class="text-4xl mb-4">
+          <i class="fa-solid fa-list-check" style="color: #1d3e4c;"></i>
+        </div>
+        <h3 class="text-xl font-bold mb-3" style="color: #1d3e4c;">Task Management</h3>
+        <p class="text-sm" style="color: #657b84;">
+          Organize tasks by priority and due date. Keep track of what needs to get done.
+        </p>
+      </div>
+
+      <!-- Feature 5 -->
+      <div class="bg-white rounded-xl shadow-md p-8 text-center">
+        <div class="text-4xl mb-4">
+          <i class="fa-solid fa-book" style="color: #1d3e4c;"></i>
+        </div>
+        <h3 class="text-xl font-bold mb-3" style="color: #1d3e4c;">Journal & Notes</h3>
+        <p class="text-sm" style="color: #657b84;">
+          Keep a daily journal and attach notes to your habits for context and reflection.
+        </p>
+      </div>
+
+      <!-- Feature 6 -->
+      <div class="bg-white rounded-xl shadow-md p-8 text-center">
+        <div class="text-4xl mb-4">
+          <i class="fa-solid fa-palette" style="color: #1d3e4c;"></i>
+        </div>
+        <h3 class="text-xl font-bold mb-3" style="color: #1d3e4c;">Customizable</h3>
+        <p class="text-sm" style="color: #657b84;">
+          Create custom categories, priority levels, and time blocks that match your lifestyle.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- How It Works Section -->
+  <div class="bg-white py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-3xl font-bold display-font text-center mb-12" style="color: #1d3e4c;">
+        How HabitBeaver Works
+      </h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+        <div>
+          <div class="text-5xl font-bold mb-4" style="color: #1d3e4c;">1</div>
+          <h3 class="text-xl font-bold mb-3" style="color: #1d3e4c;">Create Your Habits</h3>
+          <p class="text-sm" style="color: #657b84;">
+            Set up the habits you want to track. Organize them by category, assign priorities, and choose when you'll do them.
+          </p>
+        </div>
+
+        <div>
+          <div class="text-5xl font-bold mb-4" style="color: #1d3e4c;">2</div>
+          <h3 class="text-xl font-bold mb-3" style="color: #1d3e4c;">Track Daily</h3>
+          <p class="text-sm" style="color: #657b84;">
+            Check off your habits as you complete them throughout the day. Build streaks and stay motivated.
+          </p>
+        </div>
+
+        <div>
+          <div class="text-5xl font-bold mb-4" style="color: #1d3e4c;">3</div>
+          <h3 class="text-xl font-bold mb-3" style="color: #1d3e4c;">See Your Progress</h3>
+          <p class="text-sm" style="color: #657b84;">
+            Review your analytics to see how you're doing. Celebrate wins and identify areas for improvement.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA Section -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+    <h2 class="text-4xl font-bold display-font mb-6" style="color: #1d3e4c;">
+      Ready to Build Better Habits?
+    </h2>
+    <p class="text-xl mb-8" style="color: #657b84;">
+      Join HabitBeaver today and start your journey to consistency.
+    </p>
+    <%= link_to new_user_registration_path, class: "inline-block px-8 py-4 rounded-lg text-lg font-semibold text-white transition hover:opacity-90", style: "background-color: #1d3e4c;" do %>
+      Sign Up Now - It's Free
+    <% end %>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t-2" style="border-color: #E8EEF1;">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="text-sm" style="color: #657b84;">
+          © <%= Date.today.year %> HabitBeaver. All rights reserved.
+        </div>
+        <div class="flex gap-6">
+          <%= link_to "Privacy Policy", privacy_path, class: "text-sm hover:opacity-70", style: "color: #657b84;" %>
+          <%= link_to "Terms of Service", terms_path, class: "text-sm hover:opacity-70", style: "color: #657b84;" %>
+          <a href="mailto:help@linchpinindustries.com" class="text-sm hover:opacity-70" style="color: #657b84;">Contact</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
