@@ -214,19 +214,18 @@ const HabitItem = ({ habit, categoryColor, categoryDarkColor, isFirst, onComplet
               </span>
             )}
 
-            {/* Time of day badge */}
-            {habit.time_of_day &&
-              !['anytime', 'any'].includes(habit.time_of_day.toLowerCase()) && (
+            {/* Time block badge */}
+            {habit.time_block_name &&
+              habit.time_block_name.toLowerCase() !== 'anytime' && (
                 <span
                   className="text-xs px-2 py-0.5 rounded-full font-semibold flex items-center gap-1"
                   style={{
-                    backgroundColor: `${categoryColor}15`,
-                    color: categoryColor,
+                    backgroundColor: `${habit.time_block_color}20`,
+                    color: habit.time_block_color,
                   }}
                 >
-                  {habit.time_of_day.toLowerCase() === 'night'
-                    ? 'Night'
-                    : habit.time_of_day.toUpperCase()}
+                  <i className={`${habit.time_block_icon} text-[10px]`}></i>
+                  {habit.time_block_name}
                 </span>
               )}
 

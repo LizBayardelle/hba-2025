@@ -162,9 +162,34 @@ class HabitsController < ApplicationController
     @habit = @category.habits.find(params[:id])
 
     if @habit.update(habit_params)
+      @habit.reload # Reload to get updated associations
       respond_to do |format|
         format.html { redirect_to category_path(@category), notice: 'Habit updated successfully.' }
-        format.json { render json: { success: true, message: 'Habit updated successfully.', habit: @habit }, status: :ok }
+        format.json {
+          render json: {
+            success: true,
+            message: 'Habit updated successfully.',
+            habit: @habit.as_json(
+              only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :importance_level_id, :category_id, :time_block_id]
+            ).merge(
+              time_block_name: @habit.time_block&.name,
+              time_block_icon: @habit.time_block&.icon,
+              time_block_color: @habit.time_block&.color,
+              time_block_rank: @habit.time_block&.rank,
+              importance_level: @habit.importance_level ? {
+                id: @habit.importance_level.id,
+                name: @habit.importance_level.name,
+                icon: @habit.importance_level.icon,
+                color: @habit.importance_level.color,
+                rank: @habit.importance_level.rank
+              } : nil,
+              tags: @habit.tags.map { |t| { id: t.id, name: t.name } },
+              documents: @habit.documents.map { |c| { id: c.id, title: c.title } },
+              habit_contents: @habit.documents.map { |c| { id: c.id, title: c.title } }
+            )
+          },
+          status: :ok
+        }
       end
     else
       respond_to do |format|

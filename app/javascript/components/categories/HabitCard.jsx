@@ -157,15 +157,15 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = fa
             {habit.habit_contents && habit.habit_contents.length > 0 && (
               <button
                 onClick={() => openViewModal(habit.habit_contents[0].id)}
-                className="text-xs px-2 py-0.5 rounded-full font-semibold hover:opacity-70 transition cursor-pointer flex items-center gap-1"
+                className="text-xs px-2 py-0.5 rounded-full font-semibold hover:opacity-70 transition cursor-pointer flex items-center gap-1 max-w-xs"
                 style={{
                   backgroundColor: `${categoryColor}15`,
                   color: categoryColor,
                 }}
-                title="View attached content"
+                title={habit.habit_contents[0].title}
               >
-                <i className="fa-solid fa-file-alt text-[10px]"></i>
-                {habit.habit_contents[0].title}
+                <i className="fa-solid fa-file-alt text-[10px] flex-shrink-0"></i>
+                <span className="truncate">{habit.habit_contents[0].title}</span>
               </button>
             )}
 
@@ -183,18 +183,19 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = fa
             )}
 
             {/* Time block badge */}
-            {habit.time_block && (
-              <span
-                className="text-xs px-2 py-0.5 rounded-full font-semibold flex items-center gap-1"
-                style={{
-                  backgroundColor: `${habit.time_block.color}20`,
-                  color: habit.time_block.color,
-                }}
-              >
-                <i className={`${habit.time_block.icon} text-[10px]`}></i>
-                {habit.time_block.name}
-              </span>
-            )}
+            {habit.time_block_name &&
+              habit.time_block_name.toLowerCase() !== 'anytime' && (
+                <span
+                  className="text-xs px-2 py-0.5 rounded-full font-semibold flex items-center gap-1"
+                  style={{
+                    backgroundColor: `${habit.time_block_color}20`,
+                    color: habit.time_block_color,
+                  }}
+                >
+                  <i className={`${habit.time_block_icon} text-[10px]`}></i>
+                  {habit.time_block_name}
+                </span>
+              )}
 
             {/* Tags */}
             {habit.tags && habit.tags.length > 0 && habit.tags.map((tag) => (
