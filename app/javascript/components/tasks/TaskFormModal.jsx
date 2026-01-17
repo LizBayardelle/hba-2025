@@ -14,6 +14,7 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
     name: '',
     importance_level_id: '',
     category_id: '',
+    time_block_id: '',
     on_hold: false,
     url: '',
     location_name: '',
@@ -38,6 +39,16 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
     },
   });
 
+  // Fetch user's time blocks
+  const { data: timeBlocks = [] } = useQuery({
+    queryKey: ['timeBlocks'],
+    queryFn: async () => {
+      const response = await fetch('/settings/time_blocks');
+      if (!response.ok) throw new Error('Failed to fetch time blocks');
+      return response.json();
+    },
+  });
+
   // Fetch task data if editing
   const { data: task } = useQuery({
     queryKey: ['task', taskId],
@@ -52,6 +63,7 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
         name: task.name || '',
         importance_level_id: task.importance_level_id || '',
         category_id: task.category_id || '',
+        time_block_id: task.time_block_id || '',
         on_hold: task.on_hold || false,
         url: task.url || '',
         location_name: task.location_name || '',
@@ -82,6 +94,7 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
         name: '',
         importance_level_id: '',
         category_id: '',
+        time_block_id: '',
         on_hold: false,
         url: '',
         location_name: '',
@@ -201,18 +214,21 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
         <button
           type="button"
           onClick={handleDelete}
-          className="mr-auto px-6 py-3 rounded-lg font-semibold transition"
-          style={{ color: '#DC2626' }}
+          className="mr-auto w-10 h-10 rounded-lg transition hover:bg-white/10 flex items-center justify-center"
           disabled={deleteMutation.isPending}
+          title="Delete task"
         >
-          {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+          {deleteMutation.isPending ? (
+            <i className="fa-solid fa-spinner fa-spin text-white"></i>
+          ) : (
+            <i className="fa-solid fa-trash text-white text-lg"></i>
+          )}
         </button>
       )}
       <button
         type="button"
         onClick={closeFormModal}
-        className="px-6 py-3 rounded-lg font-semibold border-2 transition"
-        style={{ color: '#1d3e4c', borderColor: '#E8EEF1' }}
+        className="px-6 py-3 rounded-lg font-semibold transition text-white hover:opacity-70"
         disabled={currentMutation.isPending}
       >
         Cancel
@@ -220,8 +236,8 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
       <button
         type="submit"
         form="task-form"
-        className="px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition cursor-pointer disabled:opacity-50"
-        style={{ background: 'linear-gradient(135deg, #1d3e4c, #45606b)' }}
+        className="px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition cursor-pointer disabled:opacity-50 hover:opacity-90"
+        style={{ backgroundColor: '#E8EEF1', color: '#1d3e4c' }}
         disabled={currentMutation.isPending}
       >
         {currentMutation.isPending ? 'Saving...' : mode === 'edit' ? 'Update Task' : 'Create Task'}
@@ -325,6 +341,67 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
               className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
               style={{ borderColor: '#E8EEF1', color: '#1d3e4c' }}
             />
+          </div>
+        </div>
+
+        {/* Time Block */}
+        <div className="mb-6">
+          <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
+            Time of Day
+          </label>
+          <div className="overflow-x-auto pb-2 pt-2 px-1">
+            <div className="flex gap-4 min-w-max pl-1">
+              {/* Anytime option (no time block) */}
+              <div
+                className="flex flex-col items-center gap-2 cursor-pointer transition-transform hover:scale-105"
+                onClick={() => setFormData({ ...formData, time_block_id: '' })}
+              >
+                <div
+                  className={`w-16 h-16 rounded-lg flex items-center justify-center shadow-md transition ${
+                    formData.time_block_id === '' ? 'ring-4 ring-offset-2' : ''
+                  }`}
+                  style={{
+                    backgroundColor: '#1d3e4c',
+                    ringColor: formData.time_block_id === '' ? '#1d3e4c' : 'transparent',
+                  }}
+                >
+                  <i className="fa-solid fa-clock text-white text-2xl"></i>
+                </div>
+                <span
+                  className="text-xs font-medium text-center max-w-[80px]"
+                  style={{ color: '#1d3e4c' }}
+                >
+                  Anytime
+                </span>
+              </div>
+
+              {/* User's time blocks */}
+              {timeBlocks?.map((block) => (
+                <div
+                  key={block.id}
+                  className="flex flex-col items-center gap-2 cursor-pointer transition-transform hover:scale-105"
+                  onClick={() => setFormData({ ...formData, time_block_id: block.id })}
+                >
+                  <div
+                    className={`w-16 h-16 rounded-lg flex items-center justify-center shadow-md transition ${
+                      formData.time_block_id === block.id ? 'ring-4 ring-offset-2' : ''
+                    }`}
+                    style={{
+                      backgroundColor: block.color,
+                      ringColor: formData.time_block_id === block.id ? block.color : 'transparent',
+                    }}
+                  >
+                    <i className={`${block.icon} text-white text-2xl`}></i>
+                  </div>
+                  <span
+                    className="text-xs font-medium text-center max-w-[80px]"
+                    style={{ color: '#1d3e4c' }}
+                  >
+                    {block.name}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 

@@ -157,15 +157,15 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = fa
             {habit.habit_contents && habit.habit_contents.length > 0 && (
               <button
                 onClick={() => openViewModal(habit.habit_contents[0].id)}
-                className="text-xs px-2 py-0.5 rounded-full font-semibold hover:opacity-70 transition cursor-pointer flex items-center gap-1 max-w-xs"
+                className="text-xs px-2 py-0.5 rounded-full font-semibold hover:opacity-70 transition cursor-pointer flex items-center gap-1 max-w-xs min-w-0"
                 style={{
-                  backgroundColor: `${categoryColor}15`,
-                  color: categoryColor,
+                  backgroundColor: categoryColor,
+                  color: 'white',
                 }}
                 title={habit.habit_contents[0].title}
               >
                 <i className="fa-solid fa-file-alt text-[10px] flex-shrink-0"></i>
-                <span className="truncate">{habit.habit_contents[0].title}</span>
+                <span className="truncate min-w-0 block">{habit.habit_contents[0].title}</span>
               </button>
             )}
 
@@ -174,8 +174,8 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = fa
               <span
                 className="text-xs px-2 py-0.5 rounded-full font-semibold flex items-center gap-1"
                 style={{
-                  backgroundColor: `${categoryColor}15`,
-                  color: categoryColor,
+                  backgroundColor: categoryColor,
+                  color: 'white',
                 }}
               >
                 {habit.target_count}x/{habit.frequency_type}
@@ -188,8 +188,8 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = fa
                 <span
                   className="text-xs px-2 py-0.5 rounded-full font-semibold flex items-center gap-1"
                   style={{
-                    backgroundColor: `${habit.time_block_color}20`,
-                    color: habit.time_block_color,
+                    backgroundColor: habit.time_block_color,
+                    color: 'white',
                   }}
                 >
                   <i className={`${habit.time_block_icon} text-[10px]`}></i>
@@ -204,8 +204,8 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = fa
                 href={`/tags?tag_id=${tag.id}`}
                 className="text-xs px-2 py-0.5 rounded-full font-semibold hover:opacity-70 transition cursor-pointer flex items-center gap-1"
                 style={{
-                  backgroundColor: '#E8EEF1',
-                  color: '#1d3e4c',
+                  backgroundColor: '#1d3e4c',
+                  color: 'white',
                 }}
               >
                 <i className="fa-solid fa-tags text-[10px]"></i>

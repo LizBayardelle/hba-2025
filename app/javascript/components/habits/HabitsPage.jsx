@@ -128,7 +128,7 @@ const HabitsPage = () => {
             icon: habit.time_block_icon || 'fa-clock',
             color: habit.time_block_color || '#1d3e4c',
             darkColor: colorMap[habit.time_block_color]?.dark || '#1d3e4c',
-            rank: habit.time_block_rank !== undefined ? habit.time_block_rank : 999,
+            rank: habit.time_block_rank != null ? habit.time_block_rank : 999,
             habits: [],
           };
         }

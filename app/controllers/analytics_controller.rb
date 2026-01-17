@@ -8,7 +8,7 @@ class AnalyticsController < ApplicationController
     @selected_date = params[:date] ? Date.parse(params[:date]) : Time.zone.today
 
     # Get all active habits for current user
-    @habits = current_user.habits.active.includes(:category)
+    @habits = current_user.habits.active.includes(:category, :importance_level, :time_block)
 
     # Update health for any habits that haven't been checked today
     @habits.each do |habit|
@@ -50,22 +50,11 @@ class AnalyticsController < ApplicationController
 
     # Group habits based on view mode
     if @view_mode == 'time'
-      grouped = @habits.group_by do |h|
-        case h.time_of_day
-        when 'am', 'morning' then 'morning'
-        when 'pm', 'afternoon' then 'afternoon'
-        when 'night', 'evening' then 'evening'
-        else 'anytime'
-        end
-      end
-      # Sort by time of day order
-      time_order = ['morning', 'afternoon', 'evening', 'anytime']
-      @grouped_habits = grouped.sort_by { |time, _| time_order.index(time) || 999 }.to_h
+      # Group by time_block, sorting by rank
+      @grouped_habits = @habits.sort_by { |h| h.time_block&.rank || 999 }.group_by(&:time_block)
     elsif @view_mode == 'importance'
-      grouped = @habits.group_by { |h| h.importance || 'normal' }
-      # Sort by importance order
-      importance_order = ['critical', 'important', 'normal', 'optional']
-      @grouped_habits = grouped.sort_by { |importance, _| importance_order.index(importance) || 999 }.to_h
+      # Group by importance_level, sorting by rank
+      @grouped_habits = @habits.sort_by { |h| h.importance_level&.rank || 999 }.group_by(&:importance_level)
     else
       @grouped_habits = @habits.group_by(&:category)
     end

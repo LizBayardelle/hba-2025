@@ -148,18 +148,21 @@ const JournalFormModal = ({ allTags }) => {
         <button
           type="button"
           onClick={handleDelete}
-          className="mr-auto px-6 py-3 rounded-lg font-semibold transition"
-          style={{ color: '#DC2626' }}
+          className="mr-auto w-10 h-10 rounded-lg transition hover:bg-white/10 flex items-center justify-center"
           disabled={deleteMutation.isPending}
+          title="Delete journal entry"
         >
-          {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+          {deleteMutation.isPending ? (
+            <i className="fa-solid fa-spinner fa-spin text-white"></i>
+          ) : (
+            <i className="fa-solid fa-trash text-white text-lg"></i>
+          )}
         </button>
       )}
       <button
         type="button"
         onClick={closeFormModal}
-        className="px-6 py-3 rounded-lg font-semibold border-2 transition"
-        style={{ color: '#1d3e4c', borderColor: '#E8EEF1' }}
+        className="px-6 py-3 rounded-lg font-semibold transition text-white hover:opacity-70"
         disabled={currentMutation.isPending}
       >
         Cancel
@@ -167,8 +170,8 @@ const JournalFormModal = ({ allTags }) => {
       <button
         type="submit"
         form="journal-form"
-        className="px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition cursor-pointer disabled:opacity-50"
-        style={{ background: 'linear-gradient(135deg, #1d3e4c, #45606b)' }}
+        className="px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition cursor-pointer disabled:opacity-50 hover:opacity-90"
+        style={{ backgroundColor: '#E8EEF1', color: '#1d3e4c' }}
         disabled={currentMutation.isPending}
       >
         {currentMutation.isPending

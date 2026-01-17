@@ -226,6 +226,15 @@ const TasksPage = () => {
         }
       });
 
+      // Sort tasks within each group by time_block rank (anytime = 999)
+      Object.values(groups).forEach(group => {
+        group.tasks.sort((a, b) => {
+          const rankA = a.time_block?.rank != null ? a.time_block.rank : 999;
+          const rankB = b.time_block?.rank != null ? b.time_block.rank : 999;
+          return rankA - rankB;
+        });
+      });
+
       return Object.values(groups).filter(g => g.tasks.length > 0);
     } else if (groupBy === 'importance') {
       // Group by importance

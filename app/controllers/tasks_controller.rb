@@ -3,7 +3,7 @@ class TasksController < ApplicationController
   before_action :set_task, only: [:show, :update, :destroy]
 
   def index
-    @tasks = current_user.tasks.includes(:category, :tags, :importance_level)
+    @tasks = current_user.tasks.includes(:category, :tags, :importance_level, :time_block)
 
     # Filter by status
     case params[:status]
@@ -67,12 +67,13 @@ class TasksController < ApplicationController
           task.as_json(
             only: [:id, :name, :importance, :importance_level_id, :completed, :completed_at, :on_hold, :url,
                    :location_name, :location_lat, :location_lng, :position, :due_date,
-                   :due_time, :created_at, :updated_at, :category_id, :attached_document_id],
+                   :due_time, :created_at, :updated_at, :category_id, :attached_document_id, :time_block_id],
             include: {
               tags: { only: [:id, :name] },
               category: { only: [:id, :name, :color, :icon] },
               document: { only: [:id, :title] },
-              importance_level: { only: [:id, :name, :icon, :color, :rank] }
+              importance_level: { only: [:id, :name, :icon, :color, :rank] },
+              time_block: { only: [:id, :name, :icon, :color, :rank] }
             }
           ).merge(notes: task.notes.to_s)
         }
@@ -86,12 +87,13 @@ class TasksController < ApplicationController
         render json: @task.as_json(
           only: [:id, :name, :importance, :importance_level_id, :completed, :completed_at, :on_hold, :url,
                  :location_name, :location_lat, :location_lng, :position, :due_date,
-                 :due_time, :created_at, :updated_at, :category_id, :attached_document_id],
+                 :due_time, :created_at, :updated_at, :category_id, :attached_document_id, :time_block_id],
           include: {
             tags: { only: [:id, :name] },
             category: { only: [:id, :name, :color, :icon] },
             document: { only: [:id, :title] },
-            importance_level: { only: [:id, :name, :icon, :color, :rank] }
+            importance_level: { only: [:id, :name, :icon, :color, :rank] },
+            time_block: { only: [:id, :name, :icon, :color, :rank] }
           }
         ).merge(notes: @task.notes.to_s)
       }
@@ -160,7 +162,7 @@ class TasksController < ApplicationController
     params.require(:task).permit(
       :name, :importance, :importance_level_id, :category_id, :completed, :completed_at, :on_hold,
       :notes, :url, :location_name, :location_lat, :location_lng,
-      :attached_document_id, :position, :due_date, :due_time, :archived_at,
+      :attached_document_id, :position, :due_date, :due_time, :archived_at, :time_block_id,
       tag_names: []
     )
   end

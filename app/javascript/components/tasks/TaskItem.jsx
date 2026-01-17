@@ -102,11 +102,14 @@ const TaskItem = ({ task }) => {
             {/* Importance Level */}
             {task.importance_level && (
               <div
-                className="flex-shrink-0 w-6 h-6 rounded flex items-center justify-center"
-                style={{ backgroundColor: task.importance_level.color }}
-                title={task.importance_level.name}
+                className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium"
+                style={{
+                  backgroundColor: task.importance_level.color,
+                  color: 'white',
+                }}
               >
-                <i className={`${task.importance_level.icon} text-white text-xs`}></i>
+                <i className={`${task.importance_level.icon} text-[10px]`}></i>
+                <span>{task.importance_level.name}</span>
               </div>
             )}
 
@@ -124,6 +127,20 @@ const TaskItem = ({ task }) => {
               </div>
             )}
 
+            {/* Time Block */}
+            {task.time_block && task.time_block.name.toLowerCase() !== 'anytime' && (
+              <div
+                className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium"
+                style={{
+                  backgroundColor: task.time_block.color,
+                  color: 'white',
+                }}
+              >
+                <i className={`${task.time_block.icon} text-[10px]`}></i>
+                <span>{task.time_block.name}</span>
+              </div>
+            )}
+
             {/* Document Badge */}
             {task.document && (
               <button
@@ -133,8 +150,8 @@ const TaskItem = ({ task }) => {
                 }}
                 className="px-2 py-1 rounded-lg text-xs font-medium hover:opacity-70 transition flex items-center gap-1"
                 style={{
-                  backgroundColor: themeBgColor,
-                  color: themeColor,
+                  backgroundColor: themeColor,
+                  color: 'white',
                 }}
                 title="View attached document"
               >
@@ -148,8 +165,8 @@ const TaskItem = ({ task }) => {
               <div
                 className="px-2 py-1 rounded-lg text-xs font-medium"
                 style={{
-                  backgroundColor: themeBgColor,
-                  color: themeColor,
+                  backgroundColor: themeColor,
+                  color: 'white',
                 }}
               >
                 <i className="fa-solid fa-calendar-day mr-1"></i>
@@ -162,8 +179,8 @@ const TaskItem = ({ task }) => {
               <div
                 className="px-2 py-1 rounded-lg text-xs font-medium"
                 style={{
-                  backgroundColor: themeBgColor,
-                  color: themeColor,
+                  backgroundColor: themeColor,
+                  color: 'white',
                 }}
               >
                 <i className="fa-solid fa-pause mr-1"></i>
@@ -177,8 +194,8 @@ const TaskItem = ({ task }) => {
                 key={tag.id}
                 className="px-2 py-1 rounded-lg text-xs font-medium"
                 style={{
-                  backgroundColor: themeBgColor,
-                  color: themeColor,
+                  backgroundColor: themeColor,
+                  color: 'white',
                 }}
               >
                 <i className="fa-solid fa-tag mr-1"></i>

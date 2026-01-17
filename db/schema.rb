@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_01_16_174915) do
+ActiveRecord::Schema[7.2].define(version: 2026_01_17_002748) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -190,6 +190,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_16_174915) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "importance_level_id"
+    t.integer "time_block_id"
     t.index ["archived_at"], name: "index_tasks_on_archived_at"
     t.index ["attached_document_id"], name: "index_tasks_on_attached_document_id"
     t.index ["category_id"], name: "index_tasks_on_category_id"

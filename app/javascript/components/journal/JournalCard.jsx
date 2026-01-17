@@ -52,8 +52,8 @@ const JournalCard = ({ journal }) => {
                     onClick={(e) => e.stopPropagation()}
                     className="text-xs px-2 py-1 rounded-lg font-medium hover:opacity-70 transition cursor-pointer flex items-center gap-1"
                     style={{
-                      backgroundColor: '#E8EEF1',
-                      color: '#1d3e4c',
+                      backgroundColor: '#1d3e4c',
+                      color: 'white',
                     }}
                   >
                     <i className="fa-solid fa-tag text-[10px]"></i>

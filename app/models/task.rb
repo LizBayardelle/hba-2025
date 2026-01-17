@@ -3,6 +3,7 @@ class Task < ApplicationRecord
   belongs_to :category, optional: true
   belongs_to :document, optional: true, foreign_key: :attached_document_id
   belongs_to :importance_level, optional: true
+  belongs_to :time_block, optional: true
   has_many :taggings, as: :taggable, dependent: :destroy
   has_many :tags, through: :taggings
   has_rich_text :notes
