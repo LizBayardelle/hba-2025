@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import BaseModal from '../shared/BaseModal';
-import { documentsApi } from '../../utils/api';
+import { documentsApi, tasksApi } from '../../utils/api';
 import useDocumentsStore from '../../stores/documentsStore';
 
 const DocumentFormModal = ({ habits, allTags }) => {
@@ -15,8 +15,12 @@ const DocumentFormModal = ({ habits, allTags }) => {
     title: '',
     url: '',
     habit_ids: [],
+    task_ids: [],
   });
   const [showHabitDropdown, setShowHabitDropdown] = useState(false);
+  const [showTaskDropdown, setShowTaskDropdown] = useState(false);
+  const [habitFilter, setHabitFilter] = useState('');
+  const [taskFilter, setTaskFilter] = useState('');
   const [tagInput, setTagInput] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
@@ -28,6 +32,13 @@ const DocumentFormModal = ({ habits, allTags }) => {
     enabled: isOpen && mode === 'edit' && !!documentId,
   });
 
+  // Fetch all tasks
+  const { data: tasks = [] } = useQuery({
+    queryKey: ['tasks'],
+    queryFn: tasksApi.fetchAll,
+    enabled: isOpen,
+  });
+
   // Load document data when editing
   useEffect(() => {
     if (document && mode === 'edit') {
@@ -36,6 +47,7 @@ const DocumentFormModal = ({ habits, allTags }) => {
         title: document.title,
         url: document.metadata?.url || '',
         habit_ids: document.habits?.map(h => h.id.toString()) || [],
+        task_ids: document.tasks?.map(t => t.id.toString()) || [],
       });
       setSelectedTags(document.tags?.map(t => t.name) || []);
 
@@ -60,9 +72,12 @@ const DocumentFormModal = ({ habits, allTags }) => {
         title: '',
         url: '',
         habit_ids: [],
+        task_ids: [],
       });
       setSelectedTags([]);
       setTagInput('');
+      setHabitFilter('');
+      setTaskFilter('');
       if (trixEditorRef.current?.editor) {
         trixEditorRef.current.editor.loadHTML('');
       }
@@ -97,6 +112,7 @@ const DocumentFormModal = ({ habits, allTags }) => {
       content_type: formData.content_type,
       title: formData.title,
       habit_ids: formData.habit_ids,
+      task_ids: formData.task_ids,
       tag_names: selectedTags,
       metadata: {
         url: formData.url,
@@ -160,6 +176,22 @@ const DocumentFormModal = ({ habits, allTags }) => {
     return acc;
   }, {});
 
+  // Filter habits based on search
+  const filteredGroupedHabits = Object.entries(groupedHabits).reduce((acc, [category, categoryHabits]) => {
+    const filtered = categoryHabits.filter(habit =>
+      habit.name.toLowerCase().includes(habitFilter.toLowerCase())
+    );
+    if (filtered.length > 0) {
+      acc[category] = filtered;
+    }
+    return acc;
+  }, {});
+
+  // Filter tasks based on search
+  const filteredTasks = tasks.filter(task =>
+    task.name?.toLowerCase().includes(taskFilter.toLowerCase())
+  );
+
   const footer = (
     <>
       <button
@@ -197,71 +229,242 @@ const DocumentFormModal = ({ habits, allTags }) => {
           </div>
         )}
 
-        {/* Attach to Habits */}
+        {/* Content Type */}
         <div className="mb-6">
-          <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
-            Attach to Habits (optional)
-          </label>
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setShowHabitDropdown(!showHabitDropdown)}
-              className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light text-left flex items-center justify-between"
-              style={{ borderColor: '#E8EEF1' }}
-            >
-              <span style={{ color: '#657b84' }}>
-                {formData.habit_ids.length === 0
-                  ? 'No habits selected'
-                  : `${formData.habit_ids.length} habit(s) selected`}
-              </span>
-              <i className="fa-solid fa-chevron-down text-sm" style={{ color: '#657b84' }}></i>
-            </button>
+          <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>Content Type</label>
+          <div className="grid grid-cols-4 gap-3">
+            {['document', 'youtube', 'video', 'link'].map((type) => (
+              <label key={type} className="cursor-pointer">
+                <input
+                  type="radio"
+                  name="content_type"
+                  value={type}
+                  checked={formData.content_type === type}
+                  onChange={(e) => setFormData({ ...formData, content_type: e.target.value })}
+                  className="hidden"
+                />
+                <div
+                  className={`p-3 rounded-lg border-2 transition hover:shadow-md ${
+                    formData.content_type === type ? 'border-[#6B8A99] bg-[#E8EEF1]' : 'border-gray-200'
+                  }`}
+                >
+                  <div className="flex flex-col items-center gap-1">
+                    <i
+                      className={`fa-solid ${
+                        type === 'document'
+                          ? 'fa-file-alt'
+                          : type === 'youtube'
+                          ? 'fa-brands fa-youtube'
+                          : type === 'video'
+                          ? 'fa-video'
+                          : 'fa-link'
+                      } text-lg`}
+                      style={{ color: formData.content_type === type ? '#1d3e4c' : '#9CA3A8' }}
+                    ></i>
+                    <span
+                      className="font-semibold capitalize text-xs"
+                      style={{ color: formData.content_type === type ? '#1d3e4c' : '#657b84' }}
+                    >
+                      {type}
+                    </span>
+                  </div>
+                </div>
+              </label>
+            ))}
+          </div>
+        </div>
 
-            {showHabitDropdown && (
-              <div
-                className="absolute z-10 w-full mt-2 bg-white border-2 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+        {/* Title */}
+        <div className="mb-6">
+          <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>Title</label>
+          <input
+            type="text"
+            value={formData.title}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            required
+            className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
+            style={{ borderColor: '#E8EEF1' }}
+            placeholder="e.g., Morning Prayer, Spanish Lesson 1"
+          />
+        </div>
+
+        {/* URL Field (for youtube, video, link) */}
+        {['youtube', 'video', 'link'].includes(formData.content_type) && (
+          <div className="mb-6">
+            <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>URL</label>
+            <input
+              type="url"
+              value={formData.url}
+              onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+              className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
+              style={{ borderColor: '#E8EEF1' }}
+              placeholder="https://www.youtube.com/watch?v=..."
+            />
+            <p className="text-xs font-light mt-2" style={{ color: '#657b84' }}>
+              Paste the full URL - we'll handle the rest!
+            </p>
+          </div>
+        )}
+
+        {/* Document Body (for document type) */}
+        {formData.content_type === 'document' && (
+          <div className="mb-6">
+            <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>Document Content</label>
+            <input type="hidden" name="body" id="document-form-body-hidden" />
+            <trix-editor ref={trixEditorRef} input="document-form-body-hidden" className="trix-content"></trix-editor>
+          </div>
+        )}
+
+        {/* Attach to Habits and Tasks - Side by Side */}
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          {/* Attach to Habits */}
+          <div>
+            <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
+              Attach to Habits
+            </label>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowHabitDropdown(!showHabitDropdown)}
+                className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light text-left flex items-center justify-between"
                 style={{ borderColor: '#E8EEF1' }}
               >
-                {Object.entries(groupedHabits).map(([category, categoryHabits]) => (
-                  <div key={category} className="p-2 border-b" style={{ borderColor: '#E8EEF1' }}>
-                    <div className="text-xs font-semibold uppercase tracking-wide px-2 py-1" style={{ color: '#657b84' }}>
-                      {category}
+                <span style={{ color: '#657b84' }}>
+                  {formData.habit_ids.length === 0
+                    ? 'None'
+                    : `${formData.habit_ids.length} selected`}
+                </span>
+                <i className="fa-solid fa-chevron-down text-sm" style={{ color: '#657b84' }}></i>
+              </button>
+
+              {showHabitDropdown && (
+                <div
+                  className="absolute z-10 w-full mt-2 bg-white border-2 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                  style={{ borderColor: '#E8EEF1' }}
+                >
+                  {/* Filter input */}
+                  <div className="p-2 border-b sticky top-0 bg-white" style={{ borderColor: '#E8EEF1' }}>
+                    <input
+                      type="text"
+                      value={habitFilter}
+                      onChange={(e) => setHabitFilter(e.target.value)}
+                      className="w-full px-3 py-2 rounded border text-sm font-light"
+                      style={{ borderColor: '#E8EEF1' }}
+                      placeholder="Filter habits..."
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+
+                  {Object.entries(filteredGroupedHabits).map(([category, categoryHabits]) => (
+                    <div key={category} className="p-2 border-b" style={{ borderColor: '#E8EEF1' }}>
+                      <div className="text-xs font-semibold uppercase tracking-wide px-2 py-1" style={{ color: '#657b84' }}>
+                        {category}
+                      </div>
+                      {categoryHabits.map((habit) => (
+                        <label key={habit.id} className="flex items-center gap-2 px-2 py-2 hover:bg-gray-50 rounded cursor-pointer">
+                          <input
+                            type="checkbox"
+                            value={habit.id}
+                            checked={formData.habit_ids.includes(habit.id.toString())}
+                            onChange={(e) => {
+                              const habitId = e.target.value;
+                              setFormData((prev) => ({
+                                ...prev,
+                                habit_ids: e.target.checked
+                                  ? [...prev.habit_ids, habitId]
+                                  : prev.habit_ids.filter((id) => id !== habitId),
+                              }));
+                            }}
+                            className="rounded border-gray-300"
+                          />
+                          <span className="text-sm font-light" style={{ color: '#1d3e4c' }}>
+                            {habit.name}
+                          </span>
+                        </label>
+                      ))}
                     </div>
-                    {categoryHabits.map((habit) => (
-                      <label key={habit.id} className="flex items-center gap-2 px-2 py-2 hover:bg-gray-50 rounded cursor-pointer">
+                  ))}
+                  {Object.keys(filteredGroupedHabits).length === 0 && (
+                    <div className="p-4 text-center text-sm font-light" style={{ color: '#657b84' }}>
+                      {habitFilter ? 'No matching habits' : 'No habits available'}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Attach to Tasks */}
+          <div>
+            <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
+              Attach to Tasks
+            </label>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowTaskDropdown(!showTaskDropdown)}
+                className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light text-left flex items-center justify-between"
+                style={{ borderColor: '#E8EEF1' }}
+              >
+                <span style={{ color: '#657b84' }}>
+                  {formData.task_ids.length === 0
+                    ? 'None'
+                    : `${formData.task_ids.length} selected`}
+                </span>
+                <i className="fa-solid fa-chevron-down text-sm" style={{ color: '#657b84' }}></i>
+              </button>
+
+              {showTaskDropdown && (
+                <div
+                  className="absolute z-10 w-full mt-2 bg-white border-2 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                  style={{ borderColor: '#E8EEF1' }}
+                >
+                  {/* Filter input */}
+                  <div className="p-2 border-b sticky top-0 bg-white" style={{ borderColor: '#E8EEF1' }}>
+                    <input
+                      type="text"
+                      value={taskFilter}
+                      onChange={(e) => setTaskFilter(e.target.value)}
+                      className="w-full px-3 py-2 rounded border text-sm font-light"
+                      style={{ borderColor: '#E8EEF1' }}
+                      placeholder="Filter tasks..."
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+
+                  <div className="p-2">
+                    {filteredTasks.map((task) => (
+                      <label key={task.id} className="flex items-center gap-2 px-2 py-2 hover:bg-gray-50 rounded cursor-pointer">
                         <input
                           type="checkbox"
-                          value={habit.id}
-                          checked={formData.habit_ids.includes(habit.id.toString())}
+                          value={task.id}
+                          checked={formData.task_ids.includes(task.id.toString())}
                           onChange={(e) => {
-                            const habitId = e.target.value;
+                            const taskId = e.target.value;
                             setFormData((prev) => ({
                               ...prev,
-                              habit_ids: e.target.checked
-                                ? [...prev.habit_ids, habitId]
-                                : prev.habit_ids.filter((id) => id !== habitId),
+                              task_ids: e.target.checked
+                                ? [...prev.task_ids, taskId]
+                                : prev.task_ids.filter((id) => id !== taskId),
                             }));
                           }}
                           className="rounded border-gray-300"
                         />
                         <span className="text-sm font-light" style={{ color: '#1d3e4c' }}>
-                          {habit.name}
+                          {task.name}
                         </span>
                       </label>
                     ))}
+                    {filteredTasks.length === 0 && (
+                      <div className="p-4 text-center text-sm font-light" style={{ color: '#657b84' }}>
+                        {taskFilter ? 'No matching tasks' : 'No tasks available'}
+                      </div>
+                    )}
                   </div>
-                ))}
-                {habits.length === 0 && (
-                  <div className="p-4 text-center text-sm font-light" style={{ color: '#657b84' }}>
-                    No habits available
-                  </div>
-                )}
-              </div>
-            )}
+                </div>
+              )}
+            </div>
           </div>
-          <p className="text-xs font-light mt-2" style={{ color: '#657b84' }}>
-            Documents can exist without being attached to any habit
-          </p>
         </div>
 
         {/* Tags */}
@@ -345,92 +548,6 @@ const DocumentFormModal = ({ habits, allTags }) => {
             </div>
           )}
         </div>
-
-        {/* Content Type */}
-        <div className="mb-6">
-          <label className="block mb-2">Content Type</label>
-          <div className="grid grid-cols-2 gap-3">
-            {['document', 'youtube', 'video', 'link'].map((type) => (
-              <label key={type} className="cursor-pointer">
-                <input
-                  type="radio"
-                  name="content_type"
-                  value={type}
-                  checked={formData.content_type === type}
-                  onChange={(e) => setFormData({ ...formData, content_type: e.target.value })}
-                  className="hidden"
-                />
-                <div
-                  className={`p-4 rounded-lg border-2 transition hover:shadow-md ${
-                    formData.content_type === type ? 'border-[#6B8A99] bg-[#E8EEF1]' : 'border-gray-200'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <i
-                      className={`fa-solid ${
-                        type === 'document'
-                          ? 'fa-file-alt'
-                          : type === 'youtube'
-                          ? 'fa-brands fa-youtube'
-                          : type === 'video'
-                          ? 'fa-video'
-                          : 'fa-link'
-                      } text-lg`}
-                      style={{ color: formData.content_type === type ? '#1d3e4c' : '#9CA3A8' }}
-                    ></i>
-                    <span
-                      className="font-semibold capitalize"
-                      style={{ color: formData.content_type === type ? '#1d3e4c' : '#657b84' }}
-                    >
-                      {type}
-                    </span>
-                  </div>
-                </div>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        {/* Title */}
-        <div className="mb-6">
-          <label className="block mb-2">Title</label>
-          <input
-            type="text"
-            value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            required
-            className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
-            style={{ borderColor: '#E8EEF1' }}
-            placeholder="e.g., Morning Prayer, Spanish Lesson 1"
-          />
-        </div>
-
-        {/* URL Field (for youtube, video, link) */}
-        {['youtube', 'video', 'link'].includes(formData.content_type) && (
-          <div className="mb-6">
-            <label className="block mb-2">URL</label>
-            <input
-              type="url"
-              value={formData.url}
-              onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-              className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
-              style={{ borderColor: '#E8EEF1' }}
-              placeholder="https://www.youtube.com/watch?v=..."
-            />
-            <p className="text-xs font-light mt-2" style={{ color: '#657b84' }}>
-              Paste the full URL - we'll handle the rest!
-            </p>
-          </div>
-        )}
-
-        {/* Document Body (for document type) */}
-        {formData.content_type === 'document' && (
-          <div className="mb-6">
-            <label className="block mb-2">Document Content</label>
-            <input type="hidden" name="body" id="document-form-body-hidden" />
-            <trix-editor ref={trixEditorRef} input="document-form-body-hidden" className="trix-content"></trix-editor>
-          </div>
-        )}
       </form>
     </BaseModal>
   );

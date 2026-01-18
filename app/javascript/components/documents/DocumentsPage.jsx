@@ -114,17 +114,17 @@ const DocumentsPage = ({ habits }) => {
             {documents.map((content) => {
               const iconData = getIconData(content.content_type);
               return (
-                <div key={content.id} className="flex items-start gap-3">
+                <div key={content.id} className="flex items-start gap-3 min-w-0">
                   <div
                     onClick={() => openViewModal(content.id)}
-                    className="bg-white rounded-lg p-4 border shadow-md hover:shadow-lg transition cursor-pointer flex-1"
+                    className="bg-white rounded-lg p-4 border shadow-md hover:shadow-lg transition cursor-pointer flex-1 min-w-0 overflow-hidden"
                     style={{ borderColor: '#E8EEF1' }}
                   >
-                    <div className="flex items-start gap-4">
+                    <div className="flex items-start gap-4 min-w-0">
                       {/* Content Info */}
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0 overflow-hidden">
                         <h3
-                          className="text-lg font-bold display-font"
+                          className="text-lg font-bold display-font truncate"
                           style={{ color: '#1d3e4c' }}
                         >
                           {content.title}
