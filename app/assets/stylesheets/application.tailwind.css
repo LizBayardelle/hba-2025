@@ -274,18 +274,18 @@ label {
   --color-theme-blue: #6B8A99;
   --color-theme-blue-dark: #1d3e4c;
 
-  --color-theme-salmon-light: #FFD4CE;
-  --color-theme-salmon: #F8796D;
-  --color-theme-salmon-dark: #B8352A;
+  --color-theme-salmon-light: #FFCDD2;
+  --color-theme-salmon: #EF5350;
+  --color-theme-salmon-dark: #C62828;
 
   /* User Category Colors */
   --color-warm-grey-light: #E8E0D5;
   --color-warm-grey: #9C8B7E;
   --color-warm-grey-dark: #5C4F45;
 
-  --color-salmon-light: #FFD4CE;
-  --color-salmon: #F8796D;
-  --color-salmon-dark: #B8352A;
+  --color-salmon-light: #FFCDD2;
+  --color-salmon: #EF5350;
+  --color-salmon-dark: #C62828;
 
   --color-peach-light: #FFE4D6;
   --color-peach: #FFA07A;

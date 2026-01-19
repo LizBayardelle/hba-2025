@@ -338,7 +338,7 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
         {useHabitsPage && (
           <div className="mb-6">
             <label className="block mb-2">Category</label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               {categories?.map((category) => (
                 <button
                   key={category.id}
@@ -455,6 +455,40 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
                     style={{ color: '#1d3e4c' }}
                   >
                     {block.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Importance Level */}
+        <div className="mb-6">
+          <label className="block mb-2">Importance Level</label>
+          <div className="overflow-x-auto pb-2 pt-2">
+            <div className="flex gap-4 min-w-max">
+              {importanceLevels.map((level) => (
+                <div
+                  key={level.id}
+                  className="flex flex-col items-center gap-2 cursor-pointer transition-transform hover:scale-105"
+                  onClick={() => setFormData({ ...formData, importance_level_id: level.id })}
+                >
+                  <div
+                    className={`w-16 h-16 rounded-lg flex items-center justify-center shadow-md transition ${
+                      formData.importance_level_id === level.id ? 'ring-4 ring-offset-2' : ''
+                    }`}
+                    style={{
+                      backgroundColor: level.color,
+                      ringColor: formData.importance_level_id === level.id ? level.color : 'transparent',
+                    }}
+                  >
+                    <i className={`${level.icon} text-white text-2xl`}></i>
+                  </div>
+                  <span
+                    className="text-xs font-medium text-center max-w-[80px]"
+                    style={{ color: '#1d3e4c' }}
+                  >
+                    {level.name}
                   </span>
                 </div>
               ))}
@@ -616,40 +650,6 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
               <i className="fa-solid fa-plus mr-2"></i>
               Create New Document
             </button>
-          </div>
-        </div>
-
-        {/* Importance Level */}
-        <div className="mb-6">
-          <label className="block mb-2">Importance Level</label>
-          <div className="overflow-x-auto pb-2 pt-2">
-            <div className="flex gap-4 min-w-max">
-              {importanceLevels.map((level) => (
-                <div
-                  key={level.id}
-                  className="flex flex-col items-center gap-2 cursor-pointer transition-transform hover:scale-105"
-                  onClick={() => setFormData({ ...formData, importance_level_id: level.id })}
-                >
-                  <div
-                    className={`w-16 h-16 rounded-lg flex items-center justify-center shadow-md transition ${
-                      formData.importance_level_id === level.id ? 'ring-4 ring-offset-2' : ''
-                    }`}
-                    style={{
-                      backgroundColor: level.color,
-                      ringColor: formData.importance_level_id === level.id ? level.color : 'transparent',
-                    }}
-                  >
-                    <i className={`${level.icon} text-white text-2xl`}></i>
-                  </div>
-                  <span
-                    className="text-xs font-medium text-center max-w-[80px]"
-                    style={{ color: '#1d3e4c' }}
-                  >
-                    {level.name}
-                  </span>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </form>
