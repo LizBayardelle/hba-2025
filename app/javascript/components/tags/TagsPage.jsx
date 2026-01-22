@@ -67,22 +67,22 @@ const TagsPage = () => {
   return (
     <>
       {/* Header Section */}
-      <div className="bg-white shadow-md">
+      <div style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
         <div className="p-8">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-4 mb-2">
                 <div
-                  className="w-16 h-16 rounded-xl flex items-center justify-center shadow-md"
-                  style={{ background: 'linear-gradient(135deg, #1d3e4c, #45606b)' }}
+                  className="w-16 h-16 rounded-xl flex items-center justify-center"
+                  style={{ background: 'linear-gradient(135deg, #E5E5E7 0%, #C7C7CC 50%, #8E8E93 100%)', border: '0.5px solid rgba(199, 199, 204, 0.3)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.3)' }}
                 >
-                  <i className="fa-solid fa-tags text-white text-2xl"></i>
+                  <i className="fa-solid fa-tags text-2xl" style={{ color: '#1D1D1F', filter: 'drop-shadow(0 0.5px 0 rgba(255, 255, 255, 0.5))' }}></i>
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold display-font" style={{ color: '#1d3e4c' }}>
+                  <h1 className="text-3xl" style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif", fontWeight: 800 }}>
                     Tags
                   </h1>
-                  <p className="text-sm font-light" style={{ color: '#657b84' }}>
+                  <p className="text-sm" style={{ color: '#8E8E93', fontWeight: 200, fontFamily: "'Inter', sans-serif" }}>
                     Browse your tags and tagged items
                   </p>
                 </div>
@@ -97,8 +97,8 @@ const TagsPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Tags List */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-lg font-semibold mb-4" style={{ color: '#1d3e4c' }}>
+            <div className="rounded-lg p-6" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)' }}>
+              <h2 className="text-lg mb-4" style={{ color: '#1D1D1F', fontWeight: 700, fontFamily: "'Inter', sans-serif" }}>
                 All Tags ({tags.length})
               </h2>
 
@@ -106,13 +106,13 @@ const TagsPage = () => {
                 <div className="flex items-center justify-center py-8">
                   <div
                     className="animate-spin rounded-full h-8 w-8 border-b-2"
-                    style={{ borderColor: '#1d3e4c' }}
+                    style={{ borderColor: '#2C2C2E' }}
                   ></div>
                 </div>
               )}
 
               {error && (
-                <div className="text-center py-8" style={{ color: '#DC2626' }}>
+                <div className="text-center py-8" style={{ color: '#DC2626', fontFamily: "'Inter', sans-serif" }}>
                   <i className="fa-solid fa-exclamation-circle text-3xl mb-2"></i>
                   <p className="text-sm">Error loading tags: {error.message}</p>
                 </div>
@@ -122,9 +122,9 @@ const TagsPage = () => {
                 <div className="text-center py-8">
                   <i
                     className="fa-solid fa-tags text-5xl mb-3"
-                    style={{ color: '#1d3e4c40' }}
+                    style={{ color: '#E5E5E7' }}
                   ></i>
-                  <p className="text-sm font-light" style={{ color: '#657b84' }}>
+                  <p className="text-sm" style={{ color: '#8E8E93', fontWeight: 200, fontFamily: "'Inter', sans-serif" }}>
                     No tags yet. Tags will appear here as you add them to journals, habits, documents, and tasks.
                   </p>
                 </div>
@@ -136,14 +136,18 @@ const TagsPage = () => {
                     <button
                       key={tag.id}
                       onClick={() => setSelectedTagId(tag.id)}
-                      className={`w-full text-left px-4 py-3 rounded-lg transition ${
-                        selectedTagId === tag.id
-                          ? 'font-semibold shadow-md'
-                          : 'font-light hover:bg-gray-50'
-                      }`}
-                      style={{
-                        backgroundColor: selectedTagId === tag.id ? '#E8EEF1' : 'transparent',
-                        color: selectedTagId === tag.id ? '#1d3e4c' : '#657b84',
+                      className="w-full text-left px-4 py-3 rounded-lg transition text-sm"
+                      style={selectedTagId === tag.id ? {
+                        background: 'rgba(199, 199, 204, 0.2)',
+                        color: '#1D1D1F',
+                        fontWeight: 600,
+                        fontFamily: "'Inter', sans-serif",
+                        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
+                      } : {
+                        background: 'transparent',
+                        color: '#8E8E93',
+                        fontWeight: 400,
+                        fontFamily: "'Inter', sans-serif"
                       }}
                     >
                       <div className="flex items-center justify-between">

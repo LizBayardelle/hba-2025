@@ -177,22 +177,22 @@ const HabitsPage = () => {
   return (
     <>
       {/* Header Section */}
-      <div className="bg-white shadow-md">
+      <div style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
         <div className="p-8">
           <div className="flex items-start justify-between mb-6">
             <div className="flex-1">
               <div className="flex items-center gap-4 mb-2">
                 <div
-                  className="w-16 h-16 rounded-xl flex items-center justify-center shadow-md"
-                  style={{ background: 'linear-gradient(135deg, #1d3e4c, #45606b)' }}
+                  className="w-16 h-16 rounded-xl flex items-center justify-center"
+                  style={{ background: 'linear-gradient(135deg, #E5E5E7 0%, #C7C7CC 50%, #8E8E93 100%)', border: '0.5px solid rgba(199, 199, 204, 0.3)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.3)' }}
                 >
-                  <i className="fa-solid fa-chart-line text-white text-2xl"></i>
+                  <i className="fa-solid fa-chart-line text-2xl" style={{ color: '#1D1D1F', filter: 'drop-shadow(0 0.5px 0 rgba(255, 255, 255, 0.5))' }}></i>
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold display-font" style={{ color: '#1d3e4c' }}>
+                  <h1 className="text-3xl" style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif", fontWeight: 800 }}>
                     Habits
                   </h1>
-                  <p className="text-sm font-light" style={{ color: '#566e78' }}>
+                  <p className="text-sm" style={{ color: '#8E8E93', fontWeight: 200, fontFamily: "'Inter', sans-serif" }}>
                     {stats.completed}/{stats.total} completed ({stats.percentage}%)
                   </p>
                 </div>
@@ -201,8 +201,8 @@ const HabitsPage = () => {
 
             <button
               onClick={openNewModal}
-              className="px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition transform hover:scale-105"
-              style={{ background: 'linear-gradient(135deg, #1d3e4c, #45606b)' }}
+              className="px-6 py-3 rounded-lg text-white transition transform hover:scale-105"
+              style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', fontWeight: 600, fontFamily: "'Inter', sans-serif", boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
             >
               <i className="fa-solid fa-plus mr-2"></i>
               New Habit
@@ -221,12 +221,18 @@ const HabitsPage = () => {
                 <button
                   key={value}
                   onClick={() => setViewMode(value)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                    viewMode === value
-                      ? 'text-white shadow-md'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                  style={viewMode === value ? { backgroundColor: '#1d3e4c' } : {}}
+                  className="px-4 py-2 rounded-lg text-sm transition"
+                  style={viewMode === value ? {
+                    background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)',
+                    color: 'white',
+                    fontWeight: 600,
+                    fontFamily: "'Inter', sans-serif",
+                    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.2)'
+                  } : {
+                    color: '#8E8E93',
+                    fontWeight: 600,
+                    fontFamily: "'Inter', sans-serif"
+                  }}
                 >
                   <i className={`fa-solid ${icon} mr-2`}></i>
                   {label}
@@ -238,25 +244,27 @@ const HabitsPage = () => {
             <div className="flex items-center gap-2 ml-auto">
               <button
                 onClick={goToPreviousDay}
-                className="w-10 h-10 rounded-lg hover:bg-gray-100 flex items-center justify-center transition"
+                className="w-10 h-10 rounded-lg flex items-center justify-center transition"
+                style={{ background: 'linear-gradient(135deg, rgba(229, 229, 231, 0.3) 0%, rgba(199, 199, 204, 0.4) 50%, rgba(142, 142, 147, 0.3) 100%)', border: '0.5px solid rgba(199, 199, 204, 0.3)', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)' }}
               >
-                <i className="fa-solid fa-chevron-left" style={{ color: '#1d3e4c' }}></i>
+                <i className="fa-solid fa-chevron-left text-sm" style={{ color: '#2C2C2E' }}></i>
               </button>
-              <div className="px-2 text-sm font-semibold" style={{ color: '#1d3e4c' }}>
+              <div className="px-2 text-sm" style={{ color: '#1D1D1F', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
                 {formatDate(selectedDate)}
               </div>
               <button
                 onClick={goToNextDay}
                 disabled={isToday || isFuture}
-                className={`w-10 h-10 rounded-lg hover:bg-gray-100 flex items-center justify-center transition ${isToday || isFuture ? 'opacity-50 pointer-events-none' : ''}`}
+                className={`w-10 h-10 rounded-lg flex items-center justify-center transition ${isToday || isFuture ? 'opacity-30 pointer-events-none' : ''}`}
+                style={{ background: 'linear-gradient(135deg, rgba(229, 229, 231, 0.3) 0%, rgba(199, 199, 204, 0.4) 50%, rgba(142, 142, 147, 0.3) 100%)', border: '0.5px solid rgba(199, 199, 204, 0.3)', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)' }}
               >
-                <i className="fa-solid fa-chevron-right" style={{ color: '#1d3e4c' }}></i>
+                <i className="fa-solid fa-chevron-right text-sm" style={{ color: '#2C2C2E' }}></i>
               </button>
               {!isToday && (
                 <button
                   onClick={goToToday}
-                  className="ml-2 px-4 py-2 rounded-lg hover:bg-gray-100 text-sm font-semibold transition"
-                  style={{ color: '#1d3e4c' }}
+                  className="ml-2 px-4 py-2 rounded-lg text-sm transition"
+                  style={{ background: 'linear-gradient(135deg, rgba(229, 229, 231, 0.3) 0%, rgba(199, 199, 204, 0.4) 50%, rgba(142, 142, 147, 0.3) 100%)', border: '0.5px solid rgba(199, 199, 204, 0.3)', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)', color: '#1D1D1F', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
                 >
                   Today
                 </button>
@@ -273,33 +281,33 @@ const HabitsPage = () => {
           <div className="flex items-center justify-center py-12">
             <div
               className="animate-spin rounded-full h-12 w-12 border-b-2"
-              style={{ borderColor: '#1d3e4c' }}
+              style={{ borderColor: '#2C2C2E' }}
             ></div>
           </div>
         )}
 
         {/* Error State */}
         {error && (
-          <div className="bg-white rounded-xl shadow-md p-12 text-center">
+          <div className="rounded-xl p-12 text-center" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)' }}>
             <i className="fa-solid fa-exclamation-circle text-6xl mb-4" style={{ color: '#DC2626' }}></i>
-            <p style={{ color: '#DC2626' }}>Error loading habits: {error.message}</p>
+            <p style={{ color: '#DC2626', fontFamily: "'Inter', sans-serif", fontWeight: 400 }}>Error loading habits: {error.message}</p>
           </div>
         )}
 
         {/* Empty State */}
         {!isLoading && !error && (!habitsData || habitsData.habits.length === 0) && (
-          <div className="bg-white rounded-xl shadow-md p-12 text-center">
-            <i className="fa-solid fa-clipboard-list text-6xl mb-4" style={{ color: '#E8EEF1' }}></i>
-            <h3 className="text-xl font-bold display-font mb-2" style={{ color: '#1d3e4c' }}>
+          <div className="rounded-xl p-12 text-center" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)' }}>
+            <i className="fa-solid fa-clipboard-list text-6xl mb-4" style={{ color: '#E5E5E7' }}></i>
+            <h3 className="text-xl mb-2" style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif", fontWeight: 700 }}>
               No Habits Yet
             </h3>
-            <p className="text-gray-500 font-light mb-4">
+            <p className="mb-4" style={{ color: '#8E8E93', fontWeight: 200, fontFamily: "'Inter', sans-serif" }}>
               Start building better habits by creating your first one!
             </p>
             <a
               href="/"
-              className="inline-block px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition"
-              style={{ background: 'linear-gradient(135deg, #1d3e4c, #45606b)' }}
+              className="inline-block px-6 py-3 rounded-lg text-white transition"
+              style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', fontWeight: 600, fontFamily: "'Inter', sans-serif", boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
             >
               Browse Categories
             </a>

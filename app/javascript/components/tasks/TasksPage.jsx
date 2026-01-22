@@ -278,12 +278,12 @@ const TasksPage = () => {
           {group.icon && (
             <div
               className="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm"
-              style={{ backgroundColor: group.color || '#6B8A99' }}
+              style={{ backgroundColor: group.color || '#8E8E93' }}
             >
               <i className={`fa-solid ${group.icon} text-white text-sm`}></i>
             </div>
           )}
-          <h3 className="text-lg font-semibold" style={{ color: group.color || '#1d3e4c' }}>
+          <h3 className="text-lg" style={{ color: group.color || '#1D1D1F', fontWeight: 700, fontFamily: "'Inter', sans-serif" }}>
             {group.title} ({group.tasks.length})
           </h3>
         </div>
@@ -299,22 +299,22 @@ const TasksPage = () => {
   return (
     <>
       {/* Header Section */}
-      <div className="bg-white shadow-md">
+      <div style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
         <div className="p-8">
           <div className="flex items-start justify-between mb-6">
             <div className="flex-1">
               <div className="flex items-center gap-4 mb-2">
                 <div
-                  className="w-16 h-16 rounded-xl flex items-center justify-center shadow-md"
-                  style={{ background: 'linear-gradient(135deg, #1d3e4c, #45606b)' }}
+                  className="w-16 h-16 rounded-xl flex items-center justify-center"
+                  style={{ background: 'linear-gradient(135deg, #E5E5E7 0%, #C7C7CC 50%, #8E8E93 100%)', border: '0.5px solid rgba(199, 199, 204, 0.3)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.3)' }}
                 >
-                  <i className="fa-solid fa-check text-white text-2xl"></i>
+                  <i className="fa-solid fa-check text-2xl" style={{ color: '#1D1D1F', filter: 'drop-shadow(0 0.5px 0 rgba(255, 255, 255, 0.5))' }}></i>
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold display-font" style={{ color: '#1d3e4c' }}>
+                  <h1 className="text-3xl" style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif", fontWeight: 800 }}>
                     Tasks
                   </h1>
-                  <p className="text-sm font-light" style={{ color: '#566e78' }}>
+                  <p className="text-sm" style={{ color: '#8E8E93', fontWeight: 200, fontFamily: "'Inter', sans-serif" }}>
                     {statusFilter === 'active' && `${stats.total} active · ${stats.overdue > 0 ? `${stats.overdue} overdue` : 'none overdue'}`}
                     {statusFilter === 'on_hold' && `${stats.total} on hold`}
                     {statusFilter === 'completed' && `${stats.total} completed`}
@@ -324,8 +324,8 @@ const TasksPage = () => {
             </div>
             <button
               onClick={openNewModal}
-              className="px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition transform hover:scale-105"
-              style={{ background: 'linear-gradient(135deg, #1d3e4c, #45606b)' }}
+              className="px-6 py-3 rounded-lg text-white transition transform hover:scale-105"
+              style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', fontWeight: 600, fontFamily: "'Inter', sans-serif", boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
             >
               <i className="fa-solid fa-plus mr-2"></i>
               New Task
@@ -344,12 +344,18 @@ const TasksPage = () => {
                 <button
                   key={value}
                   onClick={() => setStatusFilter(value)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                    statusFilter === value
-                      ? 'text-white shadow-md'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                  style={statusFilter === value ? { backgroundColor: '#1d3e4c' } : {}}
+                  className="px-4 py-2 rounded-lg text-sm transition"
+                  style={statusFilter === value ? {
+                    background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)',
+                    color: 'white',
+                    fontWeight: 600,
+                    fontFamily: "'Inter', sans-serif",
+                    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.2)'
+                  } : {
+                    color: '#8E8E93',
+                    fontWeight: 600,
+                    fontFamily: "'Inter', sans-serif"
+                  }}
                 >
                   {label}
                 </button>
@@ -360,8 +366,8 @@ const TasksPage = () => {
             <select
               value={groupBy}
               onChange={(e) => setGroupBy(e.target.value)}
-              className="px-4 py-2 rounded-lg border-2 text-sm font-medium"
-              style={{ borderColor: '#E8EEF1', color: '#1d3e4c' }}
+              className="px-4 py-2 rounded-lg text-sm"
+              style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', color: '#1D1D1F', fontWeight: 600, fontFamily: "'Inter', sans-serif", background: 'rgba(229, 229, 231, 0.2)' }}
             >
               <option value="status">Group by Date Added</option>
               <option value="category">Group by Category</option>
@@ -375,8 +381,8 @@ const TasksPage = () => {
               placeholder="Search tasks..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="px-4 py-2 rounded-lg border-2 text-sm flex-1 min-w-[200px]"
-              style={{ borderColor: '#E8EEF1', color: '#1d3e4c' }}
+              className="px-4 py-2 rounded-lg text-sm flex-1 min-w-[200px]"
+              style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', color: '#1D1D1F', fontWeight: 400, fontFamily: "'Inter', sans-serif", background: '#FFFFFF' }}
             />
           </div>
         </div>
@@ -386,23 +392,23 @@ const TasksPage = () => {
       <div className="p-8">
         {isLoading && (
           <div className="text-center py-12">
-            <i className="fa-solid fa-spinner fa-spin text-4xl" style={{ color: '#6B8A99' }}></i>
+            <i className="fa-solid fa-spinner fa-spin text-4xl" style={{ color: '#2C2C2E' }}></i>
           </div>
         )}
 
         {error && (
           <div className="text-center py-12">
-            <p className="text-red-500">Error loading tasks: {error.message}</p>
+            <p style={{ color: '#DC2626', fontFamily: "'Inter', sans-serif", fontWeight: 400 }}>Error loading tasks: {error.message}</p>
           </div>
         )}
 
         {!isLoading && !error && tasks.length === 0 && (
           <div className="text-center py-12">
-            <i className="fa-solid fa-clipboard-list text-6xl mb-4" style={{ color: '#E8EEF1' }}></i>
-            <p className="text-lg font-medium mb-2" style={{ color: '#566e78' }}>
+            <i className="fa-solid fa-clipboard-list text-6xl mb-4" style={{ color: '#E5E5E7' }}></i>
+            <p className="text-lg mb-2" style={{ color: '#1D1D1F', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
               No tasks yet
             </p>
-            <p className="text-sm" style={{ color: '#9CA3A8' }}>
+            <p className="text-sm" style={{ color: '#8E8E93', fontWeight: 200, fontFamily: "'Inter', sans-serif" }}>
               Create your first task to get started
             </p>
           </div>

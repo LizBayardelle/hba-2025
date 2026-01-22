@@ -2,9 +2,9 @@
 <aside
   id="sidebar"
   class="w-64 flex flex-col transition-transform duration-300 ease-in-out fixed left-0 top-0 z-50 -translate-x-full md:translate-x-0 md:relative"
-  style="background: linear-gradient(to bottom, #1d3e4c, #32505c); height: 100vh; box-shadow: 4px 0 15px rgba(0, 0, 0, 0.3);">
+  style="background: #000000; height: 100vh; box-shadow: 4px 0 24px rgba(0, 0, 0, 0.6); border-right: 0.5px solid rgba(199, 199, 204, 0.25); font-family: 'Inter', sans-serif;">
 
-  <div class="p-6 text-white flex-1 overflow-y-auto">
+  <div class="px-5 py-6 text-white flex-1 overflow-y-auto">
     <!-- Close button for mobile -->
     <div class="md:hidden flex justify-end mb-4">
       <button
@@ -15,24 +15,24 @@
     </div>
 
     <!-- Logo Area -->
-    <%= link_to root_path, class: "flex items-center gap-3 mb-6 hover:opacity-80 transition" do %>
-      <%= image_tag "Logo Salmon.png", class: "w-12 h-12", alt: "Habit Beaver Logo" %>
+    <%= link_to root_path, class: "flex items-center gap-0 mb-8 hover:opacity-80 transition-opacity duration-200" do %>
+      <%= image_tag "HabitBeaver Logo (Black).jpg", class: "w-16 h-16", alt: "Habit Beaver Logo" %>
       <div>
-        <h1 class="text-xl font-bold display-font">Habit Beaver</h1>
-        <p class="text-xs" style="color: #657b84;">Build better habits</p>
+        <h1 class="text-xl" style="color: #FFFFFF; font-weight: 900;">Habit Beaver</h1>
+        <p class="text-xs" style="color: #8E8E93; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 200;">Build better habits</p>
       </div>
     <% end %>
 
     <!-- Current Time Display -->
     <% if user_signed_in? %>
-      <div class="mb-8 px-4 py-2 rounded-lg" style="background-color: rgba(255, 255, 255, 0.08);">
-        <div class="text-sm font-semibold" id="selected-date">
-          <%= Time.zone.today.strftime("%B %d, %Y") %>
+      <div class="mb-8 pl-4 pr-0 py-3 border-l-2 -mr-5" style="background-color: rgba(255, 255, 255, 0.03); border-left-color: #C7C7CC;">
+        <div class="text-xs tracking-wide" style="color: #C7C7CC; font-weight: 200;" id="selected-date">
+          <%= Time.zone.today.strftime("%B %d, %Y").upcase %>
         </div>
-        <div class="text-sm font-semibold" id="current-time" data-timezone="<%= ActiveSupport::TimeZone::MAPPING[current_user.timezone] %>">
-          <%= Time.zone.now.strftime("%l:%M %p") %>
+        <div class="text-3xl tabular-nums" style="color: #FFFFFF; font-variant-numeric: tabular-nums; font-weight: 100;" id="current-time" data-timezone="<%= ActiveSupport::TimeZone::MAPPING[current_user.timezone] %>">
+          <%= Time.zone.now.strftime("%H:%M") %>
         </div>
-        <div class="text-xs font-light" style="color: #657b84;"><%= Time.zone.now.strftime("%Z") %></div>
+        <div class="text-xs tracking-wider" style="color: #8E8E93; font-weight: 200;"><%= Time.zone.now.strftime("%Z") %></div>
       </div>
       <script>
         (function() {
@@ -42,9 +42,9 @@
               const now = new Date();
               const timezone = timeElement.dataset.timezone;
               const options = {
-                hour: 'numeric',
+                hour: '2-digit',
                 minute: '2-digit',
-                hour12: true,
+                hour12: false,
                 timeZone: timezone
               };
               timeElement.textContent = now.toLocaleTimeString('en-US', options);
@@ -56,38 +56,54 @@
     <% end %>
 
     <!-- Navigation Items -->
-    <nav class="space-y-2">
-      <%= link_to dashboard_path, class: "flex items-center gap-3 px-4 py-3 rounded-lg transition #{current_page?(dashboard_path) ? 'font-medium' : 'font-light hover:bg-white/10'}", style: current_page?(dashboard_path) ? "background-color: rgba(255, 255, 255, 0.15);" : "" do %>
-        <i class="fa-solid fa-gauge text-lg" style="<%= current_page?(dashboard_path) ? 'color: #F8796D;' : '' %>"></i>
-        <span>Dashboard</span>
+    <nav class="space-y-0.5 -mr-5">
+      <%= link_to dashboard_path, class: "flex items-center gap-3 pl-4 pr-0 py-2.5 border-l-3 transition-all duration-150 text-sm", style: current_page?(dashboard_path) ? "background-color: rgba(255, 255, 255, 0.08); border-left-color: #FFFFFF; border-left-width: 3px;" : "border-left-color: transparent; border-left-width: 3px;" do %>
+        <div class="w-7 h-7 flex items-center justify-center transition-transform duration-150" style="background: <%= current_page?(dashboard_path) ? 'linear-gradient(135deg, #E5E5E7 0%, #C7C7CC 50%, #8E8E93 100%)' : 'linear-gradient(135deg, rgba(229, 229, 231, 0.15) 0%, rgba(199, 199, 204, 0.25) 50%, rgba(142, 142, 147, 0.15) 100%)' %>; border: 0.5px solid <%= current_page?(dashboard_path) ? 'rgba(255, 255, 255, 0.3)' : 'rgba(199, 199, 204, 0.2)' %>; box-shadow: <%= current_page?(dashboard_path) ? '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)' : '0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)' %>; <%= current_page?(dashboard_path) ? 'transform: scale(1.1);' : '' %>">
+          <i class="fa-solid fa-gauge text-xs" style="color: <%= current_page?(dashboard_path) ? '#1D1D1F' : '#C7C7CC' %>; filter: <%= current_page?(dashboard_path) ? 'drop-shadow(0 0.5px 0 rgba(255, 255, 255, 0.5))' : 'none' %>;"></i>
+        </div>
+        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(dashboard_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(dashboard_path) ? '1' : '0.7' %>;">Dashboard</span>
       <% end %>
-      <%= link_to habits_path, class: "flex items-center gap-3 px-4 py-3 rounded-lg transition #{current_page?(habits_path) ? 'font-medium' : 'font-light hover:bg-white/10'}", style: current_page?(habits_path) ? "background-color: rgba(255, 255, 255, 0.15);" : "" do %>
-        <i class="fa-solid fa-chart-line text-lg" style="<%= current_page?(habits_path) ? 'color: #F8796D;' : '' %>"></i>
-        <span>Habits</span>
+      <%= link_to habits_path, class: "flex items-center gap-3 pl-4 pr-0 py-2.5 border-l-3 transition-all duration-150 text-sm", style: current_page?(habits_path) ? "background-color: rgba(255, 255, 255, 0.08); border-left-color: #FFFFFF; border-left-width: 3px;" : "border-left-color: transparent; border-left-width: 3px;" do %>
+        <div class="w-7 h-7 flex items-center justify-center transition-transform duration-150" style="background: <%= current_page?(habits_path) ? 'linear-gradient(135deg, #E5E5E7 0%, #C7C7CC 50%, #8E8E93 100%)' : 'linear-gradient(135deg, rgba(229, 229, 231, 0.15) 0%, rgba(199, 199, 204, 0.25) 50%, rgba(142, 142, 147, 0.15) 100%)' %>; border: 0.5px solid <%= current_page?(habits_path) ? 'rgba(255, 255, 255, 0.3)' : 'rgba(199, 199, 204, 0.2)' %>; box-shadow: <%= current_page?(habits_path) ? '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)' : '0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)' %>; <%= current_page?(habits_path) ? 'transform: scale(1.1);' : '' %>">
+          <i class="fa-solid fa-chart-line text-xs" style="color: <%= current_page?(habits_path) ? '#1D1D1F' : '#C7C7CC' %>; filter: <%= current_page?(habits_path) ? 'drop-shadow(0 0.5px 0 rgba(255, 255, 255, 0.5))' : 'none' %>;"></i>
+        </div>
+        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(habits_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(habits_path) ? '1' : '0.7' %>;">Habits</span>
       <% end %>
-      <%= link_to tasks_path, class: "flex items-center gap-3 px-4 py-3 rounded-lg transition #{current_page?(tasks_path) ? 'font-medium' : 'font-light hover:bg-white/10'}", style: current_page?(tasks_path) ? "background-color: rgba(255, 255, 255, 0.15);" : "" do %>
-        <i class="fa-solid fa-check text-lg" style="<%= current_page?(tasks_path) ? 'color: #F8796D;' : '' %>"></i>
-        <span>Tasks</span>
+      <%= link_to tasks_path, class: "flex items-center gap-3 pl-4 pr-0 py-2.5 border-l-3 transition-all duration-150 text-sm", style: current_page?(tasks_path) ? "background-color: rgba(255, 255, 255, 0.08); border-left-color: #FFFFFF; border-left-width: 3px;" : "border-left-color: transparent; border-left-width: 3px;" do %>
+        <div class="w-7 h-7 flex items-center justify-center transition-transform duration-150" style="background: <%= current_page?(tasks_path) ? 'linear-gradient(135deg, #E5E5E7 0%, #C7C7CC 50%, #8E8E93 100%)' : 'linear-gradient(135deg, rgba(229, 229, 231, 0.15) 0%, rgba(199, 199, 204, 0.25) 50%, rgba(142, 142, 147, 0.15) 100%)' %>; border: 0.5px solid <%= current_page?(tasks_path) ? 'rgba(255, 255, 255, 0.3)' : 'rgba(199, 199, 204, 0.2)' %>; box-shadow: <%= current_page?(tasks_path) ? '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)' : '0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)' %>; <%= current_page?(tasks_path) ? 'transform: scale(1.1);' : '' %>">
+          <i class="fa-solid fa-check text-xs" style="color: <%= current_page?(tasks_path) ? '#1D1D1F' : '#C7C7CC' %>; filter: <%= current_page?(tasks_path) ? 'drop-shadow(0 0.5px 0 rgba(255, 255, 255, 0.5))' : 'none' %>;"></i>
+        </div>
+        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(tasks_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(tasks_path) ? '1' : '0.7' %>;">Tasks</span>
       <% end %>
-      <%= link_to journal_path, class: "flex items-center gap-3 px-4 py-3 rounded-lg transition #{current_page?(journal_path) ? 'font-medium' : 'font-light hover:bg-white/10'}", style: current_page?(journal_path) ? "background-color: rgba(255, 255, 255, 0.15);" : "" do %>
-        <i class="fa-solid fa-book text-lg" style="<%= current_page?(journal_path) ? 'color: #F8796D;' : '' %>"></i>
-        <span>Journal</span>
+      <%= link_to journal_path, class: "flex items-center gap-3 pl-4 pr-0 py-2.5 border-l-3 transition-all duration-150 text-sm", style: current_page?(journal_path) ? "background-color: rgba(255, 255, 255, 0.08); border-left-color: #FFFFFF; border-left-width: 3px;" : "border-left-color: transparent; border-left-width: 3px;" do %>
+        <div class="w-7 h-7 flex items-center justify-center transition-transform duration-150" style="background: <%= current_page?(journal_path) ? 'linear-gradient(135deg, #E5E5E7 0%, #C7C7CC 50%, #8E8E93 100%)' : 'linear-gradient(135deg, rgba(229, 229, 231, 0.15) 0%, rgba(199, 199, 204, 0.25) 50%, rgba(142, 142, 147, 0.15) 100%)' %>; border: 0.5px solid <%= current_page?(journal_path) ? 'rgba(255, 255, 255, 0.3)' : 'rgba(199, 199, 204, 0.2)' %>; box-shadow: <%= current_page?(journal_path) ? '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)' : '0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)' %>; <%= current_page?(journal_path) ? 'transform: scale(1.1);' : '' %>">
+          <i class="fa-solid fa-book text-xs" style="color: <%= current_page?(journal_path) ? '#1D1D1F' : '#C7C7CC' %>; filter: <%= current_page?(journal_path) ? 'drop-shadow(0 0.5px 0 rgba(255, 255, 255, 0.5))' : 'none' %>;"></i>
+        </div>
+        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(journal_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(journal_path) ? '1' : '0.7' %>;">Journal</span>
       <% end %>
-      <%= link_to documents_path, class: "flex items-center gap-3 px-4 py-3 rounded-lg transition #{current_page?(documents_path) ? 'font-medium' : 'font-light hover:bg-white/10'}", style: current_page?(documents_path) ? "background-color: rgba(255, 255, 255, 0.15);" : "" do %>
-        <i class="fa-solid fa-file-alt text-lg" style="<%= current_page?(documents_path) ? 'color: #F8796D;' : '' %>"></i>
-        <span>Documents</span>
+      <%= link_to documents_path, class: "flex items-center gap-3 pl-4 pr-0 py-2.5 border-l-3 transition-all duration-150 text-sm", style: current_page?(documents_path) ? "background-color: rgba(255, 255, 255, 0.08); border-left-color: #FFFFFF; border-left-width: 3px;" : "border-left-color: transparent; border-left-width: 3px;" do %>
+        <div class="w-7 h-7 flex items-center justify-center transition-transform duration-150" style="background: <%= current_page?(documents_path) ? 'linear-gradient(135deg, #E5E5E7 0%, #C7C7CC 50%, #8E8E93 100%)' : 'linear-gradient(135deg, rgba(229, 229, 231, 0.15) 0%, rgba(199, 199, 204, 0.25) 50%, rgba(142, 142, 147, 0.15) 100%)' %>; border: 0.5px solid <%= current_page?(documents_path) ? 'rgba(255, 255, 255, 0.3)' : 'rgba(199, 199, 204, 0.2)' %>; box-shadow: <%= current_page?(documents_path) ? '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)' : '0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)' %>; <%= current_page?(documents_path) ? 'transform: scale(1.1);' : '' %>">
+          <i class="fa-solid fa-file-alt text-xs" style="color: <%= current_page?(documents_path) ? '#1D1D1F' : '#C7C7CC' %>; filter: <%= current_page?(documents_path) ? 'drop-shadow(0 0.5px 0 rgba(255, 255, 255, 0.5))' : 'none' %>;"></i>
+        </div>
+        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(documents_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(documents_path) ? '1' : '0.7' %>;">Documents</span>
       <% end %>
-      <%= link_to tags_path, class: "flex items-center gap-3 px-4 py-3 rounded-lg transition #{current_page?(tags_path) ? 'font-medium' : 'font-light hover:bg-white/10'}", style: current_page?(tags_path) ? "background-color: rgba(255, 255, 255, 0.15);" : "" do %>
-        <i class="fa-solid fa-tags text-lg" style="<%= current_page?(tags_path) ? 'color: #F8796D;' : '' %>"></i>
-        <span>Tags</span>
+      <%= link_to tags_path, class: "flex items-center gap-3 pl-4 pr-0 py-2.5 border-l-3 transition-all duration-150 text-sm", style: current_page?(tags_path) ? "background-color: rgba(255, 255, 255, 0.08); border-left-color: #FFFFFF; border-left-width: 3px;" : "border-left-color: transparent; border-left-width: 3px;" do %>
+        <div class="w-7 h-7 flex items-center justify-center transition-transform duration-150" style="background: <%= current_page?(tags_path) ? 'linear-gradient(135deg, #E5E5E7 0%, #C7C7CC 50%, #8E8E93 100%)' : 'linear-gradient(135deg, rgba(229, 229, 231, 0.15) 0%, rgba(199, 199, 204, 0.25) 50%, rgba(142, 142, 147, 0.15) 100%)' %>; border: 0.5px solid <%= current_page?(tags_path) ? 'rgba(255, 255, 255, 0.3)' : 'rgba(199, 199, 204, 0.2)' %>; box-shadow: <%= current_page?(tags_path) ? '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)' : '0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)' %>; <%= current_page?(tags_path) ? 'transform: scale(1.1);' : '' %>">
+          <i class="fa-solid fa-tags text-xs" style="color: <%= current_page?(tags_path) ? '#1D1D1F' : '#C7C7CC' %>; filter: <%= current_page?(tags_path) ? 'drop-shadow(0 0.5px 0 rgba(255, 255, 255, 0.5))' : 'none' %>;"></i>
+        </div>
+        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(tags_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(tags_path) ? '1' : '0.7' %>;">Tags</span>
       <% end %>
-      <%= link_to analytics_path, class: "flex items-center gap-3 px-4 py-3 rounded-lg transition #{current_page?(analytics_path) ? 'font-medium' : 'font-light hover:bg-white/10'}", style: current_page?(analytics_path) ? "background-color: rgba(255, 255, 255, 0.15);" : "" do %>
-        <i class="fa-solid fa-chart-column text-lg" style="<%= current_page?(analytics_path) ? 'color: #F8796D;' : '' %>"></i>
-        <span>Analytics</span>
+      <%= link_to analytics_path, class: "flex items-center gap-3 pl-4 pr-0 py-2.5 border-l-3 transition-all duration-150 text-sm", style: current_page?(analytics_path) ? "background-color: rgba(255, 255, 255, 0.08); border-left-color: #FFFFFF; border-left-width: 3px;" : "border-left-color: transparent; border-left-width: 3px;" do %>
+        <div class="w-7 h-7 flex items-center justify-center transition-transform duration-150" style="background: <%= current_page?(analytics_path) ? 'linear-gradient(135deg, #E5E5E7 0%, #C7C7CC 50%, #8E8E93 100%)' : 'linear-gradient(135deg, rgba(229, 229, 231, 0.15) 0%, rgba(199, 199, 204, 0.25) 50%, rgba(142, 142, 147, 0.15) 100%)' %>; border: 0.5px solid <%= current_page?(analytics_path) ? 'rgba(255, 255, 255, 0.3)' : 'rgba(199, 199, 204, 0.2)' %>; box-shadow: <%= current_page?(analytics_path) ? '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)' : '0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)' %>; <%= current_page?(analytics_path) ? 'transform: scale(1.1);' : '' %>">
+          <i class="fa-solid fa-chart-column text-xs" style="color: <%= current_page?(analytics_path) ? '#1D1D1F' : '#C7C7CC' %>; filter: <%= current_page?(analytics_path) ? 'drop-shadow(0 0.5px 0 rgba(255, 255, 255, 0.5))' : 'none' %>;"></i>
+        </div>
+        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(analytics_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(analytics_path) ? '1' : '0.7' %>;">Analytics</span>
       <% end %>
-      <%= link_to settings_path, class: "flex items-center gap-3 px-4 py-3 rounded-lg transition #{current_page?(settings_path) ? 'font-medium' : 'font-light hover:bg-white/10'}", style: current_page?(settings_path) ? "background-color: rgba(255, 255, 255, 0.15);" : "" do %>
-        <i class="fa-solid fa-gear text-lg" style="<%= current_page?(settings_path) ? 'color: #F8796D;' : '' %>"></i>
-        <span>Settings</span>
+      <%= link_to settings_path, class: "flex items-center gap-3 pl-4 pr-0 py-2.5 border-l-3 transition-all duration-150 text-sm", style: current_page?(settings_path) ? "background-color: rgba(255, 255, 255, 0.08); border-left-color: #FFFFFF; border-left-width: 3px;" : "border-left-color: transparent; border-left-width: 3px;" do %>
+        <div class="w-7 h-7 flex items-center justify-center transition-transform duration-150" style="background: <%= current_page?(settings_path) ? 'linear-gradient(135deg, #E5E5E7 0%, #C7C7CC 50%, #8E8E93 100%)' : 'linear-gradient(135deg, rgba(229, 229, 231, 0.15) 0%, rgba(199, 199, 204, 0.25) 50%, rgba(142, 142, 147, 0.15) 100%)' %>; border: 0.5px solid <%= current_page?(settings_path) ? 'rgba(255, 255, 255, 0.3)' : 'rgba(199, 199, 204, 0.2)' %>; box-shadow: <%= current_page?(settings_path) ? '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)' : '0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)' %>; <%= current_page?(settings_path) ? 'transform: scale(1.1);' : '' %>">
+          <i class="fa-solid fa-gear text-xs" style="color: <%= current_page?(settings_path) ? '#1D1D1F' : '#C7C7CC' %>; filter: <%= current_page?(settings_path) ? 'drop-shadow(0 0.5px 0 rgba(255, 255, 255, 0.5))' : 'none' %>;"></i>
+        </div>
+        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(settings_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(settings_path) ? '1' : '0.7' %>;">Settings</span>
       <% end %>
     </nav>
 
@@ -114,25 +130,25 @@
         '#9CA3A8': { light: '#E8E8E8', dark: '#4A5057' }
       }
     }">
-      <div class="flex items-center justify-between mb-3">
-        <h3 class="text-xs font-semibold uppercase tracking-wide" style="color: #657b84;">Categories</h3>
-        <button @click="showModal = true" class="w-5 h-5 rounded flex items-center justify-center hover:bg-white/10 transition" style="color: #657b84;">
+      <div class="flex items-center justify-between mb-3 pb-2 border-b" style="border-bottom-color: rgba(199, 199, 204, 0.2);">
+        <h3 class="text-base" style="color: #C7C7CC; letter-spacing: 0.03em; font-weight: 200; opacity: 0.7;">Categories</h3>
+        <button @click="showModal = true" class="w-6 h-6 flex items-center justify-center hover:bg-white/10 transition-colors duration-150" style="color: #C7C7CC; opacity: 0.7;">
           <i class="fa-solid fa-plus text-xs"></i>
         </button>
       </div>
-      <div class="space-y-2">
+      <div class="space-y-0.5 -mr-5">
         <% if user_signed_in? && current_user.categories.active.ordered.any? %>
           <% current_user.categories.active.ordered.each do |category| %>
             <% is_active = @category && @category.id == category.id %>
-            <%= link_to category_path(category), class: "flex items-center gap-3 px-4 py-2 rounded-lg transition text-sm #{is_active ? 'font-medium' : 'font-light hover:bg-white/10'}", style: is_active ? "background-color: rgba(255, 255, 255, 0.15);" : "" do %>
-              <div class="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm" style="background-color: <%= category.color %>;">
-                <i class="fa-solid <%= category.icon %> text-white"></i>
+            <%= link_to category_path(category), class: "flex items-center gap-3 pl-4 pr-0 py-2.5 border-l-3 transition-all duration-150 text-sm", style: is_active ? "background-color: rgba(255, 255, 255, 0.08); border-left-color: #{category.color}; border-left-width: 3px;" : "border-left-color: transparent; border-left-width: 3px;" do %>
+              <div class="w-7 h-7 flex items-center justify-center shadow-sm transition-transform duration-150" style="background-color: <%= category.color %>; <%= is_active ? 'transform: scale(1.1);' : '' %>">
+                <i class="fa-solid <%= category.icon %> text-white text-xs"></i>
               </div>
-              <span><%= category.name %></span>
+              <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= is_active ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= is_active ? '1' : '0.7' %>;"><%= category.name %></span>
             <% end %>
           <% end %>
         <% else %>
-          <p class="text-xs font-light px-4 py-2" style="color: #657b84;">No categories yet</p>
+          <p class="text-xs px-4 py-2" style="color: #8E8E93; font-weight: 100;">No categories yet</p>
         <% end %>
       </div>
 
@@ -297,7 +313,7 @@
   </div>
 
   <!-- User Dropdown at Bottom -->
-  <div class="p-6 border-t text-white" style="border-color: rgba(255, 255, 255, 0.1);" x-data="{ open: false }">
+  <div class="p-6 border-t text-white" style="border-color: rgba(199, 199, 204, 0.2);" x-data="{ open: false }">
     <% if user_signed_in? %>
       <button @click="open = !open" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition">
         <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold" style="background: rgba(255, 255, 255, 0.2);">
@@ -305,20 +321,20 @@
         </div>
         <div class="flex-1 text-left">
           <div class="text-sm font-medium"><%= current_user.email.split('@').first %></div>
-          <div class="text-xs font-light" style="color: #657b84;">View profile</div>
+          <div class="text-xs font-light" style="color: #8E8E93;">View profile</div>
         </div>
         <i class="fa-solid fa-chevron-up text-xs" :class="open ? '' : 'rotate-180'" style="transition: transform 0.2s;"></i>
       </button>
 
       <!-- Dropdown Menu -->
-      <div x-show="open" x-transition class="mt-2 bg-white rounded-lg shadow-lg overflow-hidden">
+      <div x-show="open" x-transition class="mt-2 rounded-lg shadow-lg overflow-hidden" style="background-color: #FAFAFA; border: 1px solid #E5E5E7;">
         <%= link_to edit_user_registration_path, class: "flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition" do %>
-          <i class="fa-solid fa-user" style="color: #45606b;"></i>
-          <span class="text-sm font-medium" style="color: #1d3e4c;">My Account</span>
+          <i class="fa-solid fa-user" style="color: #8E8E93;"></i>
+          <span class="text-sm font-medium" style="color: #1D1D1F;">My Account</span>
         <% end %>
         <%= button_to destroy_user_session_path, method: :delete, class: "w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition text-left" do %>
-          <i class="fa-solid fa-arrow-right-from-bracket" style="color: #45606b;"></i>
-          <span class="text-sm font-medium" style="color: #1d3e4c;">Sign Out</span>
+          <i class="fa-solid fa-arrow-right-from-bracket" style="color: #8E8E93;"></i>
+          <span class="text-sm font-medium" style="color: #1D1D1F;">Sign Out</span>
         <% end %>
       </div>
     <% else %>

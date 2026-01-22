@@ -1,4 +1,4 @@
-<div class="flex h-screen relative" style="background-color: #F5F5F5;">
+<div class="flex h-screen relative" style="background-color: #F5F5F7;">
   <%= render 'shared/sidebar' %>
 
   <!-- Mobile overlay -->
@@ -6,7 +6,7 @@
 
   <!-- Menu flag button -->
   <button id="menu-button" class="fixed left-0 z-20 md:hidden rounded-r-lg shadow-lg flex items-center justify-center py-1.5 px-3 cursor-move"
-    style="top: 200px; background: linear-gradient(135deg, #1d3e4c, #45606b); writing-mode: vertical-rl;">
+    style="top: 200px; background: linear-gradient(135deg, #424245, #2C2C2E); writing-mode: vertical-rl;">
     <span class="text-white font-bold text-sm tracking-wider">MENU</span>
   </button>
 
@@ -101,42 +101,44 @@
   </script>
 
   <!-- Main Content Area -->
-  <main class="flex-1 overflow-y-auto" style="background-color: #F5F5F5;">
+  <main class="flex-1 overflow-y-auto" style="background-color: #F5F5F7;">
     <!-- White Header Section with Shadow -->
-    <div class="bg-white shadow-md sticky top-0 z-10">
+    <div class="sticky top-0 z-10" style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);">
       <div class="p-8 pb-6">
         <div class="flex items-center justify-between mb-4">
           <div>
-            <h1 class="text-4xl font-bold display-font mb-1" style="color: #1d3e4c;">Daily Briefing</h1>
-            <p class="text-sm font-light" style="color: #657b84;"><%= @today.strftime('%A, %B %d, %Y') %></p>
+            <h1 class="text-4xl mb-1" style="color: #1D1D1F; font-family: 'Inter', sans-serif; font-weight: 800;">Daily Briefing</h1>
+            <p class="text-sm" style="color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif;"><%= @today.strftime('%A, %B %d, %Y') %></p>
           </div>
 
           <!-- Date Navigation -->
           <div class="flex items-center gap-2">
             <%= link_to dashboard_path(date: (@today - 1.day).strftime('%Y-%m-%d')),
-                class: "w-10 h-10 rounded-lg hover:bg-gray-100 flex items-center justify-center transition" do %>
-              <i class="fa-solid fa-chevron-left" style="color: #1d3e4c;"></i>
+                class: "w-10 h-10 rounded-lg flex items-center justify-center transition",
+                style: "background: linear-gradient(135deg, rgba(229, 229, 231, 0.3) 0%, rgba(199, 199, 204, 0.4) 50%, rgba(142, 142, 147, 0.3) 100%); border: 0.5px solid rgba(199, 199, 204, 0.3); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2);" do %>
+              <i class="fa-solid fa-chevron-left text-sm" style="color: #2C2C2E;"></i>
             <% end %>
 
-            <div class="px-2 text-sm font-semibold" style="color: #1d3e4c;">
+            <div class="px-2 text-sm" style="color: #1D1D1F; font-weight: 600; font-family: 'Inter', sans-serif;">
               <%= @today == Time.zone.today ? 'Today' : @today.strftime('%m/%d') %>
             </div>
 
             <% if @today < Time.zone.today %>
               <%= link_to dashboard_path(date: (@today + 1.day).strftime('%Y-%m-%d')),
-                  class: "w-10 h-10 rounded-lg hover:bg-gray-100 flex items-center justify-center transition" do %>
-                <i class="fa-solid fa-chevron-right" style="color: #1d3e4c;"></i>
+                  class: "w-10 h-10 rounded-lg flex items-center justify-center transition",
+                  style: "background: linear-gradient(135deg, rgba(229, 229, 231, 0.3) 0%, rgba(199, 199, 204, 0.4) 50%, rgba(142, 142, 147, 0.3) 100%); border: 0.5px solid rgba(199, 199, 204, 0.3); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2);" do %>
+                <i class="fa-solid fa-chevron-right text-sm" style="color: #2C2C2E;"></i>
               <% end %>
             <% else %>
-              <div class="w-10 h-10 rounded-lg flex items-center justify-center opacity-50 pointer-events-none">
-                <i class="fa-solid fa-chevron-right" style="color: #1d3e4c;"></i>
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center opacity-30 pointer-events-none" style="background: linear-gradient(135deg, rgba(229, 229, 231, 0.3) 0%, rgba(199, 199, 204, 0.4) 50%, rgba(142, 142, 147, 0.3) 100%); border: 0.5px solid rgba(199, 199, 204, 0.3);">
+                <i class="fa-solid fa-chevron-right text-sm" style="color: #2C2C2E;"></i>
               </div>
             <% end %>
 
             <% if @today != Time.zone.today %>
               <%= link_to dashboard_path,
-                  class: "ml-2 px-4 py-2 rounded-lg hover:bg-gray-100 text-sm font-semibold transition",
-                  style: "color: #1d3e4c;" do %>
+                  class: "ml-2 px-4 py-2 rounded-lg text-sm transition",
+                  style: "background: linear-gradient(135deg, rgba(229, 229, 231, 0.3) 0%, rgba(199, 199, 204, 0.4) 50%, rgba(142, 142, 147, 0.3) 100%); border: 0.5px solid rgba(199, 199, 204, 0.3); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2); color: #1D1D1F; font-weight: 600; font-family: 'Inter', sans-serif;" do %>
                 Today
               <% end %>
             <% end %>
@@ -151,32 +153,32 @@
       <% if current_user.google_sync_enabled && current_user.google_calendar_id.present? %>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <!-- Today's Calendar -->
-          <div class="md:col-span-2 bg-white rounded-xl shadow-md p-4">
+          <div class="md:col-span-2 rounded-xl p-4" style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
             <div class="flex items-center justify-between mb-3">
-              <h2 class="text-xl font-bold display-font" style="color: #1d3e4c;">
+              <h2 class="text-xl" style="color: #1D1D1F; font-family: 'Inter', sans-serif; font-weight: 700;">
                 <i class="fa-solid fa-calendar mr-2"></i>Today's Calendar
               </h2>
               <%= link_to "https://calendar.google.com", target: "_blank", rel: "noopener noreferrer",
-                  class: "text-xs font-light hover:underline",
-                  style: "color: #657b84;" do %>
+                  class: "text-xs hover:underline",
+                  style: "color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif;" do %>
                 Open in Google
               <% end %>
             </div>
             <% if @calendar_events.any? %>
               <div class="space-y-0">
                 <% @calendar_events.each do |event| %>
-                  <div class="flex items-center gap-4 py-1 hover:bg-gray-50 transition rounded px-2">
+                  <div class="flex items-center gap-4 py-1 transition rounded px-2" style="hover:background-color: rgba(199, 199, 204, 0.1);">
                     <% if event[:all_day] %>
-                      <div class="text-xs font-semibold w-20" style="color: #657b84;">All Day</div>
+                      <div class="text-xs w-20" style="color: #8E8E93; font-weight: 600; font-family: 'Inter', sans-serif;">All Day</div>
                     <% else %>
-                      <div class="text-xs font-semibold w-20" style="color: #1d3e4c;">
+                      <div class="text-xs w-20" style="color: #1D1D1F; font-weight: 600; font-family: 'Inter', sans-serif;">
                         <%= event[:start_time].strftime('%l:%M %p') %>
                       </div>
                     <% end %>
-                    <div class="flex-1 text-sm" style="color: #1d3e4c;">
+                    <div class="flex-1 text-sm" style="color: #1D1D1F; font-weight: 400; font-family: 'Inter', sans-serif;">
                       <%= event[:summary] || 'Untitled Event' %>
                       <% if current_user.google_calendar_id.length > 1 %>
-                        <span class="text-xs font-light ml-2" style="color: #657b84;">
+                        <span class="text-xs ml-2" style="color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif;">
                           (<%= event[:calendar_name] %>)
                         </span>
                       <% end %>
@@ -186,19 +188,19 @@
               </div>
             <% else %>
               <div class="text-center py-8">
-                <p class="text-sm font-light" style="color: #657b84;">Nothing planned for today.</p>
+                <p class="text-sm" style="color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif;">Nothing planned for today.</p>
               </div>
             <% end %>
             <!-- Footer with refresh and timestamp -->
-            <div class="flex items-center justify-between mt-3 pt-2 border-t border-gray-100">
+            <div class="flex items-center justify-between mt-3 pt-2" style="border-top: 1px solid rgba(199, 199, 204, 0.2);">
               <%= form_with url: google_calendar_refresh_path(date: @today.strftime('%Y-%m-%d')), method: :post, local: true, id: "calendar-refresh-form", style: "display: inline; margin: 0;" do %>
-                <button type="submit" id="calendar-refresh-btn" class="text-xs font-light hover:underline flex items-center gap-1" style="color: #657b84; background: none; border: none; padding: 0; cursor: pointer;" title="Refresh calendar">
-                  <i class="fa-solid fa-refresh text-xs" style="color: #657b84;"></i>
+                <button type="submit" id="calendar-refresh-btn" class="text-xs hover:underline flex items-center gap-1" style="color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif; background: none; border: none; padding: 0; cursor: pointer;" title="Refresh calendar">
+                  <i class="fa-solid fa-refresh text-xs" style="color: #8E8E93;"></i>
                   <span>Refresh</span>
                 </button>
               <% end %>
               <% if current_user.calendar_events_cached_at %>
-                <span class="text-xs font-light" style="color: #657b84;">
+                <span class="text-xs" style="color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif;">
                   Updated <%= time_ago_in_words(current_user.calendar_events_cached_at) %> ago
                 </span>
               <% end %>
@@ -222,20 +224,20 @@
           </script>
 
           <!-- Quick Links -->
-          <div class="bg-white rounded-xl shadow-md p-4">
-            <h2 class="text-xl font-bold display-font mb-3" style="color: #1d3e4c;">Quick Links</h2>
+          <div class="rounded-xl p-4" style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
+            <h2 class="text-xl mb-3" style="color: #1D1D1F; font-family: 'Inter', sans-serif; font-weight: 700;">Quick Links</h2>
             <div class="space-y-1">
-              <%= link_to habits_path, class: "flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition" do %>
-                <i class="fa-solid fa-chart-line text-lg" style="color: #1d3e4c;"></i>
-                <span class="text-sm font-semibold" style="color: #1d3e4c;">View Analytics</span>
+              <%= link_to habits_path, class: "flex items-center gap-3 p-2 rounded-lg transition", style: "hover:background-color: rgba(199, 199, 204, 0.1);" do %>
+                <i class="fa-solid fa-chart-line text-lg" style="color: #2C2C2E;"></i>
+                <span class="text-sm" style="color: #1D1D1F; font-weight: 600; font-family: 'Inter', sans-serif;">View Analytics</span>
               <% end %>
-              <%= link_to root_path, class: "flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition" do %>
-                <i class="fa-solid fa-folder text-lg" style="color: #1d3e4c;"></i>
-                <span class="text-sm font-semibold" style="color: #1d3e4c;">Browse Categories</span>
+              <%= link_to root_path, class: "flex items-center gap-3 p-2 rounded-lg transition", style: "hover:background-color: rgba(199, 199, 204, 0.1);" do %>
+                <i class="fa-solid fa-folder text-lg" style="color: #2C2C2E;"></i>
+                <span class="text-sm" style="color: #1D1D1F; font-weight: 600; font-family: 'Inter', sans-serif;">Browse Categories</span>
               <% end %>
-              <%= link_to tasks_path, class: "flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition" do %>
-                <i class="fa-solid fa-tasks text-lg" style="color: #1d3e4c;"></i>
-                <span class="text-sm font-semibold" style="color: #1d3e4c;">All Tasks</span>
+              <%= link_to tasks_path, class: "flex items-center gap-3 p-2 rounded-lg transition", style: "hover:background-color: rgba(199, 199, 204, 0.1);" do %>
+                <i class="fa-solid fa-tasks text-lg" style="color: #2C2C2E;"></i>
+                <span class="text-sm" style="color: #1D1D1F; font-weight: 600; font-family: 'Inter', sans-serif;">All Tasks</span>
               <% end %>
             </div>
           </div>
@@ -245,24 +247,24 @@
       <!-- Main Content Grid: Habits and Tasks -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Today's Habits -->
-          <div class="bg-white rounded-xl shadow-md p-6">
+          <div class="rounded-xl p-6" style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
             <div class="mb-4">
               <div class="flex items-center justify-between">
-                <h2 class="text-xl font-bold display-font" style="color: #1d3e4c;">Today's Habits</h2>
+                <h2 class="text-xl" style="color: #1D1D1F; font-family: 'Inter', sans-serif; font-weight: 700;">Today's Habits</h2>
                 <!-- Toggle Buttons -->
-                <div class="flex gap-1 rounded-lg p-1" style="background-color: #E8EEF1;">
-                  <button id="focus-time-btn" onclick="switchFocusView('time')" class="px-2 py-1 rounded text-xs font-semibold transition" style="background-color: #1d3e4c; color: white;">
+                <div class="flex gap-1 rounded-lg p-1" style="background: rgba(199, 199, 204, 0.2);">
+                  <button id="focus-time-btn" onclick="switchFocusView('time')" class="px-2 py-1 rounded text-xs transition" style="background: linear-gradient(135deg, #2C2C2E, #1D1D1F); color: white; font-weight: 600; font-family: 'Inter', sans-serif; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);">
                     Time
                   </button>
-                  <button id="focus-category-btn" onclick="switchFocusView('category')" class="px-2 py-1 rounded text-xs font-semibold transition" style="color: #657b84;">
+                  <button id="focus-category-btn" onclick="switchFocusView('category')" class="px-2 py-1 rounded text-xs transition" style="color: #8E8E93; font-weight: 600; font-family: 'Inter', sans-serif;">
                     Category
                   </button>
-                  <button id="focus-priority-btn" onclick="switchFocusView('priority')" class="px-2 py-1 rounded text-xs font-semibold transition" style="color: #657b84;">
+                  <button id="focus-priority-btn" onclick="switchFocusView('priority')" class="px-2 py-1 rounded text-xs transition" style="color: #8E8E93; font-weight: 600; font-family: 'Inter', sans-serif;">
                     Priority
                   </button>
                 </div>
               </div>
-              <div id="today-completion-count" class="text-sm font-light mt-1" style="color: #657b84;">
+              <div id="today-completion-count" class="text-sm mt-1" style="color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif;">
                 <%= @completed_today %> / <%= @total_habits %> completed (<%= @today_percentage %>%)
               </div>
             </div>
@@ -371,26 +373,26 @@
               </div>
             <% else %>
               <div class="text-center py-8">
-                <i class="fa-solid fa-check-circle text-4xl mb-2" style="color: #E8EEF1;"></i>
-                <p class="text-sm font-light" style="color: #657b84;">No habits for today</p>
+                <i class="fa-solid fa-check-circle text-4xl mb-2" style="color: #E5E5E7;"></i>
+                <p class="text-sm" style="color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif;">No habits for today</p>
               </div>
             <% end %>
           </div>
 
         <!-- Tasks Section -->
-        <div class="bg-white rounded-xl shadow-md p-6">
+        <div class="rounded-xl p-6" style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
           <div class="mb-4">
             <div class="flex items-center justify-between">
-              <h2 class="text-xl font-bold display-font" style="color: #1d3e4c;">Tasks</h2>
+              <h2 class="text-xl" style="color: #1D1D1F; font-family: 'Inter', sans-serif; font-weight: 700;">Tasks</h2>
               <!-- Toggle Buttons -->
-              <div class="flex gap-1 rounded-lg p-1" style="background-color: #E8EEF1;">
-                <button id="tasks-date-btn" onclick="switchTasksView('date')" class="px-2 py-1 rounded text-xs font-semibold transition" style="background-color: #1d3e4c; color: white;">
+              <div class="flex gap-1 rounded-lg p-1" style="background: rgba(199, 199, 204, 0.2);">
+                <button id="tasks-date-btn" onclick="switchTasksView('date')" class="px-2 py-1 rounded text-xs transition" style="background: linear-gradient(135deg, #2C2C2E, #1D1D1F); color: white; font-weight: 600; font-family: 'Inter', sans-serif; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);">
                   Date
                 </button>
-                <button id="tasks-category-btn" onclick="switchTasksView('category')" class="px-2 py-1 rounded text-xs font-semibold transition" style="color: #657b84;">
+                <button id="tasks-category-btn" onclick="switchTasksView('category')" class="px-2 py-1 rounded text-xs transition" style="color: #8E8E93; font-weight: 600; font-family: 'Inter', sans-serif;">
                   Category
                 </button>
-                <button id="tasks-priority-btn" onclick="switchTasksView('priority')" class="px-2 py-1 rounded text-xs font-semibold transition" style="color: #657b84;">
+                <button id="tasks-priority-btn" onclick="switchTasksView('priority')" class="px-2 py-1 rounded text-xs transition" style="color: #8E8E93; font-weight: 600; font-family: 'Inter', sans-serif;">
                   Priority
                 </button>
               </div>
@@ -479,8 +481,8 @@
 
             <% if @tasks.empty? %>
               <div class="text-center py-8">
-                <i class="fa-solid fa-list-check text-4xl mb-2" style="color: #E8EEF1;"></i>
-                <p class="text-sm font-light" style="color: #657b84;">No tasks yet</p>
+                <i class="fa-solid fa-list-check text-4xl mb-2" style="color: #E5E5E7;"></i>
+                <p class="text-sm" style="color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif;">No tasks yet</p>
               </div>
             <% end %>
           </div>
@@ -503,21 +505,27 @@ function switchFocusView(view) {
   const priorityBtn = document.getElementById('focus-priority-btn');
 
   // Update button styles
-  timeBtn.style.backgroundColor = '';
-  timeBtn.style.color = '#657b84';
-  categoryBtn.style.backgroundColor = '';
-  categoryBtn.style.color = '#657b84';
-  priorityBtn.style.backgroundColor = '';
-  priorityBtn.style.color = '#657b84';
+  timeBtn.style.background = '';
+  timeBtn.style.boxShadow = '';
+  timeBtn.style.color = '#8E8E93';
+  categoryBtn.style.background = '';
+  categoryBtn.style.boxShadow = '';
+  categoryBtn.style.color = '#8E8E93';
+  priorityBtn.style.background = '';
+  priorityBtn.style.boxShadow = '';
+  priorityBtn.style.color = '#8E8E93';
 
   if (view === 'time') {
-    timeBtn.style.backgroundColor = '#1d3e4c';
+    timeBtn.style.background = 'linear-gradient(135deg, #2C2C2E, #1D1D1F)';
+    timeBtn.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.2)';
     timeBtn.style.color = 'white';
   } else if (view === 'category') {
-    categoryBtn.style.backgroundColor = '#1d3e4c';
+    categoryBtn.style.background = 'linear-gradient(135deg, #2C2C2E, #1D1D1F)';
+    categoryBtn.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.2)';
     categoryBtn.style.color = 'white';
   } else {
-    priorityBtn.style.backgroundColor = '#1d3e4c';
+    priorityBtn.style.background = 'linear-gradient(135deg, #2C2C2E, #1D1D1F)';
+    priorityBtn.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.2)';
     priorityBtn.style.color = 'white';
   }
 
@@ -668,8 +676,10 @@ function switchFocusView(view) {
     }
 
     const title = document.createElement('div');
-    title.className = 'text-sm font-semibold';
-    title.style.color = '#1d3e4c';
+    title.className = 'text-sm';
+    title.style.color = '#1D1D1F';
+    title.style.fontWeight = '600';
+    title.style.fontFamily = "'Inter', sans-serif";
 
     // Set text based on view
     if (view === 'category' && groups[groupName].length > 0) {
@@ -811,21 +821,27 @@ function switchTasksView(view) {
   const priorityBtn = document.getElementById('tasks-priority-btn');
 
   // Update button styles
-  dateBtn.style.backgroundColor = '';
-  dateBtn.style.color = '#657b84';
-  categoryBtn.style.backgroundColor = '';
-  categoryBtn.style.color = '#657b84';
-  priorityBtn.style.backgroundColor = '';
-  priorityBtn.style.color = '#657b84';
+  dateBtn.style.background = '';
+  dateBtn.style.boxShadow = '';
+  dateBtn.style.color = '#8E8E93';
+  categoryBtn.style.background = '';
+  categoryBtn.style.boxShadow = '';
+  categoryBtn.style.color = '#8E8E93';
+  priorityBtn.style.background = '';
+  priorityBtn.style.boxShadow = '';
+  priorityBtn.style.color = '#8E8E93';
 
   if (view === 'date') {
-    dateBtn.style.backgroundColor = '#1d3e4c';
+    dateBtn.style.background = 'linear-gradient(135deg, #2C2C2E, #1D1D1F)';
+    dateBtn.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.2)';
     dateBtn.style.color = 'white';
   } else if (view === 'category') {
-    categoryBtn.style.backgroundColor = '#1d3e4c';
+    categoryBtn.style.background = 'linear-gradient(135deg, #2C2C2E, #1D1D1F)';
+    categoryBtn.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.2)';
     categoryBtn.style.color = 'white';
   } else {
-    priorityBtn.style.backgroundColor = '#1d3e4c';
+    priorityBtn.style.background = 'linear-gradient(135deg, #2C2C2E, #1D1D1F)';
+    priorityBtn.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.2)';
     priorityBtn.style.color = 'white';
   }
 
@@ -938,7 +954,9 @@ function switchTasksView(view) {
     groupDiv.className = 'mb-4';
 
     const headerDiv = document.createElement('div');
-    headerDiv.className = 'text-xs font-semibold mb-2 flex items-center gap-2';
+    headerDiv.className = 'text-xs mb-2 flex items-center gap-2';
+    headerDiv.style.fontWeight = '600';
+    headerDiv.style.fontFamily = "'Inter', sans-serif";
 
     // Add icon
     if (view === 'date' && groupName === 'overdue') {
@@ -979,7 +997,7 @@ function switchTasksView(view) {
     }
 
     const label = document.createElement('span');
-    label.style.color = '#1d3e4c';
+    label.style.color = '#1D1D1F';
     label.textContent = groupLabels[groupName] || groupName;
     headerDiv.appendChild(label);
 

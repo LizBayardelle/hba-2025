@@ -113,7 +113,7 @@ const TaskViewModal = () => {
             onChange={(e) => toggleCompleteMutation.mutate(e.target.checked)}
             className="w-6 h-6 rounded border-2 cursor-pointer mt-1"
             style={{
-              accentColor: '#1d3e4c',
+              accentColor: '#2C2C2E',
               borderColor: '#6B8A99',
             }}
           />
@@ -198,17 +198,19 @@ const TaskViewModal = () => {
         {/* Tags */}
         {task.tags && task.tags.length > 0 && (
           <div>
-            <h3 className="text-sm font-semibold mb-2" style={{ color: '#566e78' }}>
+            <h3 className="text-sm mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
               Tags
             </h3>
             <div className="flex flex-wrap gap-2">
               {task.tags.map((tag) => (
                 <span
                   key={tag.id}
-                  className="px-3 py-1.5 rounded-full text-sm font-medium"
+                  className="px-3 py-1.5 rounded-full text-sm"
                   style={{
-                    backgroundColor: '#E8EEF1',
-                    color: '#1d3e4c',
+                    background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)',
+                    color: '#FFFFFF',
+                    fontFamily: "'Inter', sans-serif",
+                    fontWeight: 600,
                   }}
                 >
                   <i className="fa-solid fa-tag mr-1 text-xs"></i>
@@ -222,7 +224,7 @@ const TaskViewModal = () => {
         {/* Due Date with Time */}
         {task.due_date && (
           <div>
-            <h3 className="text-sm font-semibold mb-2" style={{ color: '#566e78' }}>
+            <h3 className="text-sm mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
               Due Date
             </h3>
             <p style={{ color: '#1d3e4c' }}>
@@ -235,7 +237,7 @@ const TaskViewModal = () => {
         {/* URL */}
         {task.url && (
           <div>
-            <h3 className="text-sm font-semibold mb-2" style={{ color: '#566e78' }}>
+            <h3 className="text-sm mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
               URL
             </h3>
             <a
@@ -254,7 +256,7 @@ const TaskViewModal = () => {
         {/* Location */}
         {task.location_name && (
           <div>
-            <h3 className="text-sm font-semibold mb-2" style={{ color: '#566e78' }}>
+            <h3 className="text-sm mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
               Location
             </h3>
             <p style={{ color: '#1d3e4c' }}>
@@ -272,7 +274,7 @@ const TaskViewModal = () => {
         {/* Notes */}
         {task.notes && (
           <div>
-            <h3 className="text-sm font-semibold mb-2" style={{ color: '#566e78' }}>
+            <h3 className="text-sm mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
               Notes
             </h3>
             <div
@@ -283,8 +285,8 @@ const TaskViewModal = () => {
         )}
 
         {/* Created Date */}
-        <div className="pt-4 border-t" style={{ borderColor: '#E8EEF1' }}>
-          <p className="text-xs" style={{ color: '#9CA3A8' }}>
+        <div className="pt-4 border-t" style={{ borderColor: 'rgba(199, 199, 204, 0.3)' }}>
+          <p className="text-xs" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#8E8E93' }}>
             Created {formatDateTime(task.created_at)}
           </p>
         </div>
@@ -299,14 +301,15 @@ const TaskViewModal = () => {
           closeViewModal();
           openEditModal(taskId);
         }}
-        className="px-6 py-3 rounded-lg font-semibold transition text-white hover:opacity-70"
+        className="px-6 py-3 rounded-lg transition hover:opacity-70"
+        style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F', border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
       >
         Edit
       </button>
       <button
         onClick={closeViewModal}
-        className="px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition hover:opacity-90"
-        style={{ backgroundColor: '#E8EEF1', color: '#1d3e4c' }}
+        className="px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition hover:opacity-90"
+        style={{ background: 'linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%)', border: '0.5px solid rgba(255, 255, 255, 0.3)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)', color: '#1D1D1F', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
       >
         Close
       </button>

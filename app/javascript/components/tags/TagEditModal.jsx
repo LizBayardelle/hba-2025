@@ -38,8 +38,8 @@ const TagEditModal = () => {
       <button
         type="button"
         onClick={closeEditModal}
-        className="px-6 py-3 rounded-lg font-semibold border-2 transition"
-        style={{ color: '#1d3e4c', borderColor: '#E8EEF1' }}
+        className="px-6 py-3 rounded-lg font-semibold transition"
+        style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F', border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
         disabled={updateMutation.isPending}
       >
         Cancel
@@ -47,8 +47,8 @@ const TagEditModal = () => {
       <button
         type="submit"
         form="tag-edit-form"
-        className="px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition cursor-pointer disabled:opacity-50"
-        style={{ background: 'linear-gradient(135deg, #1d3e4c, #45606b)' }}
+        className="px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition cursor-pointer disabled:opacity-50"
+        style={{ background: 'linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%)', border: '0.5px solid rgba(255, 255, 255, 0.3)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)', color: '#1D1D1F', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
         disabled={updateMutation.isPending}
       >
         {updateMutation.isPending ? 'Saving...' : 'Update Tag'}
@@ -76,15 +76,15 @@ const TagEditModal = () => {
         )}
 
         <div className="mb-6">
-          <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
+          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
             Tag Name
           </label>
           <input
             type="text"
             value={tagName}
             onChange={(e) => setTagName(e.target.value)}
-            className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
-            style={{ borderColor: '#E8EEF1' }}
+            className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light"
+            style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
             placeholder="Enter tag name"
             required
             autoFocus

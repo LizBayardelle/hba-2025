@@ -54,7 +54,7 @@ const JournalViewModal = () => {
     return (
       <>
         {/* Date */}
-        <div className="mb-4 text-sm font-light" style={{ color: '#657b84' }}>
+        <div className="mb-4 text-sm" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#8E8E93' }}>
           {formatDate(journal.created_at)}
         </div>
 
@@ -65,10 +65,12 @@ const JournalViewModal = () => {
               <a
                 key={tag.id}
                 href={`/tags?tag_id=${tag.id}`}
-                className="text-xs px-3 py-1.5 rounded-full font-semibold hover:opacity-70 transition cursor-pointer flex items-center gap-1"
+                className="text-xs px-3 py-1.5 rounded-full hover:opacity-70 transition cursor-pointer flex items-center gap-1"
                 style={{
-                  backgroundColor: '#E8EEF1',
-                  color: '#1d3e4c',
+                  background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)',
+                  color: '#FFFFFF',
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 600,
                 }}
               >
                 <i className="fa-solid fa-tags text-[10px]"></i>
@@ -94,14 +96,15 @@ const JournalViewModal = () => {
           closeViewModal();
           openEditModal(journalId);
         }}
-        className="px-6 py-3 rounded-lg font-semibold transition text-white hover:opacity-70"
+        className="px-6 py-3 rounded-lg transition hover:opacity-70"
+        style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F', border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
       >
         Edit
       </button>
       <button
         onClick={closeViewModal}
-        className="px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition hover:opacity-90"
-        style={{ backgroundColor: '#E8EEF1', color: '#1d3e4c' }}
+        className="px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition hover:opacity-90"
+        style={{ background: 'linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%)', border: '0.5px solid rgba(255, 255, 255, 0.3)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)', color: '#1D1D1F', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
       >
         Close
       </button>

@@ -2,7 +2,7 @@
   <%= javascript_include_tag "tags_app", type: "module" %>
 <% end %>
 
-<div class="flex h-screen relative" style="background-color: #F5F5F5;">
+<div class="flex h-screen relative" style="background-color: #F5F5F7;">
   <%= render 'shared/sidebar' %>
 
   <!-- Mobile overlay -->
@@ -10,7 +10,7 @@
 
   <!-- Menu flag button -->
   <button id="menu-button" class="fixed left-0 z-20 md:hidden rounded-r-lg shadow-lg flex items-center justify-center py-1.5 px-3 transition-all"
-    style="top: 200px; background: linear-gradient(135deg, #1d3e4c, #45606b); writing-mode: vertical-rl;">
+    style="top: 200px; background: linear-gradient(135deg, #424245, #2C2C2E); writing-mode: vertical-rl;">
     <span class="text-white font-bold text-sm tracking-wider">MENU</span>
   </button>
 
@@ -40,7 +40,7 @@
   </script>
 
   <!-- Main Content Area - React will mount here -->
-  <main class="flex-1 overflow-y-auto" style="background-color: #F5F5F5;">
+  <main class="flex-1 overflow-y-auto" style="background-color: #F5F5F7;">
     <div id="tags-react-root"></div>
   </main>
 </div>

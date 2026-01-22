@@ -1,4 +1,4 @@
-<div class="flex h-screen bg-gray-50 relative">
+<div class="flex h-screen relative" style="background: #F5F5F7;">
   <%= render 'shared/sidebar' %>
 
   <!-- Mobile overlay -->
@@ -6,7 +6,7 @@
 
   <!-- Menu flag button -->
   <button id="menu-button" class="fixed left-0 z-20 md:hidden rounded-r-lg shadow-lg flex items-center justify-center py-1.5 px-3 transition-all"
-    style="top: 200px; background: linear-gradient(135deg, #1d3e4c, #45606b); writing-mode: vertical-rl;">
+    style="top: 200px; background: linear-gradient(135deg, #424245, #2C2C2E); writing-mode: vertical-rl;">
     <span class="text-white font-bold text-sm tracking-wider">MENU</span>
   </button>
 
@@ -40,12 +40,12 @@
     <%= render 'shared/navbar' %>
 
     <!-- Scrollable Content -->
-    <main class="flex-1 overflow-y-auto bg-gray-50 p-8">
+    <main class="flex-1 overflow-y-auto p-8" style="background: #F5F5F7;">
       <div class="max-w-3xl mx-auto">
         <!-- Header -->
         <div class="mb-8">
-          <h1 class="text-3xl font-bold display-font mb-2" style="color: #1d3e4c;">Settings</h1>
-          <p class="text-sm font-light" style="color: #657b84;">Customize your habit tracking experience</p>
+          <h1 class="text-3xl mb-2" style="color: #1D1D1F; font-family: 'Inter', sans-serif; font-weight: 800;">Settings</h1>
+          <p class="text-sm" style="color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif;">Customize your habit tracking experience</p>
         </div>
 
         <% if notice %>

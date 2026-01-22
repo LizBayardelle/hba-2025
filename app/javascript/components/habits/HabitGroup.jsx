@@ -24,7 +24,7 @@ const HabitGroup = ({ title, icon, color, darkColor, habits, viewMode, selectedD
         >
           <i className={`fa-solid ${icon} text-white`}></i>
         </div>
-        <h2 className="text-2xl font-bold display-font flex-1" style={{ color: color }}>
+        <h2 className="text-2xl flex-1" style={{ color: color, fontFamily: "'Inter', sans-serif", fontWeight: 700 }}>
           {title}
         </h2>
         <div className="flex-shrink-0">

@@ -229,6 +229,7 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
         type="button"
         onClick={closeFormModal}
         className="px-6 py-3 rounded-lg font-semibold transition text-white hover:opacity-70"
+        style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
         disabled={currentMutation.isPending}
       >
         Cancel
@@ -237,7 +238,7 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
         type="submit"
         form="task-form"
         className="px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition cursor-pointer disabled:opacity-50 hover:opacity-90"
-        style={{ backgroundColor: '#E8EEF1', color: '#1d3e4c' }}
+        style={{ background: 'linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%)', border: '0.5px solid rgba(255, 255, 255, 0.3)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)', color: '#1D1D1F', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
         disabled={currentMutation.isPending}
       >
         {currentMutation.isPending ? 'Saving...' : mode === 'edit' ? 'Update Task' : 'Create Task'}
@@ -256,7 +257,7 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
       <form id="task-form" onSubmit={handleSubmit} className="space-y-6">
         {/* Task Name */}
         <div>
-          <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
+          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
             Task Name *
           </label>
           <input
@@ -266,14 +267,14 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
             onChange={handleChange}
             required
             placeholder="Enter task name..."
-            className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
-            style={{ borderColor: '#E8EEF1', color: '#1d3e4c' }}
+            className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light"
+            style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#1d3e4c' }}
           />
         </div>
 
         {/* Importance Level Slider */}
         <div className="mb-4">
-          <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
+          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
             Importance Level
           </label>
           <div className="overflow-x-auto pb-2 pt-2">
@@ -310,15 +311,15 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
         {/* Two columns: Category and Due Date */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
+            <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
               Category
             </label>
             <select
               name="category_id"
               value={formData.category_id}
               onChange={handleChange}
-              className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
-              style={{ borderColor: '#E8EEF1', color: '#1d3e4c' }}
+              className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light"
+              style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#1d3e4c' }}
             >
               <option value="">No Category</option>
               {categories?.map(cat => (
@@ -330,7 +331,7 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
+            <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
               Due Date
             </label>
             <input
@@ -338,15 +339,15 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
               name="due_date"
               value={formData.due_date}
               onChange={handleChange}
-              className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
-              style={{ borderColor: '#E8EEF1', color: '#1d3e4c' }}
+              className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light"
+              style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#1d3e4c' }}
             />
           </div>
         </div>
 
         {/* Time Block */}
         <div className="mb-6">
-          <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
+          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
             Time of Day
           </label>
           <div className="overflow-x-auto pb-2 pt-2 px-1">
@@ -427,7 +428,7 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
             <div className="p-4 space-y-4 border-t-2" style={{ borderColor: '#E8EEF1', backgroundColor: 'white' }}>
               {/* Due Time */}
               <div>
-                <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
+                <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
                   Due Time
                 </label>
                 <input
@@ -435,14 +436,14 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
                   name="due_time"
                   value={formData.due_time}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
-                  style={{ borderColor: '#E8EEF1', color: '#1d3e4c' }}
+                  className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light"
+                  style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#1d3e4c' }}
                 />
               </div>
 
               {/* Tags */}
               <div>
-                <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
+                <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
                   Tags
                 </label>
                 <div className="relative">
@@ -456,16 +457,16 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
                     onKeyDown={handleTagInputKeyDown}
                     onFocus={() => tagInput.length > 0 && setShowTagSuggestions(true)}
                     onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
-                    className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
-                    style={{ borderColor: '#E8EEF1', color: '#1d3e4c' }}
+                    className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light"
+                    style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#1d3e4c' }}
                     placeholder="Type to search or add new tag"
                   />
 
                   {/* Tag suggestions dropdown */}
                   {showTagSuggestions && (filteredSuggestions.length > 0 || tagInput.trim()) && (
                     <div
-                      className="absolute z-10 w-full mt-2 bg-white border-2 rounded-lg shadow-lg max-h-48 overflow-y-auto"
-                      style={{ borderColor: '#E8EEF1' }}
+                      className="absolute z-10 w-full mt-2 bg-white rounded-lg shadow-lg max-h-48 overflow-y-auto"
+                      style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
                     >
                       {filteredSuggestions.map((tag) => (
                         <button
@@ -493,7 +494,7 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
                   )}
                 </div>
 
-                <p className="text-xs font-light mt-2" style={{ color: '#657b84' }}>
+                <p className="text-xs font-light mt-2" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#8E8E93' }}>
                   Type to search existing tags or create a new one. Press Enter or click to add.
                 </p>
 
@@ -503,10 +504,7 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
                       <span
                         key={tag}
                         className="text-xs px-3 py-1.5 rounded-full font-semibold flex items-center gap-2"
-                        style={{
-                          backgroundColor: '#E8EEF1',
-                          color: '#1d3e4c',
-                        }}
+                        style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', color: '#FFFFFF', fontFamily: "'Inter', sans-serif", fontWeight: 600 }}
                       >
                         {tag}
                         <button
@@ -524,7 +522,7 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
 
               {/* Location (Address) */}
               <div>
-                <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
+                <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
                   Location / Address
                 </label>
                 <input
@@ -533,14 +531,14 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
                   value={formData.location_name}
                   onChange={handleChange}
                   placeholder="123 Main St, City, State 12345"
-                  className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
-                  style={{ borderColor: '#E8EEF1', color: '#1d3e4c' }}
+                  className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light"
+                  style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#1d3e4c' }}
                 />
               </div>
 
               {/* URL */}
               <div>
-                <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
+                <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
                   URL
                 </label>
                 <input
@@ -549,22 +547,22 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
                   value={formData.url}
                   onChange={handleChange}
                   placeholder="https://..."
-                  className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
-                  style={{ borderColor: '#E8EEF1', color: '#1d3e4c' }}
+                  className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light"
+                  style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#1d3e4c' }}
                 />
               </div>
 
               {/* Attached Document */}
               <div>
-                <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
+                <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
                   Attached Document
                 </label>
                 <select
                   name="attached_document_id"
                   value={formData.attached_document_id}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
-                  style={{ borderColor: '#E8EEF1', color: '#1d3e4c' }}
+                  className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light"
+                  style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#1d3e4c' }}
                 >
                   <option value="">No Document</option>
                   {documents?.map(doc => (
@@ -577,7 +575,7 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
 
               {/* Notes (Trix Editor) */}
               <div>
-                <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
+                <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
                   Notes
                 </label>
                 <input id="task-notes-input" type="hidden" />
@@ -599,7 +597,7 @@ const TaskFormModal = ({ allTags, categories, documents }) => {
             checked={formData.on_hold}
             onChange={handleChange}
             className="w-5 h-5 rounded cursor-pointer"
-            style={{ accentColor: '#1d3e4c' }}
+            style={{ accentColor: '#2C2C2E' }}
           />
           <label className="text-sm font-medium" style={{ color: '#1d3e4c' }}>
             Put task on hold

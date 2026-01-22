@@ -269,32 +269,14 @@ label {
 }
 
 @theme {
-  /* Monochrome Theme - Luxury Minimalist */
-  /* Pure Whites */
-  --color-theme-white: #FFFFFF;
-  --color-theme-snow: #FAFAFA;
+  /* Theme Colors */
+  --color-theme-blue-light: #E8EEF1;
+  --color-theme-blue: #6B8A99;
+  --color-theme-blue-dark: #1d3e4c;
 
-  /* Cool Light Greys - Apple-inspired */
-  --color-theme-platinum: #F5F5F7;
-  --color-theme-silver: #E5E5E7;
-
-  /* Mid Greys - Metallic */
-  --color-theme-steel: #C7C7CC;
-  --color-theme-graphite: #8E8E93;
-
-  /* Dark Greys - Deep tones */
-  --color-theme-charcoal: #424245;
-  --color-theme-slate: #2C2C2E;
-  --color-theme-onyx: #1D1D1F;
-
-  /* Legacy theme colors (deprecated - keeping for backward compat) */
-  --color-theme-blue-light: #E5E5E7;
-  --color-theme-blue: #8E8E93;
-  --color-theme-blue-dark: #1D1D1F;
-
-  --color-theme-salmon-light: #E5E5E7;
-  --color-theme-salmon: #8E8E93;
-  --color-theme-salmon-dark: #1D1D1F;
+  --color-theme-salmon-light: #FFCDD2;
+  --color-theme-salmon: #EF5350;
+  --color-theme-salmon-dark: #C62828;
 
   /* User Category Colors */
   --color-warm-grey-light: #E8E0D5;

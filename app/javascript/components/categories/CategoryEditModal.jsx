@@ -127,8 +127,8 @@ const CategoryEditModal = () => {
       <button
         type="button"
         onClick={closeCategoryEditModal}
-        className="px-6 py-3 rounded-lg font-semibold border-2 transition"
-        style={{ color: '#1d3e4c', borderColor: '#E8EEF1' }}
+        className="px-6 py-3 rounded-lg font-semibold transition"
+        style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F', border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
         disabled={updateMutation.isPending}
       >
         Cancel
@@ -136,8 +136,8 @@ const CategoryEditModal = () => {
       <button
         type="submit"
         form="category-form"
-        className="px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition cursor-pointer disabled:opacity-50"
-        style={{ background: 'linear-gradient(135deg, #1d3e4c, #45606b)' }}
+        className="px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition cursor-pointer disabled:opacity-50"
+        style={{ background: 'linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%)', border: '0.5px solid rgba(255, 255, 255, 0.3)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)', color: '#1D1D1F', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
         disabled={updateMutation.isPending}
       >
         {updateMutation.isPending ? 'Saving...' : 'Update Category'}
@@ -194,7 +194,7 @@ const CategoryEditModal = () => {
 
         {/* Category Name */}
         <div className="mb-5">
-          <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
+          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
             Category Name
           </label>
           <input
@@ -202,28 +202,28 @@ const CategoryEditModal = () => {
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
-            className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
-            style={{ borderColor: '#E8EEF1', color: '#1d3e4c' }}
+            className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light"
+            style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#1d3e4c' }}
           />
         </div>
 
         {/* Description */}
         <div className="mb-5">
-          <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
+          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
             Description (Optional)
           </label>
           <textarea
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             rows={2}
-            className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light resize-none"
-            style={{ borderColor: '#E8EEF1', color: '#1d3e4c' }}
+            className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light resize-none"
+            style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#1d3e4c' }}
           />
         </div>
 
         {/* Icon Selector */}
         <div className="mb-5">
-          <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
+          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
             Icon
           </label>
           <div className="grid grid-cols-6 md:grid-cols-9 gap-2 max-w-md">
@@ -244,7 +244,7 @@ const CategoryEditModal = () => {
 
         {/* Color Selector */}
         <div className="mb-6">
-          <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
+          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
             Color
           </label>
           <div className="grid grid-cols-7 md:grid-cols-14 gap-2 max-w-md">

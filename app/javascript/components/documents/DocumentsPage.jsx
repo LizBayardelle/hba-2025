@@ -53,22 +53,22 @@ const DocumentsPage = ({ habits }) => {
   return (
     <>
       {/* Header Section */}
-      <div className="bg-white shadow-md">
+      <div style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
         <div className="p-8">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-4 mb-2">
                 <div
-                  className="w-16 h-16 rounded-xl flex items-center justify-center shadow-md"
-                  style={{ background: 'linear-gradient(135deg, #1d3e4c, #45606b)' }}
+                  className="w-16 h-16 rounded-xl flex items-center justify-center"
+                  style={{ background: 'linear-gradient(135deg, #E5E5E7 0%, #C7C7CC 50%, #8E8E93 100%)', border: '0.5px solid rgba(199, 199, 204, 0.3)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.3)' }}
                 >
-                  <i className="fa-solid fa-file-alt text-white text-2xl"></i>
+                  <i className="fa-solid fa-file-alt text-2xl" style={{ color: '#1D1D1F', filter: 'drop-shadow(0 0.5px 0 rgba(255, 255, 255, 0.5))' }}></i>
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold display-font" style={{ color: '#1d3e4c' }}>
+                  <h1 className="text-3xl" style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif", fontWeight: 800 }}>
                     Documents
                   </h1>
-                  <p className="text-sm font-light" style={{ color: '#657b84' }}>
+                  <p className="text-sm" style={{ color: '#8E8E93', fontWeight: 200, fontFamily: "'Inter', sans-serif" }}>
                     Manage all your habit resources
                   </p>
                 </div>
@@ -77,8 +77,8 @@ const DocumentsPage = ({ habits }) => {
             <div className="flex flex-col gap-2 items-end">
               <button
                 onClick={openNewModal}
-                className="px-4 py-2 rounded-lg text-white font-semibold shadow-md hover:shadow-lg transition transform hover:scale-[1.02]"
-                style={{ background: 'linear-gradient(135deg, #1d3e4c, #45606b)' }}
+                className="px-4 py-2 rounded-lg text-white transition transform hover:scale-[1.02]"
+                style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', fontWeight: 600, fontFamily: "'Inter', sans-serif", boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
               >
                 <i className="fa-solid fa-plus mr-2"></i>Add Document
               </button>
@@ -91,21 +91,21 @@ const DocumentsPage = ({ habits }) => {
       <div className="p-8 pt-6">
         {isLoading && (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#1d3e4c' }}></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#2C2C2E' }}></div>
           </div>
         )}
 
         {error && (
-          <div className="bg-white rounded-xl shadow-md p-12 text-center">
+          <div className="rounded-xl p-12 text-center" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)' }}>
             <i className="fa-solid fa-exclamation-circle text-6xl mb-4" style={{ color: '#DC2626' }}></i>
-            <p style={{ color: '#DC2626' }}>Error loading documents: {error.message}</p>
+            <p style={{ color: '#DC2626', fontFamily: "'Inter', sans-serif", fontWeight: 400 }}>Error loading documents: {error.message}</p>
           </div>
         )}
 
         {!isLoading && !error && documents.length === 0 && (
-          <div className="bg-white rounded-xl shadow-md p-12 text-center">
-            <i className="fa-solid fa-file-circle-plus text-6xl mb-4" style={{ color: '#6B8A9940' }}></i>
-            <p className="text-gray-500 font-light">No documents yet. Click "Add Document" to get started!</p>
+          <div className="rounded-xl p-12 text-center" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)' }}>
+            <i className="fa-solid fa-file-circle-plus text-6xl mb-4" style={{ color: '#E5E5E7' }}></i>
+            <p style={{ color: '#8E8E93', fontWeight: 200, fontFamily: "'Inter', sans-serif" }}>No documents yet. Click "Add Document" to get started!</p>
           </div>
         )}
 
@@ -117,21 +117,21 @@ const DocumentsPage = ({ habits }) => {
                 <div key={content.id} className="flex items-start gap-3 min-w-0">
                   <div
                     onClick={() => openViewModal(content.id)}
-                    className="bg-white rounded-lg p-4 border shadow-md hover:shadow-lg transition cursor-pointer flex-1 min-w-0 overflow-hidden"
-                    style={{ borderColor: '#E8EEF1' }}
+                    className="rounded-lg p-4 transition cursor-pointer flex-1 min-w-0 overflow-hidden"
+                    style={{ background: '#FFFFFF', border: '0.5px solid rgba(199, 199, 204, 0.3)', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)' }}
                   >
                     <div className="flex items-start gap-4 min-w-0">
                       {/* Content Info */}
                       <div className="flex-1 min-w-0 overflow-hidden">
                         <h3
-                          className="text-lg font-bold display-font truncate"
-                          style={{ color: '#1d3e4c' }}
+                          className="text-lg truncate"
+                          style={{ color: '#1D1D1F', fontWeight: 700, fontFamily: "'Inter', sans-serif" }}
                         >
                           {content.title}
                         </h3>
 
                         {/* Preview/Snippet */}
-                        <div className="text-sm font-light truncate mt-1" style={{ color: '#657b84' }}>
+                        <div className="text-sm truncate mt-1" style={{ color: '#8E8E93', fontWeight: 200, fontFamily: "'Inter', sans-serif" }}>
                           {content.content_type === 'document' ? (
                             // Replace block elements with spaces, strip HTML tags, replace newlines with spaces
                             <span>{content.body?.replace(/<\/(div|p|h[1-6]|li|br)>/gi, ' ').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().substring(0, 100) || 'No content'}</span>
@@ -153,10 +153,12 @@ const DocumentsPage = ({ habits }) => {
                                 key={tag.id}
                                 href={`/tags?tag_id=${tag.id}`}
                                 onClick={(e) => e.stopPropagation()}
-                                className="text-xs px-2 py-1 rounded-lg font-medium hover:opacity-70 transition cursor-pointer flex items-center gap-1"
+                                className="text-xs px-2 py-1 rounded-lg hover:opacity-70 transition cursor-pointer flex items-center gap-1"
                                 style={{
-                                  backgroundColor: '#1d3e4c',
+                                  background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)',
                                   color: 'white',
+                                  fontWeight: 600,
+                                  fontFamily: "'Inter', sans-serif"
                                 }}
                               >
                                 <i className="fa-solid fa-tag text-[10px]"></i>
@@ -168,14 +170,16 @@ const DocumentsPage = ({ habits }) => {
                             {content.habits?.map((habit) => {
                               // Get category color from the habits prop
                               const habitWithCategory = habits.find(h => h.id === habit.id);
-                              const categoryColor = habitWithCategory?.category_color || '#6B8A99';
+                              const categoryColor = habitWithCategory?.category_color || '#8E8E93';
                               return (
                                 <span
                                   key={habit.id}
-                                  className="text-xs px-2 py-1 rounded-lg font-medium flex items-center gap-1"
+                                  className="text-xs px-2 py-1 rounded-lg flex items-center gap-1"
                                   style={{
                                     backgroundColor: categoryColor,
                                     color: 'white',
+                                    fontWeight: 600,
+                                    fontFamily: "'Inter', sans-serif"
                                   }}
                                 >
                                   <i className="fa-solid fa-chart-line text-[10px]"></i>
@@ -198,7 +202,7 @@ const DocumentsPage = ({ habits }) => {
                     className="w-5 h-5 flex items-center justify-center transition hover:opacity-70 mt-0.5"
                     title="Edit"
                   >
-                    <i className="fa-solid fa-pen text-sm" style={{ color: '#9CA3A8' }}></i>
+                    <i className="fa-solid fa-pen text-sm" style={{ color: '#8E8E93' }}></i>
                   </button>
                 </div>
               );

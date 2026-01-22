@@ -35,18 +35,20 @@ const BaseModal = ({ isOpen, onClose, title, children, footer, maxWidth = 'max-w
       }}
     >
       <div
-        className={`rounded-2xl shadow-2xl ${maxWidth} w-full max-h-[90vh] overflow-hidden flex flex-col`}
+        className={`rounded-2xl ${maxWidth} w-full max-h-[90vh] overflow-hidden flex flex-col`}
+        style={{ boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 0.5px rgba(199, 199, 204, 0.3)' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         {title && (
-          <div className="p-6 flex items-center justify-between" style={{ background: 'linear-gradient(135deg, #1d3e4c, #45606b)' }}>
-            <h2 className="text-2xl font-bold display-font text-white">
+          <div className="p-6 flex items-center justify-between" style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', borderBottom: '0.5px solid rgba(199, 199, 204, 0.2)' }}>
+            <h2 className="text-2xl text-white" style={{ fontWeight: 800, fontFamily: "'Inter', sans-serif" }}>
               {title}
             </h2>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center transition"
+              className="w-8 h-8 rounded-lg flex items-center justify-center transition"
+              style={{ background: 'rgba(255, 255, 255, 0.1)' }}
             >
               <i className="fa-solid fa-times text-white"></i>
             </button>
@@ -54,13 +56,13 @@ const BaseModal = ({ isOpen, onClose, title, children, footer, maxWidth = 'max-w
         )}
 
         {/* Body */}
-        <div className="p-6 overflow-y-auto bg-white flex-1" style={{ maxHeight: 'calc(90vh - 180px)' }}>
+        <div className="p-6 overflow-y-auto flex-1" style={{ background: '#FFFFFF', maxHeight: 'calc(90vh - 180px)' }}>
           {children}
         </div>
 
         {/* Footer */}
         {footer && (
-          <div className="p-6 flex justify-end gap-3" style={{ background: 'linear-gradient(135deg, #1d3e4c, #45606b)' }}>
+          <div className="p-6 flex justify-end gap-3" style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', borderTop: '0.5px solid rgba(199, 199, 204, 0.2)' }}>
             {footer}
           </div>
         )}

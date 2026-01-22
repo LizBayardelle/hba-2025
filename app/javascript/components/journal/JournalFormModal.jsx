@@ -163,6 +163,7 @@ const JournalFormModal = ({ allTags }) => {
         type="button"
         onClick={closeFormModal}
         className="px-6 py-3 rounded-lg font-semibold transition text-white hover:opacity-70"
+        style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
         disabled={currentMutation.isPending}
       >
         Cancel
@@ -171,7 +172,7 @@ const JournalFormModal = ({ allTags }) => {
         type="submit"
         form="journal-form"
         className="px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition cursor-pointer disabled:opacity-50 hover:opacity-90"
-        style={{ backgroundColor: '#E8EEF1', color: '#1d3e4c' }}
+        style={{ background: 'linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%)', border: '0.5px solid rgba(255, 255, 255, 0.3)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)', color: '#1D1D1F', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
         disabled={currentMutation.isPending}
       >
         {currentMutation.isPending
@@ -204,7 +205,7 @@ const JournalFormModal = ({ allTags }) => {
 
         {/* Tags */}
         <div className="mb-6">
-          <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
+          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
             Tags (optional)
           </label>
           <div className="relative">
@@ -218,16 +219,16 @@ const JournalFormModal = ({ allTags }) => {
               onKeyDown={handleTagInputKeyDown}
               onFocus={() => tagInput.length > 0 && setShowTagSuggestions(true)}
               onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
-              className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
-              style={{ borderColor: '#E8EEF1', color: '#1d3e4c' }}
+              className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light"
+              style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#1d3e4c' }}
               placeholder="Type to search or add new tag"
             />
 
             {/* Tag suggestions dropdown */}
             {showTagSuggestions && (filteredSuggestions.length > 0 || tagInput.trim()) && (
               <div
-                className="absolute z-10 w-full mt-2 bg-white border-2 rounded-lg shadow-lg max-h-48 overflow-y-auto"
-                style={{ borderColor: '#E8EEF1' }}
+                className="absolute z-10 w-full mt-2 bg-white rounded-lg shadow-lg max-h-48 overflow-y-auto"
+                style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
               >
                 {filteredSuggestions.map((tag) => (
                   <button
@@ -245,7 +246,7 @@ const JournalFormModal = ({ allTags }) => {
                     type="button"
                     onClick={() => handleAddTag(tagInput)}
                     className="w-full text-left px-4 py-2 hover:bg-gray-50 transition font-light border-t"
-                    style={{ borderColor: '#E8EEF1', color: '#1d3e4c' }}
+                    style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', color: '#1d3e4c' }}
                   >
                     <i className="fa-solid fa-plus mr-2" style={{ color: '#1d3e4c' }}></i>
                     Create "<strong>{tagInput.trim()}</strong>"
@@ -255,7 +256,7 @@ const JournalFormModal = ({ allTags }) => {
             )}
           </div>
 
-          <p className="text-xs font-light mt-2" style={{ color: '#657b84' }}>
+          <p className="text-xs font-light mt-2" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#8E8E93' }}>
             Type to search existing tags or create a new one. Press Enter or click to add.
           </p>
 
@@ -266,8 +267,10 @@ const JournalFormModal = ({ allTags }) => {
                   key={tag}
                   className="text-xs px-3 py-1.5 rounded-full font-semibold flex items-center gap-2"
                   style={{
-                    backgroundColor: '#E8EEF1',
-                    color: '#1d3e4c',
+                    background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)',
+                    color: '#FFFFFF',
+                    fontFamily: "'Inter', sans-serif",
+                    fontWeight: 600,
                   }}
                 >
                   {tag}
@@ -286,7 +289,7 @@ const JournalFormModal = ({ allTags }) => {
 
         {/* Content */}
         <div className="mb-6">
-          <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
+          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
             Entry
           </label>
           <input type="hidden" name="content" id="journal-form-content-hidden" />

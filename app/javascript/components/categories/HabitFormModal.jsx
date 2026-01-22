@@ -281,7 +281,8 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
       <button
         type="button"
         onClick={closeModal}
-        className="px-6 py-3 rounded-lg font-semibold transition text-white hover:opacity-70"
+        className="px-6 py-3 rounded-lg transition text-white hover:opacity-70"
+        style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
         disabled={currentMutation.isPending}
       >
         Cancel
@@ -289,8 +290,8 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
       <button
         type="submit"
         form="habit-form"
-        className="px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition cursor-pointer disabled:opacity-50 hover:opacity-90"
-        style={{ backgroundColor: '#E8EEF1', color: '#1d3e4c' }}
+        className="px-6 py-3 rounded-lg transition cursor-pointer disabled:opacity-50 hover:opacity-90"
+        style={{ background: 'linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%)', border: '0.5px solid rgba(255, 255, 255, 0.3)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)', color: '#1D1D1F', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
         disabled={currentMutation.isPending}
       >
         {currentMutation.isPending
@@ -322,14 +323,14 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
 
         {/* Habit Name */}
         <div className="mb-6">
-          <label className="block mb-2">Habit Name</label>
+          <label className="block mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>Habit Name</label>
           <input
             type="text"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
-            className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
-            style={{ borderColor: '#E8EEF1' }}
+            className="w-full px-4 py-3 rounded-lg focus:outline-none transition"
+            style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
             placeholder="e.g., Morning meditation"
           />
         </div>
@@ -337,18 +338,18 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
         {/* Category Picker (only on habits page) */}
         {useHabitsPage && (
           <div className="mb-6">
-            <label className="block mb-2">Category</label>
+            <label className="block mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>Category</label>
             <div className="grid grid-cols-3 gap-3">
               {categories?.map((category) => (
                 <button
                   key={category.id}
                   type="button"
                   onClick={() => setFormData({ ...formData, category_id: category.id })}
-                  className={`p-3 rounded-lg border-2 transition transform hover:scale-105 text-left ${
+                  className={`p-3 rounded-lg transition transform hover:scale-105 text-left ${
                     formData.category_id === category.id ? 'shadow-lg' : ''
                   }`}
                   style={{
-                    borderColor: formData.category_id === category.id ? category.color : '#E8EEF1',
+                    border: formData.category_id === category.id ? `2px solid ${category.color}` : '0.5px solid rgba(199, 199, 204, 0.3)',
                     backgroundColor: formData.category_id === category.id ? `${category.color}10` : 'white',
                   }}
                 >
@@ -359,7 +360,7 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
                     >
                       <i className={`fa-solid ${category.icon} text-white text-sm`}></i>
                     </div>
-                    <div className="font-semibold text-sm" style={{ color: category.color }}>
+                    <div style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", fontSize: '0.875rem', color: category.color }}>
                       {category.name}
                     </div>
                   </div>
@@ -371,10 +372,9 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
 
         {/* Frequency: Times per Period */}
         <div className="mb-6">
-          <label className="block mb-2">Frequency</label>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block mb-2 text-sm">Times</label>
+              <label className="block mb-2 text-sm" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>Times</label>
               <input
                 type="number"
                 value={formData.target_count}
@@ -382,17 +382,17 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
                   setFormData({ ...formData, target_count: parseInt(e.target.value) || 1 })
                 }
                 min="1"
-                className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
-                style={{ borderColor: '#E8EEF1' }}
+                className="w-full px-4 py-3 rounded-lg focus:outline-none transition"
+                style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
               />
             </div>
             <div>
-              <label className="block mb-2 text-sm">Per</label>
+              <label className="block mb-2 text-sm" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>Per</label>
               <select
                 value={formData.frequency_type}
                 onChange={(e) => setFormData({ ...formData, frequency_type: e.target.value })}
-                className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
-                style={{ borderColor: '#E8EEF1' }}
+                className="w-full px-4 py-3 rounded-lg focus:outline-none transition"
+                style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
               >
                 <option value="day">Day</option>
                 <option value="week">Week</option>
@@ -405,7 +405,7 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
 
         {/* Time Block */}
         <div className="mb-6">
-          <label className="block mb-2">Time Block</label>
+          <label className="block mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>Time Block</label>
           <div className="overflow-x-auto pb-2 pt-2 px-1">
             <div className="flex gap-4 min-w-max pl-1">
               {/* Anytime option (no time block) */}
@@ -464,7 +464,7 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
 
         {/* Importance Level */}
         <div className="mb-6">
-          <label className="block mb-2">Importance Level</label>
+          <label className="block mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>Importance Level</label>
           <div className="overflow-x-auto pb-2 pt-2">
             <div className="flex gap-4 min-w-max">
               {importanceLevels.map((level) => (
@@ -498,7 +498,7 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
 
         {/* Tags */}
         <div className="mb-6">
-          <label className="block text-sm font-semibold mb-2" style={{ color: '#1d3e4c' }}>
+          <label className="block text-sm mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
             Tags (optional)
           </label>
           <div className="relative">
@@ -512,23 +512,23 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
               onKeyDown={handleTagInputKeyDown}
               onFocus={() => tagInput.length > 0 && setShowTagSuggestions(true)}
               onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
-              className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
-              style={{ borderColor: '#E8EEF1' }}
+              className="w-full px-4 py-3 rounded-lg focus:outline-none transition"
+              style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
               placeholder="Type to search or add new tag"
             />
 
             {showTagSuggestions && (filteredSuggestions.length > 0 || tagInput.trim()) && (
               <div
-                className="absolute z-10 w-full mt-2 bg-white border-2 rounded-lg shadow-lg max-h-48 overflow-y-auto"
-                style={{ borderColor: '#E8EEF1' }}
+                className="absolute z-10 w-full mt-2 bg-white rounded-lg shadow-lg max-h-48 overflow-y-auto"
+                style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
               >
                 {filteredSuggestions.map((tag) => (
                   <button
                     key={tag.id}
                     type="button"
                     onClick={() => handleAddTag(tag.name)}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-50 transition font-light"
-                    style={{ color: '#1d3e4c' }}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-50 transition"
+                    style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#1D1D1F' }}
                   >
                     {tag.name}
                   </button>
@@ -537,10 +537,10 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
                   <button
                     type="button"
                     onClick={() => handleAddTag(tagInput)}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-50 transition font-light border-t"
-                    style={{ borderColor: '#E8EEF1', color: '#1d3e4c' }}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-50 transition border-t"
+                    style={{ borderColor: 'rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#1D1D1F' }}
                   >
-                    <i className="fa-solid fa-plus mr-2" style={{ color: '#1d3e4c' }}></i>
+                    <i className="fa-solid fa-plus mr-2"></i>
                     Create "<strong>{tagInput.trim()}</strong>"
                   </button>
                 )}
@@ -548,7 +548,7 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
             )}
           </div>
 
-          <p className="text-xs font-light mt-2" style={{ color: '#657b84' }}>
+          <p className="text-xs mt-2" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#8E8E93' }}>
             Type to search existing tags or create a new one. Press Enter or click to add.
           </p>
 
@@ -557,10 +557,12 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
               {selectedTags.map((tag) => (
                 <span
                   key={tag}
-                  className="text-xs px-3 py-1.5 rounded-full font-semibold flex items-center gap-2"
+                  className="text-xs px-3 py-1.5 rounded-full flex items-center gap-2"
                   style={{
-                    backgroundColor: '#E8EEF1',
-                    color: '#1d3e4c',
+                    background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)',
+                    color: '#FFFFFF',
+                    fontFamily: "'Inter', sans-serif",
+                    fontWeight: 600,
                   }}
                 >
                   {tag}
@@ -579,16 +581,16 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
 
         {/* Documents */}
         <div className="mb-6">
-          <label className="block mb-2">
+          <label className="block mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
             Attached Documents (optional)
           </label>
-          <div className="border-2 rounded-lg p-3" style={{ borderColor: '#E8EEF1' }}>
+          <div className="rounded-lg p-3" style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}>
             <input
               type="text"
               value={documentSearchQuery}
               onChange={(e) => setDocumentSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 mb-3 rounded-lg border-2 focus:outline-none transition font-light text-sm"
-              style={{ borderColor: '#E8EEF1' }}
+              className="w-full px-4 py-2 mb-3 rounded-lg focus:outline-none transition text-sm"
+              style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
               placeholder="Search documents..."
             />
             {documents.length > 0 ? (
@@ -617,9 +619,9 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
                           }
                         }}
                         className="w-4 h-4 rounded cursor-pointer"
-                        style={{ accentColor: '#1d3e4c' }}
+                        style={{ accentColor: '#2C2C2E' }}
                       />
-                      <span className="text-sm flex-1" style={{ color: '#1d3e4c' }}>
+                      <span className="text-sm flex-1" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#1D1D1F' }}>
                         {doc.title}
                       </span>
                     </label>
@@ -631,21 +633,21 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
                     (doc.body && doc.body.toLowerCase().includes(query))
                   );
                 }).length === 0 && (
-                  <p className="text-sm text-center py-2" style={{ color: '#657b84' }}>
+                  <p className="text-sm text-center py-2" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#8E8E93' }}>
                     No matching documents
                   </p>
                 )}
               </div>
             ) : (
-              <p className="text-sm text-center py-2" style={{ color: '#657b84' }}>
+              <p className="text-sm text-center py-2" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#8E8E93' }}>
                 No documents available
               </p>
             )}
             <button
               type="button"
               onClick={openNewDocumentModal}
-              className="mt-3 w-full px-4 py-2 rounded-lg border-2 font-semibold hover:bg-gray-50 transition text-sm"
-              style={{ color: '#1d3e4c', borderColor: '#E8EEF1' }}
+              className="mt-3 w-full px-4 py-2 rounded-lg hover:bg-gray-50 transition text-sm"
+              style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, color: '#1D1D1F', border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
             >
               <i className="fa-solid fa-plus mr-2"></i>
               Create New Document

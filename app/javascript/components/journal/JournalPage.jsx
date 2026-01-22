@@ -61,7 +61,7 @@ const JournalPage = () => {
 
     return (
       <div key={title} className="mb-8">
-        <h3 className="text-lg font-semibold mb-4" style={{ color: '#1d3e4c' }}>
+        <h3 className="text-lg mb-4" style={{ color: '#1D1D1F', fontWeight: 700, fontFamily: "'Inter', sans-serif" }}>
           {title}
         </h3>
         <div className="space-y-4">
@@ -76,22 +76,22 @@ const JournalPage = () => {
   return (
     <>
       {/* Header Section */}
-      <div className="bg-white shadow-md">
+      <div style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
         <div className="p-8">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-4 mb-2">
                 <div
-                  className="w-16 h-16 rounded-xl flex items-center justify-center shadow-md"
-                  style={{ background: 'linear-gradient(135deg, #1d3e4c, #45606b)' }}
+                  className="w-16 h-16 rounded-xl flex items-center justify-center"
+                  style={{ background: 'linear-gradient(135deg, #E5E5E7 0%, #C7C7CC 50%, #8E8E93 100%)', border: '0.5px solid rgba(199, 199, 204, 0.3)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.3)' }}
                 >
-                  <i className="fa-solid fa-book text-white text-2xl"></i>
+                  <i className="fa-solid fa-book text-2xl" style={{ color: '#1D1D1F', filter: 'drop-shadow(0 0.5px 0 rgba(255, 255, 255, 0.5))' }}></i>
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold display-font" style={{ color: '#1d3e4c' }}>
+                  <h1 className="text-3xl" style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif", fontWeight: 800 }}>
                     Journal
                   </h1>
-                  <p className="text-sm font-light" style={{ color: '#657b84' }}>
+                  <p className="text-sm" style={{ color: '#8E8E93', fontWeight: 200, fontFamily: "'Inter', sans-serif" }}>
                     Your personal journal entries
                   </p>
                 </div>
@@ -100,8 +100,8 @@ const JournalPage = () => {
             <div className="flex flex-col gap-2 items-end">
               <button
                 onClick={openNewModal}
-                className="px-4 py-2 rounded-lg text-white font-semibold shadow-md hover:shadow-lg transition transform hover:scale-[1.02]"
-                style={{ background: 'linear-gradient(135deg, #1d3e4c, #45606b)' }}
+                className="px-4 py-2 rounded-lg text-white transition transform hover:scale-[1.02]"
+                style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', fontWeight: 600, fontFamily: "'Inter', sans-serif", boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
               >
                 <i className="fa-solid fa-plus mr-2"></i>New Entry
               </button>
@@ -115,8 +115,8 @@ const JournalPage = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search journal entries..."
-              className="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
-              style={{ borderColor: '#E8EEF1' }}
+              className="w-full px-4 py-3 rounded-lg focus:outline-none transition"
+              style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', color: '#1D1D1F', fontWeight: 400, fontFamily: "'Inter', sans-serif", background: '#FFFFFF' }}
             />
           </div>
         </div>
@@ -128,28 +128,28 @@ const JournalPage = () => {
           <div className="flex items-center justify-center py-12">
             <div
               className="animate-spin rounded-full h-12 w-12 border-b-2"
-              style={{ borderColor: '#1d3e4c' }}
+              style={{ borderColor: '#2C2C2E' }}
             ></div>
           </div>
         )}
 
         {error && (
-          <div className="bg-white rounded-xl shadow-md p-12 text-center">
+          <div className="rounded-xl p-12 text-center" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)' }}>
             <i
               className="fa-solid fa-exclamation-circle text-6xl mb-4"
               style={{ color: '#DC2626' }}
             ></i>
-            <p style={{ color: '#DC2626' }}>Error loading journals: {error.message}</p>
+            <p style={{ color: '#DC2626', fontFamily: "'Inter', sans-serif", fontWeight: 400 }}>Error loading journals: {error.message}</p>
           </div>
         )}
 
         {!isLoading && !error && journals.length === 0 && (
-          <div className="bg-white rounded-xl shadow-md p-12 text-center">
+          <div className="rounded-xl p-12 text-center" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)' }}>
             <i
               className="fa-solid fa-book-open text-6xl mb-4"
-              style={{ color: '#1d3e4c40' }}
+              style={{ color: '#E5E5E7' }}
             ></i>
-            <p className="text-gray-500 font-light">
+            <p style={{ color: '#8E8E93', fontWeight: 200, fontFamily: "'Inter', sans-serif" }}>
               No journal entries yet. Click "New Entry" to get started!
             </p>
           </div>
