@@ -144,3 +144,92 @@ export const habitsApi = {
   // Fetch single habit
   fetchOne: (categoryId, habitId) => apiRequest(`/categories/${categoryId}/habits/${habitId}.json`),
 };
+
+// Lists API methods
+export const listsApi = {
+  // Fetch all lists
+  fetchAll: () => apiRequest('/lists.json'),
+
+  // Fetch single list
+  fetchOne: (id) => apiRequest(`/lists/${id}.json`),
+
+  // Create list
+  create: (data) => apiRequest('/lists', {
+    method: 'POST',
+    body: JSON.stringify({ list: data }),
+  }),
+
+  // Update list
+  update: (id, data) => apiRequest(`/lists/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ list: data }),
+  }),
+
+  // Delete list
+  delete: (id) => apiRequest(`/lists/${id}`, {
+    method: 'DELETE',
+  }),
+};
+
+// Checklist Items API methods
+export const checklistItemsApi = {
+  // Task checklist items
+  createForTask: (taskId, data) => apiRequest(`/tasks/${taskId}/checklist_items`, {
+    method: 'POST',
+    body: JSON.stringify({ checklist_item: data }),
+  }),
+
+  updateForTask: (taskId, itemId, data) => apiRequest(`/tasks/${taskId}/checklist_items/${itemId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ checklist_item: data }),
+  }),
+
+  deleteForTask: (taskId, itemId) => apiRequest(`/tasks/${taskId}/checklist_items/${itemId}`, {
+    method: 'DELETE',
+  }),
+
+  reorderForTask: (taskId, itemIds) => apiRequest(`/tasks/${taskId}/checklist_items/reorder`, {
+    method: 'PATCH',
+    body: JSON.stringify({ item_ids: itemIds }),
+  }),
+
+  // Habit checklist items
+  createForHabit: (habitId, data) => apiRequest(`/habits/${habitId}/checklist_items`, {
+    method: 'POST',
+    body: JSON.stringify({ checklist_item: data }),
+  }),
+
+  updateForHabit: (habitId, itemId, data) => apiRequest(`/habits/${habitId}/checklist_items/${itemId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ checklist_item: data }),
+  }),
+
+  deleteForHabit: (habitId, itemId) => apiRequest(`/habits/${habitId}/checklist_items/${itemId}`, {
+    method: 'DELETE',
+  }),
+
+  reorderForHabit: (habitId, itemIds) => apiRequest(`/habits/${habitId}/checklist_items/reorder`, {
+    method: 'PATCH',
+    body: JSON.stringify({ item_ids: itemIds }),
+  }),
+
+  // List checklist items
+  createForList: (listId, data) => apiRequest(`/lists/${listId}/checklist_items`, {
+    method: 'POST',
+    body: JSON.stringify({ checklist_item: data }),
+  }),
+
+  updateForList: (listId, itemId, data) => apiRequest(`/lists/${listId}/checklist_items/${itemId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ checklist_item: data }),
+  }),
+
+  deleteForList: (listId, itemId) => apiRequest(`/lists/${listId}/checklist_items/${itemId}`, {
+    method: 'DELETE',
+  }),
+
+  reorderForList: (listId, itemIds) => apiRequest(`/lists/${listId}/checklist_items/reorder`, {
+    method: 'PATCH',
+    body: JSON.stringify({ item_ids: itemIds }),
+  }),
+};

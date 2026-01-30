@@ -5,7 +5,7 @@ class HabitsController < ApplicationController
     @view_mode = params[:view] || 'category' # 'category' or 'time'
     @selected_date = params[:date] ? Date.parse(params[:date]) : Time.zone.today
 
-    @habits = current_user.habits.active.includes(:category, :habit_completions, :tags, :documents, :importance_level, :time_block)
+    @habits = current_user.habits.active.includes(:category, :habit_completions, :tags, :documents, :importance_level, :time_block, :checklist_items, :list_attachments)
 
     # Get today's completions
     @completions = HabitCompletion.where(
@@ -92,7 +92,7 @@ class HabitsController < ApplicationController
         render json: {
           habits: @habits.map { |habit|
             habit.as_json(
-              only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :importance_level_id, :category_id, :time_block_id]
+              only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :importance_level_id, :category_id, :time_block_id, :schedule_mode, :schedule_config]
             ).merge(
               today_count: @completions[habit.id] || 0,
               current_streak: @streaks[habit.id] || 0,
@@ -112,7 +112,28 @@ class HabitsController < ApplicationController
               } : nil,
               tags: habit.tags.map { |t| { id: t.id, name: t.name } },
               documents: habit.documents.map { |c| { id: c.id, title: c.title, content_type: c.content_type } },
-              habit_contents: habit.documents.map { |c| { id: c.id, title: c.title } }
+              habit_contents: habit.documents.map { |c| { id: c.id, title: c.title } },
+              is_due_today: habit.due_on?(@selected_date),
+              schedule_description: habit.schedule_description,
+              checklist_items: habit.checklist_items.ordered.map { |item|
+                { id: item.id, name: item.name, completed: item.completed, completed_at: item.completed_at, position: item.position }
+              },
+              list_attachments: habit.list_attachments.includes(list: [:category, :checklist_items]).map { |la|
+                {
+                  id: la.id,
+                  list_id: la.list_id,
+                  list_name: la.list.name,
+                  list_category: la.list.category ? {
+                    id: la.list.category.id,
+                    name: la.list.category.name,
+                    color: la.list.category.color,
+                    icon: la.list.category.icon
+                  } : nil,
+                  checklist_items: la.list.checklist_items.ordered.map { |item|
+                    { id: item.id, name: item.name, completed: item.completed, completed_at: item.completed_at, position: item.position }
+                  }
+                }
+              }
             )
           }
         }
@@ -127,13 +148,18 @@ class HabitsController < ApplicationController
     respond_to do |format|
       format.json {
         render json: @habit.as_json(
-          only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :category_id, :time_block_id, :importance_level_id],
+          only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :category_id, :time_block_id, :importance_level_id, :schedule_mode, :schedule_config],
           include: {
             tags: { only: [:id, :name] },
             documents: { only: [:id, :title] }
           }
         ).merge(
-          habit_contents: @habit.documents.map { |doc| { id: doc.id, title: doc.title } }
+          habit_contents: @habit.documents.map { |doc| { id: doc.id, title: doc.title } },
+          is_due_today: @habit.due_today?,
+          schedule_description: @habit.schedule_description,
+          checklist_items: @habit.checklist_items.ordered.map { |item|
+            { id: item.id, name: item.name, completed: item.completed, completed_at: item.completed_at, position: item.position }
+          }
         )
       }
     end
@@ -141,10 +167,14 @@ class HabitsController < ApplicationController
 
   def create
     @category = current_user.categories.find(params[:category_id])
-    @habit = @category.habits.build(habit_params)
+    @habit = @category.habits.build
     @habit.user = current_user
+    @habit.assign_attributes(habit_params)
 
     if @habit.save
+      # Handle list attachments after save
+      sync_list_attachments(@habit)
+
       respond_to do |format|
         format.html { redirect_to category_path(@category), notice: 'Habit created successfully.' }
         format.json { render json: { success: true, message: 'Habit created successfully.', habit: @habit }, status: :created }
@@ -162,6 +192,8 @@ class HabitsController < ApplicationController
     @habit = @category.habits.find(params[:id])
 
     if @habit.update(habit_params)
+      # Handle list attachments after save
+      sync_list_attachments(@habit)
       @habit.reload # Reload to get updated associations
       respond_to do |format|
         format.html { redirect_to category_path(@category), notice: 'Habit updated successfully.' }
@@ -170,7 +202,7 @@ class HabitsController < ApplicationController
             success: true,
             message: 'Habit updated successfully.',
             habit: @habit.as_json(
-              only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :importance_level_id, :category_id, :time_block_id]
+              only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :importance_level_id, :category_id, :time_block_id, :schedule_mode, :schedule_config]
             ).merge(
               time_block_name: @habit.time_block&.name,
               time_block_icon: @habit.time_block&.icon,
@@ -185,7 +217,12 @@ class HabitsController < ApplicationController
               } : nil,
               tags: @habit.tags.map { |t| { id: t.id, name: t.name } },
               documents: @habit.documents.map { |c| { id: c.id, title: c.title } },
-              habit_contents: @habit.documents.map { |c| { id: c.id, title: c.title } }
+              habit_contents: @habit.documents.map { |c| { id: c.id, title: c.title } },
+              is_due_today: @habit.due_today?,
+              schedule_description: @habit.schedule_description,
+              checklist_items: @habit.checklist_items.ordered.map { |item|
+                { id: item.id, name: item.name, completed: item.completed, completed_at: item.completed_at, position: item.position }
+              }
             )
           },
           status: :ok
@@ -213,6 +250,35 @@ class HabitsController < ApplicationController
   private
 
   def habit_params
-    params.require(:habit).permit(:name, :description, :target_count, :frequency_type, :time_of_day, :time_block_id, :importance, :importance_level_id, :category_id, :reminder_enabled, :start_date, :positive, :difficulty, tag_names: [], habit_content_ids: [])
+    permitted = params.require(:habit).permit(:name, :description, :target_count, :frequency_type, :time_of_day, :time_block_id, :importance, :importance_level_id, :category_id, :reminder_enabled, :start_date, :positive, :difficulty, :schedule_mode, tag_names: [], habit_content_ids: [])
+
+    # Handle schedule_config as a JSONB hash
+    if params[:habit].key?(:schedule_config)
+      config = params[:habit][:schedule_config]
+      if config.is_a?(ActionController::Parameters)
+        permitted[:schedule_config] = config.permit(:interval_days, :anchor_date, days_of_week: []).to_h
+      else
+        permitted[:schedule_config] = {}
+      end
+    end
+
+    permitted
+  end
+
+  def list_attachment_ids
+    params[:habit][:list_attachment_ids]&.reject(&:blank?)&.map(&:to_i) || []
+  end
+
+  def sync_list_attachments(habit)
+    new_ids = list_attachment_ids
+    current_ids = habit.list_attachments.pluck(:list_id)
+
+    # Remove attachments no longer selected
+    habit.list_attachments.where.not(list_id: new_ids).destroy_all
+
+    # Add new attachments
+    (new_ids - current_ids).each do |list_id|
+      habit.list_attachments.create!(list_id: list_id, user: current_user)
+    end
   end
 end

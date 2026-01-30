@@ -7,7 +7,7 @@ class JournalsController < ApplicationController
 
     # Filter by search query if provided
     if params[:search].present?
-      @journals = @journals.joins(:action_text_rich_texts)
+      @journals = @journals.joins(:rich_text_content)
                            .where("action_text_rich_texts.body ILIKE ?", "%#{params[:search]}%")
     end
 

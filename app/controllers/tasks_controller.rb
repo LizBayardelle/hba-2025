@@ -3,7 +3,7 @@ class TasksController < ApplicationController
   before_action :set_task, only: [:show, :update, :destroy]
 
   def index
-    @tasks = current_user.tasks.includes(:category, :tags, :importance_level, :time_block)
+    @tasks = current_user.tasks.includes(:category, :tags, :importance_level, :time_block, :checklist_items, list_attachments: { list: [:category, :checklist_items] })
 
     # Filter by status
     case params[:status]
@@ -75,7 +75,28 @@ class TasksController < ApplicationController
               importance_level: { only: [:id, :name, :icon, :color, :rank] },
               time_block: { only: [:id, :name, :icon, :color, :rank] }
             }
-          ).merge(notes: task.notes.to_s)
+          ).merge(
+            notes: task.notes.to_s,
+            checklist_items: task.checklist_items.ordered.map { |item|
+              { id: item.id, name: item.name, completed: item.completed, completed_at: item.completed_at, position: item.position }
+            },
+            list_attachments: task.list_attachments.includes(list: [:category, :checklist_items]).map { |la|
+              {
+                id: la.id,
+                list_id: la.list_id,
+                list_name: la.list.name,
+                list_category: la.list.category ? {
+                  id: la.list.category.id,
+                  name: la.list.category.name,
+                  color: la.list.category.color,
+                  icon: la.list.category.icon
+                } : nil,
+                checklist_items: la.list.checklist_items.ordered.map { |item|
+                  { id: item.id, name: item.name, completed: item.completed, completed_at: item.completed_at, position: item.position }
+                }
+              }
+            }
+          )
         }
       }
     end
@@ -95,13 +116,20 @@ class TasksController < ApplicationController
             importance_level: { only: [:id, :name, :icon, :color, :rank] },
             time_block: { only: [:id, :name, :icon, :color, :rank] }
           }
-        ).merge(notes: @task.notes.to_s)
+        ).merge(
+          notes: @task.notes.to_s,
+          checklist_items: @task.checklist_items.ordered.map { |item|
+            { id: item.id, name: item.name, completed: item.completed, completed_at: item.completed_at, position: item.position }
+          },
+          task_contents: @task.documents.map { |doc| { id: doc.id, title: doc.title } },
+          list_attachments: @task.list_attachments.map { |la| { list_id: la.list_id } }
+        )
       }
     end
   end
 
   def create
-    @task = current_user.tasks.build(task_params.except(:tag_names))
+    @task = current_user.tasks.build(task_params.except(:tag_names, :task_content_ids, :list_attachment_ids))
 
     if @task.save
       # Handle tags
@@ -112,6 +140,14 @@ class TasksController < ApplicationController
           @task.tags << tag unless @task.tags.include?(tag)
         end
       end
+
+      # Handle document attachments
+      if task_params[:task_content_ids].present?
+        @task.task_content_ids = task_params[:task_content_ids]
+      end
+
+      # Handle list attachments
+      sync_list_attachments(@task)
 
       respond_to do |format|
         format.json { render json: { success: true, message: 'Task created.', task: @task }, status: :created }
@@ -124,7 +160,7 @@ class TasksController < ApplicationController
   end
 
   def update
-    if @task.update(task_params.except(:tag_names))
+    if @task.update(task_params.except(:tag_names, :task_content_ids, :list_attachment_ids))
       # Handle tags
       if task_params[:tag_names]
         @task.tags.clear
@@ -134,6 +170,14 @@ class TasksController < ApplicationController
           @task.tags << tag unless @task.tags.include?(tag)
         end
       end
+
+      # Handle document attachments
+      if task_params[:task_content_ids]
+        @task.task_content_ids = task_params[:task_content_ids]
+      end
+
+      # Handle list attachments
+      sync_list_attachments(@task)
 
       respond_to do |format|
         format.json { render json: { success: true, message: 'Task updated.', task: @task }, status: :ok }
@@ -163,7 +207,24 @@ class TasksController < ApplicationController
       :name, :importance, :importance_level_id, :category_id, :completed, :completed_at, :on_hold,
       :notes, :url, :location_name, :location_lat, :location_lng,
       :attached_document_id, :position, :due_date, :due_time, :archived_at, :time_block_id,
-      tag_names: []
+      tag_names: [], task_content_ids: [], list_attachment_ids: []
     )
+  end
+
+  def list_attachment_ids
+    params[:task][:list_attachment_ids]&.reject(&:blank?)&.map(&:to_i) || []
+  end
+
+  def sync_list_attachments(task)
+    new_ids = list_attachment_ids
+    current_ids = task.list_attachments.pluck(:list_id)
+
+    # Remove attachments no longer selected
+    task.list_attachments.where.not(list_id: new_ids).destroy_all
+
+    # Add new attachments
+    (new_ids - current_ids).each do |list_id|
+      task.list_attachments.create!(list_id: list_id, user: current_user)
+    end
   end
 end

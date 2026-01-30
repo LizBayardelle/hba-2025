@@ -104,43 +104,45 @@
   <main class="flex-1 overflow-y-auto" style="background-color: #F5F5F7;">
     <!-- White Header Section with Shadow -->
     <div class="sticky top-0 z-10" style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);">
-      <div class="p-8 pb-6">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h1 class="text-4xl mb-1" style="color: #1D1D1F; font-family: 'Inter', sans-serif; font-weight: 800;">Daily Briefing</h1>
-            <p class="text-sm" style="color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif;"><%= @today.strftime('%A, %B %d, %Y') %></p>
+      <div class="p-8">
+        <div class="flex items-start justify-between mb-6">
+          <div class="flex-1">
+            <h1 class="text-5xl font-display" style="color: #1D1D1F;">
+              Daily Briefing
+            </h1>
+            <p class="text-sm mt-1" style="color: #8E8E93; font-weight: 400; font-family: 'Inter', sans-serif;"><%= @today.strftime('%A, %B %d, %Y') %></p>
           </div>
 
           <!-- Date Navigation -->
-          <div class="flex items-center gap-2">
-            <%= link_to dashboard_path(date: (@today - 1.day).strftime('%Y-%m-%d')),
-                class: "w-10 h-10 rounded-lg flex items-center justify-center transition",
-                style: "background: linear-gradient(135deg, rgba(229, 229, 231, 0.3) 0%, rgba(199, 199, 204, 0.4) 50%, rgba(142, 142, 147, 0.3) 100%); border: 0.5px solid rgba(199, 199, 204, 0.3); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2);" do %>
-              <i class="fa-solid fa-chevron-left text-sm" style="color: #2C2C2E;"></i>
-            <% end %>
-
-            <div class="px-2 text-sm" style="color: #1D1D1F; font-weight: 600; font-family: 'Inter', sans-serif;">
-              <%= @today == Time.zone.today ? 'Today' : @today.strftime('%m/%d') %>
-            </div>
-
-            <% if @today < Time.zone.today %>
-              <%= link_to dashboard_path(date: (@today + 1.day).strftime('%Y-%m-%d')),
+          <div class="flex flex-col items-center gap-1">
+            <div class="flex items-center gap-2">
+              <%= link_to dashboard_path(date: (@today - 1.day).strftime('%Y-%m-%d')),
                   class: "w-10 h-10 rounded-lg flex items-center justify-center transition",
                   style: "background: linear-gradient(135deg, rgba(229, 229, 231, 0.3) 0%, rgba(199, 199, 204, 0.4) 50%, rgba(142, 142, 147, 0.3) 100%); border: 0.5px solid rgba(199, 199, 204, 0.3); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2);" do %>
-                <i class="fa-solid fa-chevron-right text-sm" style="color: #2C2C2E;"></i>
+                <i class="fa-solid fa-chevron-left text-sm" style="color: #2C2C2E;"></i>
               <% end %>
-            <% else %>
-              <div class="w-10 h-10 rounded-lg flex items-center justify-center opacity-30 pointer-events-none" style="background: linear-gradient(135deg, rgba(229, 229, 231, 0.3) 0%, rgba(199, 199, 204, 0.4) 50%, rgba(142, 142, 147, 0.3) 100%); border: 0.5px solid rgba(199, 199, 204, 0.3);">
-                <i class="fa-solid fa-chevron-right text-sm" style="color: #2C2C2E;"></i>
+
+              <div class="px-2 text-sm min-w-[60px] text-center" style="color: #1D1D1F; font-weight: 600; font-family: 'Inter', sans-serif;">
+                <%= @today == Time.zone.today ? 'Today' : @today.strftime('%m/%d') %>
               </div>
-            <% end %>
+
+              <% if @today < Time.zone.today %>
+                <%= link_to dashboard_path(date: (@today + 1.day).strftime('%Y-%m-%d')),
+                    class: "w-10 h-10 rounded-lg flex items-center justify-center transition",
+                    style: "background: linear-gradient(135deg, rgba(229, 229, 231, 0.3) 0%, rgba(199, 199, 204, 0.4) 50%, rgba(142, 142, 147, 0.3) 100%); border: 0.5px solid rgba(199, 199, 204, 0.3); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2);" do %>
+                  <i class="fa-solid fa-chevron-right text-sm" style="color: #2C2C2E;"></i>
+                <% end %>
+              <% else %>
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center opacity-30 pointer-events-none" style="background: linear-gradient(135deg, rgba(229, 229, 231, 0.3) 0%, rgba(199, 199, 204, 0.4) 50%, rgba(142, 142, 147, 0.3) 100%); border: 0.5px solid rgba(199, 199, 204, 0.3);">
+                  <i class="fa-solid fa-chevron-right text-sm" style="color: #2C2C2E;"></i>
+                </div>
+              <% end %>
+            </div>
 
             <% if @today != Time.zone.today %>
-              <%= link_to dashboard_path,
-                  class: "ml-2 px-4 py-2 rounded-lg text-sm transition",
-                  style: "background: linear-gradient(135deg, rgba(229, 229, 231, 0.3) 0%, rgba(199, 199, 204, 0.4) 50%, rgba(142, 142, 147, 0.3) 100%); border: 0.5px solid rgba(199, 199, 204, 0.3); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2); color: #1D1D1F; font-weight: 600; font-family: 'Inter', sans-serif;" do %>
-                Today
-              <% end %>
+              <%= link_to "BACK TO TODAY", dashboard_path,
+                  class: "text-xs mt-1 hover:opacity-70 transition uppercase tracking-wide",
+                  style: "color: #8E8E93; font-family: 'Inter', sans-serif; font-weight: 300;" %>
             <% end %>
           </div>
         </div>
@@ -155,7 +157,7 @@
           <!-- Today's Calendar -->
           <div class="md:col-span-2 rounded-xl p-4" style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
             <div class="flex items-center justify-between mb-3">
-              <h2 class="text-xl" style="color: #1D1D1F; font-family: 'Inter', sans-serif; font-weight: 700;">
+              <h2 class="text-2xl font-display" style="color: #1D1D1F;">
                 <i class="fa-solid fa-calendar mr-2"></i>Today's Calendar
               </h2>
               <%= link_to "https://calendar.google.com", target: "_blank", rel: "noopener noreferrer",
@@ -225,7 +227,7 @@
 
           <!-- Quick Links -->
           <div class="rounded-xl p-4" style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
-            <h2 class="text-xl mb-3" style="color: #1D1D1F; font-family: 'Inter', sans-serif; font-weight: 700;">Quick Links</h2>
+            <h2 class="text-2xl font-display mb-3" style="color: #1D1D1F;">Quick Links</h2>
             <div class="space-y-1">
               <%= link_to habits_path, class: "flex items-center gap-3 p-2 rounded-lg transition", style: "hover:background-color: rgba(199, 199, 204, 0.1);" do %>
                 <i class="fa-solid fa-chart-line text-lg" style="color: #2C2C2E;"></i>
@@ -250,7 +252,7 @@
           <div class="rounded-xl p-6" style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
             <div class="mb-4">
               <div class="flex items-center justify-between">
-                <h2 class="text-xl" style="color: #1D1D1F; font-family: 'Inter', sans-serif; font-weight: 700;">Today's Habits</h2>
+                <h2 class="text-2xl font-display" style="color: #1D1D1F;">Habits</h2>
                 <!-- Toggle Buttons -->
                 <div class="flex gap-1 rounded-lg p-1" style="background: rgba(199, 199, 204, 0.2);">
                   <button id="focus-time-btn" onclick="switchFocusView('time')" class="px-2 py-1 rounded text-xs transition" style="background: linear-gradient(135deg, #2C2C2E, #1D1D1F); color: white; font-weight: 600; font-family: 'Inter', sans-serif; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);">
@@ -383,7 +385,7 @@
         <div class="rounded-xl p-6" style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
           <div class="mb-4">
             <div class="flex items-center justify-between">
-              <h2 class="text-xl" style="color: #1D1D1F; font-family: 'Inter', sans-serif; font-weight: 700;">Tasks</h2>
+              <h2 class="text-2xl font-display" style="color: #1D1D1F;">Tasks</h2>
               <!-- Toggle Buttons -->
               <div class="flex gap-1 rounded-lg p-1" style="background: rgba(199, 199, 204, 0.2);">
                 <button id="tasks-date-btn" onclick="switchTasksView('date')" class="px-2 py-1 rounded text-xs transition" style="background: linear-gradient(135deg, #2C2C2E, #1D1D1F); color: white; font-weight: 600; font-family: 'Inter', sans-serif; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);">
@@ -640,63 +642,51 @@ function switchFocusView(view) {
   container.innerHTML = '';
 
   // Rebuild with headers
+  let isFirst = true;
   groupOrder.forEach(groupName => {
     if (!groups[groupName] || groups[groupName].length === 0) return;
 
-    // Create group header
-    const groupDiv = document.createElement('div');
+    // Get color based on view
+    let groupColor = '#8E8E93'; // Default metallic grey for time
+    let groupIconClass = groupIcons[groupName] || 'fa-clock';
+    let groupTitle = groupName.charAt(0).toUpperCase() + groupName.slice(1);
 
-    const headerDiv = document.createElement('div');
-    headerDiv.className = 'flex items-center gap-2 mb-2';
-
-    // Add icon for time, category, and priority views
-    if (groupIcons[groupName]) {
-      const iconBox = document.createElement('div');
-      iconBox.className = 'w-5 h-5 rounded flex items-center justify-center flex-shrink-0';
-
-      const icon = document.createElement('i');
-      icon.className = 'text-white text-xs';
-
-      if (view === 'category') {
-        icon.className = `${groupIcons[groupName]} text-white text-xs`;
-        iconBox.style.backgroundColor = groups[groupName][0].dataset.categoryColor;
-      } else if (view === 'priority') {
-        icon.className = `${groupIcons[groupName]} text-white text-xs`;
-        iconBox.style.backgroundColor = groups[groupName][0].dataset.priorityColor;
-      } else if (view === 'time') {
-        icon.className = `${groupIcons[groupName]} text-white text-xs`;
-        iconBox.style.backgroundColor = groups[groupName][0].dataset.timeBlockColor;
-      } else {
-        icon.className = `fa-solid ${groupIcons[groupName]} text-white text-xs`;
-        iconBox.style.backgroundColor = '#1d3e4c';
-      }
-
-      iconBox.appendChild(icon);
-      headerDiv.appendChild(iconBox);
-    }
-
-    const title = document.createElement('div');
-    title.className = 'text-sm';
-    title.style.color = '#1D1D1F';
-    title.style.fontWeight = '600';
-    title.style.fontFamily = "'Inter', sans-serif";
-
-    // Set text based on view
     if (view === 'category' && groups[groupName].length > 0) {
-      title.textContent = groups[groupName][0].dataset.categoryName;
+      groupColor = groups[groupName][0].dataset.categoryColor;
+      groupTitle = groups[groupName][0].dataset.categoryName;
     } else if (view === 'priority' && groups[groupName].length > 0) {
-      title.textContent = groups[groupName][0].dataset.priorityName;
+      groupColor = groups[groupName][0].dataset.priorityColor;
+      groupTitle = groups[groupName][0].dataset.priorityName;
     } else if (view === 'time' && groups[groupName].length > 0) {
-      title.textContent = groups[groupName][0].dataset.timeBlockName;
-    } else {
-      title.textContent = groupName.charAt(0).toUpperCase() + groupName.slice(1);
+      groupColor = '#8E8E93'; // Metallic grey for time blocks
+      groupTitle = groups[groupName][0].dataset.timeBlockName;
     }
 
+    // Create group container
+    const groupDiv = document.createElement('div');
+    groupDiv.className = isFirst ? 'mb-4' : 'mb-4 mt-4';
+
+    // Create full-width stripe header
+    const headerDiv = document.createElement('div');
+    headerDiv.className = '-mx-6 px-6 py-2 mb-3 flex items-center gap-2';
+    headerDiv.style.background = `linear-gradient(to bottom, color-mix(in srgb, ${groupColor} 85%, white) 0%, ${groupColor} 100%)`;
+    headerDiv.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.1)';
+
+    // Add icon
+    const icon = document.createElement('i');
+    icon.className = `fa-solid ${groupIconClass} text-white text-sm`;
+    headerDiv.appendChild(icon);
+
+    // Add title
+    const title = document.createElement('span');
+    title.className = 'text-lg text-white font-display';
+    title.style.fontWeight = '500';
+    title.textContent = groupTitle;
     headerDiv.appendChild(title);
 
     // Create habits container
     const habitsDiv = document.createElement('div');
-    habitsDiv.className = 'space-y-2 ml-6';
+    habitsDiv.className = 'space-y-2';
 
     groups[groupName].forEach(habitItem => {
       habitsDiv.appendChild(habitItem);
@@ -705,6 +695,7 @@ function switchFocusView(view) {
     groupDiv.appendChild(headerDiv);
     groupDiv.appendChild(habitsDiv);
     container.appendChild(groupDiv);
+    isFirst = false;
   });
 }
 
@@ -945,61 +936,56 @@ function switchTasksView(view) {
   // Clear container
   container.innerHTML = '';
 
+  // Define icons for date groups
+  const dateIcons = {
+    'overdue': 'fa-exclamation-triangle',
+    'today': 'fa-calendar-day',
+    'no_date': 'fa-infinity',
+    'future': 'fa-calendar-alt'
+  };
+
   // Rebuild with headers
+  let isFirst = true;
   groupOrder.forEach(groupName => {
     if (!groups[groupName] || groups[groupName].length === 0) return;
 
-    // Create group header
-    const groupDiv = document.createElement('div');
-    groupDiv.className = 'mb-4';
+    // Get color and icon based on view
+    let groupColor = '#8E8E93'; // Default metallic grey
+    let groupIconClass = 'fa-list';
+    let groupTitle = groupLabels[groupName] || groupName;
 
-    const headerDiv = document.createElement('div');
-    headerDiv.className = 'text-xs mb-2 flex items-center gap-2';
-    headerDiv.style.fontWeight = '600';
-    headerDiv.style.fontFamily = "'Inter', sans-serif";
-
-    // Add icon
-    if (view === 'date' && groupName === 'overdue') {
-      const iconBox = document.createElement('div');
-      iconBox.className = 'w-4 h-4 rounded flex items-center justify-center flex-shrink-0';
-      iconBox.style.backgroundColor = groupColors[groupName] || '#1d3e4c';
-
-      const icon = document.createElement('i');
-      icon.className = 'fa-solid fa-exclamation-triangle text-white';
-      icon.style.fontSize = '8px';
-
-      iconBox.appendChild(icon);
-      headerDiv.appendChild(iconBox);
-    } else if (view === 'priority' && groups[groupName].length > 0) {
-      const iconBox = document.createElement('div');
-      iconBox.className = 'w-4 h-4 rounded flex items-center justify-center flex-shrink-0';
-      const firstTask = groups[groupName][0];
-      iconBox.style.backgroundColor = groupColors[groupName] || '#1d3e4c';
-
-      const icon = document.createElement('i');
-      icon.className = `${firstTask.dataset.priorityIcon} text-white`;
-      icon.style.fontSize = '8px';
-
-      iconBox.appendChild(icon);
-      headerDiv.appendChild(iconBox);
+    if (view === 'date') {
+      groupColor = '#8E8E93'; // Metallic grey for date groups
+      groupIconClass = dateIcons[groupName] || 'fa-calendar';
     } else if (view === 'category' && groups[groupName].length > 0) {
-      const iconBox = document.createElement('div');
-      iconBox.className = 'w-4 h-4 rounded flex items-center justify-center flex-shrink-0';
-      const firstTask = groups[groupName][0];
-      iconBox.style.backgroundColor = groupColors[groupName] || '#1d3e4c';
-
-      const icon = document.createElement('i');
-      icon.className = `${firstTask.dataset.categoryIcon} text-white`;
-      icon.style.fontSize = '8px';
-
-      iconBox.appendChild(icon);
-      headerDiv.appendChild(iconBox);
+      groupColor = groupColors[groupName] || '#8E8E93';
+      groupIconClass = groups[groupName][0].dataset.categoryIcon || 'fa-folder';
+    } else if (view === 'priority' && groups[groupName].length > 0) {
+      groupColor = groupColors[groupName] || '#8E8E93';
+      groupIconClass = groups[groupName][0].dataset.priorityIcon || 'fa-star';
     }
 
-    const label = document.createElement('span');
-    label.style.color = '#1D1D1F';
-    label.textContent = groupLabels[groupName] || groupName;
-    headerDiv.appendChild(label);
+    // Create group container
+    const groupDiv = document.createElement('div');
+    groupDiv.className = isFirst ? 'mb-4' : 'mb-4 mt-4';
+
+    // Create full-width stripe header
+    const headerDiv = document.createElement('div');
+    headerDiv.className = '-mx-6 px-6 py-2 mb-3 flex items-center gap-2';
+    headerDiv.style.background = `linear-gradient(to bottom, color-mix(in srgb, ${groupColor} 85%, white) 0%, ${groupColor} 100%)`;
+    headerDiv.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.1)';
+
+    // Add icon
+    const icon = document.createElement('i');
+    icon.className = `fa-solid ${groupIconClass} text-white text-sm`;
+    headerDiv.appendChild(icon);
+
+    // Add title
+    const title = document.createElement('span');
+    title.className = 'text-lg text-white font-display';
+    title.style.fontWeight = '500';
+    title.textContent = groupTitle;
+    headerDiv.appendChild(title);
 
     // Create tasks container
     const tasksDiv = document.createElement('div');
@@ -1012,6 +998,7 @@ function switchTasksView(view) {
     groupDiv.appendChild(headerDiv);
     groupDiv.appendChild(tasksDiv);
     container.appendChild(groupDiv);
+    isFirst = false;
   });
 }
 

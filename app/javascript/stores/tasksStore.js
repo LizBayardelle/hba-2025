@@ -39,13 +39,19 @@ const useTasksStore = create((set) => ({
     isOpen: false,
     mode: 'new', // 'new' or 'edit'
     taskId: null,
+    categoryId: null,
+    importanceLevelId: null,
+    timeBlockId: null,
   },
-  openNewModal: () =>
+  openNewModal: (options = {}) =>
     set({
       formModal: {
         isOpen: true,
         mode: 'new',
         taskId: null,
+        categoryId: options.categoryId || null,
+        importanceLevelId: options.importanceLevelId || null,
+        timeBlockId: options.timeBlockId || null,
       },
     }),
   openEditModal: (taskId) =>
@@ -62,6 +68,9 @@ const useTasksStore = create((set) => ({
         isOpen: false,
         mode: 'new',
         taskId: null,
+        categoryId: null,
+        importanceLevelId: null,
+        timeBlockId: null,
       },
     }),
 }));

@@ -9,13 +9,14 @@ class HabitContentsController < ApplicationController
         @habit_contents = Document.left_joins(:habits)
                                        .where('habits.id IS NULL OR habits.user_id = ?', current_user.id)
                                        .distinct
-                                       .includes(habits: :category, tags: [])
+                                       .includes(habits: :category, tasks: [], tags: [])
                                        .order(created_at: :desc)
 
         render json: @habit_contents.map { |content|
           content.as_json(
             include: {
               habits: { only: [:id, :name] },
+              tasks: { only: [:id, :name] },
               tags: { only: [:id, :name] }
             },
             methods: [:youtube_embed_url]
@@ -33,6 +34,7 @@ class HabitContentsController < ApplicationController
         render json: @habit_content.as_json(
           include: {
             habits: { only: [:id, :name] },
+            tasks: { only: [:id, :name] },
             tags: { only: [:id, :name] }
           },
           methods: [:youtube_embed_url]
@@ -46,13 +48,15 @@ class HabitContentsController < ApplicationController
   end
 
   def create
-    @habit_content = Document.new(habit_content_params.except(:habit_ids, :tag_names))
+    @habit_content = Document.new(habit_content_params.except(:habit_ids, :task_ids, :tag_names))
 
     # Attach selected habits if any
     habit_ids = params[:habit_content][:habit_ids].reject(&:blank?) if params[:habit_content][:habit_ids]
+    task_ids = params[:habit_content][:task_ids].reject(&:blank?) if params[:habit_content][:task_ids]
 
     if @habit_content.save
       @habit_content.habit_ids = habit_ids if habit_ids.present?
+      @habit_content.task_ids = task_ids if task_ids.present?
 
       # Handle tags
       if params[:habit_content][:tag_names].present?
@@ -81,11 +85,13 @@ class HabitContentsController < ApplicationController
   end
 
   def update
-    # Handle habit associations separately
+    # Handle habit and task associations separately
     habit_ids = params[:habit_content][:habit_ids].reject(&:blank?) if params[:habit_content][:habit_ids]
+    task_ids = params[:habit_content][:task_ids].reject(&:blank?) if params[:habit_content][:task_ids]
 
-    if @habit_content.update(habit_content_params.except(:habit_ids, :tag_names))
+    if @habit_content.update(habit_content_params.except(:habit_ids, :task_ids, :tag_names))
       @habit_content.habit_ids = habit_ids if habit_ids
+      @habit_content.task_ids = task_ids if task_ids
 
       # Handle tags
       if params[:habit_content][:tag_names]
@@ -150,6 +156,6 @@ class HabitContentsController < ApplicationController
   end
 
   def habit_content_params
-    params.require(:habit_content).permit(:content_type, :title, :body, :position, metadata: {}, habit_ids: [], tag_names: [])
+    params.require(:habit_content).permit(:content_type, :title, :body, :position, metadata: {}, habit_ids: [], task_ids: [], tag_names: [])
   end
 end

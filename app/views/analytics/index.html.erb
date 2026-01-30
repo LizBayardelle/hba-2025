@@ -103,37 +103,37 @@
   <!-- Main Content Area -->
   <main class="flex-1 overflow-y-auto" style="background-color: #F5F5F5;">
     <!-- White Header Section with Shadow -->
-    <div class="bg-white shadow-md sticky top-0 z-10">
-      <div class="p-8 pb-6">
-        <div class="mb-4">
-          <h1 class="text-4xl font-bold display-font mb-1" style="color: #1d3e4c;">Analytics</h1>
-          <p class="text-sm font-light" style="color: #657b84;">Track your habit activity and health</p>
-        </div>
+    <div style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);">
+      <div class="p-8">
+        <h1 class="text-5xl font-display" style="color: #1D1D1F;">Analytics</h1>
+        <p class="text-sm mt-1" style="color: #8E8E93; font-family: 'Inter', sans-serif; font-weight: 300;">
+          Track your habit activity and health
+        </p>
       </div>
     </div>
 
     <!-- Grey Background Content -->
     <div class="p-8 pt-6 space-y-6">
       <!-- Calendar Heatmap -->
-      <div class="bg-white rounded-xl shadow-md p-6">
-        <h2 class="text-xl font-bold display-font mb-4" style="color: #1d3e4c;">Activity</h2>
+      <div class="bg-white rounded-xl p-6" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
+        <h2 class="text-2xl font-display mb-4" style="color: #1D1D1F;">Activity</h2>
 
         <!-- Overall Heatmap -->
         <div class="mb-6">
-          <h3 class="text-sm font-semibold mb-3" style="color: #1d3e4c;">Overall</h3>
+          <h3 class="text-sm font-semibold mb-3" style="color: #1D1D1F;">Overall</h3>
           <div class="flex flex-col lg:flex-row gap-8">
             <div class="flex-1 overflow-x-auto">
               <div class="inline-block">
                 <div class="flex gap-1">
                   <!-- Day labels -->
                   <div class="flex flex-col gap-1 mr-1">
-                    <div class="w-4 h-3 text-[10px] flex items-center" style="color: #657b84;">S</div>
-                    <div class="w-4 h-3 text-[10px] flex items-center" style="color: #657b84;">M</div>
-                    <div class="w-4 h-3 text-[10px] flex items-center" style="color: #657b84;">T</div>
-                    <div class="w-4 h-3 text-[10px] flex items-center" style="color: #657b84;">W</div>
-                    <div class="w-4 h-3 text-[10px] flex items-center" style="color: #657b84;">T</div>
-                    <div class="w-4 h-3 text-[10px] flex items-center" style="color: #657b84;">F</div>
-                    <div class="w-4 h-3 text-[10px] flex items-center" style="color: #657b84;">S</div>
+                    <div class="w-4 h-3 text-[10px] flex items-center" style="color: #8E8E93;">S</div>
+                    <div class="w-4 h-3 text-[10px] flex items-center" style="color: #8E8E93;">M</div>
+                    <div class="w-4 h-3 text-[10px] flex items-center" style="color: #8E8E93;">T</div>
+                    <div class="w-4 h-3 text-[10px] flex items-center" style="color: #8E8E93;">W</div>
+                    <div class="w-4 h-3 text-[10px] flex items-center" style="color: #8E8E93;">T</div>
+                    <div class="w-4 h-3 text-[10px] flex items-center" style="color: #8E8E93;">F</div>
+                    <div class="w-4 h-3 text-[10px] flex items-center" style="color: #8E8E93;">S</div>
                   </div>
 
                   <%
@@ -187,7 +187,7 @@
                 </div>
 
                 <!-- Legend -->
-                <div class="flex items-center gap-2 mt-4 text-xs" style="color: #657b84;">
+                <div class="flex items-center gap-2 mt-4 text-xs" style="color: #8E8E93;">
                   <span>Less</span>
                   <div class="w-3 h-3 rounded-sm" style="background-color: #E8EEF1;"></div>
                   <div class="w-3 h-3 rounded-sm" style="background-color: #c8dce4;"></div>
@@ -202,27 +202,27 @@
 
             <!-- Stats -->
             <div class="flex-shrink-0 lg:w-64 w-full space-y-2 text-sm">
-              <div class="flex items-center justify-between border-b border-dotted pb-2" style="border-color: #E8EEF1;">
-                <span class="font-light" style="color: #657b84;">Current Streak</span>
-                <span class="font-semibold" style="color: #1d3e4c;"><%= @current_streak %> <%= @current_streak == 1 ? 'day' : 'days' %></span>
+              <div class="flex items-center justify-between border-b border-dotted pb-2" style="border-color: rgba(199, 199, 204, 0.3);">
+                <span class="font-light" style="color: #8E8E93;">Current Streak</span>
+                <span class="font-semibold" style="color: #1D1D1F;"><%= @current_streak %> <%= @current_streak == 1 ? 'day' : 'days' %></span>
               </div>
-              <div class="flex items-center justify-between border-b border-dotted pb-2" style="border-color: #E8EEF1;">
-                <span class="font-light" style="color: #657b84;">This Week</span>
-                <span class="font-semibold" style="color: #1d3e4c;"><%= @weekly_completions %> <%= @weekly_completions == 1 ? 'completion' : 'completions' %></span>
+              <div class="flex items-center justify-between border-b border-dotted pb-2" style="border-color: rgba(199, 199, 204, 0.3);">
+                <span class="font-light" style="color: #8E8E93;">This Week</span>
+                <span class="font-semibold" style="color: #1D1D1F;"><%= @weekly_completions %> <%= @weekly_completions == 1 ? 'completion' : 'completions' %></span>
               </div>
-              <div class="flex items-center justify-between border-b border-dotted pb-2" style="border-color: #E8EEF1;">
+              <div class="flex items-center justify-between border-b border-dotted pb-2" style="border-color: rgba(199, 199, 204, 0.3);">
                 <div class="flex items-center gap-2">
-                  <span class="font-light" style="color: #657b84;">Overall Health</span>
+                  <span class="font-light" style="color: #8E8E93;">Overall Health</span>
                   <div class="relative group">
-                    <i class="fa-solid fa-circle-info text-xs cursor-help" style="color: #657b84;"></i>
+                    <i class="fa-solid fa-circle-info text-xs cursor-help" style="color: #8E8E93;"></i>
                     <%= render 'shared/health_explanation' %>
                   </div>
                 </div>
-                <span class="font-semibold" style="color: #1d3e4c;"><%= @overall_health %>%</span>
+                <span class="font-semibold" style="color: #1D1D1F;"><%= @overall_health %>%</span>
               </div>
-              <div class="flex items-center justify-between border-b border-dotted pb-2" style="border-color: #E8EEF1;">
-                <span class="font-light" style="color: #657b84;">Habits at Risk</span>
-                <span class="font-semibold" style="color: #1d3e4c;"><%= @habits_at_risk %></span>
+              <div class="flex items-center justify-between border-b border-dotted pb-2" style="border-color: rgba(199, 199, 204, 0.3);">
+                <span class="font-light" style="color: #8E8E93;">Habits at Risk</span>
+                <span class="font-semibold" style="color: #1D1D1F;"><%= @habits_at_risk %></span>
               </div>
             </div>
           </div>
@@ -253,7 +253,7 @@
           %>
 
           <!-- Toggle button for category heatmaps -->
-          <button id="category-heatmaps-toggle" onclick="toggleCategoryHeatmaps()" class="flex items-center gap-2 text-sm font-semibold mb-3 transition hover:opacity-70" style="color: #1d3e4c;">
+          <button id="category-heatmaps-toggle" onclick="toggleCategoryHeatmaps()" class="flex items-center gap-2 text-sm font-semibold mb-3 transition hover:opacity-70" style="color: #1D1D1F;">
             <i id="category-chevron" class="fa-solid fa-chevron-right text-xs transition-transform"></i>
             <span>By Category</span>
           </button>
@@ -316,23 +316,26 @@
       <!-- Controls Bar -->
       <div class="py-2 mb-0 flex gap-2 items-center justify-between">
         <div>
-          <h2 class="text-xl font-bold display-font" style="color: #1d3e4c;">Habit Health Overview</h2>
-          <p class="text-[11px] font-light mt-0.5" style="color: #657b84;">
+          <h2 class="text-2xl font-display" style="color: #1D1D1F;">Habit Health Overview</h2>
+          <p class="text-xs mt-0.5" style="color: #8E8E93; font-family: 'Inter', sans-serif; font-weight: 300;">
             Like a video game health bar—one mistake won't reset everything
           </p>
         </div>
 
         <!-- View Toggle -->
-        <div class="flex gap-1 bg-white p-0.5 rounded-lg shadow-sm">
-          <%= link_to analytics_path(view: 'category'), class: "px-2 py-1 rounded-lg text-xs font-semibold transition #{@view_mode == 'category' ? 'shadow-sm' : 'hover:bg-gray-100'}", style: @view_mode == 'category' ? "background-color: #E8EEF1; color: #1d3e4c;" : "color: #1d3e4c;" do %>
-            Category
-          <% end %>
-          <%= link_to analytics_path(view: 'time'), class: "px-2 py-1 rounded-lg text-xs font-semibold transition #{@view_mode == 'time' ? 'shadow-sm' : 'hover:bg-gray-100'}", style: @view_mode == 'time' ? "background-color: #E8EEF1; color: #1d3e4c;" : "color: #1d3e4c;" do %>
-            Time
-          <% end %>
-          <%= link_to analytics_path(view: 'importance'), class: "px-2 py-1 rounded-lg text-xs font-semibold transition #{@view_mode == 'importance' ? 'shadow-sm' : 'hover:bg-gray-100'}", style: @view_mode == 'importance' ? "background-color: #E8EEF1; color: #1d3e4c;" : "color: #1d3e4c;" do %>
-            Priority
-          <% end %>
+        <div>
+          <span class="block text-xs uppercase tracking-wide mb-2" style="color: #8E8E93; font-weight: 600;">Group By</span>
+          <div class="flex rounded-lg overflow-hidden" style="border: 0.5px solid rgba(199, 199, 204, 0.3);">
+            <%= link_to analytics_path(view: 'category'), class: "px-4 py-2 text-sm transition", style: @view_mode == 'category' ? "background: linear-gradient(to bottom, #A8A8AD 0%, #8E8E93 100%); color: #FFFFFF; font-weight: 500; font-family: 'Inter', sans-serif;" : "background: #F5F5F7; color: #1D1D1F; font-weight: 500; font-family: 'Inter', sans-serif;" do %>
+              Category
+            <% end %>
+            <%= link_to analytics_path(view: 'time'), class: "px-4 py-2 text-sm transition", style: @view_mode == 'time' ? "background: linear-gradient(to bottom, #A8A8AD 0%, #8E8E93 100%); color: #FFFFFF; font-weight: 500; font-family: 'Inter', sans-serif;" : "background: #F5F5F7; color: #1D1D1F; font-weight: 500; font-family: 'Inter', sans-serif;" do %>
+              Time
+            <% end %>
+            <%= link_to analytics_path(view: 'importance'), class: "px-4 py-2 text-sm transition", style: @view_mode == 'importance' ? "background: linear-gradient(to bottom, #A8A8AD 0%, #8E8E93 100%); color: #FFFFFF; font-weight: 500; font-family: 'Inter', sans-serif;" : "background: #F5F5F7; color: #1D1D1F; font-weight: 500; font-family: 'Inter', sans-serif;" do %>
+              Priority
+            <% end %>
+          </div>
         </div>
       </div>
 
@@ -350,52 +353,42 @@
                   '#6366F1' => '#3730A3', '#A78BFA' => '#6B21A8', '#E879F9' => '#A21CAF',
                   '#FB7185' => '#BE123C', '#9CA3A8' => '#4A5057'
                 }[category.color] || '#1d3e4c'
+                avg_health = (habits.sum(&:health) / habits.count.to_f).round
               %>
               <!-- Category Header -->
-              <div class="bg-white rounded-xl shadow-md overflow-hidden" data-section-id="category-<%= category.id %>">
-                <%
-                  avg_health = (habits.sum(&:health) / habits.count.to_f).round
-                %>
-                <button onclick="toggleSection('category-<%= category.id %>')" class="w-full p-4 hover:opacity-90 transition flex flex-col md:flex-row md:items-center gap-3" style="background-color: <%= category.color %>;">
-                  <div class="flex items-center gap-3 flex-1">
-                    <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background-color: rgba(255, 255, 255, 0.2);">
-                      <i class="fa-solid <%= category.icon %> text-white text-sm"></i>
-                    </div>
-                    <h2 class="text-2xl font-bold display-font flex-1 text-left text-white">
-                      <%= category.name %>
-                    </h2>
-                  </div>
-                  <div class="flex items-center gap-3 md:flex-shrink-0">
-                    <div class="w-full md:w-64">
-                      <div class="w-full h-6 rounded-full overflow-hidden" style="background-color: white;">
+              <div data-section-id="category-<%= category.id %>">
+                <!-- Full-width stripe header -->
+                <button onclick="toggleSection('category-<%= category.id %>')" class="w-full -mx-8 px-8 py-4 flex items-center gap-3 hover:opacity-95 transition" style="background: linear-gradient(to bottom, color-mix(in srgb, <%= category.color %> 85%, white) 0%, <%= category.color %> 100%); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); width: calc(100% + 4rem);">
+                  <i class="fa-solid <%= category.icon %> text-white text-lg"></i>
+                  <h2 class="text-3xl flex-1 text-left text-white font-display" style="font-weight: 500;">
+                    <%= category.name %>
+                  </h2>
+                  <div class="flex items-center gap-3">
+                    <div class="w-48 hidden md:block">
+                      <div class="w-full h-5 rounded-full overflow-hidden" style="background-color: rgba(255, 255, 255, 0.3);">
                         <div class="h-full rounded-full transition-all duration-500 flex items-center justify-end px-2"
-                             style="width: <%= avg_health %>%; background-color: <%= category.color %>40;">
-                          <% if avg_health >= 15 %>
+                             style="width: <%= avg_health %>%; background-color: rgba(255, 255, 255, 0.9);">
+                          <% if avg_health >= 20 %>
                             <span class="text-xs font-bold" style="color: <%= category.color %>;"><%= avg_health %>%</span>
                           <% end %>
                         </div>
                       </div>
-                      <% if avg_health < 15 %>
-                        <div class="absolute top-0 left-0 right-0 flex items-center justify-center h-6" style="margin-top: -24px;">
-                          <span class="text-xs font-bold" style="color: <%= category.color %>;"><%= avg_health %>%</span>
-                        </div>
-                      <% end %>
                     </div>
+                    <span class="text-white text-sm font-semibold md:hidden"><%= avg_health %>%</span>
                     <i class="fa-solid fa-chevron-down section-chevron transition-transform text-white"></i>
                   </div>
                 </button>
 
                 <!-- Habits List -->
-                <div class="section-content space-y-3 p-4">
+                <div class="section-content space-y-3 py-4">
                   <% habits.each do |habit| %>
-                    <% health_state = habit.health_state %>
-                    <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                    <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 bg-white rounded-xl p-4" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
                       <!-- Habit Name and Info -->
                       <div class="flex-1">
-                        <div class="font-semibold text-base mb-0.5" style="color: <%= dark_color %>;">
+                        <div class="font-semibold text-base mb-0.5" style="color: #1D1D1F;">
                           <%= habit.name %>
                         </div>
-                        <div class="text-xs font-light flex items-center gap-2" style="color: #657b84;">
+                        <div class="text-xs font-light flex items-center gap-2" style="color: #8E8E93;">
                           <span><%= habit.target_count %> <%= habit.target_count == 1 ? 'time' : 'times' %> per day</span>
                           <% if @streaks[habit.id] > 0 %>
                             <span>•</span>
@@ -432,46 +425,38 @@
               <%
                 time_block = group
                 avg_health = (habits.sum(&:health) / habits.count.to_f).round
-                block_color = time_block&.color || '#1d3e4c'
+                block_color = time_block&.color || '#8E8E93'
                 block_name = time_block&.name || 'Anytime'
                 block_icon = time_block&.icon || 'fa-clock'
                 section_id = time_block ? "time-#{time_block.id}" : "time-anytime"
               %>
-              <div class="bg-white rounded-xl shadow-md overflow-hidden" data-section-id="<%= section_id %>">
-                <button onclick="toggleSection('<%= section_id %>')" class="w-full p-4 hover:opacity-90 transition flex flex-col md:flex-row md:items-center gap-3" style="background-color: <%= block_color %>;">
-                  <div class="flex items-center gap-3 flex-1">
-                    <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background-color: rgba(255, 255, 255, 0.2);">
-                      <i class="<%= block_icon %> text-white text-sm"></i>
-                    </div>
-                    <h2 class="text-2xl font-bold display-font flex-1 text-left text-white">
-                      <%= block_name %>
-                    </h2>
-                  </div>
-                  <div class="flex items-center gap-3 md:flex-shrink-0">
-                    <div class="w-full md:w-64">
-                      <div class="w-full h-6 rounded-full overflow-hidden" style="background-color: white;">
+              <div data-section-id="<%= section_id %>">
+                <!-- Full-width stripe header -->
+                <button onclick="toggleSection('<%= section_id %>')" class="w-full -mx-8 px-8 py-4 flex items-center gap-3 hover:opacity-95 transition" style="background: linear-gradient(to bottom, color-mix(in srgb, <%= block_color %> 85%, white) 0%, <%= block_color %> 100%); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); width: calc(100% + 4rem);">
+                  <i class="<%= block_icon %> text-white text-lg"></i>
+                  <h2 class="text-3xl flex-1 text-left text-white font-display" style="font-weight: 500;">
+                    <%= block_name %>
+                  </h2>
+                  <div class="flex items-center gap-3">
+                    <div class="w-48 hidden md:block">
+                      <div class="w-full h-5 rounded-full overflow-hidden" style="background-color: rgba(255, 255, 255, 0.3);">
                         <div class="h-full rounded-full transition-all duration-500 flex items-center justify-end px-2"
-                             style="width: <%= avg_health %>%; background-color: <%= block_color %>40;">
-                          <% if avg_health >= 15 %>
+                             style="width: <%= avg_health %>%; background-color: rgba(255, 255, 255, 0.9);">
+                          <% if avg_health >= 20 %>
                             <span class="text-xs font-bold" style="color: <%= block_color %>;"><%= avg_health %>%</span>
                           <% end %>
                         </div>
                       </div>
-                      <% if avg_health < 15 %>
-                        <div class="absolute top-0 left-0 right-0 flex items-center justify-center h-6" style="margin-top: -24px;">
-                          <span class="text-xs font-bold" style="color: <%= block_color %>;"><%= avg_health %>%</span>
-                        </div>
-                      <% end %>
                     </div>
+                    <span class="text-white text-sm font-semibold md:hidden"><%= avg_health %>%</span>
                     <i class="fa-solid fa-chevron-down section-chevron transition-transform text-white"></i>
                   </div>
                 </button>
 
                 <!-- Habits List -->
-                <div class="section-content space-y-3 p-4">
+                <div class="section-content space-y-3 py-4">
                   <% habits.each do |habit| %>
                     <%
-                      health_state = habit.health_state
                       habit_dark_color = {
                         '#6B8A99' => '#1d3e4c', '#9C8B7E' => '#5C4F45', '#F8796D' => '#B8352A',
                         '#FFA07A' => '#D66A3E', '#E5C730' => '#B89F0A', '#A8A356' => '#7A7637',
@@ -480,13 +465,13 @@
                         '#FB7185' => '#BE123C', '#9CA3A8' => '#4A5057'
                       }[habit.category.color] || '#1d3e4c'
                     %>
-                    <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                    <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 bg-white rounded-xl p-4" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
                       <!-- Habit Name and Info -->
                       <div class="flex-1">
-                        <div class="font-semibold text-base mb-0.5" style="color: <%= habit_dark_color %>;">
+                        <div class="font-semibold text-base mb-0.5" style="color: #1D1D1F;">
                           <%= habit.name %>
                         </div>
-                        <div class="text-xs font-light flex items-center gap-2" style="color: #657b84;">
+                        <div class="text-xs font-light flex items-center gap-2" style="color: #8E8E93;">
                           <span><%= habit.target_count %> <%= habit.target_count == 1 ? 'time' : 'times' %> per day</span>
                           <% if @streaks[habit.id] > 0 %>
                             <span>•</span>
@@ -523,46 +508,38 @@
               <%
                 importance_level = group
                 avg_health = (habits.sum(&:health) / habits.count.to_f).round
-                level_color = importance_level&.color || '#6B8A99'
+                level_color = importance_level&.color || '#8E8E93'
                 level_name = importance_level&.name || 'Normal'
                 level_icon = importance_level&.icon || 'fa-circle'
                 section_id = importance_level ? "importance-#{importance_level.id}" : "importance-normal"
               %>
-              <div class="bg-white rounded-xl shadow-md overflow-hidden" data-section-id="<%= section_id %>">
-                <button onclick="toggleSection('<%= section_id %>')" class="w-full p-4 hover:opacity-90 transition flex flex-col md:flex-row md:items-center gap-3" style="background-color: <%= level_color %>;">
-                  <div class="flex items-center gap-3 flex-1">
-                    <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background-color: rgba(255, 255, 255, 0.2);">
-                      <i class="<%= level_icon %> text-white text-sm"></i>
-                    </div>
-                    <h2 class="text-2xl font-bold display-font flex-1 text-left text-white">
-                      <%= level_name %>
-                    </h2>
-                  </div>
-                  <div class="flex items-center gap-3 md:flex-shrink-0">
-                    <div class="w-full md:w-64">
-                      <div class="w-full h-6 rounded-full overflow-hidden" style="background-color: white;">
+              <div data-section-id="<%= section_id %>">
+                <!-- Full-width stripe header -->
+                <button onclick="toggleSection('<%= section_id %>')" class="w-full -mx-8 px-8 py-4 flex items-center gap-3 hover:opacity-95 transition" style="background: linear-gradient(to bottom, color-mix(in srgb, <%= level_color %> 85%, white) 0%, <%= level_color %> 100%); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); width: calc(100% + 4rem);">
+                  <i class="<%= level_icon %> text-white text-lg"></i>
+                  <h2 class="text-3xl flex-1 text-left text-white font-display" style="font-weight: 500;">
+                    <%= level_name %>
+                  </h2>
+                  <div class="flex items-center gap-3">
+                    <div class="w-48 hidden md:block">
+                      <div class="w-full h-5 rounded-full overflow-hidden" style="background-color: rgba(255, 255, 255, 0.3);">
                         <div class="h-full rounded-full transition-all duration-500 flex items-center justify-end px-2"
-                             style="width: <%= avg_health %>%; background-color: <%= level_color %>40;">
-                          <% if avg_health >= 15 %>
+                             style="width: <%= avg_health %>%; background-color: rgba(255, 255, 255, 0.9);">
+                          <% if avg_health >= 20 %>
                             <span class="text-xs font-bold" style="color: <%= level_color %>;"><%= avg_health %>%</span>
                           <% end %>
                         </div>
                       </div>
-                      <% if avg_health < 15 %>
-                        <div class="absolute top-0 left-0 right-0 flex items-center justify-center h-6" style="margin-top: -24px;">
-                          <span class="text-xs font-bold" style="color: <%= level_color %>;"><%= avg_health %>%</span>
-                        </div>
-                      <% end %>
                     </div>
+                    <span class="text-white text-sm font-semibold md:hidden"><%= avg_health %>%</span>
                     <i class="fa-solid fa-chevron-down section-chevron transition-transform text-white"></i>
                   </div>
                 </button>
 
                 <!-- Habits List -->
-                <div class="section-content space-y-3 p-4">
+                <div class="section-content space-y-3 py-4">
                   <% habits.each do |habit| %>
                     <%
-                      health_state = habit.health_state
                       habit_dark_color = {
                         '#6B8A99' => '#1d3e4c', '#9C8B7E' => '#5C4F45', '#F8796D' => '#B8352A',
                         '#FFA07A' => '#D66A3E', '#E5C730' => '#B89F0A', '#A8A356' => '#7A7637',
@@ -571,13 +548,13 @@
                         '#FB7185' => '#BE123C', '#9CA3A8' => '#4A5057'
                       }[habit.category.color] || '#1d3e4c'
                     %>
-                    <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                    <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 bg-white rounded-xl p-4" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
                       <!-- Habit Name and Info -->
                       <div class="flex-1">
-                        <div class="font-semibold text-base mb-0.5" style="color: <%= habit_dark_color %>;">
+                        <div class="font-semibold text-base mb-0.5" style="color: #1D1D1F;">
                           <%= habit.name %>
                         </div>
-                        <div class="text-xs font-light flex items-center gap-2" style="color: #657b84;">
+                        <div class="text-xs font-light flex items-center gap-2" style="color: #8E8E93;">
                           <span><%= habit.target_count %> <%= habit.target_count == 1 ? 'time' : 'times' %> per day</span>
                           <% if @streaks[habit.id] > 0 %>
                             <span>•</span>
@@ -613,11 +590,11 @@
           <% end %>
         </div>
       <% else %>
-        <div class="bg-white rounded-xl shadow-md p-12 text-center">
-          <i class="fa-solid fa-clipboard-list text-6xl mb-4" style="color: #E8EEF1;"></i>
-          <h3 class="text-xl font-bold display-font mb-2" style="color: #1d3e4c;">No Habits Yet</h3>
-          <p class="text-gray-500 font-light mb-4">Start building better habits by creating your first one!</p>
-          <%= link_to "Browse Categories", root_path, class: "inline-block px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition", style: "background: linear-gradient(135deg, #1d3e4c, #45606b);" %>
+        <div class="bg-white rounded-xl p-12 text-center" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
+          <i class="fa-solid fa-clipboard-list text-6xl mb-4" style="color: #E5E5E7;"></i>
+          <h3 class="text-xl mb-2" style="color: #1D1D1F; font-family: 'Inter', sans-serif; font-weight: 700;">No Habits Yet</h3>
+          <p class="mb-4" style="color: #8E8E93; font-weight: 300; font-family: 'Inter', sans-serif;">Start building better habits by creating your first one!</p>
+          <%= link_to "Browse Categories", root_path, class: "inline-block px-6 py-3 rounded-lg text-white transition transform hover:scale-105", style: "background: linear-gradient(135deg, #2C2C2E, #1D1D1F); font-weight: 600; font-family: 'Inter', sans-serif; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);" %>
         </div>
       <% end %>
     </div>

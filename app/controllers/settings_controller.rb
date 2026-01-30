@@ -41,7 +41,14 @@ class SettingsController < ApplicationController
   end
 
   def update_importance_level
-    if @importance_level.update(importance_level_params)
+    # For Optional level, only allow editing color and icon (not name)
+    update_params = if @importance_level.optional?
+      importance_level_params.except(:name)
+    else
+      importance_level_params
+    end
+
+    if @importance_level.update(update_params)
       render json: @importance_level
     else
       render json: { errors: @importance_level.errors.full_messages }, status: :unprocessable_entity
@@ -49,6 +56,12 @@ class SettingsController < ApplicationController
   end
 
   def destroy_importance_level
+    # Prevent deletion of Optional level (also handled in model, but double-check here)
+    if @importance_level.optional?
+      render json: { errors: ['Cannot delete the Optional importance level'] }, status: :unprocessable_entity
+      return
+    end
+
     if @importance_level.destroy
       render json: { message: 'Importance level deleted successfully' }
     else

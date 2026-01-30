@@ -1,5 +1,6 @@
 class Document < ApplicationRecord
   has_and_belongs_to_many :habits
+  has_and_belongs_to_many :tasks
   has_rich_text :body
   has_many :taggings, as: :taggable, dependent: :destroy
   has_many :tags, through: :taggings
@@ -57,8 +58,6 @@ class Document < ApplicationRecord
 
   def content_type_requirements
     case content_type
-    when 'document'
-      errors.add(:body, "can't be blank for document type") if body.blank?
     when 'youtube', 'video', 'link'
       errors.add(:metadata, "must include url") if metadata.blank? || metadata['url'].blank?
     end

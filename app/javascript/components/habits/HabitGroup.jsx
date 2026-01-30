@@ -1,61 +1,81 @@
-import React, { useState } from 'react';
+import React from 'react';
 import HabitCard from '../categories/HabitCard';
+import useHabitsStore from '../../stores/habitsStore';
 
-const HabitGroup = ({ title, icon, color, darkColor, habits, viewMode, selectedDate }) => {
-  const [isExpanded, setIsExpanded] = useState(true);
-  const [completedCount, setCompletedCount] = useState(
-    habits.filter(h => (h.today_count || 0) >= h.target_count).length
-  );
+const HabitGroup = ({ groupId, title, icon, color, darkColor, habits, viewMode, selectedDate, isFirst = false }) => {
+  const { openNewModal } = useHabitsStore();
 
-  const handleCompletionChange = (delta) => {
-    setCompletedCount(prev => prev + delta);
+  // Sort habits: due habits first, then non-due; within each group: non-optional first, then optional
+  const sortedHabits = [...habits].sort((a, b) => {
+    // First sort by due status
+    const aIsDue = a.is_due_today !== false;
+    const bIsDue = b.is_due_today !== false;
+
+    if (aIsDue && !bIsDue) return -1;
+    if (!aIsDue && bIsDue) return 1;
+
+    // Then sort by optional status
+    const aIsOptional = a.importance_level?.name === 'Optional';
+    const bIsOptional = b.importance_level?.name === 'Optional';
+
+    if (aIsOptional && !bIsOptional) return 1;
+    if (!aIsOptional && bIsOptional) return -1;
+    return 0;
+  });
+
+  // Handle new habit button click based on view mode
+  const handleNewHabit = () => {
+    if (viewMode === 'category' && groupId && typeof groupId === 'number') {
+      openNewModal({ categoryId: groupId });
+    } else if (viewMode === 'time' && groupId && typeof groupId === 'number') {
+      openNewModal({ timeBlockId: groupId });
+    } else if (viewMode === 'priority' && groupId && typeof groupId === 'number') {
+      openNewModal({ importanceLevelId: groupId });
+    } else {
+      openNewModal({});
+    }
   };
 
   return (
-    <div className="mb-8">
-      {/* Header */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-2 py-3 mb-2 flex items-center gap-3 hover:opacity-70 transition text-left"
+    <div className={`mb-6 ${!isFirst ? 'mt-8' : '-mt-6'}`}>
+      {/* Full-width colored stripe header - breaks out of parent padding */}
+      <div
+        className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3"
+        style={{
+          background: `linear-gradient(to bottom, color-mix(in srgb, ${color} 85%, white) 0%, ${color} 100%)`,
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+        }}
       >
-        <div
-          className="w-10 h-10 rounded-lg flex items-center justify-center shadow-sm"
-          style={{ backgroundColor: color }}
-        >
-          <i className={`fa-solid ${icon} text-white`}></i>
-        </div>
-        <h2 className="text-2xl flex-1" style={{ color: color, fontFamily: "'Inter', sans-serif", fontWeight: 700 }}>
+        <i className={`fa-solid ${icon} text-white text-lg`}></i>
+        <h2 className="text-3xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
           {title}
         </h2>
-        <div className="flex-shrink-0">
-          <i
-            className="fa-solid fa-chevron-down transition-transform duration-200"
-            style={{
-              color: color,
-              transform: !isExpanded ? 'rotate(-90deg)' : 'rotate(0deg)'
-            }}
-          ></i>
-        </div>
-      </button>
+        <button
+          onClick={handleNewHabit}
+          className="w-8 h-8 rounded-md flex items-center justify-center transition btn-glass"
+          title={`New habit`}
+        >
+          <i className="fa-solid fa-plus text-white"></i>
+        </button>
+      </div>
 
       {/* Habits List */}
-      {isExpanded && (
-        <div className="space-y-3">
-          {habits.map((habit) => (
-            <HabitCard
-              key={habit.id}
-              habit={{
-                ...habit,
-                today_count: habit.today_count || 0,
-                current_streak: habit.current_streak || 0,
-              }}
-              categoryColor={viewMode === 'category' ? color : habit.category_color}
-              categoryDarkColor={viewMode === 'category' ? darkColor : habit.category_dark_color}
-              useHabitsPage={true}
-            />
-          ))}
-        </div>
-      )}
+      <div className="space-y-3">
+        {sortedHabits.map((habit) => (
+          <HabitCard
+            key={habit.id}
+            habit={{
+              ...habit,
+              today_count: habit.today_count || 0,
+              current_streak: habit.current_streak || 0,
+            }}
+            categoryColor={viewMode === 'category' ? color : habit.category_color}
+            categoryDarkColor={viewMode === 'category' ? darkColor : habit.category_dark_color}
+            useHabitsPage={true}
+            isOptional={habit.importance_level?.name === 'Optional'}
+          />
+        ))}
+      </div>
     </div>
   );
 };

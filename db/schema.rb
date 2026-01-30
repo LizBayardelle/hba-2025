@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_01_17_002748) do
+ActiveRecord::Schema[7.2].define(version: 2026_01_30_191559) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -66,6 +66,20 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_17_002748) do
     t.index ["user_id"], name: "index_categories_on_user_id"
   end
 
+  create_table "checklist_items", force: :cascade do |t|
+    t.string "checklistable_type", null: false
+    t.bigint "checklistable_id", null: false
+    t.bigint "user_id", null: false
+    t.string "name", null: false
+    t.boolean "completed", default: false, null: false
+    t.datetime "completed_at"
+    t.integer "position", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["checklistable_type", "checklistable_id"], name: "index_checklist_items_on_checklistable"
+    t.index ["user_id"], name: "index_checklist_items_on_user_id"
+  end
+
   create_table "documents", force: :cascade do |t|
     t.string "content_type", null: false
     t.string "title"
@@ -85,14 +99,22 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_17_002748) do
     t.index ["habit_id", "document_id"], name: "index_documents_habits_on_habit_id_and_document_id"
   end
 
+  create_table "documents_tasks", id: false, force: :cascade do |t|
+    t.bigint "document_id", null: false
+    t.bigint "task_id", null: false
+    t.index ["document_id", "task_id"], name: "index_documents_tasks_on_document_id_and_task_id", unique: true
+    t.index ["document_id"], name: "index_documents_tasks_on_document_id"
+    t.index ["task_id"], name: "index_documents_tasks_on_task_id"
+  end
+
   create_table "habit_completions", force: :cascade do |t|
     t.bigint "habit_id", null: false
-    t.date "completed_at", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.date "completed_at", null: false
     t.integer "count", default: 1, null: false
     t.integer "streak_count", default: 0
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["habit_id", "completed_at"], name: "index_habit_completions_on_habit_id_and_completed_at", unique: true
     t.index ["habit_id"], name: "index_habit_completions_on_habit_id"
     t.index ["user_id"], name: "index_habit_completions_on_user_id"
@@ -126,8 +148,12 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_17_002748) do
     t.datetime "last_health_check_at"
     t.bigint "importance_level_id"
     t.bigint "time_block_id"
+    t.string "schedule_mode", default: "flexible", null: false
+    t.jsonb "schedule_config", default: {}, null: false
     t.index ["category_id"], name: "index_habits_on_category_id"
     t.index ["importance_level_id"], name: "index_habits_on_importance_level_id"
+    t.index ["schedule_config"], name: "index_habits_on_schedule_config", using: :gin
+    t.index ["schedule_mode"], name: "index_habits_on_schedule_mode"
     t.index ["time_block_id"], name: "index_habits_on_time_block_id"
     t.index ["user_id"], name: "index_habits_on_user_id"
   end
@@ -149,6 +175,30 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_17_002748) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_journals_on_user_id"
+  end
+
+  create_table "list_attachments", force: :cascade do |t|
+    t.string "attachable_type", null: false
+    t.bigint "attachable_id", null: false
+    t.bigint "list_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["attachable_type", "attachable_id", "list_id"], name: "index_list_attachments_uniqueness", unique: true
+    t.index ["attachable_type", "attachable_id"], name: "index_list_attachments_on_attachable"
+    t.index ["list_id"], name: "index_list_attachments_on_list_id"
+    t.index ["user_id"], name: "index_list_attachments_on_user_id"
+  end
+
+  create_table "lists", force: :cascade do |t|
+    t.string "name", null: false
+    t.bigint "user_id", null: false
+    t.bigint "category_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.datetime "archived_at"
+    t.index ["category_id"], name: "index_lists_on_category_id"
+    t.index ["user_id"], name: "index_lists_on_user_id"
   end
 
   create_table "taggings", force: :cascade do |t|
@@ -242,6 +292,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_17_002748) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "categories", "users"
+  add_foreign_key "checklist_items", "users"
+  add_foreign_key "documents_tasks", "documents"
+  add_foreign_key "documents_tasks", "tasks"
   add_foreign_key "habit_completions", "habits"
   add_foreign_key "habit_completions", "users"
   add_foreign_key "habits", "categories"
@@ -250,6 +303,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_17_002748) do
   add_foreign_key "habits", "users"
   add_foreign_key "importance_levels", "users"
   add_foreign_key "journals", "users"
+  add_foreign_key "list_attachments", "lists"
+  add_foreign_key "list_attachments", "users"
+  add_foreign_key "lists", "categories"
+  add_foreign_key "lists", "users"
   add_foreign_key "taggings", "tags"
   add_foreign_key "tags", "users"
   add_foreign_key "tasks", "categories"

@@ -6,6 +6,7 @@ import HabitEditModal from './HabitEditModal';
 import HabitFormModal from '../categories/HabitFormModal';
 import DocumentViewModal from '../documents/DocumentViewModal';
 import DocumentFormModal from '../documents/DocumentFormModal';
+import ListShowModal from '../lists/ListShowModal';
 import { tagsApi } from '../../utils/api';
 
 const HabitsPage = () => {
@@ -181,26 +182,13 @@ const HabitsPage = () => {
         <div className="p-8">
           <div className="flex items-start justify-between mb-6">
             <div className="flex-1">
-              <div className="flex items-center gap-4 mb-2">
-                <div
-                  className="w-16 h-16 rounded-xl flex items-center justify-center"
-                  style={{ background: 'linear-gradient(135deg, #E5E5E7 0%, #C7C7CC 50%, #8E8E93 100%)', border: '0.5px solid rgba(199, 199, 204, 0.3)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.3)' }}
-                >
-                  <i className="fa-solid fa-chart-line text-2xl" style={{ color: '#1D1D1F', filter: 'drop-shadow(0 0.5px 0 rgba(255, 255, 255, 0.5))' }}></i>
-                </div>
-                <div>
-                  <h1 className="text-3xl" style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif", fontWeight: 800 }}>
-                    Habits
-                  </h1>
-                  <p className="text-sm" style={{ color: '#8E8E93', fontWeight: 200, fontFamily: "'Inter', sans-serif" }}>
-                    {stats.completed}/{stats.total} completed ({stats.percentage}%)
-                  </p>
-                </div>
-              </div>
+              <h1 className="text-5xl font-display mb-2" style={{ color: '#1D1D1F' }}>
+                Habits
+              </h1>
             </div>
 
             <button
-              onClick={openNewModal}
+              onClick={() => openNewModal({})}
               className="px-6 py-3 rounded-lg text-white transition transform hover:scale-105"
               style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', fontWeight: 600, fontFamily: "'Inter', sans-serif", boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
             >
@@ -212,32 +200,31 @@ const HabitsPage = () => {
           {/* Filters */}
           <div className="flex flex-wrap gap-4 items-center">
             {/* View Toggle */}
-            <div className="flex gap-2">
-              {[
-                { value: 'category', label: 'Category', icon: 'fa-folder' },
-                { value: 'time', label: 'Time', icon: 'fa-clock' },
-                { value: 'priority', label: 'Priority', icon: 'fa-star' },
-              ].map(({ value, label, icon }) => (
-                <button
-                  key={value}
-                  onClick={() => setViewMode(value)}
-                  className="px-4 py-2 rounded-lg text-sm transition"
-                  style={viewMode === value ? {
-                    background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)',
-                    color: 'white',
-                    fontWeight: 600,
-                    fontFamily: "'Inter', sans-serif",
-                    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.2)'
-                  } : {
-                    color: '#8E8E93',
-                    fontWeight: 600,
-                    fontFamily: "'Inter', sans-serif"
-                  }}
-                >
-                  <i className={`fa-solid ${icon} mr-2`}></i>
-                  {label}
-                </button>
-              ))}
+            <div>
+              <span className="block text-xs uppercase tracking-wide mb-2" style={{ color: '#8E8E93', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
+                Group By
+              </span>
+              <div className="inline-flex rounded-lg overflow-hidden" style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}>
+                {[
+                  { value: 'category', label: 'Category' },
+                  { value: 'time', label: 'Time' },
+                  { value: 'priority', label: 'Priority' },
+                ].map(({ value, label }) => (
+                  <button
+                    key={value}
+                    onClick={() => setViewMode(value)}
+                    className="px-4 py-2 text-sm transition"
+                    style={{
+                      background: viewMode === value ? 'linear-gradient(to bottom, #A8A8AD 0%, #8E8E93 100%)' : '#F5F5F7',
+                      color: viewMode === value ? '#FFFFFF' : '#1D1D1F',
+                      fontWeight: 500,
+                      fontFamily: "'Inter', sans-serif",
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Date Navigation */}
@@ -317,9 +304,10 @@ const HabitsPage = () => {
         {/* Habits List */}
         {!isLoading && !error && habitsData && habitsData.habits.length > 0 && (
           <div className="space-y-4">
-            {groupedHabits.map((group) => (
+            {groupedHabits.map((group, index) => (
               <HabitGroup
                 key={group.id}
+                groupId={group.id}
                 title={group.title}
                 icon={group.icon}
                 color={group.color}
@@ -327,6 +315,7 @@ const HabitsPage = () => {
                 habits={group.habits}
                 viewMode={viewMode}
                 selectedDate={selectedDate}
+                isFirst={index === 0}
               />
             ))}
           </div>
@@ -338,6 +327,7 @@ const HabitsPage = () => {
       <HabitEditModal />
       <DocumentViewModal />
       <DocumentFormModal habits={habitsData?.habits || []} allTags={allTags} />
+      <ListShowModal />
     </>
   );
 };

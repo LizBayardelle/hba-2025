@@ -1,15 +1,25 @@
 <% if resource.errors.any? %>
-  <div id="error_explanation">
-    <h2>
-      <%= I18n.t("errors.messages.not_saved",
-                 count: resource.errors.count,
-                 resource: resource.class.model_name.human.downcase)
-       %>
-    </h2>
-    <ul>
-      <% resource.errors.full_messages.each do |message| %>
-        <li><%= message %></li>
-      <% end %>
-    </ul>
+  <div class="mb-6 p-4 rounded-lg" style="background: #FEF2F2; border: 1px solid #FECACA;">
+    <div class="flex items-start gap-3">
+      <div class="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5" style="background: #EF4444;">
+        <i class="fa-solid fa-exclamation text-white text-xs"></i>
+      </div>
+      <div class="flex-1">
+        <p class="font-semibold text-sm mb-2" style="color: #991B1B;">
+          <%= I18n.t("errors.messages.not_saved",
+                     count: resource.errors.count,
+                     resource: resource.class.model_name.human.downcase)
+           %>
+        </p>
+        <ul class="text-sm space-y-1" style="color: #B91C1C;">
+          <% resource.errors.full_messages.each do |message| %>
+            <li class="flex items-center gap-2">
+              <span style="color: #DC2626;">•</span>
+              <%= message %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
   </div>
 <% end %>

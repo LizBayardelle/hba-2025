@@ -7,6 +7,13 @@ Rails.application.routes.draw do
   get 'habits', to: 'habits#index'
   get 'analytics', to: 'analytics#index'
   get 'documents', to: 'documents#index'
+  resources :lists, only: [:index, :show, :create, :update, :destroy] do
+    resources :checklist_items, only: [:create, :update, :destroy], module: :lists do
+      collection do
+        patch :reorder
+      end
+    end
+  end
   get 'journal', to: 'journals#index'
   get 'tasks', to: 'tasks#index'
   get 'tags', to: 'tags#index'
@@ -38,7 +45,13 @@ Rails.application.routes.draw do
   get 'terms', to: 'legal#terms', as: :terms
 
   resources :journals, only: [:index, :show, :create, :update, :destroy]
-  resources :tasks, only: [:index, :show, :create, :update, :destroy]
+  resources :tasks, only: [:index, :show, :create, :update, :destroy] do
+    resources :checklist_items, only: [:create, :update, :destroy], module: :tasks do
+      collection do
+        patch :reorder
+      end
+    end
+  end
   resources :tags, only: [:index, :show, :update, :destroy]
 
   resources :categories, only: [:index, :create, :update, :destroy, :show] do
@@ -48,6 +61,11 @@ Rails.application.routes.draw do
   resources :habits, only: [] do
     post 'completions/increment', to: 'habit_completions#increment'
     post 'completions/decrement', to: 'habit_completions#decrement'
+    resources :checklist_items, only: [:create, :update, :destroy], module: :habits do
+      collection do
+        patch :reorder
+      end
+    end
   end
 
   resources :habit_contents, path: 'contents' do

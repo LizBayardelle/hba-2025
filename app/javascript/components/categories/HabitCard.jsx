@@ -3,12 +3,35 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import useCategoryStore from '../../stores/categoryStore';
 import useHabitsStore from '../../stores/habitsStore';
 import useDocumentsStore from '../../stores/documentsStore';
+import useListsStore from '../../stores/listsStore';
 
-const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = false }) => {
+const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = false, isOptional = false }) => {
+  // Check if habit is due today (default to true for flexible mode or if not provided)
+  const isDueToday = habit.is_due_today !== false;
+
+  // Determine schedule mode (default to 'flexible')
+  const scheduleMode = habit.schedule_mode || 'flexible';
+
+  // Compute schedule description with fallback
+  const getScheduleDescription = () => {
+    if (habit.schedule_description) return habit.schedule_description;
+    // Fallback for flexible mode
+    if (scheduleMode === 'flexible') {
+      return `${habit.target_count}x/${habit.frequency_type}`;
+    }
+    return null;
+  };
+  const scheduleDescription = getScheduleDescription();
+
+  // Show schedule badge if not the default (flexible 1x/day)
+  const isDefaultSchedule = scheduleMode === 'flexible' && habit.target_count === 1 && habit.frequency_type === 'day';
+  const showScheduleBadge = !isDefaultSchedule && scheduleDescription;
+
   const queryClient = useQueryClient();
   const categoryStore = useCategoryStore();
   const habitsStore = useHabitsStore();
   const { openViewModal, openNewModal } = useDocumentsStore();
+  const { openShowModal: openListShowModal } = useListsStore();
 
   // Use the appropriate store based on context
   const openEditModal = useHabitsPage
@@ -82,7 +105,15 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = fa
 
   return (
     <div className="flex items-start gap-3">
-      <div className="bg-white rounded-lg p-4 border shadow-md hover:shadow-lg transition flex-1" style={{ borderColor: '#E8EEF1' }}>
+      <div
+        className="rounded-lg p-4 border hover:shadow-lg transition flex-1"
+        style={{
+          backgroundColor: isOptional || !isDueToday ? '#FCFCFC' : 'white',
+          borderColor: '#E8EEF1',
+          boxShadow: isOptional || !isDueToday ? '0 1px 2px rgba(0, 0, 0, 0.05)' : '0 1px 3px rgba(0, 0, 0, 0.1)',
+          opacity: isDueToday ? 1 : 0.6,
+        }}
+      >
         <div className="flex items-start gap-3">
           {/* Completion Indicator */}
           <div className="flex-shrink-0">
@@ -93,9 +124,9 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = fa
               disabled={incrementMutation.isPending || decrementMutation.isPending}
               className="w-10 h-10 rounded-lg border-2 flex items-center justify-center font-bold transition hover:scale-110"
               style={{
-                borderColor: categoryColor,
-                color: count > 0 ? 'white' : categoryColor,
-                backgroundColor: count > 0 ? categoryColor : 'transparent',
+                borderColor: isDueToday ? categoryColor : '#9CA3AF',
+                color: count > 0 ? 'white' : (isDueToday ? categoryColor : '#9CA3AF'),
+                backgroundColor: count > 0 ? (isDueToday ? categoryColor : '#9CA3AF') : 'transparent',
               }}
             >
               <i className={`fa-solid ${count > 0 ? 'fa-check' : 'fa-plus'}`}></i>
@@ -104,19 +135,19 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = fa
             // Counter with +/- buttons
             <div
               className="flex items-center rounded-lg border-2 overflow-hidden"
-              style={{ borderColor: categoryColor }}
+              style={{ borderColor: isDueToday ? categoryColor : '#9CA3AF' }}
             >
               <button
                 onClick={() => decrementMutation.mutate()}
                 disabled={decrementMutation.isPending}
                 className="flex-1 h-10 px-[5px] flex items-center justify-center font-bold transition hover:bg-gray-50"
-                style={{ color: categoryColor }}
+                style={{ color: isDueToday ? categoryColor : '#9CA3AF' }}
               >
                 <i className="fa-solid fa-minus"></i>
               </button>
               <div
                 className="flex-[2] h-10 px-[10px] flex items-center justify-center font-bold"
-                style={{ color: categoryColor }}
+                style={{ color: isDueToday ? categoryColor : '#9CA3AF' }}
               >
                 {count}
               </div>
@@ -124,7 +155,7 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = fa
                 onClick={() => incrementMutation.mutate()}
                 disabled={incrementMutation.isPending}
                 className="flex-1 h-10 px-[5px] flex items-center justify-center font-bold transition hover:bg-gray-50"
-                style={{ color: categoryColor }}
+                style={{ color: isDueToday ? categoryColor : '#9CA3AF' }}
               >
                 <i className="fa-solid fa-plus"></i>
               </button>
@@ -169,8 +200,8 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = fa
               </button>
             )}
 
-            {/* Frequency badge - skip if 1x/day (default) */}
-            {!(habit.target_count === 1 && habit.frequency_type === 'day') && (
+            {/* Schedule badge - show for anything other than flexible 1x/day */}
+            {showScheduleBadge && (
               <span
                 className="text-xs px-2 py-0.5 rounded-full font-semibold flex items-center gap-1"
                 style={{
@@ -178,7 +209,21 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = fa
                   color: 'white',
                 }}
               >
-                {habit.target_count}x/{habit.frequency_type}
+                {scheduleDescription}
+              </span>
+            )}
+
+            {/* Not due today indicator */}
+            {!isDueToday && (
+              <span
+                className="text-xs px-2 py-0.5 rounded-full font-semibold flex items-center gap-1"
+                style={{
+                  backgroundColor: '#9CA3AF',
+                  color: 'white',
+                }}
+              >
+                <i className="fa-solid fa-calendar-xmark text-[10px]"></i>
+                Not due today
               </span>
             )}
 
@@ -211,6 +256,38 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = fa
                 <i className="fa-solid fa-tags text-[10px]"></i>
                 {tag.name}
               </a>
+            ))}
+
+            {/* Checklist badge (habit's own checklist) - display only */}
+            {habit.checklist_items && habit.checklist_items.length > 0 && (
+              <span
+                className="text-xs px-2 py-0.5 rounded-full font-semibold flex items-center gap-1"
+                style={{
+                  backgroundColor: categoryColor,
+                  color: 'white',
+                }}
+                title="Habit checklist progress"
+              >
+                <i className="fa-solid fa-list-check text-[10px]"></i>
+                {habit.checklist_items.filter(i => i.completed).length}/{habit.checklist_items.length}
+              </span>
+            )}
+
+            {/* Attached list badges */}
+            {habit.list_attachments && habit.list_attachments.map((attachment) => (
+              <button
+                key={attachment.list_id}
+                onClick={() => openListShowModal(attachment.list_id)}
+                className="text-xs px-2 py-0.5 rounded-full font-semibold hover:opacity-70 transition cursor-pointer flex items-center gap-1"
+                style={{
+                  backgroundColor: attachment.list_category?.color || categoryColor,
+                  color: 'white',
+                }}
+                title={`Open ${attachment.list_name}`}
+              >
+                <i className={`fa-solid ${attachment.list_category?.icon || 'fa-list-check'} text-[10px]`}></i>
+                {attachment.list_name} ({attachment.checklist_items?.filter(i => i.completed).length || 0}/{attachment.checklist_items?.length || 0})
+              </button>
             ))}
           </div>
         </div>

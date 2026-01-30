@@ -1,0 +1,320 @@
+import React, { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import ChecklistSection from '../shared/ChecklistSection';
+import ListFormModal from './ListFormModal';
+import useListsStore from '../../stores/listsStore';
+import { listsApi, categoriesApi } from '../../utils/api';
+
+const ListsPage = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [groupBy, setGroupBy] = useState('type'); // 'type' or 'category'
+  const { openFormModal, openEditModal } = useListsStore();
+
+  // Fetch lists data
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['lists'],
+    queryFn: listsApi.fetchAll,
+  });
+
+  // Fetch categories for grouping
+  const { data: categoriesData } = useQuery({
+    queryKey: ['categories'],
+    queryFn: categoriesApi.fetchAll,
+  });
+
+  const lists = data?.lists || [];
+  const categories = Array.isArray(categoriesData) ? categoriesData : [];
+
+  // Filter based on search query
+  const filterItem = (item) => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    if (item.name.toLowerCase().includes(query)) return true;
+    if (item.category?.name?.toLowerCase().includes(query)) return true;
+    if (item.checklist_items.some(ci => ci.name.toLowerCase().includes(query))) return true;
+    return false;
+  };
+
+  const filteredLists = lists.filter(filterItem);
+
+  // Group lists based on selected grouping
+  const groupedLists = useMemo(() => {
+    if (groupBy === 'type') {
+      const groups = [
+        { key: 'habits', title: 'Attached to Habits', icon: 'fa-chart-line', color: '#8E8E93', lists: [] },
+        { key: 'tasks', title: 'Attached to Tasks', icon: 'fa-check', color: '#8E8E93', lists: [] },
+        { key: 'standalone', title: 'Unassigned', icon: 'fa-list-check', color: '#8E8E93', lists: [] },
+      ];
+
+      filteredLists.forEach(list => {
+        const hasHabits = list.habits && list.habits.length > 0;
+        const hasTasks = list.tasks && list.tasks.length > 0;
+
+        if (hasHabits) {
+          groups[0].lists.push(list);
+        } else if (hasTasks) {
+          groups[1].lists.push(list);
+        } else {
+          groups[2].lists.push(list);
+        }
+      });
+
+      return groups; // Always return all three groups
+    } else {
+      // Group by category - start with all categories
+      const result = categories.map(cat => ({
+        key: `cat-${cat.id}`,
+        title: cat.name,
+        icon: cat.icon,
+        color: cat.color,
+        lists: [],
+      }));
+
+      // Add uncategorized group
+      const uncategorized = { key: 'uncategorized', title: 'Uncategorized', icon: 'fa-folder', color: '#8E8E93', lists: [] };
+
+      filteredLists.forEach(list => {
+        if (list.category) {
+          const group = result.find(g => g.key === `cat-${list.category.id}`);
+          if (group) {
+            group.lists.push(list);
+          }
+        } else {
+          uncategorized.lists.push(list);
+        }
+      });
+
+      // Sort by name and add uncategorized at the end
+      result.sort((a, b) => a.title.localeCompare(b.title));
+      result.push(uncategorized);
+      return result;
+    }
+  }, [filteredLists, groupBy, categories]);
+
+  return (
+    <>
+      {/* Header Section */}
+      <div style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
+        <div className="p-8">
+          <div className="flex items-start justify-between mb-6">
+            <div className="flex-1">
+              <h1 className="text-5xl font-display" style={{ color: '#1D1D1F' }}>
+                Lists
+              </h1>
+              <p className="text-sm mt-1" style={{ color: '#8E8E93', fontFamily: "'Inter', sans-serif", fontWeight: 300 }}>
+                Attach to habits for reusable checklists, or to tasks for single-use.
+              </p>
+            </div>
+
+            <button
+              onClick={openFormModal}
+              className="px-6 py-3 rounded-lg text-white transition transform hover:scale-105"
+              style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', fontWeight: 600, fontFamily: "'Inter', sans-serif", boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
+            >
+              <i className="fa-solid fa-plus mr-2"></i>
+              New List
+            </button>
+          </div>
+
+          {/* Search and Group By */}
+          <div className="flex items-end gap-8">
+            {lists.length > 0 && (
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search lists..."
+                className="px-4 py-2 rounded-lg text-sm w-full max-w-md"
+                style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', color: '#1D1D1F', fontWeight: 400, fontFamily: "'Inter', sans-serif", background: '#FFFFFF' }}
+              />
+            )}
+
+            {/* Group By */}
+            <div>
+              <span className="block text-xs uppercase tracking-wide mb-2" style={{ color: '#8E8E93', fontWeight: 600 }}>
+                Group By
+              </span>
+              <div className="flex rounded-lg overflow-hidden" style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}>
+                <button
+                  onClick={() => setGroupBy('type')}
+                  className="px-4 py-2 text-sm transition"
+                  style={{
+                    background: groupBy === 'type' ? 'linear-gradient(to bottom, #A8A8AD 0%, #8E8E93 100%)' : '#F5F5F7',
+                    color: groupBy === 'type' ? '#FFFFFF' : '#1D1D1F',
+                    fontWeight: 500,
+                    fontFamily: "'Inter', sans-serif",
+                  }}
+                >
+                  Type
+                </button>
+                <button
+                  onClick={() => setGroupBy('category')}
+                  className="px-4 py-2 text-sm transition"
+                  style={{
+                    background: groupBy === 'category' ? 'linear-gradient(to bottom, #A8A8AD 0%, #8E8E93 100%)' : '#F5F5F7',
+                    color: groupBy === 'category' ? '#FFFFFF' : '#1D1D1F',
+                    fontWeight: 500,
+                    fontFamily: "'Inter', sans-serif",
+                  }}
+                >
+                  Category
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Content Area */}
+      <div className="px-8 pb-8">
+        {isLoading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#2C2C2E' }}></div>
+          </div>
+        )}
+
+        {error && (
+          <div className="rounded-xl p-12 text-center" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)' }}>
+            <i className="fa-solid fa-exclamation-circle text-6xl mb-4" style={{ color: '#DC2626' }}></i>
+            <p style={{ color: '#DC2626', fontFamily: "'Inter', sans-serif", fontWeight: 400 }}>Error loading lists: {error.message}</p>
+          </div>
+        )}
+
+        {!isLoading && !error && (
+          <div>
+            {groupedLists.map((group, index) => (
+              <div key={group.key} className={index !== 0 ? 'mt-8' : ''}>
+                {/* Full-width stripe header */}
+                <div
+                  className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3"
+                  style={{
+                    background: `linear-gradient(to bottom, color-mix(in srgb, ${group.color} 85%, white) 0%, ${group.color} 100%)`,
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                  }}
+                >
+                  <i className={`fa-solid ${group.icon} text-white text-lg`}></i>
+                  <h3 className="text-3xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
+                    {group.title} ({group.lists.length})
+                  </h3>
+                  <button
+                    onClick={openFormModal}
+                    className="w-8 h-8 rounded-md flex items-center justify-center transition btn-glass"
+                    title="New list"
+                  >
+                    <i className="fa-solid fa-plus text-white"></i>
+                  </button>
+                </div>
+                {group.lists.length > 0 ? (
+                  <div className="space-y-4">
+                    {group.lists.map((list) => (
+                      <ListCard
+                        key={list.id}
+                        list={list}
+                        onEdit={openEditModal}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="py-3 text-sm" style={{ color: '#8E8E93', fontFamily: "'Inter', sans-serif", fontWeight: 300 }}>
+                    No current lists
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Modal */}
+      <ListFormModal />
+    </>
+  );
+};
+
+const ListCard = ({ list, onEdit }) => {
+  const color = list.category?.color || '#1d3e4c';
+  const completedCount = list.checklist_items.filter(i => i.completed).length;
+  const totalCount = list.checklist_items.length;
+
+  return (
+    <div
+      className="rounded-xl p-5 transition"
+      style={{
+        background: '#FFFFFF',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)',
+      }}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-3">
+          {/* Category Icon */}
+          <div
+            className="w-10 h-10 rounded-lg flex items-center justify-center"
+            style={{ backgroundColor: color }}
+          >
+            {list.category ? (
+              <i className={`fa-solid ${list.category.icon} text-white`}></i>
+            ) : (
+              <i className="fa-solid fa-list-check text-white"></i>
+            )}
+          </div>
+
+          <div>
+            <div className="flex items-center gap-2">
+              <h3
+                className="font-semibold"
+                style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif" }}
+              >
+                {list.name}
+              </h3>
+            </div>
+            <div className="flex items-center gap-2 text-xs" style={{ color: '#8E8E93' }}>
+              {list.category && (
+                <span>{list.category.name}</span>
+              )}
+              {!list.category && (
+                <span>No category</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* Edit Button */}
+          <button
+            onClick={() => onEdit(list.id)}
+            className="w-8 h-8 rounded-lg flex items-center justify-center transition hover:bg-gray-200"
+            style={{ backgroundColor: '#F5F5F7' }}
+            title="Edit list"
+          >
+            <i className="fa-solid fa-pen text-sm" style={{ color: '#636366' }}></i>
+          </button>
+
+          {/* Progress Badge */}
+          <div
+            className="px-3 py-1.5 rounded-lg font-semibold text-sm"
+            style={{
+              backgroundColor: completedCount === totalCount ? '#D1FAE5' : `${color}15`,
+              color: completedCount === totalCount ? '#059669' : color,
+            }}
+          >
+            {completedCount}/{totalCount}
+          </div>
+        </div>
+      </div>
+
+      {/* Checklist */}
+      <ChecklistSection
+        parentType="list"
+        parentId={list.id}
+        items={list.checklist_items}
+        color={color}
+        editable={false}
+        compact={true}
+        readOnly={true}
+      />
+    </div>
+  );
+};
+
+export default ListsPage;

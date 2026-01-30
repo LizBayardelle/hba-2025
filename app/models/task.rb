@@ -4,14 +4,19 @@ class Task < ApplicationRecord
   belongs_to :document, optional: true, foreign_key: :attached_document_id
   belongs_to :importance_level, optional: true
   belongs_to :time_block, optional: true
+  has_and_belongs_to_many :documents
   has_many :taggings, as: :taggable, dependent: :destroy
   has_many :tags, through: :taggings
+  has_many :checklist_items, as: :checklistable, dependent: :destroy
+  has_many :list_attachments, as: :attachable, dependent: :destroy
+  has_many :attached_lists, through: :list_attachments, source: :list
   has_rich_text :notes
 
   validates :name, presence: true
 
-  # Set completed_at when task is marked as completed
+  # Set completed_at when task is marked as completed and archive attached lists
   before_save :set_completed_at
+  after_save :archive_attached_lists_if_completed
 
   def set_completed_at
     if completed_changed?
@@ -20,6 +25,12 @@ class Task < ApplicationRecord
       else
         self.completed_at = nil
       end
+    end
+  end
+
+  def archive_attached_lists_if_completed
+    if saved_change_to_completed? && completed?
+      attached_lists.update_all(archived_at: Time.current)
     end
   end
 
@@ -42,6 +53,22 @@ class Task < ApplicationRecord
 
   def tag_names
     tags.pluck(:name)
+  end
+
+  # Helper method to assign documents by ID
+  def task_content_ids=(ids)
+    self.document_ids = ids.reject(&:blank?)
+  end
+
+  # Helper method to assign lists by ID
+  def list_attachment_ids=(ids)
+    list_ids = ids.reject(&:blank?).map(&:to_i)
+    # Remove attachments not in the new list
+    list_attachments.where.not(list_id: list_ids).destroy_all
+    # Add new attachments
+    list_ids.each do |list_id|
+      list_attachments.find_or_create_by(list_id: list_id)
+    end
   end
 
   # Mark task as completed

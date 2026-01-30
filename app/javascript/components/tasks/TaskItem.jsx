@@ -3,11 +3,14 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { tasksApi } from '../../utils/api';
 import useTasksStore from '../../stores/tasksStore';
 import useDocumentsStore from '../../stores/documentsStore';
+import useListsStore from '../../stores/listsStore';
+import ChecklistSection from '../shared/ChecklistSection';
 
 const TaskItem = ({ task }) => {
   const queryClient = useQueryClient();
   const { openViewModal, openEditModal } = useTasksStore();
   const { openViewModal: openDocumentModal } = useDocumentsStore();
+  const { openShowModal: openListShowModal } = useListsStore();
 
   // Toggle completion mutation
   const toggleCompleteMutation = useMutation({
@@ -216,7 +219,55 @@ const TaskItem = ({ task }) => {
                 <i className="fa-solid fa-location-dot"></i>
               </div>
             )}
+
+            {/* Checklist indicator */}
+            {task.checklist_items && task.checklist_items.length > 0 && (
+              <div
+                className="px-2 py-1 rounded-lg text-xs font-medium"
+                style={{
+                  backgroundColor: themeColor,
+                  color: 'white',
+                }}
+              >
+                <i className="fa-solid fa-list-check mr-1"></i>
+                {task.checklist_items.filter(i => i.completed).length}/{task.checklist_items.length}
+              </div>
+            )}
+
+            {/* Attached list badges */}
+            {task.list_attachments && task.list_attachments.map((attachment) => (
+              <button
+                key={attachment.list_id}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openListShowModal(attachment.list_id);
+                }}
+                className="px-2 py-1 rounded-lg text-xs font-medium hover:opacity-70 transition cursor-pointer flex items-center gap-1"
+                style={{
+                  backgroundColor: attachment.list_category?.color || themeColor,
+                  color: 'white',
+                }}
+                title={`Open ${attachment.list_name}`}
+              >
+                <i className={`fa-solid ${attachment.list_category?.icon || 'fa-list-check'} text-[10px]`}></i>
+                {attachment.list_name} ({attachment.checklist_items?.filter(i => i.completed).length || 0}/{attachment.checklist_items?.length || 0})
+              </button>
+            ))}
           </div>
+
+          {/* Checklist (read-only toggle) */}
+          {task.checklist_items && task.checklist_items.length > 0 && (
+            <div onClick={(e) => e.stopPropagation()}>
+              <ChecklistSection
+                parentType="task"
+                parentId={task.id}
+                items={task.checklist_items}
+                color={task.category?.color || themeColor}
+                editable={false}
+                compact={true}
+              />
+            </div>
+          )}
         </div>
       </div>
 

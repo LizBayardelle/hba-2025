@@ -56,14 +56,33 @@ const JournalPage = () => {
     return groups;
   }, [journals]);
 
-  const renderGroup = (title, journals) => {
+  const renderGroup = (title, journals, icon, isFirst = false) => {
     if (journals.length === 0) return null;
 
+    const metallicGrey = '#8E8E93';
+
     return (
-      <div key={title} className="mb-8">
-        <h3 className="text-lg mb-4" style={{ color: '#1D1D1F', fontWeight: 700, fontFamily: "'Inter', sans-serif" }}>
-          {title}
-        </h3>
+      <div key={title} className={`mb-6 ${!isFirst ? 'mt-8' : ''}`}>
+        {/* Full-width colored stripe header */}
+        <div
+          className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3"
+          style={{
+            background: `linear-gradient(to bottom, color-mix(in srgb, ${metallicGrey} 85%, white) 0%, ${metallicGrey} 100%)`,
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+          }}
+        >
+          <i className={`fa-solid ${icon} text-white text-lg`}></i>
+          <h3 className="text-3xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
+            {title} ({journals.length})
+          </h3>
+          <button
+            onClick={openNewModal}
+            className="w-8 h-8 rounded-md flex items-center justify-center transition btn-glass"
+            title="New entry"
+          >
+            <i className="fa-solid fa-plus text-white"></i>
+          </button>
+        </div>
         <div className="space-y-4">
           {journals.map(journal => (
             <JournalCard key={journal.id} journal={journal} />
@@ -78,52 +97,37 @@ const JournalPage = () => {
       {/* Header Section */}
       <div style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
         <div className="p-8">
-          <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between mb-6">
             <div className="flex-1">
-              <div className="flex items-center gap-4 mb-2">
-                <div
-                  className="w-16 h-16 rounded-xl flex items-center justify-center"
-                  style={{ background: 'linear-gradient(135deg, #E5E5E7 0%, #C7C7CC 50%, #8E8E93 100%)', border: '0.5px solid rgba(199, 199, 204, 0.3)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.3)' }}
-                >
-                  <i className="fa-solid fa-book text-2xl" style={{ color: '#1D1D1F', filter: 'drop-shadow(0 0.5px 0 rgba(255, 255, 255, 0.5))' }}></i>
-                </div>
-                <div>
-                  <h1 className="text-3xl" style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif", fontWeight: 800 }}>
-                    Journal
-                  </h1>
-                  <p className="text-sm" style={{ color: '#8E8E93', fontWeight: 200, fontFamily: "'Inter', sans-serif" }}>
-                    Your personal journal entries
-                  </p>
-                </div>
-              </div>
+              <h1 className="text-5xl font-display mb-2" style={{ color: '#1D1D1F' }}>
+                Journal
+              </h1>
             </div>
-            <div className="flex flex-col gap-2 items-end">
-              <button
-                onClick={openNewModal}
-                className="px-4 py-2 rounded-lg text-white transition transform hover:scale-[1.02]"
-                style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', fontWeight: 600, fontFamily: "'Inter', sans-serif", boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
-              >
-                <i className="fa-solid fa-plus mr-2"></i>New Entry
-              </button>
-            </div>
+
+            <button
+              onClick={openNewModal}
+              className="px-6 py-3 rounded-lg text-white transition transform hover:scale-105"
+              style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', fontWeight: 600, fontFamily: "'Inter', sans-serif", boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
+            >
+              <i className="fa-solid fa-plus mr-2"></i>
+              New Entry
+            </button>
           </div>
 
           {/* Search */}
-          <div className="mt-6">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search journal entries..."
-              className="w-full px-4 py-3 rounded-lg focus:outline-none transition"
-              style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', color: '#1D1D1F', fontWeight: 400, fontFamily: "'Inter', sans-serif", background: '#FFFFFF' }}
-            />
-          </div>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search journal entries..."
+            className="px-4 py-2 rounded-lg text-sm w-full max-w-md"
+            style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', color: '#1D1D1F', fontWeight: 400, fontFamily: "'Inter', sans-serif", background: '#FFFFFF' }}
+          />
         </div>
       </div>
 
       {/* Content Area */}
-      <div className="p-8 pt-6">
+      <div className="px-8 pb-8">
         {isLoading && (
           <div className="flex items-center justify-center py-12">
             <div
@@ -144,7 +148,7 @@ const JournalPage = () => {
         )}
 
         {!isLoading && !error && journals.length === 0 && (
-          <div className="rounded-xl p-12 text-center" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)' }}>
+          <div className="rounded-xl p-12 text-center mt-8" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)' }}>
             <i
               className="fa-solid fa-book-open text-6xl mb-4"
               style={{ color: '#E5E5E7' }}
@@ -157,10 +161,10 @@ const JournalPage = () => {
 
         {!isLoading && !error && journals.length > 0 && (
           <div>
-            {renderGroup('Today', groupedJournals.today)}
-            {renderGroup('Yesterday', groupedJournals.yesterday)}
-            {renderGroup('This Week', groupedJournals.thisWeek)}
-            {renderGroup('Earlier', groupedJournals.earlier)}
+            {renderGroup('Today', groupedJournals.today, 'fa-sun', groupedJournals.today.length > 0)}
+            {renderGroup('Yesterday', groupedJournals.yesterday, 'fa-clock-rotate-left', groupedJournals.today.length === 0 && groupedJournals.yesterday.length > 0)}
+            {renderGroup('This Week', groupedJournals.thisWeek, 'fa-calendar-week', groupedJournals.today.length === 0 && groupedJournals.yesterday.length === 0 && groupedJournals.thisWeek.length > 0)}
+            {renderGroup('Earlier', groupedJournals.earlier, 'fa-archive', groupedJournals.today.length === 0 && groupedJournals.yesterday.length === 0 && groupedJournals.thisWeek.length === 0)}
           </div>
         )}
       </div>

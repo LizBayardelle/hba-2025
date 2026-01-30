@@ -1,4 +1,6 @@
 class Habit < ApplicationRecord
+  SCHEDULE_MODES = %w[flexible specific_days interval].freeze
+
   belongs_to :category
   belongs_to :user
   belongs_to :importance_level, optional: true
@@ -7,10 +9,15 @@ class Habit < ApplicationRecord
   has_and_belongs_to_many :documents
   has_many :taggings, as: :taggable, dependent: :destroy
   has_many :tags, through: :taggings
+  has_many :checklist_items, as: :checklistable, dependent: :destroy
+  has_many :list_attachments, as: :attachable, dependent: :destroy
+  has_many :attached_lists, through: :list_attachments, source: :list
 
   validates :name, presence: true
   validates :frequency_type, presence: true
   validates :target_count, presence: true, numericality: { greater_than: 0 }
+  validates :schedule_mode, inclusion: { in: SCHEDULE_MODES }
+  validate :validate_schedule_config
 
   scope :active, -> { where(archived_at: nil) }
 
@@ -23,6 +30,43 @@ class Habit < ApplicationRecord
 
   def tag_names
     tags.pluck(:name)
+  end
+
+  # Schedule mode helpers
+  def due_on?(date)
+    case schedule_mode
+    when 'flexible'
+      true # Always shows, target is per-period
+    when 'specific_days'
+      (schedule_config['days_of_week'] || []).include?(date.wday)
+    when 'interval'
+      anchor = Date.parse(schedule_config['anchor_date']) rescue (start_date || created_at.to_date)
+      interval = schedule_config['interval_days'] || 1
+      ((date - anchor).to_i % interval).zero?
+    else
+      true
+    end
+  end
+
+  def due_today?
+    due_on?(Time.zone.today)
+  end
+
+  def schedule_description
+    case schedule_mode
+    when 'flexible'
+      "#{target_count}x/#{frequency_type}"
+    when 'specific_days'
+      days = schedule_config['days_of_week'] || []
+      return 'Weekdays' if days.sort == [1, 2, 3, 4, 5]
+      return 'Weekends' if days.sort == [0, 6]
+      return 'MWF' if days.sort == [1, 3, 5]
+      return 'T/Th' if days.sort == [2, 4]
+      days.map { |d| Date::ABBR_DAYNAMES[d] }.join('/')
+    when 'interval'
+      n = schedule_config['interval_days'] || 1
+      n == 1 ? 'Daily' : n == 2 ? 'Every other day' : "Every #{n} days"
+    end
   end
 
   # Helper method to assign documents by ID
@@ -39,16 +83,41 @@ class Habit < ApplicationRecord
     streak = 0
     date = as_of_date || Time.zone.today
 
-    # Count backwards from the specified date while the target is met each day
-    loop do
-      completion = habit_completions.find_by(completed_at: date)
+    # For specific_days and interval modes, we count consecutive due dates completed
+    # For flexible mode, we count consecutive days target met
+    if schedule_mode == 'flexible'
+      # Count backwards from the specified date while the target is met each day
+      loop do
+        completion = habit_completions.find_by(completed_at: date)
 
-      # Check if target was met for this date
-      if completion && completion.count >= target_count
-        streak += 1
+        # Check if target was met for this date
+        if completion && completion.count >= target_count
+          streak += 1
+          date -= 1.day
+        else
+          break
+        end
+      end
+    else
+      # For specific_days and interval modes, skip non-due dates
+      max_lookback = 365 # Prevent infinite loops
+      lookback_count = 0
+
+      loop do
+        break if lookback_count > max_lookback
+
+        if due_on?(date)
+          completion = habit_completions.find_by(completed_at: date)
+
+          if completion && completion.count >= 1 # For scheduled habits, completing once counts
+            streak += 1
+          else
+            break
+          end
+        end
+
         date -= 1.day
-      else
-        break
+        lookback_count += 1
       end
     end
 
@@ -68,22 +137,60 @@ class Habit < ApplicationRecord
   def update_health!
     # Check if we need to update health based on missed days
     today = Time.zone.today
-
-    # Check if target was met yesterday
     yesterday = today - 1.day
-    yesterday_completion = habit_completions.find_by(completed_at: yesterday)
-    yesterday_met = yesterday_completion && yesterday_completion.count >= target_count
 
-    # If yesterday wasn't met, apply health penalty
-    unless yesterday_met
-      apply_health_penalty(yesterday)
-    else
-      # If yesterday was met, reset consecutive misses and build health
-      if consecutive_misses > 0
-        update_columns(consecutive_misses: 0, last_missed_date: nil)
+    # For flexible mode with non-daily frequency, check period end
+    if schedule_mode == 'flexible' && frequency_type != 'day'
+      # Weekly: check on Monday for last week
+      # Monthly: check on 1st for last month
+      case frequency_type
+      when 'week'
+        if today.wday == 1 # Monday - check last week
+          week_start = yesterday.beginning_of_week
+          week_end = yesterday.end_of_week
+          period_completions = habit_completions.where(completed_at: week_start..week_end).sum(:count)
+          if period_completions < target_count
+            apply_health_penalty(yesterday)
+          else
+            build_health if consecutive_misses > 0
+            update_columns(consecutive_misses: 0, last_missed_date: nil) if consecutive_misses > 0
+          end
+        end
+      when 'month'
+        if today.day == 1 # First of month - check last month
+          month_start = yesterday.beginning_of_month
+          month_end = yesterday.end_of_month
+          period_completions = habit_completions.where(completed_at: month_start..month_end).sum(:count)
+          if period_completions < target_count
+            apply_health_penalty(yesterday)
+          else
+            build_health if consecutive_misses > 0
+            update_columns(consecutive_misses: 0, last_missed_date: nil) if consecutive_misses > 0
+          end
+        end
       end
-      # Build health for completing
-      build_health
+    else
+      # For daily flexible mode, specific_days, and interval modes
+      # Only apply penalty if yesterday was a due date
+      yesterday_was_due = due_on?(yesterday)
+
+      if yesterday_was_due
+        yesterday_completion = habit_completions.find_by(completed_at: yesterday)
+        required_count = schedule_mode == 'flexible' ? target_count : 1
+        yesterday_met = yesterday_completion && yesterday_completion.count >= required_count
+
+        # If yesterday wasn't met, apply health penalty
+        unless yesterday_met
+          apply_health_penalty(yesterday)
+        else
+          # If yesterday was met, reset consecutive misses and build health
+          if consecutive_misses > 0
+            update_columns(consecutive_misses: 0, last_missed_date: nil)
+          end
+          # Build health for completing
+          build_health
+        end
+      end
     end
 
     # Reset weekly miss counter on Monday
@@ -160,6 +267,25 @@ class Habit < ApplicationRecord
     when 50..79 then { state: 'steady', color: '#22D3EE', label: 'Steady' }
     when 25..49 then { state: 'struggling', color: '#E5C730', label: 'Struggling' }
     else { state: 'critical', color: '#F8796D', label: 'Critical' }
+    end
+  end
+
+  private
+
+  def validate_schedule_config
+    case schedule_mode
+    when 'specific_days'
+      days = schedule_config['days_of_week']
+      if days.present?
+        unless days.is_a?(Array) && days.all? { |d| d.is_a?(Integer) && d.between?(0, 6) }
+          errors.add(:schedule_config, 'days_of_week must be an array of integers 0-6')
+        end
+      end
+    when 'interval'
+      interval = schedule_config['interval_days']
+      if interval.present? && (!interval.is_a?(Integer) || interval < 1)
+        errors.add(:schedule_config, 'interval_days must be a positive integer')
+      end
     end
   end
 end

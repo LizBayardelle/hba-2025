@@ -6,6 +6,7 @@ import TaskItem from './TaskItem';
 import TaskFormModal from './TaskFormModal';
 import TaskViewModal from './TaskViewModal';
 import DocumentViewModal from '../documents/DocumentViewModal';
+import ListShowModal from '../lists/ListShowModal';
 
 const TasksPage = () => {
   const {
@@ -80,14 +81,26 @@ const TasksPage = () => {
     queryFn: documentsApi.fetchAll,
   });
 
+  // Fetch importance levels for mapping
+  const { data: importanceLevels = [] } = useQuery({
+    queryKey: ['importanceLevels'],
+    queryFn: async () => {
+      const response = await fetch('/settings/importance_levels');
+      if (!response.ok) throw new Error('Failed to fetch importance levels');
+      return response.json();
+    },
+  });
+
   // Group tasks based on groupBy setting
   const groupedTasks = useMemo(() => {
     if (groupBy === 'status') {
       // For completed tab, group by completion date
+      const metallicGrey = '#8E8E93'; // Theme grey for system groups
+
       if (statusFilter === 'completed') {
         const groups = {
-          completedToday: { title: 'Completed Today', tasks: [] },
-          earlier: { title: 'Earlier', tasks: [] },
+          completedToday: { title: 'Completed Today', tasks: [], color: metallicGrey, icon: 'fa-check-circle' },
+          earlier: { title: 'Earlier', tasks: [], color: metallicGrey, icon: 'fa-history' },
         };
 
         const now = new Date();
@@ -114,11 +127,11 @@ const TasksPage = () => {
 
       // For active/on_hold tabs, group by date created with completed today at bottom
       const groups = {
-        today: { title: 'Added Today', tasks: [] },
-        thisWeek: { title: 'This Week', tasks: [] },
-        thisMonth: { title: 'This Month', tasks: [] },
-        festering: { title: 'Festering', tasks: [] },
-        completedToday: { title: 'Completed Today', tasks: [] },
+        today: { title: 'Added Today', tasks: [], color: metallicGrey, icon: 'fa-sparkles' },
+        thisWeek: { title: 'This Week', tasks: [], color: metallicGrey, icon: 'fa-calendar-week' },
+        thisMonth: { title: 'This Month', tasks: [], color: metallicGrey, icon: 'fa-calendar' },
+        festering: { title: 'Festering', tasks: [], color: metallicGrey, icon: 'fa-skull' },
+        completedToday: { title: 'Completed Today', tasks: [], color: metallicGrey, icon: 'fa-check-circle' },
       };
 
       const now = new Date();
@@ -159,13 +172,14 @@ const TasksPage = () => {
     } else if (groupBy === 'category') {
       // Group by category
       const groups = {};
-      const uncategorized = { title: 'Uncategorized', tasks: [], color: '#9CA3A8', icon: 'fa-inbox' };
+      const uncategorized = { title: 'Uncategorized', tasks: [], color: '#9CA3A8', icon: 'fa-inbox', id: null };
 
       tasks.forEach(task => {
         if (task.category) {
           const catId = task.category.id;
           if (!groups[catId]) {
             groups[catId] = {
+              id: catId,
               title: task.category.name,
               color: task.category.color,
               icon: task.category.icon,
@@ -185,14 +199,15 @@ const TasksPage = () => {
       return result;
     } else if (groupBy === 'due_date') {
       // Group by due date
+      const metallicGrey = '#8E8E93';
       const groups = {
-        overdue: { title: 'Overdue', tasks: [], color: '#FB7185' },
-        today: { title: 'Due Today', tasks: [], color: '#E5C730' },
-        tomorrow: { title: 'Due Tomorrow', tasks: [], color: '#FFA07A' },
-        thisWeek: { title: 'This Week', tasks: [], color: '#22D3EE' },
-        thisMonth: { title: 'This Month', tasks: [], color: '#6B8A99' },
-        later: { title: 'Later', tasks: [], color: '#9CA3A8' },
-        noDueDate: { title: 'No Due Date', tasks: [], color: '#9CA3A8' },
+        overdue: { title: 'Overdue', tasks: [], color: metallicGrey, icon: 'fa-exclamation-triangle' },
+        today: { title: 'Due Today', tasks: [], color: metallicGrey, icon: 'fa-calendar-day' },
+        tomorrow: { title: 'Due Tomorrow', tasks: [], color: metallicGrey, icon: 'fa-calendar-plus' },
+        thisWeek: { title: 'This Week', tasks: [], color: metallicGrey, icon: 'fa-calendar-week' },
+        thisMonth: { title: 'This Month', tasks: [], color: metallicGrey, icon: 'fa-calendar' },
+        later: { title: 'Later', tasks: [], color: metallicGrey, icon: 'fa-calendar-alt' },
+        noDueDate: { title: 'No Due Date', tasks: [], color: metallicGrey, icon: 'fa-infinity' },
       };
 
       const now = new Date();
@@ -237,19 +252,35 @@ const TasksPage = () => {
 
       return Object.values(groups).filter(g => g.tasks.length > 0);
     } else if (groupBy === 'importance') {
-      // Group by importance
-      const importanceLevels = [
-        { key: 'critical', title: 'Critical', color: '#FB7185' },
-        { key: 'important', title: 'Important', color: '#E5C730' },
-        { key: 'normal', title: 'Normal', color: '#6B8A99' },
-        { key: 'optional', title: 'Optional', color: '#9CA3A8' },
-      ];
+      // Group by importance - use user's actual importance levels
+      const groups = {};
+      const noImportance = { title: 'No Importance', tasks: [], color: '#9CA3A8', icon: 'fa-circle', importanceKey: null };
 
-      return importanceLevels.map(level => ({
-        title: level.title,
-        color: level.color,
-        tasks: tasks.filter(t => t.importance === level.key),
-      })).filter(g => g.tasks.length > 0);
+      tasks.forEach(task => {
+        if (task.importance_level) {
+          const levelId = task.importance_level.id;
+          if (!groups[levelId]) {
+            groups[levelId] = {
+              id: levelId,
+              title: task.importance_level.name,
+              color: task.importance_level.color,
+              icon: task.importance_level.icon || 'fa-circle',
+              importanceKey: task.importance_level.name?.toLowerCase(),
+              tasks: [],
+            };
+          }
+          groups[levelId].tasks.push(task);
+        } else {
+          noImportance.tasks.push(task);
+        }
+      });
+
+      // Sort by rank if available
+      const result = Object.values(groups).sort((a, b) => (a.rank || 0) - (b.rank || 0));
+      if (noImportance.tasks.length > 0) {
+        result.push(noImportance);
+      }
+      return result;
     }
 
     return [{ title: 'All Tasks', tasks }];
@@ -271,21 +302,42 @@ const TasksPage = () => {
     return { total, completed, onHold, overdue };
   }, [tasks]);
 
-  const renderGroup = (group) => {
+  // Handle new task button click based on group type
+  const handleNewTaskForGroup = (group) => {
+    if (groupBy === 'category' && group.id) {
+      openNewModal({ categoryId: group.id });
+    } else if (groupBy === 'importance' && group.id) {
+      openNewModal({ importanceLevelId: group.id });
+    } else {
+      openNewModal({});
+    }
+  };
+
+  const renderGroup = (group, index) => {
+    const groupColor = group.color || '#8E8E93';
+    const groupIcon = group.icon || 'fa-list';
+
     return (
-      <div key={group.title} className="mb-8">
-        <div className="flex items-center gap-3 mb-4">
-          {group.icon && (
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm"
-              style={{ backgroundColor: group.color || '#8E8E93' }}
-            >
-              <i className={`fa-solid ${group.icon} text-white text-sm`}></i>
-            </div>
-          )}
-          <h3 className="text-lg" style={{ color: group.color || '#1D1D1F', fontWeight: 700, fontFamily: "'Inter', sans-serif" }}>
+      <div key={group.title} className={`mb-6 ${index !== 0 ? 'mt-8' : ''}`}>
+        {/* Full-width colored stripe header */}
+        <div
+          className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3"
+          style={{
+            background: `linear-gradient(to bottom, color-mix(in srgb, ${groupColor} 85%, white) 0%, ${groupColor} 100%)`,
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+          }}
+        >
+          <i className={`fa-solid ${groupIcon} text-white text-lg`}></i>
+          <h3 className="text-3xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
             {group.title} ({group.tasks.length})
           </h3>
+          <button
+            onClick={() => handleNewTaskForGroup(group)}
+            className="w-8 h-8 rounded-md flex items-center justify-center transition btn-glass"
+            title="New task"
+          >
+            <i className="fa-solid fa-plus text-white"></i>
+          </button>
         </div>
         <div className="space-y-2">
           {group.tasks.map(task => (
@@ -303,27 +355,13 @@ const TasksPage = () => {
         <div className="p-8">
           <div className="flex items-start justify-between mb-6">
             <div className="flex-1">
-              <div className="flex items-center gap-4 mb-2">
-                <div
-                  className="w-16 h-16 rounded-xl flex items-center justify-center"
-                  style={{ background: 'linear-gradient(135deg, #E5E5E7 0%, #C7C7CC 50%, #8E8E93 100%)', border: '0.5px solid rgba(199, 199, 204, 0.3)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.3)' }}
-                >
-                  <i className="fa-solid fa-check text-2xl" style={{ color: '#1D1D1F', filter: 'drop-shadow(0 0.5px 0 rgba(255, 255, 255, 0.5))' }}></i>
-                </div>
-                <div>
-                  <h1 className="text-3xl" style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif", fontWeight: 800 }}>
-                    Tasks
-                  </h1>
-                  <p className="text-sm" style={{ color: '#8E8E93', fontWeight: 200, fontFamily: "'Inter', sans-serif" }}>
-                    {statusFilter === 'active' && `${stats.total} active · ${stats.overdue > 0 ? `${stats.overdue} overdue` : 'none overdue'}`}
-                    {statusFilter === 'on_hold' && `${stats.total} on hold`}
-                    {statusFilter === 'completed' && `${stats.total} completed`}
-                  </p>
-                </div>
-              </div>
+              <h1 className="text-5xl font-display mb-2" style={{ color: '#1D1D1F' }}>
+                Tasks
+              </h1>
             </div>
+
             <button
-              onClick={openNewModal}
+              onClick={() => openNewModal({})}
               className="px-6 py-3 rounded-lg text-white transition transform hover:scale-105"
               style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', fontWeight: 600, fontFamily: "'Inter', sans-serif", boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
             >
@@ -333,47 +371,63 @@ const TasksPage = () => {
           </div>
 
           {/* Filters */}
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-6 items-end">
             {/* Status Filter */}
-            <div className="flex gap-2">
-              {[
-                { value: 'active', label: 'Active' },
-                { value: 'on_hold', label: 'On Hold' },
-                { value: 'completed', label: 'Completed' },
-              ].map(({ value, label }) => (
-                <button
-                  key={value}
-                  onClick={() => setStatusFilter(value)}
-                  className="px-4 py-2 rounded-lg text-sm transition"
-                  style={statusFilter === value ? {
-                    background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)',
-                    color: 'white',
-                    fontWeight: 600,
-                    fontFamily: "'Inter', sans-serif",
-                    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.2)'
-                  } : {
-                    color: '#8E8E93',
-                    fontWeight: 600,
-                    fontFamily: "'Inter', sans-serif"
-                  }}
-                >
-                  {label}
-                </button>
-              ))}
+            <div>
+              <span className="block text-xs uppercase tracking-wide mb-2" style={{ color: '#8E8E93', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
+                Viewing
+              </span>
+              <div className="inline-flex rounded-lg overflow-hidden" style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}>
+                {[
+                  { value: 'active', label: 'Active' },
+                  { value: 'on_hold', label: 'On Hold' },
+                  { value: 'completed', label: 'Completed' },
+                ].map(({ value, label }) => (
+                  <button
+                    key={value}
+                    onClick={() => setStatusFilter(value)}
+                    className="px-4 py-2 text-sm transition"
+                    style={{
+                      background: statusFilter === value ? 'linear-gradient(to bottom, #A8A8AD 0%, #8E8E93 100%)' : '#F5F5F7',
+                      color: statusFilter === value ? '#FFFFFF' : '#1D1D1F',
+                      fontWeight: 500,
+                      fontFamily: "'Inter', sans-serif",
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Group By */}
-            <select
-              value={groupBy}
-              onChange={(e) => setGroupBy(e.target.value)}
-              className="px-4 py-2 rounded-lg text-sm"
-              style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', color: '#1D1D1F', fontWeight: 600, fontFamily: "'Inter', sans-serif", background: 'rgba(229, 229, 231, 0.2)' }}
-            >
-              <option value="status">Group by Date Added</option>
-              <option value="category">Group by Category</option>
-              <option value="due_date">Group by Due Date</option>
-              <option value="importance">Group by Importance</option>
-            </select>
+            <div>
+              <span className="block text-xs uppercase tracking-wide mb-2" style={{ color: '#8E8E93', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
+                Group By
+              </span>
+              <div className="inline-flex rounded-lg overflow-hidden" style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}>
+                {[
+                  { value: 'status', label: 'Date Added' },
+                  { value: 'category', label: 'Category' },
+                  { value: 'due_date', label: 'Due Date' },
+                  { value: 'importance', label: 'Importance' },
+                ].map(({ value, label }) => (
+                  <button
+                    key={value}
+                    onClick={() => setGroupBy(value)}
+                    className="px-4 py-2 text-sm transition"
+                    style={{
+                      background: groupBy === value ? 'linear-gradient(to bottom, #A8A8AD 0%, #8E8E93 100%)' : '#F5F5F7',
+                      color: groupBy === value ? '#FFFFFF' : '#1D1D1F',
+                      fontWeight: 500,
+                      fontFamily: "'Inter', sans-serif",
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {/* Search */}
             <input
@@ -381,7 +435,7 @@ const TasksPage = () => {
               placeholder="Search tasks..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="px-4 py-2 rounded-lg text-sm flex-1 min-w-[200px]"
+              className="px-4 py-2 rounded-lg text-sm flex-1 min-w-[200px] ml-auto"
               style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', color: '#1D1D1F', fontWeight: 400, fontFamily: "'Inter', sans-serif", background: '#FFFFFF' }}
             />
           </div>
@@ -389,7 +443,7 @@ const TasksPage = () => {
       </div>
 
       {/* Tasks List */}
-      <div className="p-8">
+      <div className="px-8 pb-8">
         {isLoading && (
           <div className="text-center py-12">
             <i className="fa-solid fa-spinner fa-spin text-4xl" style={{ color: '#2C2C2E' }}></i>
@@ -414,13 +468,14 @@ const TasksPage = () => {
           </div>
         )}
 
-        {!isLoading && !error && tasks.length > 0 && groupedTasks.map(group => renderGroup(group))}
+        {!isLoading && !error && tasks.length > 0 && groupedTasks.map((group, index) => renderGroup(group, index))}
       </div>
 
       {/* Modals */}
       <TaskFormModal allTags={allTags} categories={categories} documents={documents} />
       <TaskViewModal />
       <DocumentViewModal />
+      <ListShowModal />
     </>
   );
 };

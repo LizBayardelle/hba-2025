@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import useCategoryStore from '../../stores/categoryStore';
 import HabitCard from './HabitCard';
@@ -9,14 +9,14 @@ import DocumentFormModal from '../documents/DocumentFormModal';
 import { tagsApi } from '../../utils/api';
 
 const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
-  const [sortBy, setSortBy] = useState(initialSort);
+  const [groupBy, setGroupBy] = useState(initialSort);
   const { openNewHabitModal, openCategoryEditModal } = useCategoryStore();
 
   // Fetch category data
   const { data: categoryData, isLoading, error } = useQuery({
-    queryKey: ['category', categoryId, sortBy],
+    queryKey: ['category', categoryId, groupBy],
     queryFn: async () => {
-      const response = await fetch(`/categories/${categoryId}.json?sort=${sortBy}`);
+      const response = await fetch(`/categories/${categoryId}.json?sort=${groupBy}`);
       if (!response.ok) throw new Error('Failed to fetch category');
       return response.json();
     },
@@ -26,6 +26,26 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
   const { data: allTags = [] } = useQuery({
     queryKey: ['tags'],
     queryFn: tagsApi.fetchAll,
+  });
+
+  // Fetch importance levels
+  const { data: importanceLevels = [] } = useQuery({
+    queryKey: ['importanceLevels'],
+    queryFn: async () => {
+      const response = await fetch('/settings/importance_levels');
+      if (!response.ok) throw new Error('Failed to fetch importance levels');
+      return response.json();
+    },
+  });
+
+  // Fetch time blocks
+  const { data: timeBlocks = [] } = useQuery({
+    queryKey: ['timeBlocks'],
+    queryFn: async () => {
+      const response = await fetch('/settings/time_blocks');
+      if (!response.ok) throw new Error('Failed to fetch time blocks');
+      return response.json();
+    },
   });
 
   // Color mapping for light/dark variants
@@ -46,12 +66,91 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
     '#9CA3A8': { light: '#E8E8E8', dark: '#4A5057' },
   };
 
+  // Group habits based on groupBy setting
+  const groupedHabits = useMemo(() => {
+    const habits = categoryData?.habits || [];
+
+    if (groupBy === 'priority') {
+      // Start with all importance levels
+      const groups = {};
+
+      importanceLevels.forEach(level => {
+        groups[level.id] = {
+          id: level.id,
+          title: level.name,
+          color: level.color,
+          icon: level.icon || 'fa-circle',
+          rank: level.rank || 0,
+          habits: [],
+        };
+      });
+
+      // Add "No Priority" group
+      const noImportance = { id: 'none', title: 'No Priority', habits: [], color: '#9CA3A8', icon: 'fa-circle', rank: 999 };
+
+      habits.forEach(habit => {
+        if (habit.importance_level) {
+          const levelId = habit.importance_level.id;
+          if (groups[levelId]) {
+            groups[levelId].habits.push(habit);
+          }
+        } else {
+          noImportance.habits.push(habit);
+        }
+      });
+
+      const result = Object.values(groups).sort((a, b) => a.rank - b.rank);
+      // Always show "No Priority" if there are habits without priority
+      if (noImportance.habits.length > 0) {
+        result.push(noImportance);
+      }
+      return result;
+    } else if (groupBy === 'time') {
+      // Start with all time blocks
+      const groups = {};
+
+      timeBlocks.forEach(block => {
+        groups[block.id] = {
+          id: block.id,
+          title: block.name,
+          color: block.color || '#9CA3A8',
+          icon: block.icon || 'fa-clock',
+          rank: block.rank != null ? block.rank : 999,
+          habits: [],
+        };
+      });
+
+      // Add "Anytime" group
+      const anytime = { id: 'anytime', title: 'Anytime', habits: [], color: '#9CA3A8', icon: 'fa-clock', rank: 999 };
+
+      habits.forEach(habit => {
+        if (habit.time_block_id) {
+          const blockId = habit.time_block_id;
+          if (groups[blockId]) {
+            groups[blockId].habits.push(habit);
+          }
+        } else {
+          anytime.habits.push(habit);
+        }
+      });
+
+      const result = Object.values(groups).sort((a, b) => a.rank - b.rank);
+      // Always show "Anytime" if there are habits without time block
+      if (anytime.habits.length > 0) {
+        result.push(anytime);
+      }
+      return result;
+    }
+
+    return [{ title: 'All Habits', habits, color: '#9CA3A8', icon: 'fa-list' }];
+  }, [categoryData, groupBy, importanceLevels, timeBlocks]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div
           className="animate-spin rounded-full h-12 w-12 border-b-2"
-          style={{ borderColor: '#1d3e4c' }}
+          style={{ borderColor: '#2C2C2E' }}
         ></div>
       </div>
     );
@@ -60,12 +159,9 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
   if (error) {
     return (
       <div className="p-8">
-        <div className="bg-white rounded-xl shadow-md p-12 text-center">
-          <i
-            className="fa-solid fa-exclamation-circle text-6xl mb-4"
-            style={{ color: '#DC2626' }}
-          ></i>
-          <p style={{ color: '#DC2626' }}>Error loading category: {error.message}</p>
+        <div className="rounded-xl p-12 text-center" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)' }}>
+          <i className="fa-solid fa-exclamation-circle text-6xl mb-4" style={{ color: '#DC2626' }}></i>
+          <p style={{ color: '#DC2626', fontFamily: "'Inter', sans-serif", fontWeight: 400 }}>Error loading category: {error.message}</p>
         </div>
       </div>
     );
@@ -82,94 +178,29 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
     category_color: category.color,
   })) || [];
 
-  return (
-    <>
-      {/* Header Section */}
-      <div className="bg-white shadow-md sticky top-0 z-10">
-        <div className="p-8 pb-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-4">
-              <div
-                className="w-12 h-12 rounded-lg flex items-center justify-center shadow-lg"
-                style={{ backgroundColor: categoryColor }}
-              >
-                <i className={`fa-solid ${category.icon} text-white text-xl`}></i>
-              </div>
-              <div>
-                <h1
-                  className="text-4xl font-bold display-font mb-1"
-                  style={{ color: categoryColor }}
-                >
-                  {category.name}
-                </h1>
-                <p className="text-sm font-light" style={{ color: '#657b84' }}>
-                  {category.description || 'Track Your Habits'}
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-col gap-2 items-end">
-              <button
-                onClick={() => openNewHabitModal(categoryId)}
-                className="px-4 py-2 rounded-lg text-white font-semibold shadow-md hover:shadow-lg transition transform hover:scale-[1.02]"
-                style={{ backgroundColor: categoryColor }}
-              >
-                <i className="fa-solid fa-plus mr-2"></i>Add Habit
-              </button>
-              <button
-                onClick={() => openCategoryEditModal(categoryId)}
-                className="text-sm font-light hover:opacity-70 transition"
-                style={{ color: categoryColor }}
-              >
-                <i className="fa-solid fa-pen-to-square mr-2"></i>Edit Category
-              </button>
-            </div>
-          </div>
+  // Render a group with colored stripe header
+  const renderGroup = (group, index) => {
+    const groupColor = group.color || '#8E8E93';
+    const groupIcon = group.icon || 'fa-list';
+
+    return (
+      <div key={group.title} className={`mb-6 ${index !== 0 ? 'mt-8' : ''}`}>
+        {/* Full-width colored stripe header */}
+        <div
+          className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3"
+          style={{
+            background: `linear-gradient(to bottom, color-mix(in srgb, ${groupColor} 85%, white) 0%, ${groupColor} 100%)`,
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+          }}
+        >
+          <i className={`fa-solid ${groupIcon} text-white text-lg`}></i>
+          <h3 className="text-3xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
+            {group.title} ({group.habits.length})
+          </h3>
         </div>
-      </div>
-
-      {/* Content Area */}
-      <div className="p-8 pt-6">
-        {/* Habits Section Header with Sort */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold display-font" style={{ color: colors.dark }}>
-            Habits
-          </h2>
-
-          {/* Sort Toggle */}
-          <div className="flex gap-1 bg-white p-0.5 rounded-lg shadow-sm">
-            <button
-              onClick={() => setSortBy('priority')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                sortBy === 'priority' ? 'shadow-sm' : 'hover:bg-gray-100'
-              }`}
-              style={
-                sortBy === 'priority'
-                  ? { backgroundColor: colors.light, color: colors.dark }
-                  : { color: colors.dark }
-              }
-            >
-              <i className="fa-solid fa-star mr-1"></i>Priority
-            </button>
-            <button
-              onClick={() => setSortBy('time')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                sortBy === 'time' ? 'shadow-sm' : 'hover:bg-gray-100'
-              }`}
-              style={
-                sortBy === 'time'
-                  ? { backgroundColor: colors.light, color: colors.dark }
-                  : { color: colors.dark }
-              }
-            >
-              <i className="fa-solid fa-clock mr-1"></i>Time
-            </button>
-          </div>
-        </div>
-
-        {/* Habits Grid */}
-        {habits && habits.length > 0 ? (
+        {group.habits.length > 0 ? (
           <div className="space-y-3">
-            {habits.map((habit) => (
+            {group.habits.map(habit => (
               <HabitCard
                 key={habit.id}
                 habit={habit}
@@ -179,14 +210,125 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
             ))}
           </div>
         ) : (
-          <div className="bg-white rounded-xl shadow-md p-12 text-center">
-            <i
-              className="fa-solid fa-check-circle text-6xl mb-4"
-              style={{ color: `${categoryColor}40` }}
-            ></i>
-            <p className="text-gray-500 font-light">
-              No habits yet. Click "Add Habit" to get started!
+          <div className="py-6 text-center">
+            <p className="text-sm italic" style={{ color: '#8E8E93', fontFamily: "'Inter', sans-serif" }}>
+              No habits in this group
             </p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <>
+      {/* Header Section */}
+      <div style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
+        <div className="p-8">
+          <div className="flex items-start justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <div
+                className="w-14 h-14 rounded-xl flex items-center justify-center"
+                style={{ backgroundColor: categoryColor, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)' }}
+              >
+                <i className={`fa-solid ${category.icon} text-white text-2xl`}></i>
+              </div>
+              <div>
+                <h1 className="text-5xl font-display mb-1" style={{ color: categoryColor }}>
+                  {category.name}
+                </h1>
+                {category.description && (
+                  <p className="text-sm" style={{ color: '#8E8E93', fontWeight: 400, fontFamily: "'Inter', sans-serif" }}>
+                    {category.description}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex flex-col items-center gap-2">
+              <button
+                onClick={() => openNewHabitModal(categoryId)}
+                className="px-6 py-3 rounded-lg text-white transition transform hover:scale-105"
+                style={{
+                  backgroundColor: categoryColor,
+                  fontWeight: 600,
+                  fontFamily: "'Inter', sans-serif",
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
+                }}
+              >
+                <i className="fa-solid fa-plus mr-2"></i>
+                New Habit
+              </button>
+              <button
+                onClick={() => openCategoryEditModal(categoryId)}
+                className="text-xs tracking-wide hover:opacity-70 transition"
+                style={{
+                  color: categoryColor,
+                  fontWeight: 600,
+                  fontFamily: "'Inter', sans-serif",
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em'
+                }}
+              >
+                Edit Category
+              </button>
+            </div>
+          </div>
+
+          {/* Group By Filter */}
+          <div>
+            <span className="block text-xs uppercase tracking-wide mb-2" style={{ color: '#8E8E93', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
+              Group By
+            </span>
+            <div className="inline-flex rounded-lg overflow-hidden" style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}>
+              {[
+                { value: 'priority', label: 'Priority' },
+                { value: 'time', label: 'Time' },
+              ].map(({ value, label }) => (
+                <button
+                  key={value}
+                  onClick={() => setGroupBy(value)}
+                  className="px-4 py-2 text-sm transition"
+                  style={{
+                    background: groupBy === value ? categoryColor : '#F5F5F7',
+                    color: groupBy === value ? '#FFFFFF' : '#1D1D1F',
+                    fontWeight: 500,
+                    fontFamily: "'Inter', sans-serif",
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Content Area */}
+      <div className="px-8 pb-8">
+        {/* Habits Groups */}
+        {habits && habits.length > 0 ? (
+          groupedHabits.map((group, index) => renderGroup(group, index))
+        ) : (
+          <div className="rounded-xl p-12 text-center mt-6" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)' }}>
+            <i
+              className="fa-solid fa-clipboard-list text-6xl mb-4"
+              style={{ color: '#E5E5E7' }}
+            ></i>
+            <h3 className="text-xl mb-2" style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif", fontWeight: 700 }}>
+              No Habits Yet
+            </h3>
+            <p className="mb-4" style={{ color: '#8E8E93', fontWeight: 200, fontFamily: "'Inter', sans-serif" }}>
+              Start tracking your {category.name.toLowerCase()} habits!
+            </p>
+            <button
+              onClick={() => openNewHabitModal(categoryId)}
+              className="inline-block px-6 py-3 rounded-lg text-white transition transform hover:scale-105"
+              style={{ backgroundColor: categoryColor, fontWeight: 600, fontFamily: "'Inter', sans-serif", boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
+            >
+              <i className="fa-solid fa-plus mr-2"></i>
+              Add First Habit
+            </button>
           </div>
         )}
       </div>

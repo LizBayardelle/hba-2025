@@ -1,16 +1,53 @@
-<h2>Resend confirmation instructions</h2>
+<%= render 'shared/public_nav' %>
 
-<%= form_for(resource, as: resource_name, url: confirmation_path(resource_name), html: { method: :post }) do |f| %>
-  <%= render "devise/shared/error_messages", resource: resource %>
+<div class="min-h-screen flex items-center justify-center relative overflow-hidden" style="background: #000000;">
+  <!-- Subtle gradient overlay -->
+  <div class="absolute inset-0" style="background: radial-gradient(ellipse at top, #1D1D1F 0%, #000000 100%);"></div>
 
-  <div class="field">
-    <%= f.label :email %><br />
-    <%= f.email_field :email, autofocus: true, autocomplete: "email", value: (resource.pending_reconfirmation? ? resource.unconfirmed_email : resource.email) %>
+  <!-- Metallic accent glow -->
+  <div class="absolute inset-0 opacity-20">
+    <div class="absolute top-1/4 left-1/4 w-96 h-96 rounded-full filter blur-3xl" style="background: radial-gradient(circle, #8E8E93 0%, transparent 70%);"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full filter blur-3xl" style="background: radial-gradient(circle, #C7C7CC 0%, transparent 70%);"></div>
   </div>
 
-  <div class="actions">
-    <%= f.submit "Resend confirmation instructions" %>
-  </div>
-<% end %>
+  <!-- Resend Confirmation Card -->
+  <div class="relative z-10 w-full max-w-md mx-4">
+    <!-- Logo/Brand -->
+    <div class="text-center mb-8">
+      <%= image_tag "HabitBeaver Logo.png", alt: "HabitBeaver Logo", style: "height: 80px; width: auto;", class: "mx-auto mb-4" %>
+      <p class="text-sm font-light" style="color: #8E8E93;">Build better habits, one day at a time</p>
+    </div>
 
-<%= render "devise/shared/links" %>
+    <!-- Card -->
+    <div class="rounded-2xl p-8" style="background: #FFFFFF; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);">
+      <h2 class="text-2xl font-bold mb-4" style="color: #1D1D1F; font-family: 'Inter', sans-serif;">Resend Confirmation</h2>
+      <p class="text-sm mb-6" style="color: #8E8E93;">Enter your email and we'll resend the confirmation instructions.</p>
+
+      <%= form_for(resource, as: resource_name, url: confirmation_path(resource_name), html: { method: :post }) do |f| %>
+        <%= render "devise/shared/error_messages", resource: resource %>
+
+        <!-- Email Field -->
+        <div class="mb-6">
+          <%= f.label :email, class: "block text-xs font-semibold uppercase tracking-wide mb-2", style: "color: #8E8E93;" %>
+          <%= f.email_field :email, autofocus: true, autocomplete: "email",
+              value: (resource.pending_reconfirmation? ? resource.unconfirmed_email : resource.email),
+              class: "w-full px-4 py-3 rounded-lg border focus:outline-none transition font-light",
+              style: "border: 1px solid #E5E5E7; color: #1D1D1F; background: #FAFAFA;",
+              placeholder: "you@example.com" %>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="mb-6">
+          <%= f.submit "Resend Confirmation Instructions", class: "w-full py-3 px-4 rounded-lg font-semibold transition transform hover:scale-[1.02] cursor-pointer", style: "background: linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%); border: 0.5px solid rgba(255, 255, 255, 0.3); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.3); color: #1D1D1F;" %>
+        </div>
+      <% end %>
+
+      <!-- Links -->
+      <div class="text-center">
+        <div class="pt-4" style="border-top: 1px solid #E5E5E7;">
+          <%= link_to "Back to Sign In", new_session_path(resource_name), class: "text-sm font-light hover:underline transition", style: "color: #8E8E93;" %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

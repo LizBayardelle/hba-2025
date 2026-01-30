@@ -11,7 +11,7 @@ class CategoriesController < ApplicationController
           category.as_json(only: [:id, :name, :color, :icon, :description]).merge(
             habits: category.habits.active.includes(:time_block, :importance_level).map { |habit|
               habit.as_json(
-                only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :category_id, :time_block_id, :importance_level_id],
+                only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :category_id, :time_block_id, :importance_level_id, :schedule_mode, :schedule_config],
                 include: {
                   tags: { only: [:id, :name] },
                   documents: { only: [:id, :title, :content_type] },
@@ -20,7 +20,9 @@ class CategoriesController < ApplicationController
                 }
               ).merge(
                 today_count: habit.completions_for_date(Date.today),
-                current_streak: habit.current_streak
+                current_streak: habit.current_streak,
+                is_due_today: habit.due_today?,
+                schedule_description: habit.schedule_description
               )
             }
           )
@@ -64,7 +66,7 @@ class CategoriesController < ApplicationController
           habits: @habits.map { |habit|
             completion = @today_completions[habit.id]
             habit.as_json(
-              only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :category_id, :importance_level_id, :time_block_id],
+              only: [:id, :name, :target_count, :frequency_type, :time_of_day, :importance, :category_id, :importance_level_id, :time_block_id, :schedule_mode, :schedule_config],
               methods: [:current_streak],
               include: {
                 tags: { only: [:id, :name] },
@@ -75,7 +77,9 @@ class CategoriesController < ApplicationController
               today_count: completion ? completion.count : 0,
               documents: habit.documents.map { |content|
                 { id: content.id, title: content.title, content_type: content.content_type }
-              }
+              },
+              is_due_today: habit.due_today?,
+              schedule_description: habit.schedule_description
             )
           }
         }

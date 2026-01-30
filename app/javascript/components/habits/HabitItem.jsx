@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import useDocumentsStore from '../../stores/documentsStore';
 import useHabitsStore from '../../stores/habitsStore';
+import useListsStore from '../../stores/listsStore';
+import ChecklistSection from '../shared/ChecklistSection';
 
 const HabitItem = ({ habit, categoryColor, categoryDarkColor, isFirst, onCompletionChange, selectedDate }) => {
   const { openViewModal } = useDocumentsStore();
   const { openEditModal } = useHabitsStore();
+  const { openShowModal: openListShowModal } = useListsStore();
 
   const [count, setCount] = useState(habit.today_count || 0);
   const [streak, setStreak] = useState(habit.current_streak || 0);
@@ -244,7 +247,33 @@ const HabitItem = ({ habit, categoryColor, categoryDarkColor, isFirst, onComplet
                 {tag.name}
               </a>
             ))}
+
+            {/* Checklist indicator */}
+            {habit.checklist_items && habit.checklist_items.length > 0 && (
+              <span
+                className="text-xs px-2 py-0.5 rounded-full font-semibold flex items-center gap-1"
+                style={{
+                  backgroundColor: `${categoryColor}15`,
+                  color: categoryColor,
+                }}
+              >
+                <i className="fa-solid fa-list-check text-[10px]"></i>
+                {habit.checklist_items.filter(i => i.completed).length}/{habit.checklist_items.length}
+              </span>
+            )}
           </div>
+
+          {/* Checklist (read-only toggle) */}
+          {habit.checklist_items && habit.checklist_items.length > 0 && (
+            <ChecklistSection
+              parentType="habit"
+              parentId={habit.id}
+              items={habit.checklist_items}
+              color={categoryColor}
+              editable={false}
+              compact={true}
+            />
+          )}
         </div>
 
         {/* Streak Badge */}
