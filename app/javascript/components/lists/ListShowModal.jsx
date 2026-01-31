@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import BaseModal from '../shared/BaseModal';
 import useListsStore from '../../stores/listsStore';
@@ -8,6 +8,7 @@ const ListShowModal = () => {
   const queryClient = useQueryClient();
   const { showModal, closeShowModal } = useListsStore();
   const { isOpen, listId } = showModal;
+  const [copiedId, setCopiedId] = useState(null);
 
   // Fetch the list data
   const { data: list, isLoading } = useQuery({
@@ -33,6 +34,16 @@ const ListShowModal = () => {
       checklistItemId: item.id,
       completed: !item.completed,
     });
+  };
+
+  const handleCopy = async (item) => {
+    try {
+      await navigator.clipboard.writeText(item.name);
+      setCopiedId(item.id);
+      setTimeout(() => setCopiedId(null), 1500);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
   };
 
   const color = list?.category?.color || '#1d3e4c';
@@ -130,15 +141,16 @@ const ListShowModal = () => {
           {/* Checklist items */}
           <div className="space-y-2">
             {checklistItems.map((item) => (
-              <button
+              <div
                 key={item.id}
-                onClick={() => handleToggle(item)}
-                disabled={toggleMutation.isPending}
-                className="w-full flex items-center gap-3 p-3 rounded-lg transition hover:bg-gray-50 text-left"
+                className="relative flex items-center gap-3 p-3 rounded-lg group"
                 style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
               >
-                <div
-                  className="w-6 h-6 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition"
+                {/* Checkbox */}
+                <button
+                  onClick={() => handleToggle(item)}
+                  disabled={toggleMutation.isPending}
+                  className="w-6 h-6 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition hover:scale-110"
                   style={{
                     borderColor: color,
                     backgroundColor: item.completed ? color : 'transparent',
@@ -147,14 +159,28 @@ const ListShowModal = () => {
                   {item.completed && (
                     <i className="fa-solid fa-check text-white text-xs"></i>
                   )}
-                </div>
+                </button>
+
+                {/* Selectable text */}
                 <span
-                  className={`flex-1 ${item.completed ? 'line-through opacity-60' : ''}`}
+                  className={`flex-1 select-text cursor-text ${item.completed ? 'line-through opacity-60' : ''}`}
                   style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif" }}
                 >
                   {item.name}
                 </span>
-              </button>
+
+                {/* Copy button */}
+                <button
+                  onClick={() => handleCopy(item)}
+                  className="w-6 h-6 flex items-center justify-center rounded transition opacity-0 group-hover:opacity-100 hover:bg-gray-100"
+                  title="Copy to clipboard"
+                >
+                  <i
+                    className={`fa-solid ${copiedId === item.id ? 'fa-check' : 'fa-copy'} text-xs`}
+                    style={{ color: copiedId === item.id ? '#22C55E' : '#8E8E93' }}
+                  ></i>
+                </button>
+              </div>
             ))}
           </div>
 

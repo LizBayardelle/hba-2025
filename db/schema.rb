@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_01_30_191559) do
+ActiveRecord::Schema[7.2].define(version: 2026_01_31_234317) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -64,6 +64,13 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_30_191559) do
     t.datetime "updated_at", null: false
     t.index ["user_id", "position"], name: "index_categories_on_user_id_and_position"
     t.index ["user_id"], name: "index_categories_on_user_id"
+  end
+
+  create_table "categories_documents", id: false, force: :cascade do |t|
+    t.bigint "category_id", null: false
+    t.bigint "document_id", null: false
+    t.index ["category_id", "document_id"], name: "index_categories_documents_on_category_id_and_document_id", unique: true
+    t.index ["document_id", "category_id"], name: "index_categories_documents_on_document_id_and_category_id"
   end
 
   create_table "checklist_items", force: :cascade do |t|

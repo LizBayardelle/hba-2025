@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import BaseModal from '../shared/BaseModal';
-import { documentsApi, tasksApi } from '../../utils/api';
+import { documentsApi, tasksApi, categoriesApi } from '../../utils/api';
 import useDocumentsStore from '../../stores/documentsStore';
 
 const DocumentFormModal = ({ habits, allTags }) => {
@@ -16,6 +16,7 @@ const DocumentFormModal = ({ habits, allTags }) => {
     url: '',
     habit_ids: [],
     task_ids: [],
+    category_ids: [],
   });
   const [showHabitDropdown, setShowHabitDropdown] = useState(false);
   const [showTaskDropdown, setShowTaskDropdown] = useState(false);
@@ -39,6 +40,13 @@ const DocumentFormModal = ({ habits, allTags }) => {
     enabled: isOpen,
   });
 
+  // Fetch all categories
+  const { data: categories = [] } = useQuery({
+    queryKey: ['categories'],
+    queryFn: categoriesApi.fetchAll,
+    enabled: isOpen,
+  });
+
   // Load document data when editing
   useEffect(() => {
     if (document && mode === 'edit') {
@@ -48,6 +56,7 @@ const DocumentFormModal = ({ habits, allTags }) => {
         url: document.metadata?.url || '',
         habit_ids: document.habits?.map(h => h.id.toString()) || [],
         task_ids: document.tasks?.map(t => t.id.toString()) || [],
+        category_ids: document.categories?.map(c => c.id.toString()) || [],
       });
       setSelectedTags(document.tags?.map(t => t.name) || []);
 
@@ -73,6 +82,7 @@ const DocumentFormModal = ({ habits, allTags }) => {
         url: '',
         habit_ids: [],
         task_ids: [],
+        category_ids: [],
       });
       setSelectedTags([]);
       setTagInput('');
@@ -113,6 +123,7 @@ const DocumentFormModal = ({ habits, allTags }) => {
       title: formData.title,
       habit_ids: formData.habit_ids,
       task_ids: formData.task_ids,
+      category_ids: formData.category_ids,
       tag_names: selectedTags,
       metadata: {
         url: formData.url,
@@ -287,6 +298,50 @@ const DocumentFormModal = ({ habits, allTags }) => {
             style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
             placeholder="e.g., Morning Prayer, Spanish Lesson 1"
           />
+        </div>
+
+        {/* Categories */}
+        <div className="mb-6">
+          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+            Categories <span className="font-normal" style={{ color: '#8E8E93' }}>(optional)</span>
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {categories.map((category) => {
+              const isSelected = formData.category_ids.includes(category.id.toString());
+              return (
+                <button
+                  key={category.id}
+                  type="button"
+                  onClick={() => {
+                    setFormData(prev => ({
+                      ...prev,
+                      category_ids: isSelected
+                        ? prev.category_ids.filter(id => id !== category.id.toString())
+                        : [...prev.category_ids, category.id.toString()]
+                    }));
+                  }}
+                  className="flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-full transition hover:scale-105"
+                  style={{
+                    backgroundColor: isSelected ? category.color : 'white',
+                    border: '1px solid ' + (isSelected ? category.color : 'rgba(199, 199, 204, 0.4)'),
+                  }}
+                >
+                  <i
+                    className={`fa-solid ${category.icon} text-sm`}
+                    style={{ color: isSelected ? 'white' : category.color }}
+                  ></i>
+                  <span style={{
+                    fontWeight: 500,
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: '0.8125rem',
+                    color: isSelected ? 'white' : '#1D1D1F',
+                  }}>
+                    {category.name}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* URL Field (for youtube, video, link) */}

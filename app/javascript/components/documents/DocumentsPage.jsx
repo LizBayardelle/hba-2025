@@ -27,7 +27,7 @@ const DocumentsPage = ({ habits }) => {
     queryKey: ['categories'],
     queryFn: categoriesApi.fetchAll,
   });
-  const categories = categoriesData?.categories || [];
+  const categories = Array.isArray(categoriesData) ? categoriesData : [];
 
   // Delete mutation
   const deleteMutation = useMutation({
@@ -134,7 +134,7 @@ const DocumentsPage = ({ habits }) => {
       }
       return result;
     } else if (groupBy === 'category') {
-      // Group by category (via linked habits)
+      // Group by category (direct association)
       const groups = {};
 
       categories.forEach(cat => {
@@ -151,22 +151,17 @@ const DocumentsPage = ({ habits }) => {
       const uncategorized = { id: 'uncategorized', title: 'Uncategorized', color: '#9CA3A8', icon: 'fa-folder', documents: [] };
 
       documents.forEach(doc => {
-        if (doc.habits && doc.habits.length > 0) {
-          // Get category from linked habits
-          doc.habits.forEach(habit => {
-            const habitWithCategory = habits?.find(h => h.id === habit.id);
-            const categoryId = habitWithCategory?.category_id;
-            if (categoryId && groups[categoryId]) {
-              if (!groups[categoryId].documents.find(d => d.id === doc.id)) {
-                groups[categoryId].documents.push(doc);
-              }
-            } else {
-              if (!uncategorized.documents.find(d => d.id === doc.id)) {
-                uncategorized.documents.push(doc);
+        if (doc.categories && doc.categories.length > 0) {
+          // Document has direct category associations
+          doc.categories.forEach(category => {
+            if (groups[category.id]) {
+              if (!groups[category.id].documents.find(d => d.id === doc.id)) {
+                groups[category.id].documents.push(doc);
               }
             }
           });
         } else {
+          // No categories - goes to uncategorized
           if (!uncategorized.documents.find(d => d.id === doc.id)) {
             uncategorized.documents.push(doc);
           }
