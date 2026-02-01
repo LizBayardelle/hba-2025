@@ -49,6 +49,10 @@ const TaskFormModal = ({ allTags, categories }) => {
     location_lng: '',
     due_date: '',
     due_time: '',
+    repeat_frequency: '',
+    repeat_interval: 1,
+    repeat_days: [],
+    repeat_end_date: '',
   });
   const [tagInput, setTagInput] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
@@ -113,6 +117,10 @@ const TaskFormModal = ({ allTags, categories }) => {
         location_lng: task.location_lng || '',
         due_date: task.due_date || '',
         due_time: task.due_time || '',
+        repeat_frequency: task.repeat_frequency || '',
+        repeat_interval: task.repeat_interval || 1,
+        repeat_days: task.repeat_days || [],
+        repeat_end_date: task.repeat_end_date || '',
       });
       setSelectedTags(task.tags?.map(t => t.name) || []);
       setSelectedDocumentIds(task.task_contents?.map(tc => tc.id) || []);
@@ -145,6 +153,10 @@ const TaskFormModal = ({ allTags, categories }) => {
         location_lng: '',
         due_date: '',
         due_time: '',
+        repeat_frequency: '',
+        repeat_interval: 1,
+        repeat_days: [],
+        repeat_end_date: '',
       });
       setSelectedTags([]);
       setTagInput('');
@@ -198,6 +210,10 @@ const TaskFormModal = ({ allTags, categories }) => {
       category_id: formData.category_id || null,
       task_content_ids: selectedDocumentIds,
       list_attachment_ids: selectedListIds,
+      repeat_frequency: formData.repeat_frequency || null,
+      repeat_interval: formData.repeat_frequency ? formData.repeat_interval : null,
+      repeat_days: formData.repeat_frequency ? formData.repeat_days : [],
+      repeat_end_date: formData.repeat_frequency ? formData.repeat_end_date : null,
     };
 
     if (mode === 'edit') {
@@ -376,7 +392,7 @@ const TaskFormModal = ({ allTags, categories }) => {
             </div>
 
             {/* Due Date & Time */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 mb-4">
               <div>
                 <label className="block mb-2 text-sm" style={{ fontWeight: 500, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
                   Due Date
@@ -403,6 +419,145 @@ const TaskFormModal = ({ allTags, categories }) => {
                   style={{ backgroundColor: 'white', border: '1px solid rgba(199, 199, 204, 0.4)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
                 />
               </div>
+            </div>
+
+            {/* Repeat */}
+            <div>
+              <label className="block mb-2 text-sm" style={{ fontWeight: 500, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+                Repeat
+                {formData.repeat_frequency && !formData.due_date && (
+                  <span className="ml-2 text-xs font-normal" style={{ color: '#DC2626' }}>
+                    (requires due date)
+                  </span>
+                )}
+              </label>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {[
+                  { value: '', label: 'Never' },
+                  { value: 'daily', label: 'Daily' },
+                  { value: 'weekly', label: 'Weekly' },
+                  { value: 'monthly', label: 'Monthly' },
+                  { value: 'yearly', label: 'Yearly' },
+                ].map(({ value, label }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, repeat_frequency: value, repeat_days: [] })}
+                    className="px-3 py-2 rounded-full transition hover:scale-105"
+                    style={{
+                      backgroundColor: formData.repeat_frequency === value ? '#1D1D1F' : 'white',
+                      border: '1px solid ' + (formData.repeat_frequency === value ? '#1D1D1F' : 'rgba(199, 199, 204, 0.4)'),
+                      color: formData.repeat_frequency === value ? 'white' : '#1D1D1F',
+                      fontWeight: 500,
+                      fontSize: '0.8125rem',
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Repeat options when a frequency is selected */}
+              {formData.repeat_frequency && (
+                <div className="p-3 rounded-lg" style={{ backgroundColor: 'white', border: '1px solid rgba(199, 199, 204, 0.4)' }}>
+                  {/* Interval */}
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-sm" style={{ color: '#1D1D1F' }}>Every</span>
+                    <input
+                      type="number"
+                      min="1"
+                      max="99"
+                      value={formData.repeat_interval}
+                      onChange={(e) => setFormData({ ...formData, repeat_interval: parseInt(e.target.value) || 1 })}
+                      className="w-16 px-2 py-1 rounded-lg text-center focus:outline-none"
+                      style={{ backgroundColor: '#F9F9FB', border: '1px solid rgba(199, 199, 204, 0.4)', fontFamily: "'Inter', sans-serif" }}
+                    />
+                    <span className="text-sm" style={{ color: '#1D1D1F' }}>
+                      {formData.repeat_frequency === 'daily' && (formData.repeat_interval === 1 ? 'day' : 'days')}
+                      {formData.repeat_frequency === 'weekly' && (formData.repeat_interval === 1 ? 'week' : 'weeks')}
+                      {formData.repeat_frequency === 'monthly' && (formData.repeat_interval === 1 ? 'month' : 'months')}
+                      {formData.repeat_frequency === 'yearly' && (formData.repeat_interval === 1 ? 'year' : 'years')}
+                    </span>
+                  </div>
+
+                  {/* Weekly: Day of week selection */}
+                  {formData.repeat_frequency === 'weekly' && (
+                    <div className="mb-3">
+                      <span className="text-xs block mb-2" style={{ color: '#8E8E93' }}>On these days:</span>
+                      <div className="flex gap-1">
+                        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+                          <button
+                            key={index}
+                            type="button"
+                            onClick={() => {
+                              const days = formData.repeat_days || [];
+                              const newDays = days.includes(index)
+                                ? days.filter(d => d !== index)
+                                : [...days, index].sort((a, b) => a - b);
+                              setFormData({ ...formData, repeat_days: newDays });
+                            }}
+                            className="w-8 h-8 rounded-full text-xs font-semibold transition"
+                            style={{
+                              backgroundColor: (formData.repeat_days || []).includes(index) ? '#1D1D1F' : '#F5F5F7',
+                              color: (formData.repeat_days || []).includes(index) ? 'white' : '#1D1D1F',
+                            }}
+                          >
+                            {day}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-xs mt-1" style={{ color: '#8E8E93' }}>
+                        Leave empty to repeat on the same day each week
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Monthly: Day of month selection */}
+                  {formData.repeat_frequency === 'monthly' && (
+                    <div className="mb-3">
+                      <span className="text-xs block mb-2" style={{ color: '#8E8E93' }}>On day of month:</span>
+                      <select
+                        value={formData.repeat_days?.[0] || ''}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setFormData({
+                            ...formData,
+                            repeat_days: value ? [value === 'last' ? 'last' : parseInt(value)] : []
+                          });
+                        }}
+                        className="px-3 py-2 rounded-lg focus:outline-none"
+                        style={{
+                          backgroundColor: '#F9F9FB',
+                          border: '1px solid rgba(199, 199, 204, 0.4)',
+                          fontFamily: "'Inter', sans-serif",
+                          minWidth: '120px',
+                        }}
+                      >
+                        <option value="">Same day each month</option>
+                        {[...Array(31)].map((_, i) => (
+                          <option key={i + 1} value={i + 1}>
+                            {i + 1}{i === 0 ? 'st' : i === 1 ? 'nd' : i === 2 ? 'rd' : 'th'}
+                          </option>
+                        ))}
+                        <option value="last">Last day</option>
+                      </select>
+                    </div>
+                  )}
+
+                  {/* End date */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm" style={{ color: '#1D1D1F' }}>Until</span>
+                    <input
+                      type="date"
+                      value={formData.repeat_end_date}
+                      onChange={(e) => setFormData({ ...formData, repeat_end_date: e.target.value })}
+                      className="px-3 py-1 rounded-lg focus:outline-none"
+                      style={{ backgroundColor: '#F9F9FB', border: '1px solid rgba(199, 199, 204, 0.4)', fontFamily: "'Inter', sans-serif" }}
+                    />
+                    <span className="text-xs" style={{ color: '#8E8E93' }}>(optional)</span>
+                  </div>
+                </div>
+              )}
             </div>
           </Section>
 

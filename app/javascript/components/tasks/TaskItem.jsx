@@ -177,6 +177,21 @@ const TaskItem = ({ task }) => {
               </div>
             )}
 
+            {/* Repeat indicator */}
+            {task.repeat_frequency && (
+              <div
+                className="px-2 py-1 rounded-lg text-xs font-medium"
+                style={{
+                  backgroundColor: '#7C3AED',
+                  color: 'white',
+                }}
+                title={`Repeats ${task.repeat_frequency}${task.repeat_interval > 1 ? ` every ${task.repeat_interval}` : ''}`}
+              >
+                <i className="fa-solid fa-repeat mr-1"></i>
+                {task.repeat_frequency.charAt(0).toUpperCase() + task.repeat_frequency.slice(1)}
+              </div>
+            )}
+
             {/* On Hold */}
             {task.on_hold && (
               <div

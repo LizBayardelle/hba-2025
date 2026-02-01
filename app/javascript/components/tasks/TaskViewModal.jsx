@@ -25,6 +25,15 @@ const TaskViewModal = () => {
     },
   });
 
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: () => tasksApi.delete(taskId),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['tasks']);
+      closeViewModal();
+    },
+  });
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -294,15 +303,33 @@ const TaskViewModal = () => {
     );
   };
 
+  const handleDelete = () => {
+    if (window.confirm('Are you sure you want to delete this task?')) {
+      deleteMutation.mutate();
+    }
+  };
+
   const footer = (
     <>
+      <button
+        onClick={handleDelete}
+        className="mr-auto w-10 h-10 rounded-lg transition hover:bg-white/10 flex items-center justify-center"
+        disabled={deleteMutation.isPending}
+        title="Delete task"
+      >
+        {deleteMutation.isPending ? (
+          <i className="fa-solid fa-spinner fa-spin text-white"></i>
+        ) : (
+          <i className="fa-solid fa-trash text-white text-lg"></i>
+        )}
+      </button>
       <button
         onClick={() => {
           closeViewModal();
           openEditModal(taskId);
         }}
-        className="px-6 py-3 rounded-lg transition hover:opacity-70"
-        style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F', border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
+        className="px-6 py-3 rounded-lg transition hover:bg-white/20"
+        style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: 'white', border: '0.5px solid rgba(255, 255, 255, 0.3)' }}
       >
         Edit
       </button>

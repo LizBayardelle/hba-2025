@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_02_01_040220) do
+ActiveRecord::Schema[7.2].define(version: 2026_02_01_042730) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -249,12 +249,17 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_01_040220) do
     t.datetime "updated_at", null: false
     t.bigint "importance_level_id"
     t.integer "time_block_id"
+    t.string "repeat_frequency"
+    t.integer "repeat_interval", default: 1
+    t.jsonb "repeat_days", default: []
+    t.date "repeat_end_date"
     t.index ["archived_at"], name: "index_tasks_on_archived_at"
     t.index ["attached_document_id"], name: "index_tasks_on_attached_document_id"
     t.index ["category_id"], name: "index_tasks_on_category_id"
     t.index ["completed"], name: "index_tasks_on_completed"
     t.index ["due_date"], name: "index_tasks_on_due_date"
     t.index ["importance_level_id"], name: "index_tasks_on_importance_level_id"
+    t.index ["repeat_frequency"], name: "index_tasks_on_repeat_frequency"
     t.index ["user_id"], name: "index_tasks_on_user_id"
   end
 

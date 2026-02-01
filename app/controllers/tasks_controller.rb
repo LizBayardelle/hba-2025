@@ -67,7 +67,8 @@ class TasksController < ApplicationController
           task.as_json(
             only: [:id, :name, :importance, :importance_level_id, :completed, :completed_at, :on_hold, :url,
                    :location_name, :location_lat, :location_lng, :position, :due_date,
-                   :due_time, :created_at, :updated_at, :category_id, :attached_document_id, :time_block_id],
+                   :due_time, :created_at, :updated_at, :category_id, :attached_document_id, :time_block_id,
+                   :repeat_frequency, :repeat_interval, :repeat_days, :repeat_end_date],
             include: {
               tags: { only: [:id, :name] },
               category: { only: [:id, :name, :color, :icon] },
@@ -108,7 +109,8 @@ class TasksController < ApplicationController
         render json: @task.as_json(
           only: [:id, :name, :importance, :importance_level_id, :completed, :completed_at, :on_hold, :url,
                  :location_name, :location_lat, :location_lng, :position, :due_date,
-                 :due_time, :created_at, :updated_at, :category_id, :attached_document_id, :time_block_id],
+                 :due_time, :created_at, :updated_at, :category_id, :attached_document_id, :time_block_id,
+                 :repeat_frequency, :repeat_interval, :repeat_days, :repeat_end_date],
           include: {
             tags: { only: [:id, :name] },
             category: { only: [:id, :name, :color, :icon] },
@@ -207,7 +209,8 @@ class TasksController < ApplicationController
       :name, :importance, :importance_level_id, :category_id, :completed, :completed_at, :on_hold,
       :notes, :url, :location_name, :location_lat, :location_lng,
       :attached_document_id, :position, :due_date, :due_time, :archived_at, :time_block_id,
-      tag_names: [], task_content_ids: [], list_attachment_ids: []
+      :repeat_frequency, :repeat_interval, :repeat_end_date,
+      tag_names: [], task_content_ids: [], list_attachment_ids: [], repeat_days: []
     )
   end
 
