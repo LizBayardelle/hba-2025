@@ -151,346 +151,92 @@
 
     <!-- Grey Background Content -->
     <div class="p-8 pt-6 space-y-6">
-      <!-- Top Row: Today's Calendar (2/3) + Quick Links (1/3) -->
-      <% if current_user.google_sync_enabled && current_user.google_calendar_id.present? %>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <!-- Today's Calendar -->
-          <div class="md:col-span-2 rounded-xl p-4" style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
-            <div class="flex items-center justify-between mb-3">
-              <h2 class="text-2xl font-display" style="color: #1D1D1F;">
-                <i class="fa-solid fa-calendar mr-2"></i>Today's Calendar
-              </h2>
-              <%= link_to "https://calendar.google.com", target: "_blank", rel: "noopener noreferrer",
-                  class: "text-xs hover:underline",
-                  style: "color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif;" do %>
-                Open in Google
-              <% end %>
-            </div>
-            <% if @calendar_events.any? %>
-              <div class="space-y-0">
-                <% @calendar_events.each do |event| %>
-                  <div class="flex items-center gap-4 py-1 transition rounded px-2" style="hover:background-color: rgba(199, 199, 204, 0.1);">
-                    <% if event[:all_day] %>
-                      <div class="text-xs w-20" style="color: #8E8E93; font-weight: 600; font-family: 'Inter', sans-serif;">All Day</div>
-                    <% else %>
-                      <div class="text-xs w-20" style="color: #1D1D1F; font-weight: 600; font-family: 'Inter', sans-serif;">
-                        <%= event[:start_time].strftime('%l:%M %p') %>
-                      </div>
-                    <% end %>
-                    <div class="flex-1 text-sm" style="color: #1D1D1F; font-weight: 400; font-family: 'Inter', sans-serif;">
-                      <%= event[:summary] || 'Untitled Event' %>
-                      <% if current_user.google_calendar_id.length > 1 %>
-                        <span class="text-xs ml-2" style="color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif;">
-                          (<%= event[:calendar_name] %>)
-                        </span>
-                      <% end %>
-                    </div>
-                  </div>
+      <%
+        # Get layout and sort by position
+        layout = current_user.dashboard_layout.presence || User::DEFAULT_DASHBOARD_LAYOUT
+        visible_blocks = layout.select { |b| b['visible'] != false }.sort_by { |b| b['position'] || 0 }
+
+        # Group blocks into rows: full-width blocks get their own row, left/right blocks are paired
+        rows = []
+        current_row = { left: nil, right: nil }
+
+        visible_blocks.each do |block|
+          if block['column'] == 'full'
+            # Flush any pending left/right row first
+            if current_row[:left] || current_row[:right]
+              rows << current_row
+              current_row = { left: nil, right: nil }
+            end
+            rows << { full: block }
+          elsif block['column'] == 'left'
+            if current_row[:left]
+              # Already have a left block, flush and start new row
+              rows << current_row
+              current_row = { left: block, right: nil }
+            else
+              current_row[:left] = block
+            end
+          else # right
+            if current_row[:right]
+              # Already have a right block, flush and start new row
+              rows << current_row
+              current_row = { left: nil, right: block }
+            else
+              current_row[:right] = block
+            end
+          end
+        end
+        # Don't forget the last row
+        rows << current_row if current_row[:left] || current_row[:right]
+      %>
+
+      <% rows.each do |row| %>
+        <% if row[:full] %>
+          <!-- Full Width Block -->
+          <% case row[:full]['block'] %>
+          <% when 'calendar' %>
+            <%= render 'dashboard/calendar_block' %>
+          <% when 'quick_links' %>
+            <%= render 'dashboard/quick_links_block' %>
+          <% when 'habits' %>
+            <%= render 'dashboard/habits_block' %>
+          <% when 'tasks' %>
+            <%= render 'dashboard/tasks_block' %>
+          <% end %>
+        <% else %>
+          <!-- Two Column Row -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <% if row[:left] %>
+                <% case row[:left]['block'] %>
+                <% when 'calendar' %>
+                  <%= render 'dashboard/calendar_block' %>
+                <% when 'quick_links' %>
+                  <%= render 'dashboard/quick_links_block' %>
+                <% when 'habits' %>
+                  <%= render 'dashboard/habits_block' %>
+                <% when 'tasks' %>
+                  <%= render 'dashboard/tasks_block' %>
                 <% end %>
-              </div>
-            <% else %>
-              <div class="text-center py-8">
-                <p class="text-sm" style="color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif;">Nothing planned for today.</p>
-              </div>
-            <% end %>
-            <!-- Footer with refresh and timestamp -->
-            <div class="flex items-center justify-between mt-3 pt-2" style="border-top: 1px solid rgba(199, 199, 204, 0.2);">
-              <%= form_with url: google_calendar_refresh_path(date: @today.strftime('%Y-%m-%d')), method: :post, local: true, id: "calendar-refresh-form", style: "display: inline; margin: 0;" do %>
-                <button type="submit" id="calendar-refresh-btn" class="text-xs hover:underline flex items-center gap-1" style="color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif; background: none; border: none; padding: 0; cursor: pointer;" title="Refresh calendar">
-                  <i class="fa-solid fa-refresh text-xs" style="color: #8E8E93;"></i>
-                  <span>Refresh</span>
-                </button>
               <% end %>
-              <% if current_user.calendar_events_cached_at %>
-                <span class="text-xs" style="color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif;">
-                  Updated <%= time_ago_in_words(current_user.calendar_events_cached_at) %> ago
-                </span>
+            </div>
+            <div>
+              <% if row[:right] %>
+                <% case row[:right]['block'] %>
+                <% when 'calendar' %>
+                  <%= render 'dashboard/calendar_block' %>
+                <% when 'quick_links' %>
+                  <%= render 'dashboard/quick_links_block' %>
+                <% when 'habits' %>
+                  <%= render 'dashboard/habits_block' %>
+                <% when 'tasks' %>
+                  <%= render 'dashboard/tasks_block' %>
+                <% end %>
               <% end %>
             </div>
           </div>
-
-          <script>
-            document.addEventListener('DOMContentLoaded', () => {
-              const refreshForm = document.getElementById('calendar-refresh-form');
-              if (refreshForm) {
-                refreshForm.addEventListener('submit', (e) => {
-                  const btn = document.getElementById('calendar-refresh-btn');
-                  const icon = btn.querySelector('i');
-                  const text = btn.querySelector('span');
-                  icon.classList.add('fa-spin');
-                  text.textContent = 'Refreshing...';
-                  btn.disabled = true;
-                });
-              }
-            });
-          </script>
-
-          <!-- Quick Links -->
-          <div class="rounded-xl p-4" style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
-            <h2 class="text-2xl font-display mb-3" style="color: #1D1D1F;">Quick Links</h2>
-            <div class="space-y-1">
-              <%= link_to habits_path, class: "flex items-center gap-3 p-2 rounded-lg transition", style: "hover:background-color: rgba(199, 199, 204, 0.1);" do %>
-                <i class="fa-solid fa-chart-line text-lg" style="color: #2C2C2E;"></i>
-                <span class="text-sm" style="color: #1D1D1F; font-weight: 600; font-family: 'Inter', sans-serif;">View Analytics</span>
-              <% end %>
-              <%= link_to root_path, class: "flex items-center gap-3 p-2 rounded-lg transition", style: "hover:background-color: rgba(199, 199, 204, 0.1);" do %>
-                <i class="fa-solid fa-folder text-lg" style="color: #2C2C2E;"></i>
-                <span class="text-sm" style="color: #1D1D1F; font-weight: 600; font-family: 'Inter', sans-serif;">Browse Categories</span>
-              <% end %>
-              <%= link_to tasks_path, class: "flex items-center gap-3 p-2 rounded-lg transition", style: "hover:background-color: rgba(199, 199, 204, 0.1);" do %>
-                <i class="fa-solid fa-tasks text-lg" style="color: #2C2C2E;"></i>
-                <span class="text-sm" style="color: #1D1D1F; font-weight: 600; font-family: 'Inter', sans-serif;">All Tasks</span>
-              <% end %>
-            </div>
-          </div>
-        </div>
+        <% end %>
       <% end %>
-
-      <!-- Main Content Grid: Habits and Tasks -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Today's Habits -->
-          <div class="rounded-xl p-6" style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
-            <div class="mb-4">
-              <div class="flex items-center justify-between">
-                <h2 class="text-2xl font-display" style="color: #1D1D1F;">Habits</h2>
-                <!-- Toggle Buttons -->
-                <div class="flex gap-1 rounded-lg p-1" style="background: rgba(199, 199, 204, 0.2);">
-                  <button id="focus-time-btn" onclick="switchFocusView('time')" class="px-2 py-1 rounded text-xs transition" style="background: linear-gradient(135deg, #2C2C2E, #1D1D1F); color: white; font-weight: 600; font-family: 'Inter', sans-serif; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);">
-                    Time
-                  </button>
-                  <button id="focus-category-btn" onclick="switchFocusView('category')" class="px-2 py-1 rounded text-xs transition" style="color: #8E8E93; font-weight: 600; font-family: 'Inter', sans-serif;">
-                    Category
-                  </button>
-                  <button id="focus-priority-btn" onclick="switchFocusView('priority')" class="px-2 py-1 rounded text-xs transition" style="color: #8E8E93; font-weight: 600; font-family: 'Inter', sans-serif;">
-                    Priority
-                  </button>
-                </div>
-              </div>
-              <div id="today-completion-count" class="text-sm mt-1" style="color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif;">
-                <%= @completed_today %> / <%= @total_habits %> completed (<%= @today_percentage %>%)
-              </div>
-            </div>
-
-            <% if @today_habits.any? %>
-              <!-- Render all habits once with grouping metadata -->
-              <div id="focus-habits-container" class="space-y-4">
-                <%
-                  # Light color mapping
-                  light_color_map = {
-                    '#6B8A99' => '#E8EEF1', '#9C8B7E' => '#E8E0D5', '#F8796D' => '#FFD4CE',
-                    '#FFA07A' => '#FFE4D6', '#E5C730' => '#FEF7C3', '#A8A356' => '#E8EBCD',
-                    '#7CB342' => '#D7EDCB', '#6EE7B7' => '#D1FAF0', '#22D3EE' => '#CFFAFE',
-                    '#6366F1' => '#E0E7FF', '#A78BFA' => '#EDE9FE', '#E879F9' => '#FAE8FF',
-                    '#FB7185' => '#FFE4E6', '#9CA3A8' => '#E8E8E8'
-                  }
-
-                  # Create a single list of all habits with their grouping info
-                  all_habits_with_groups = @habits.map do |habit|
-                    time_block_id = habit.time_block_id || 'anytime'
-                    time_group = time_block_id == 'anytime' ? 'anytime' : "block_#{time_block_id}"
-
-                    priority_group = habit.importance_level_id ? "level_#{habit.importance_level_id}" : 'none'
-                    category_group = "category_#{habit.category_id}"
-
-                    {
-                      habit: habit,
-                      time_group: time_group,
-                      time_block_id: time_block_id,
-                      time_block_name: habit.time_block&.name || 'Anytime',
-                      time_block_icon: habit.time_block&.icon || 'fa-clock',
-                      time_block_color: habit.time_block&.color || '#1d3e4c',
-                      time_block_rank: habit.time_block&.rank || 999,
-                      priority_group: priority_group,
-                      priority_name: habit.importance_level&.name || 'No Priority',
-                      priority_rank: habit.importance_level&.rank || 999,
-                      priority_color: habit.importance_level&.color || '#657b84',
-                      priority_icon: habit.importance_level&.icon || 'fa-circle',
-                      category_group: category_group,
-                      category_name: habit.category.name,
-                      category_color: habit.category.color,
-                      category_icon: habit.category.icon
-                    }
-                  end
-
-                  # Sort by time_block rank by default (anytime last)
-                  all_habits_with_groups.sort_by! { |h| h[:time_block_rank] }
-                %>
-
-                <% all_habits_with_groups.each do |habit_data| %>
-                  <%
-                    habit = habit_data[:habit]
-                    completion_count = @today_completions[habit.id] || 0
-                    is_complete = completion_count >= habit.target_count
-                    category = habit.category
-                    light_color = light_color_map[category.color] || (category.color + '20')
-                  %>
-                  <div class="habit-item flex items-center gap-2"
-                       data-habit-id="<%= habit.id %>"
-                       data-target="<%= habit.target_count %>"
-                       data-health="<%= habit.health %>"
-                       data-time-group="<%= habit_data[:time_group] %>"
-                       data-time-block-id="<%= habit_data[:time_block_id] %>"
-                       data-time-block-name="<%= habit_data[:time_block_name] %>"
-                       data-time-block-icon="<%= habit_data[:time_block_icon] %>"
-                       data-time-block-color="<%= habit_data[:time_block_color] %>"
-                       data-time-block-rank="<%= habit_data[:time_block_rank] %>"
-                       data-priority-group="<%= habit_data[:priority_group] %>"
-                       data-priority-name="<%= habit_data[:priority_name] %>"
-                       data-priority-rank="<%= habit_data[:priority_rank] %>"
-                       data-priority-color="<%= habit_data[:priority_color] %>"
-                       data-priority-icon="<%= habit_data[:priority_icon] %>"
-                       data-category-group="<%= habit_data[:category_group] %>"
-                       data-category-name="<%= habit_data[:category_name] %>"
-                       data-category-icon="<%= habit_data[:category_icon] %>"
-                       data-category-color="<%= category.color %>"
-                       data-light-color="<%= light_color %>">
-                    <button
-                      onclick="toggleDashboardHabit(<%= habit.id %>, <%= is_complete ? 'true' : 'false' %>)"
-                      class="flex-shrink-0 cursor-pointer transition-transform hover:scale-110">
-                      <% if is_complete %>
-                        <i class="fa-solid fa-circle-check text-sm" style="color: <%= category.color %>;"></i>
-                      <% else %>
-                        <i class="fa-regular fa-circle text-sm" style="color: <%= light_color %>;"></i>
-                      <% end %>
-                    </button>
-                    <div class="flex-1 flex items-center gap-2">
-                      <div class="text-sm font-semibold <%= is_complete ? 'line-through opacity-60' : '' %>" style="color: <%= is_complete ? light_color : category.color %>;">
-                        <%= habit.name %>
-                      </div>
-                      <% if habit.documents.any? %>
-                        <%= link_to habit_content_path(habit.documents.first),
-                            class: "flex-shrink-0 text-xs hover:opacity-70 transition",
-                            style: "color: #{category.color};",
-                            title: "View attached content",
-                            data: { habit_content_modal: true } do %>
-                          <i class="fa-solid fa-file-alt"></i>
-                        <% end %>
-                      <% end %>
-                    </div>
-                    <div class="text-xs font-light" style="color: #657b84;">
-                      <%= completion_count %> / <%= habit.target_count %>
-                    </div>
-                  </div>
-                <% end %>
-              </div>
-            <% else %>
-              <div class="text-center py-8">
-                <i class="fa-solid fa-check-circle text-4xl mb-2" style="color: #E5E5E7;"></i>
-                <p class="text-sm" style="color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif;">No habits for today</p>
-              </div>
-            <% end %>
-          </div>
-
-        <!-- Tasks Section -->
-        <div class="rounded-xl p-6" style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
-          <div class="mb-4">
-            <div class="flex items-center justify-between">
-              <h2 class="text-2xl font-display" style="color: #1D1D1F;">Tasks</h2>
-              <!-- Toggle Buttons -->
-              <div class="flex gap-1 rounded-lg p-1" style="background: rgba(199, 199, 204, 0.2);">
-                <button id="tasks-date-btn" onclick="switchTasksView('date')" class="px-2 py-1 rounded text-xs transition" style="background: linear-gradient(135deg, #2C2C2E, #1D1D1F); color: white; font-weight: 600; font-family: 'Inter', sans-serif; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);">
-                  Date
-                </button>
-                <button id="tasks-category-btn" onclick="switchTasksView('category')" class="px-2 py-1 rounded text-xs transition" style="color: #8E8E93; font-weight: 600; font-family: 'Inter', sans-serif;">
-                  Category
-                </button>
-                <button id="tasks-priority-btn" onclick="switchTasksView('priority')" class="px-2 py-1 rounded text-xs transition" style="color: #8E8E93; font-weight: 600; font-family: 'Inter', sans-serif;">
-                  Priority
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div id="tasks-container">
-            <%
-              # Build task data with metadata for all tasks
-              all_tasks_with_groups = @tasks.map do |task|
-                # Date grouping
-                date_group = if task.due_date.nil?
-                  'no_date'
-                elsif task.due_date < @today
-                  'overdue'
-                elsif task.due_date == @today
-                  'today'
-                else
-                  'future'
-                end
-
-                # Category grouping
-                category_group = task.category_id ? "category_#{task.category_id}" : 'none'
-
-                # Priority grouping
-                priority_group = task.importance_level_id ? "level_#{task.importance_level_id}" : 'none'
-
-                {
-                  task: task,
-                  date_group: date_group,
-                  category_group: category_group,
-                  category_name: task.category&.name || 'No Category',
-                  category_color: task.category&.color || '#9CA3A8',
-                  category_icon: task.category&.icon || 'fa-circle',
-                  priority_group: priority_group,
-                  priority_name: task.importance_level&.name || 'No Priority',
-                  priority_rank: task.importance_level&.rank || 999,
-                  priority_color: task.importance_level&.color || '#657b84',
-                  priority_icon: task.importance_level&.icon || 'fa-circle'
-                }
-              end
-
-              # Sort by date by default (overdue, today, no date, future)
-              date_order = {'overdue' => 0, 'today' => 1, 'no_date' => 2, 'future' => 3}
-              all_tasks_with_groups.sort_by! { |t| [date_order[t[:date_group]] || 999, t[:task].due_date || Date.new(9999)] }
-            %>
-
-            <% all_tasks_with_groups.each do |task_data| %>
-              <%
-                task = task_data[:task]
-                color = case task_data[:date_group]
-                when 'overdue' then '#F8796D'
-                when 'today' then '#1d3e4c'
-                else '#657b84'
-                end
-              %>
-              <div class="task-item flex items-center gap-2 mb-2"
-                   data-task-id="<%= task.id %>"
-                   data-completed="<%= task.completed %>"
-                   data-date-group="<%= task_data[:date_group] %>"
-                   data-category-group="<%= task_data[:category_group] %>"
-                   data-category-name="<%= task_data[:category_name] %>"
-                   data-category-color="<%= task_data[:category_color] %>"
-                   data-category-icon="<%= task_data[:category_icon] %>"
-                   data-priority-group="<%= task_data[:priority_group] %>"
-                   data-priority-name="<%= task_data[:priority_name] %>"
-                   data-priority-rank="<%= task_data[:priority_rank] %>"
-                   data-priority-color="<%= task_data[:priority_color] %>"
-                   data-priority-icon="<%= task_data[:priority_icon] %>"
-                   data-due-date="<%= task.due_date&.strftime('%b %d') || '' %>">
-                <button
-                  onclick="toggleTask(<%= task.id %>, <%= task.completed ? 'true' : 'false' %>)"
-                  class="flex-shrink-0 cursor-pointer transition-transform hover:scale-110">
-                  <% if task.completed %>
-                    <i class="fa-solid fa-circle-check text-xs" style="color: <%= color %>;"></i>
-                  <% else %>
-                    <i class="fa-regular fa-circle text-xs" style="color: <%= color %>;"></i>
-                  <% end %>
-                </button>
-                <span class="flex-1 text-sm <%= task.completed ? 'line-through opacity-60' : '' %>" style="color: <%= color %>;"><%= task.name %></span>
-                <% if task.due_date %>
-                  <span class="text-xs" style="color: <%= color %>;"><%= task.due_date.strftime('%b %d') %></span>
-                <% end %>
-              </div>
-            <% end %>
-
-            <% if @tasks.empty? %>
-              <div class="text-center py-8">
-                <i class="fa-solid fa-list-check text-4xl mb-2" style="color: #E5E5E7;"></i>
-                <p class="text-sm" style="color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif;">No tasks yet</p>
-              </div>
-            <% end %>
-          </div>
-        </div>
-      </div>
-
     </div>
   </main>
 </div>

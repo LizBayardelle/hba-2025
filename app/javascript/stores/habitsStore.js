@@ -31,7 +31,13 @@ const getInitialDate = () => {
 
 const getInitialView = () => {
   const params = new URLSearchParams(window.location.search);
-  return params.get('view') || 'category';
+  const urlView = params.get('view');
+  if (urlView) return urlView;
+
+  // Fall back to user default from data attribute
+  const rootElement = document.getElementById('habits-root');
+  const defaultGrouping = rootElement?.dataset?.defaultGrouping;
+  return defaultGrouping || 'category';
 };
 
 const useHabitsStore = create((set) => ({

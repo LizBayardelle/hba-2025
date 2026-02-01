@@ -7,7 +7,21 @@ class SettingsController < ApplicationController
   end
 
   def update
-    if current_user.update(settings_params)
+    update_params = settings_params.to_h
+
+    # Handle dashboard_layout separately since it's an array of hashes
+    if params[:user][:dashboard_layout].present?
+      update_params[:dashboard_layout] = params[:user][:dashboard_layout].map do |item|
+        {
+          'block' => item['block'],
+          'column' => item['column'],
+          'position' => item['position'].to_i,
+          'visible' => item['visible']
+        }
+      end
+    end
+
+    if current_user.update(update_params)
       respond_to do |format|
         format.html { redirect_to settings_path, notice: 'Settings updated successfully.' }
         format.json { render json: { success: true, message: 'Settings updated successfully.' } }
@@ -133,7 +147,11 @@ class SettingsController < ApplicationController
       :push_notifications,
       :theme,
       :default_view,
-      :root_location
+      :root_location,
+      :default_habits_grouping,
+      :default_tasks_grouping,
+      :default_lists_grouping,
+      :default_documents_grouping
     )
   end
 end

@@ -22,7 +22,7 @@ const TasksPage = () => {
     openNewModal,
   } = useTasksStore();
 
-  // Initialize from URL params on mount
+  // Initialize from URL params on mount, fallback to user default
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const urlStatus = params.get('status');
@@ -30,8 +30,16 @@ const TasksPage = () => {
     const urlSearch = params.get('search');
 
     if (urlStatus) setStatusFilter(urlStatus);
-    if (urlGroupBy) setGroupBy(urlGroupBy);
     if (urlSearch) setSearchQuery(urlSearch);
+
+    // For groupBy: URL param takes priority, then user default from data attribute
+    if (urlGroupBy) {
+      setGroupBy(urlGroupBy);
+    } else {
+      const rootElement = document.getElementById('tasks-react-root');
+      const defaultGrouping = rootElement?.dataset?.defaultGrouping;
+      if (defaultGrouping) setGroupBy(defaultGrouping);
+    }
   }, []);
 
   // Update URL when filters change
@@ -322,7 +330,7 @@ const TasksPage = () => {
     const groupIcon = group.icon || 'fa-list';
 
     return (
-      <div key={group.title} className={`mb-6 ${index !== 0 ? 'mt-8' : ''}`}>
+      <div key={group.title} className={`mb-6 ${index !== 0 ? 'mt-8' : (group.hideHeader ? 'mt-6' : '')}`}>
         {/* Full-width colored stripe header */}
         {!group.hideHeader && (
           <div

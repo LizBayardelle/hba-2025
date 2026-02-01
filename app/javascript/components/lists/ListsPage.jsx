@@ -1,14 +1,36 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import ChecklistSection from '../shared/ChecklistSection';
 import ListFormModal from './ListFormModal';
 import useListsStore from '../../stores/listsStore';
 import { listsApi, categoriesApi } from '../../utils/api';
 
+// Get initial grouping from URL or user default
+const getInitialGrouping = () => {
+  const params = new URLSearchParams(window.location.search);
+  const urlGroupBy = params.get('groupBy');
+  if (urlGroupBy) return urlGroupBy;
+
+  const rootElement = document.getElementById('lists-react-root');
+  return rootElement?.dataset?.defaultGrouping || 'type';
+};
+
 const ListsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [groupBy, setGroupBy] = useState('type'); // 'type' or 'category'
+  const [groupBy, setGroupBy] = useState(getInitialGrouping);
   const { openFormModal, openEditModal } = useListsStore();
+
+  // Update URL when groupBy changes
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (groupBy && groupBy !== 'type') {
+      params.set('groupBy', groupBy);
+    } else {
+      params.delete('groupBy');
+    }
+    const newUrl = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
+    window.history.replaceState({}, '', newUrl);
+  }, [groupBy]);
 
   // Fetch lists data
   const { data, isLoading, error } = useQuery({
@@ -195,7 +217,7 @@ const ListsPage = () => {
         {!isLoading && !error && (
           <div>
             {groupedLists.map((group, index) => (
-              <div key={group.key} className={index !== 0 ? 'mt-8' : ''}>
+              <div key={group.key} className={index !== 0 ? 'mt-8' : (group.hideHeader ? 'mt-6' : '')}>
                 {/* Full-width stripe header */}
                 {!group.hideHeader && (
                   <div

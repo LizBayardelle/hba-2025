@@ -61,89 +61,144 @@
 
         <%= form_with model: current_user, url: settings_path, method: :patch, local: false, id: "settings-form" do |f| %>
           <!-- General Settings Card -->
-          <div class="bg-white rounded-2xl p-8 mb-6" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
-            <h2 class="text-2xl font-display mb-6" style="color: #1D1D1F;">
+          <div class="bg-white rounded-2xl p-6 mb-6" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
+            <h2 class="text-2xl font-display mb-4" style="color: #1D1D1F;">
               <i class="fa-solid fa-sliders mr-2"></i>General Settings
             </h2>
 
-            <!-- Timezone -->
-            <div class="mb-6 pb-6 border-b setting-group" style="border-color: #E8EEF1;" data-setting="timezone">
-              <%= f.label :timezone, class: "block text-sm font-semibold mb-2", style: "color: #1D1D1F;" do %>
-                <i class="fa-solid fa-globe mr-2"></i>Time Zone
-              <% end %>
-              <p class="text-xs font-light mb-3" style="color: #8E8E93;">
-                Your timezone affects when habits reset each day
-              </p>
-              <%= f.select :timezone,
-                  ActiveSupport::TimeZone.us_zones.map { |tz| [tz.to_s, tz.name] },
-                  {},
-                  class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light auto-save",
-                  style: "border-color: #E8EEF1;" %>
-              <p class="text-xs font-light mt-2" style="color: #8E8E93;">
-                Current time: <%= Time.zone.now.strftime("%l:%M %p %Z") %>
-              </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Timezone -->
+              <div class="setting-group" data-setting="timezone">
+                <%= f.label :timezone, class: "block text-sm font-semibold mb-1", style: "color: #1D1D1F;" do %>
+                  <i class="fa-solid fa-globe mr-1 text-xs" style="color: #8E8E93;"></i>Time Zone
+                <% end %>
+                <%= f.select :timezone,
+                    ActiveSupport::TimeZone.us_zones.map { |tz| [tz.to_s, tz.name] },
+                    {},
+                    class: "w-full px-3 py-2 rounded-lg border focus:outline-none transition font-light text-sm auto-save",
+                    style: "border-color: #E8EEF1;" %>
+              </div>
+
+              <!-- Week Starts On -->
+              <div class="setting-group" data-setting="week_starts_on">
+                <%= f.label :week_starts_on, class: "block text-sm font-semibold mb-1", style: "color: #1D1D1F;" do %>
+                  <i class="fa-solid fa-calendar-week mr-1 text-xs" style="color: #8E8E93;"></i>Week Starts On
+                <% end %>
+                <%= f.select :week_starts_on,
+                    [['Monday', 'monday'], ['Sunday', 'sunday'], ['Saturday', 'saturday']],
+                    {},
+                    class: "w-full px-3 py-2 rounded-lg border focus:outline-none transition font-light text-sm auto-save",
+                    style: "border-color: #E8EEF1;" %>
+              </div>
+
+              <!-- Date Format -->
+              <div class="setting-group" data-setting="date_format">
+                <%= f.label :date_format, class: "block text-sm font-semibold mb-1", style: "color: #1D1D1F;" do %>
+                  <i class="fa-solid fa-calendar mr-1 text-xs" style="color: #8E8E93;"></i>Date Format
+                <% end %>
+                <%= f.select :date_format,
+                    [['MM/DD/YYYY', 'MM/DD/YYYY'],
+                     ['DD/MM/YYYY', 'DD/MM/YYYY'],
+                     ['YYYY-MM-DD', 'YYYY-MM-DD']],
+                    {},
+                    class: "w-full px-3 py-2 rounded-lg border focus:outline-none transition font-light text-sm auto-save",
+                    style: "border-color: #E8EEF1;" %>
+              </div>
+
+              <!-- Time Format -->
+              <div class="setting-group" data-setting="time_format">
+                <%= f.label :time_format, class: "block text-sm font-semibold mb-1", style: "color: #1D1D1F;" do %>
+                  <i class="fa-solid fa-clock mr-1 text-xs" style="color: #8E8E93;"></i>Time Format
+                <% end %>
+                <%= f.select :time_format,
+                    [['12-hour (3:45 PM)', '12-hour'], ['24-hour (15:45)', '24-hour']],
+                    {},
+                    class: "w-full px-3 py-2 rounded-lg border focus:outline-none transition font-light text-sm auto-save",
+                    style: "border-color: #E8EEF1;" %>
+              </div>
+
+            </div>
+          </div>
+        <% end %>
+
+        <%= form_with model: current_user, url: settings_path, method: :patch, local: false, id: "settings-form-continued" do |f| %>
+          <!-- Display Preferences Card -->
+          <div class="bg-white rounded-2xl p-6 mb-6" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
+            <h2 class="text-2xl font-display mb-4" style="color: #1D1D1F;">
+              <i class="fa-solid fa-palette mr-2"></i>Display Preferences
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Home Page -->
+              <div class="setting-group" data-setting="root_location">
+                <%= f.label :root_location, class: "block text-sm font-semibold mb-1", style: "color: #1D1D1F;" do %>
+                  <i class="fa-solid fa-home mr-1 text-xs" style="color: #8E8E93;"></i>Home Page
+                <% end %>
+                <%= f.select :root_location,
+                    [['Dashboard', 'dashboard'], ['Habits', 'habits'], ['Analytics', 'analytics']],
+                    {},
+                    class: "w-full px-3 py-2 rounded-lg border focus:outline-none transition font-light text-sm auto-save",
+                    style: "border-color: #E8EEF1;" %>
+              </div>
+
+              <!-- Theme -->
+              <div class="setting-group" data-setting="theme">
+                <%= f.label :theme, class: "block text-sm font-semibold mb-1", style: "color: #1D1D1F;" do %>
+                  <i class="fa-solid fa-sun mr-1 text-xs" style="color: #8E8E93;"></i>Theme
+                <% end %>
+                <%= f.select :theme,
+                    [['Light', 'light'], ['Dark', 'dark'], ['Auto (match system)', 'auto']],
+                    {},
+                    class: "w-full px-3 py-2 rounded-lg border focus:outline-none transition font-light text-sm auto-save",
+                    style: "border-color: #E8EEF1;" %>
+              </div>
             </div>
 
-            <!-- Week Starts On -->
-            <div class="mb-6 pb-6 border-b setting-group" style="border-color: #E8EEF1;" data-setting="week_starts_on">
-              <%= f.label :week_starts_on, class: "block text-sm font-semibold mb-2", style: "color: #1D1D1F;" do %>
-                <i class="fa-solid fa-calendar-week mr-2"></i>Week Starts On
-              <% end %>
-              <p class="text-xs font-light mb-3" style="color: #8E8E93;">
-                Choose which day your week starts for weekly stats and streaks
-              </p>
-              <%= f.select :week_starts_on,
-                  [['Monday', 'monday'], ['Sunday', 'sunday'], ['Saturday', 'saturday']],
-                  {},
-                  class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light auto-save",
-                  style: "border-color: #E8EEF1;" %>
-            </div>
+            <!-- Default Groupings -->
+            <h3 class="text-sm font-semibold mt-5 mb-3" style="color: #1D1D1F;">
+              <i class="fa-solid fa-layer-group mr-1 text-xs" style="color: #8E8E93;"></i>Default Groupings
+            </h3>
 
-            <!-- Date Format -->
-            <div class="mb-6 pb-6 border-b setting-group" style="border-color: #E8EEF1;" data-setting="date_format">
-              <%= f.label :date_format, class: "block text-sm font-semibold mb-2", style: "color: #1D1D1F;" do %>
-                <i class="fa-solid fa-calendar mr-2"></i>Date Format
-              <% end %>
-              <p class="text-xs font-light mb-3" style="color: #8E8E93;">
-                How dates are displayed throughout the app
-              </p>
-              <%= f.select :date_format,
-                  [['MM/DD/YYYY (01/07/2026)', 'MM/DD/YYYY'],
-                   ['DD/MM/YYYY (07/01/2026)', 'DD/MM/YYYY'],
-                   ['YYYY-MM-DD (2026-01-07)', 'YYYY-MM-DD']],
-                  {},
-                  class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light auto-save",
-                  style: "border-color: #E8EEF1;" %>
-            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <!-- Default Habits Grouping -->
+              <div class="setting-group" data-setting="default_habits_grouping">
+                <%= f.label :default_habits_grouping, "Habits", class: "block text-xs font-medium mb-1", style: "color: #8E8E93;" %>
+                <%= f.select :default_habits_grouping,
+                    [['None', 'none'], ['Category', 'category'], ['Time of Day', 'time'], ['Priority', 'priority']],
+                    {},
+                    class: "w-full px-3 py-2 rounded-lg border focus:outline-none transition font-light text-sm auto-save",
+                    style: "border-color: #E8EEF1;" %>
+              </div>
 
-            <!-- Time Format -->
-            <div class="mb-6 pb-6 border-b setting-group" style="border-color: #E8EEF1;" data-setting="time_format">
-              <%= f.label :time_format, class: "block text-sm font-semibold mb-2", style: "color: #1D1D1F;" do %>
-                <i class="fa-solid fa-clock mr-2"></i>Time Format
-              <% end %>
-              <p class="text-xs font-light mb-3" style="color: #8E8E93;">
-                Choose between 12-hour and 24-hour time display
-              </p>
-              <%= f.select :time_format,
-                  [['12-hour (3:45 PM)', '12-hour'], ['24-hour (15:45)', '24-hour']],
-                  {},
-                  class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light auto-save",
-                  style: "border-color: #E8EEF1;" %>
-            </div>
+              <!-- Default Tasks Grouping -->
+              <div class="setting-group" data-setting="default_tasks_grouping">
+                <%= f.label :default_tasks_grouping, "Tasks", class: "block text-xs font-medium mb-1", style: "color: #8E8E93;" %>
+                <%= f.select :default_tasks_grouping,
+                    [['None', 'none'], ['Date Added', 'status'], ['Category', 'category'], ['Due Date', 'due_date'], ['Importance', 'importance']],
+                    {},
+                    class: "w-full px-3 py-2 rounded-lg border focus:outline-none transition font-light text-sm auto-save",
+                    style: "border-color: #E8EEF1;" %>
+              </div>
 
-            <!-- Root Location -->
-            <div class="mb-6 setting-group" data-setting="root_location">
-              <%= f.label :root_location, "Home Page", class: "block text-sm font-semibold mb-2", style: "color: #1D1D1F;" do %>
-                <i class="fa-solid fa-home mr-2"></i>Home Page
-              <% end %>
-              <p class="text-xs font-light mb-3" style="color: #8E8E93;">
-                Choose which page loads when you click the logo or visit the home page
-              </p>
-              <%= f.select :root_location,
-                  [['Dashboard', 'dashboard'], ['Habits', 'habits'], ['Analytics', 'analytics']],
-                  {},
-                  class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light auto-save",
-                  style: "border-color: #E8EEF1;" %>
+              <!-- Default Lists Grouping -->
+              <div class="setting-group" data-setting="default_lists_grouping">
+                <%= f.label :default_lists_grouping, "Lists", class: "block text-xs font-medium mb-1", style: "color: #8E8E93;" %>
+                <%= f.select :default_lists_grouping,
+                    [['None', 'none'], ['Type', 'type'], ['Category', 'category']],
+                    {},
+                    class: "w-full px-3 py-2 rounded-lg border focus:outline-none transition font-light text-sm auto-save",
+                    style: "border-color: #E8EEF1;" %>
+              </div>
+
+              <!-- Default Documents Grouping -->
+              <div class="setting-group" data-setting="default_documents_grouping">
+                <%= f.label :default_documents_grouping, "Documents", class: "block text-xs font-medium mb-1", style: "color: #8E8E93;" %>
+                <%= f.select :default_documents_grouping,
+                    [['None', 'none'], ['Type', 'type'], ['Tag', 'tag'], ['Category', 'category']],
+                    {},
+                    class: "w-full px-3 py-2 rounded-lg border focus:outline-none transition font-light text-sm auto-save",
+                    style: "border-color: #E8EEF1;" %>
+              </div>
             </div>
           </div>
         <% end %>
@@ -189,41 +244,6 @@
             <!-- Time blocks will be loaded here -->
           </div>
         </div>
-
-        <%= form_with model: current_user, url: settings_path, method: :patch, local: false, id: "settings-form-continued" do |f| %>
-          <!-- Display Preferences Card -->
-          <div class="bg-white rounded-2xl p-8 mb-6" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
-            <h2 class="text-2xl font-display mb-6" style="color: #1D1D1F;">
-              <i class="fa-solid fa-palette mr-2"></i>Display Preferences
-            </h2>
-
-            <!-- Theme -->
-            <div class="mb-6 pb-6 border-b setting-group" style="border-color: #E8EEF1;" data-setting="theme">
-              <%= f.label :theme, class: "block text-sm font-semibold mb-2", style: "color: #1D1D1F;" %>
-              <p class="text-xs font-light mb-3" style="color: #8E8E93;">
-                Choose your preferred color theme
-              </p>
-              <%= f.select :theme,
-                  [['Light', 'light'], ['Dark', 'dark'], ['Auto (match system)', 'auto']],
-                  {},
-                  class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light auto-save",
-                  style: "border-color: #E8EEF1;" %>
-            </div>
-
-            <!-- Default View -->
-            <div class="mb-6 setting-group" data-setting="default_view">
-              <%= f.label :default_view, "Default Habits View", class: "block text-sm font-semibold mb-2", style: "color: #1D1D1F;" %>
-              <p class="text-xs font-light mb-3" style="color: #8E8E93;">
-                Choose how habits are organized by default
-              </p>
-              <%= f.select :default_view,
-                  [['By Category', 'category'], ['By Time of Day', 'time'], ['By Importance', 'importance']],
-                  {},
-                  class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light auto-save",
-                  style: "border-color: #E8EEF1;" %>
-            </div>
-          </div>
-        <% end %>
 
         <!-- Google Calendar Integration Card -->
         <div class="bg-white rounded-2xl p-8 mb-6" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
@@ -277,6 +297,194 @@
             </div>
           <% end %>
         </div>
+
+        <!-- Dashboard Layout Card -->
+        <div class="bg-white rounded-2xl p-6 mb-6" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
+          <h2 class="text-2xl font-display mb-4" style="color: #1D1D1F;">
+            <i class="fa-solid fa-grip mr-2"></i>Dashboard Layout
+          </h2>
+          <p class="text-xs font-light mb-4" style="color: #8E8E93;">
+            Drag to reorder blocks. Choose which column each block appears in.
+          </p>
+
+          <div id="dashboard-layout-list" class="space-y-2">
+            <!-- Blocks will be loaded here -->
+          </div>
+        </div>
+
+        <script>
+          // Dashboard Layout Management
+          (function() {
+            const layoutList = document.getElementById('dashboard-layout-list');
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+            const blockLabels = {
+              calendar: { name: 'Calendar', icon: 'fa-calendar' },
+              quick_links: { name: 'Quick Links', icon: 'fa-link' },
+              habits: { name: 'Habits', icon: 'fa-chart-line' },
+              tasks: { name: 'Tasks', icon: 'fa-check' }
+            };
+
+            let currentLayout = <%= raw (current_user.dashboard_layout.presence || User::DEFAULT_DASHBOARD_LAYOUT).to_json %>;
+
+            function renderLayout() {
+              // Sort by position only (maintains drag order)
+              const sorted = [...currentLayout].sort((a, b) => a.position - b.position);
+
+              layoutList.innerHTML = sorted.map((item, index) => {
+                const block = blockLabels[item.block] || { name: item.block, icon: 'fa-square' };
+                return `
+                  <div class="flex items-center gap-3 p-3 rounded-lg border bg-white cursor-grab active:cursor-grabbing"
+                       style="border-color: #E8EEF1;"
+                       draggable="true"
+                       data-block="${item.block}">
+                    <i class="fa-solid fa-grip-vertical" style="color: #C7C7CC;"></i>
+                    <i class="fa-solid ${block.icon} w-5 text-center" style="color: #8E8E93;"></i>
+                    <span class="flex-1 text-sm font-medium" style="color: #1D1D1F;">${block.name}</span>
+                    <select class="column-select px-3 py-1.5 rounded-lg border text-sm"
+                            style="border-color: #E8EEF1;"
+                            data-block="${item.block}">
+                      <option value="left" ${item.column === 'left' ? 'selected' : ''}>Left Column</option>
+                      <option value="right" ${item.column === 'right' ? 'selected' : ''}>Right Column</option>
+                      <option value="full" ${item.column === 'full' ? 'selected' : ''}>Full Width</option>
+                    </select>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" class="visible-checkbox w-4 h-4 rounded"
+                             data-block="${item.block}"
+                             ${item.visible !== false ? 'checked' : ''}>
+                      <span class="text-xs" style="color: #8E8E93;">Show</span>
+                    </label>
+                  </div>
+                `;
+              }).join('');
+
+              // Add event listeners
+              attachEventListeners();
+            }
+
+            function attachEventListeners() {
+              // Column select changes
+              layoutList.querySelectorAll('.column-select').forEach(select => {
+                select.addEventListener('change', (e) => {
+                  const block = e.target.dataset.block;
+                  const item = currentLayout.find(i => i.block === block);
+                  if (item) {
+                    item.column = e.target.value;
+                    saveLayout();
+                  }
+                });
+              });
+
+              // Visibility checkbox changes
+              layoutList.querySelectorAll('.visible-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                  const block = e.target.dataset.block;
+                  const item = currentLayout.find(i => i.block === block);
+                  if (item) {
+                    item.visible = e.target.checked;
+                    saveLayout();
+                  }
+                });
+              });
+
+              // Drag and drop
+              const items = layoutList.querySelectorAll('[draggable="true"]');
+              items.forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragover', handleDragOver);
+                item.addEventListener('drop', handleDrop);
+                item.addEventListener('dragend', handleDragEnd);
+              });
+            }
+
+            let draggedItem = null;
+
+            function handleDragStart(e) {
+              draggedItem = e.target;
+              e.target.style.opacity = '0.5';
+            }
+
+            function handleDragOver(e) {
+              e.preventDefault();
+              const target = e.target.closest('[draggable="true"]');
+              if (target && target !== draggedItem) {
+                target.style.borderColor = '#2C2C2E';
+              }
+            }
+
+            function handleDrop(e) {
+              e.preventDefault();
+              const target = e.target.closest('[draggable="true"]');
+              if (target && target !== draggedItem) {
+                const allItems = [...layoutList.querySelectorAll('[draggable="true"]')];
+                const draggedIndex = allItems.indexOf(draggedItem);
+                const targetIndex = allItems.indexOf(target);
+
+                // Reorder in DOM
+                if (draggedIndex < targetIndex) {
+                  target.parentNode.insertBefore(draggedItem, target.nextSibling);
+                } else {
+                  target.parentNode.insertBefore(draggedItem, target);
+                }
+
+                // Update positions in currentLayout
+                const newOrder = [...layoutList.querySelectorAll('[draggable="true"]')].map(el => el.dataset.block);
+                newOrder.forEach((block, index) => {
+                  const item = currentLayout.find(i => i.block === block);
+                  if (item) item.position = index;
+                });
+
+                saveLayout();
+              }
+              target.style.borderColor = '#E8EEF1';
+            }
+
+            function handleDragEnd(e) {
+              e.target.style.opacity = '1';
+              layoutList.querySelectorAll('[draggable="true"]').forEach(item => {
+                item.style.borderColor = '#E8EEF1';
+              });
+            }
+
+            function saveLayout() {
+              fetch('/settings', {
+                method: 'PATCH',
+                headers: {
+                  'X-CSRF-Token': csrfToken,
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json'
+                },
+                body: JSON.stringify({ user: { dashboard_layout: currentLayout } })
+              })
+              .then(response => response.json())
+              .then(data => {
+                if (data.success) {
+                  showNotification('Layout saved');
+                }
+              })
+              .catch(error => console.error('Error saving layout:', error));
+            }
+
+            function showNotification(message) {
+              const existing = layoutList.parentElement.querySelector('.layout-notification');
+              if (existing) existing.remove();
+
+              const notification = document.createElement('div');
+              notification.className = 'layout-notification mt-3 p-2 rounded-lg border-2 text-xs font-semibold';
+              notification.style.cssText = 'background-color: #D1FAF0; border-color: #6EE7B7; color: #065F46;';
+              notification.innerHTML = '<i class="fa-solid fa-check mr-1"></i>' + message;
+              layoutList.parentElement.appendChild(notification);
+
+              setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+              }, 3000);
+            }
+
+            // Initial render
+            renderLayout();
+          })();
+        </script>
 
         <script>
           // Load and handle Google Calendar selection
@@ -785,12 +993,12 @@
 
         <script>
           // Auto-save settings functionality
-          const form = document.getElementById('settings-form');
           const autoSaveElements = document.querySelectorAll('.auto-save');
 
           autoSaveElements.forEach(element => {
             element.addEventListener('change', function(e) {
               const settingGroup = e.target.closest('.setting-group');
+              const form = e.target.closest('form');
               const formData = new FormData(form);
 
               // Get CSRF token

@@ -65,11 +65,13 @@
         <i class="fa-solid fa-book w-5 text-center" style="color: <%= current_page?(journal_path) ? '#FFFFFF' : '#C7C7CC' %>;"></i>
         <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(journal_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(journal_path) ? '1' : '0.7' %>;">Journal</span>
       <% end %>
-      <%= link_to habits_path, class: "flex items-center gap-3 pl-4 pr-0 py-1.5 border-l-3 transition-all duration-150 text-sm", style: current_page?(habits_path) ? "background-color: rgba(255, 255, 255, 0.08); border-left-color: #FFFFFF; border-left-width: 3px;" : "border-left-color: transparent; border-left-width: 3px;" do %>
+      <% habits_url = user_signed_in? && current_user.default_habits_grouping != 'category' ? habits_path(view: current_user.default_habits_grouping) : habits_path %>
+      <%= link_to habits_url, class: "flex items-center gap-3 pl-4 pr-0 py-1.5 border-l-3 transition-all duration-150 text-sm", style: current_page?(habits_path) ? "background-color: rgba(255, 255, 255, 0.08); border-left-color: #FFFFFF; border-left-width: 3px;" : "border-left-color: transparent; border-left-width: 3px;" do %>
         <i class="fa-solid fa-chart-line w-5 text-center" style="color: <%= current_page?(habits_path) ? '#FFFFFF' : '#C7C7CC' %>;"></i>
         <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(habits_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(habits_path) ? '1' : '0.7' %>;">Habits</span>
       <% end %>
-      <%= link_to tasks_path, class: "flex items-center gap-3 pl-4 pr-0 py-1.5 border-l-3 transition-all duration-150 text-sm", style: current_page?(tasks_path) ? "background-color: rgba(255, 255, 255, 0.08); border-left-color: #FFFFFF; border-left-width: 3px;" : "border-left-color: transparent; border-left-width: 3px;" do %>
+      <% tasks_url = user_signed_in? && current_user.default_tasks_grouping != 'status' ? tasks_path(groupBy: current_user.default_tasks_grouping) : tasks_path %>
+      <%= link_to tasks_url, class: "flex items-center gap-3 pl-4 pr-0 py-1.5 border-l-3 transition-all duration-150 text-sm", style: current_page?(tasks_path) ? "background-color: rgba(255, 255, 255, 0.08); border-left-color: #FFFFFF; border-left-width: 3px;" : "border-left-color: transparent; border-left-width: 3px;" do %>
         <i class="fa-solid fa-check w-5 text-center" style="color: <%= current_page?(tasks_path) ? '#FFFFFF' : '#C7C7CC' %>;"></i>
         <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(tasks_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(tasks_path) ? '1' : '0.7' %>;">Tasks</span>
       <% end %>
@@ -81,11 +83,13 @@
         <h3 class="text-sm" style="color: #C7C7CC; letter-spacing: 0.03em; font-weight: 200; opacity: 0.7;">Attachments</h3>
       </div>
       <div class="space-y-0 -mr-5">
-        <%= link_to documents_path, class: "flex items-center gap-3 pl-4 pr-0 py-1.5 border-l-3 transition-all duration-150 text-sm", style: current_page?(documents_path) ? "background-color: rgba(255, 255, 255, 0.08); border-left-color: #FFFFFF; border-left-width: 3px;" : "border-left-color: transparent; border-left-width: 3px;" do %>
+        <% documents_url = user_signed_in? && current_user.default_documents_grouping != 'type' ? documents_path(groupBy: current_user.default_documents_grouping) : documents_path %>
+        <%= link_to documents_url, class: "flex items-center gap-3 pl-4 pr-0 py-1.5 border-l-3 transition-all duration-150 text-sm", style: current_page?(documents_path) ? "background-color: rgba(255, 255, 255, 0.08); border-left-color: #FFFFFF; border-left-width: 3px;" : "border-left-color: transparent; border-left-width: 3px;" do %>
           <i class="fa-solid fa-file-alt w-5 text-center" style="color: <%= current_page?(documents_path) ? '#FFFFFF' : '#C7C7CC' %>;"></i>
           <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(documents_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(documents_path) ? '1' : '0.7' %>;">Documents</span>
         <% end %>
-        <%= link_to lists_path, class: "flex items-center gap-3 pl-4 pr-0 py-1.5 border-l-3 transition-all duration-150 text-sm", style: current_page?(lists_path) ? "background-color: rgba(255, 255, 255, 0.08); border-left-color: #FFFFFF; border-left-width: 3px;" : "border-left-color: transparent; border-left-width: 3px;" do %>
+        <% lists_url = user_signed_in? && current_user.default_lists_grouping != 'type' ? lists_path(groupBy: current_user.default_lists_grouping) : lists_path %>
+        <%= link_to lists_url, class: "flex items-center gap-3 pl-4 pr-0 py-1.5 border-l-3 transition-all duration-150 text-sm", style: current_page?(lists_path) ? "background-color: rgba(255, 255, 255, 0.08); border-left-color: #FFFFFF; border-left-width: 3px;" : "border-left-color: transparent; border-left-width: 3px;" do %>
           <i class="fa-solid fa-list-check w-5 text-center" style="color: <%= current_page?(lists_path) ? '#FFFFFF' : '#C7C7CC' %>;"></i>
           <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(lists_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(lists_path) ? '1' : '0.7' %>;">Lists</span>
         <% end %>

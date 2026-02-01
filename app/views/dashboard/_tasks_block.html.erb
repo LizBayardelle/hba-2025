@@ -1,0 +1,107 @@
+<div class="rounded-xl p-6" style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
+  <div class="mb-4">
+    <div class="flex items-center justify-between">
+      <h2 class="text-2xl font-display" style="color: #1D1D1F;">Tasks</h2>
+      <!-- Toggle Buttons -->
+      <div class="flex gap-1 rounded-lg p-1" style="background: rgba(199, 199, 204, 0.2);">
+        <button id="tasks-date-btn" onclick="switchTasksView('date')" class="px-2 py-1 rounded text-xs transition" style="background: linear-gradient(135deg, #2C2C2E, #1D1D1F); color: white; font-weight: 600; font-family: 'Inter', sans-serif; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);">
+          Date
+        </button>
+        <button id="tasks-category-btn" onclick="switchTasksView('category')" class="px-2 py-1 rounded text-xs transition" style="color: #8E8E93; font-weight: 600; font-family: 'Inter', sans-serif;">
+          Category
+        </button>
+        <button id="tasks-priority-btn" onclick="switchTasksView('priority')" class="px-2 py-1 rounded text-xs transition" style="color: #8E8E93; font-weight: 600; font-family: 'Inter', sans-serif;">
+          Priority
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tasks-container">
+    <%
+      # Build task data with metadata for all tasks
+      all_tasks_with_groups = @tasks.map do |task|
+        # Date grouping
+        date_group = if task.due_date.nil?
+          'no_date'
+        elsif task.due_date < @today
+          'overdue'
+        elsif task.due_date == @today
+          'today'
+        else
+          'future'
+        end
+
+        # Category grouping
+        category_group = task.category_id ? "category_#{task.category_id}" : 'none'
+
+        # Priority grouping
+        priority_group = task.importance_level_id ? "level_#{task.importance_level_id}" : 'none'
+
+        {
+          task: task,
+          date_group: date_group,
+          category_group: category_group,
+          category_name: task.category&.name || 'No Category',
+          category_color: task.category&.color || '#9CA3A8',
+          category_icon: task.category&.icon || 'fa-circle',
+          priority_group: priority_group,
+          priority_name: task.importance_level&.name || 'No Priority',
+          priority_rank: task.importance_level&.rank || 999,
+          priority_color: task.importance_level&.color || '#657b84',
+          priority_icon: task.importance_level&.icon || 'fa-circle'
+        }
+      end
+
+      # Sort by date by default (overdue, today, no date, future)
+      date_order = {'overdue' => 0, 'today' => 1, 'no_date' => 2, 'future' => 3}
+      all_tasks_with_groups.sort_by! { |t| [date_order[t[:date_group]] || 999, t[:task].due_date || Date.new(9999)] }
+    %>
+
+    <% all_tasks_with_groups.each do |task_data| %>
+      <%
+        task = task_data[:task]
+        color = case task_data[:date_group]
+        when 'overdue' then '#F8796D'
+        when 'today' then '#1d3e4c'
+        else '#657b84'
+        end
+      %>
+      <div class="task-item flex items-center gap-2 mb-2"
+           data-task-id="<%= task.id %>"
+           data-completed="<%= task.completed %>"
+           data-date-group="<%= task_data[:date_group] %>"
+           data-category-group="<%= task_data[:category_group] %>"
+           data-category-name="<%= task_data[:category_name] %>"
+           data-category-color="<%= task_data[:category_color] %>"
+           data-category-icon="<%= task_data[:category_icon] %>"
+           data-priority-group="<%= task_data[:priority_group] %>"
+           data-priority-name="<%= task_data[:priority_name] %>"
+           data-priority-rank="<%= task_data[:priority_rank] %>"
+           data-priority-color="<%= task_data[:priority_color] %>"
+           data-priority-icon="<%= task_data[:priority_icon] %>"
+           data-due-date="<%= task.due_date&.strftime('%b %d') || '' %>">
+        <button
+          onclick="toggleTask(<%= task.id %>, <%= task.completed ? 'true' : 'false' %>)"
+          class="flex-shrink-0 cursor-pointer transition-transform hover:scale-110">
+          <% if task.completed %>
+            <i class="fa-solid fa-circle-check text-xs" style="color: <%= color %>;"></i>
+          <% else %>
+            <i class="fa-regular fa-circle text-xs" style="color: <%= color %>;"></i>
+          <% end %>
+        </button>
+        <span class="flex-1 text-sm <%= task.completed ? 'line-through opacity-60' : '' %>" style="color: <%= color %>;"><%= task.name %></span>
+        <% if task.due_date %>
+          <span class="text-xs" style="color: <%= color %>;"><%= task.due_date.strftime('%b %d') %></span>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if @tasks.empty? %>
+      <div class="text-center py-8">
+        <i class="fa-solid fa-list-check text-4xl mb-2" style="color: #E5E5E7;"></i>
+        <p class="text-sm" style="color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif;">No tasks yet</p>
+      </div>
+    <% end %>
+  </div>
+</div>

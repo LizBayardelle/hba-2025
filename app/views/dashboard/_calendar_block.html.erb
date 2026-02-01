@@ -1,0 +1,71 @@
+<% if current_user.google_sync_enabled && current_user.google_calendar_id.present? %>
+  <div class="rounded-xl p-4" style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-2xl font-display" style="color: #1D1D1F;">
+        <i class="fa-solid fa-calendar mr-2"></i>Today's Calendar
+      </h2>
+      <%= link_to "https://calendar.google.com", target: "_blank", rel: "noopener noreferrer",
+          class: "text-xs hover:underline",
+          style: "color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif;" do %>
+        Open in Google
+      <% end %>
+    </div>
+    <% if @calendar_events.any? %>
+      <div class="space-y-0">
+        <% @calendar_events.each do |event| %>
+          <div class="flex items-center gap-4 py-1 transition rounded px-2" style="hover:background-color: rgba(199, 199, 204, 0.1);">
+            <% if event[:all_day] %>
+              <div class="text-xs w-20" style="color: #8E8E93; font-weight: 600; font-family: 'Inter', sans-serif;">All Day</div>
+            <% else %>
+              <div class="text-xs w-20" style="color: #1D1D1F; font-weight: 600; font-family: 'Inter', sans-serif;">
+                <%= event[:start_time].strftime('%l:%M %p') %>
+              </div>
+            <% end %>
+            <div class="flex-1 text-sm" style="color: #1D1D1F; font-weight: 400; font-family: 'Inter', sans-serif;">
+              <%= event[:summary] || 'Untitled Event' %>
+              <% if current_user.google_calendar_id.length > 1 %>
+                <span class="text-xs ml-2" style="color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif;">
+                  (<%= event[:calendar_name] %>)
+                </span>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-center py-8">
+        <p class="text-sm" style="color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif;">Nothing planned for today.</p>
+      </div>
+    <% end %>
+    <!-- Footer with refresh and timestamp -->
+    <div class="flex items-center justify-between mt-3 pt-2" style="border-top: 1px solid rgba(199, 199, 204, 0.2);">
+      <%= form_with url: google_calendar_refresh_path(date: @today.strftime('%Y-%m-%d')), method: :post, local: true, id: "calendar-refresh-form", style: "display: inline; margin: 0;" do %>
+        <button type="submit" id="calendar-refresh-btn" class="text-xs hover:underline flex items-center gap-1" style="color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif; background: none; border: none; padding: 0; cursor: pointer;" title="Refresh calendar">
+          <i class="fa-solid fa-refresh text-xs" style="color: #8E8E93;"></i>
+          <span>Refresh</span>
+        </button>
+      <% end %>
+      <% if current_user.calendar_events_cached_at %>
+        <span class="text-xs" style="color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif;">
+          Updated <%= time_ago_in_words(current_user.calendar_events_cached_at) %> ago
+        </span>
+      <% end %>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const refreshForm = document.getElementById('calendar-refresh-form');
+      if (refreshForm) {
+        refreshForm.addEventListener('submit', (e) => {
+          const btn = document.getElementById('calendar-refresh-btn');
+          const icon = btn.querySelector('i');
+          const text = btn.querySelector('span');
+          icon.classList.add('fa-spin');
+          text.textContent = 'Refreshing...';
+          btn.disabled = true;
+        });
+      }
+    });
+  </script>
+<% end %>

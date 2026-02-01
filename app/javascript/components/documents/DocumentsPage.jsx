@@ -1,15 +1,37 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { documentsApi, tagsApi, categoriesApi } from '../../utils/api';
 import useDocumentsStore from '../../stores/documentsStore';
 import DocumentViewModal from './DocumentViewModal';
 import DocumentFormModal from './DocumentFormModal';
 
+// Get initial grouping from URL or user default
+const getInitialGrouping = () => {
+  const params = new URLSearchParams(window.location.search);
+  const urlGroupBy = params.get('groupBy');
+  if (urlGroupBy) return urlGroupBy;
+
+  const rootElement = document.getElementById('documents-react-root');
+  return rootElement?.dataset?.defaultGrouping || 'type';
+};
+
 const DocumentsPage = ({ habits }) => {
-  const [groupBy, setGroupBy] = useState('type');
+  const [groupBy, setGroupBy] = useState(getInitialGrouping);
   const [searchQuery, setSearchQuery] = useState('');
   const queryClient = useQueryClient();
   const { openViewModal, openNewModal, openEditModal } = useDocumentsStore();
+
+  // Update URL when groupBy changes
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (groupBy && groupBy !== 'type') {
+      params.set('groupBy', groupBy);
+    } else {
+      params.delete('groupBy');
+    }
+    const newUrl = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
+    window.history.replaceState({}, '', newUrl);
+  }, [groupBy]);
 
   // Fetch documents
   const { data: documents = [], isLoading, error } = useQuery({

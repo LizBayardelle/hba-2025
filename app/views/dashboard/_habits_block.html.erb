@@ -1,0 +1,131 @@
+<div class="rounded-xl p-6" style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
+  <div class="mb-4">
+    <div class="flex items-center justify-between">
+      <h2 class="text-2xl font-display" style="color: #1D1D1F;">Habits</h2>
+      <!-- Toggle Buttons -->
+      <div class="flex gap-1 rounded-lg p-1" style="background: rgba(199, 199, 204, 0.2);">
+        <button id="focus-time-btn" onclick="switchFocusView('time')" class="px-2 py-1 rounded text-xs transition" style="background: linear-gradient(135deg, #2C2C2E, #1D1D1F); color: white; font-weight: 600; font-family: 'Inter', sans-serif; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);">
+          Time
+        </button>
+        <button id="focus-category-btn" onclick="switchFocusView('category')" class="px-2 py-1 rounded text-xs transition" style="color: #8E8E93; font-weight: 600; font-family: 'Inter', sans-serif;">
+          Category
+        </button>
+        <button id="focus-priority-btn" onclick="switchFocusView('priority')" class="px-2 py-1 rounded text-xs transition" style="color: #8E8E93; font-weight: 600; font-family: 'Inter', sans-serif;">
+          Priority
+        </button>
+      </div>
+    </div>
+    <div id="today-completion-count" class="text-sm mt-1" style="color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif;">
+      <%= @completed_today %> / <%= @total_habits %> completed (<%= @today_percentage %>%)
+    </div>
+  </div>
+
+  <% if @today_habits.any? %>
+    <!-- Render all habits once with grouping metadata -->
+    <div id="focus-habits-container" class="space-y-4">
+      <%
+        # Light color mapping
+        light_color_map = {
+          '#6B8A99' => '#E8EEF1', '#9C8B7E' => '#E8E0D5', '#F8796D' => '#FFD4CE',
+          '#FFA07A' => '#FFE4D6', '#E5C730' => '#FEF7C3', '#A8A356' => '#E8EBCD',
+          '#7CB342' => '#D7EDCB', '#6EE7B7' => '#D1FAF0', '#22D3EE' => '#CFFAFE',
+          '#6366F1' => '#E0E7FF', '#A78BFA' => '#EDE9FE', '#E879F9' => '#FAE8FF',
+          '#FB7185' => '#FFE4E6', '#9CA3A8' => '#E8E8E8'
+        }
+
+        # Create a single list of all habits with their grouping info
+        all_habits_with_groups = @habits.map do |habit|
+          time_block_id = habit.time_block_id || 'anytime'
+          time_group = time_block_id == 'anytime' ? 'anytime' : "block_#{time_block_id}"
+
+          priority_group = habit.importance_level_id ? "level_#{habit.importance_level_id}" : 'none'
+          category_group = "category_#{habit.category_id}"
+
+          {
+            habit: habit,
+            time_group: time_group,
+            time_block_id: time_block_id,
+            time_block_name: habit.time_block&.name || 'Anytime',
+            time_block_icon: habit.time_block&.icon || 'fa-clock',
+            time_block_color: habit.time_block&.color || '#1d3e4c',
+            time_block_rank: habit.time_block&.rank || 999,
+            priority_group: priority_group,
+            priority_name: habit.importance_level&.name || 'No Priority',
+            priority_rank: habit.importance_level&.rank || 999,
+            priority_color: habit.importance_level&.color || '#657b84',
+            priority_icon: habit.importance_level&.icon || 'fa-circle',
+            category_group: category_group,
+            category_name: habit.category.name,
+            category_color: habit.category.color,
+            category_icon: habit.category.icon
+          }
+        end
+
+        # Sort by time_block rank by default (anytime last)
+        all_habits_with_groups.sort_by! { |h| h[:time_block_rank] }
+      %>
+
+      <% all_habits_with_groups.each do |habit_data| %>
+        <%
+          habit = habit_data[:habit]
+          completion_count = @today_completions[habit.id] || 0
+          is_complete = completion_count >= habit.target_count
+          category = habit.category
+          light_color = light_color_map[category.color] || (category.color + '20')
+        %>
+        <div class="habit-item flex items-center gap-2"
+             data-habit-id="<%= habit.id %>"
+             data-target="<%= habit.target_count %>"
+             data-health="<%= habit.health %>"
+             data-time-group="<%= habit_data[:time_group] %>"
+             data-time-block-id="<%= habit_data[:time_block_id] %>"
+             data-time-block-name="<%= habit_data[:time_block_name] %>"
+             data-time-block-icon="<%= habit_data[:time_block_icon] %>"
+             data-time-block-color="<%= habit_data[:time_block_color] %>"
+             data-time-block-rank="<%= habit_data[:time_block_rank] %>"
+             data-priority-group="<%= habit_data[:priority_group] %>"
+             data-priority-name="<%= habit_data[:priority_name] %>"
+             data-priority-rank="<%= habit_data[:priority_rank] %>"
+             data-priority-color="<%= habit_data[:priority_color] %>"
+             data-priority-icon="<%= habit_data[:priority_icon] %>"
+             data-category-group="<%= habit_data[:category_group] %>"
+             data-category-name="<%= habit_data[:category_name] %>"
+             data-category-icon="<%= habit_data[:category_icon] %>"
+             data-category-color="<%= category.color %>"
+             data-light-color="<%= light_color %>">
+          <button
+            onclick="toggleDashboardHabit(<%= habit.id %>, <%= is_complete ? 'true' : 'false' %>)"
+            class="flex-shrink-0 cursor-pointer transition-transform hover:scale-110">
+            <% if is_complete %>
+              <i class="fa-solid fa-circle-check text-sm" style="color: <%= category.color %>;"></i>
+            <% else %>
+              <i class="fa-regular fa-circle text-sm" style="color: <%= light_color %>;"></i>
+            <% end %>
+          </button>
+          <div class="flex-1 flex items-center gap-2">
+            <div class="text-sm font-semibold <%= is_complete ? 'line-through opacity-60' : '' %>" style="color: <%= is_complete ? light_color : category.color %>;">
+              <%= habit.name %>
+            </div>
+            <% if habit.documents.any? %>
+              <%= link_to habit_content_path(habit.documents.first),
+                  class: "flex-shrink-0 text-xs hover:opacity-70 transition",
+                  style: "color: #{category.color};",
+                  title: "View attached content",
+                  data: { habit_content_modal: true } do %>
+                <i class="fa-solid fa-file-alt"></i>
+              <% end %>
+            <% end %>
+          </div>
+          <div class="text-xs font-light" style="color: #657b84;">
+            <%= completion_count %> / <%= habit.target_count %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="text-center py-8">
+      <i class="fa-solid fa-check-circle text-4xl mb-2" style="color: #E5E5E7;"></i>
+      <p class="text-sm" style="color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif;">No habits for today</p>
+    </div>
+  <% end %>
+</div>
