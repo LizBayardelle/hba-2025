@@ -171,6 +171,47 @@ export const listsApi = {
   }),
 };
 
+// Prep Questions API methods
+export const prepQuestionsApi = {
+  // Fetch all questions
+  fetchAll: () => apiRequest('/daily_prep/manage.json'),
+
+  // Create question
+  create: (data) => apiRequest('/prep_questions', {
+    method: 'POST',
+    body: JSON.stringify({ prep_question: data }),
+  }),
+
+  // Update question
+  update: (id, data) => apiRequest(`/prep_questions/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ prep_question: data }),
+  }),
+
+  // Delete (archive) question
+  delete: (id) => apiRequest(`/prep_questions/${id}`, {
+    method: 'DELETE',
+  }),
+};
+
+// Prep Responses API methods
+export const prepResponsesApi = {
+  // Fetch responses for a date
+  fetchForDate: (date) => apiRequest(`/prep_responses.json?date=${date}`),
+
+  // Create or update response
+  upsert: (data) => apiRequest('/prep_responses', {
+    method: 'POST',
+    body: JSON.stringify({ prep_response: data }),
+  }),
+
+  // Update response
+  update: (id, data) => apiRequest(`/prep_responses/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ prep_response: data }),
+  }),
+};
+
 // Checklist Items API methods
 export const checklistItemsApi = {
   // Task checklist items

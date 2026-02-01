@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_02_01_181210) do
+ActiveRecord::Schema[7.2].define(version: 2026_02_01_200001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -209,6 +209,34 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_01_181210) do
     t.index ["user_id"], name: "index_lists_on_user_id"
   end
 
+  create_table "prep_questions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.integer "question_type", default: 0, null: false
+    t.string "question_text", null: false
+    t.jsonb "options", default: []
+    t.boolean "allow_multiple", default: false
+    t.integer "position", default: 0
+    t.datetime "archived_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "archived_at"], name: "index_prep_questions_on_user_id_and_archived_at"
+    t.index ["user_id", "position"], name: "index_prep_questions_on_user_id_and_position"
+    t.index ["user_id"], name: "index_prep_questions_on_user_id"
+  end
+
+  create_table "prep_responses", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "prep_question_id", null: false
+    t.date "response_date", null: false
+    t.jsonb "response_value", default: {}
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["prep_question_id", "response_date"], name: "index_prep_responses_on_prep_question_id_and_response_date", unique: true
+    t.index ["prep_question_id"], name: "index_prep_responses_on_prep_question_id"
+    t.index ["user_id", "response_date"], name: "index_prep_responses_on_user_id_and_response_date"
+    t.index ["user_id"], name: "index_prep_responses_on_user_id"
+  end
+
   create_table "taggings", force: :cascade do |t|
     t.string "taggable_type", null: false
     t.bigint "taggable_id", null: false
@@ -325,6 +353,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_01_181210) do
   add_foreign_key "list_attachments", "users"
   add_foreign_key "lists", "categories"
   add_foreign_key "lists", "users"
+  add_foreign_key "prep_questions", "users"
+  add_foreign_key "prep_responses", "prep_questions"
+  add_foreign_key "prep_responses", "users"
   add_foreign_key "taggings", "tags"
   add_foreign_key "tags", "users"
   add_foreign_key "tasks", "categories"

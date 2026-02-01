@@ -4,6 +4,11 @@ Rails.application.routes.draw do
   root to: 'home#index'
 
   get 'dashboard', to: 'dashboard#index'
+  get 'daily_prep', to: 'prep_questions#index'
+  get 'daily_prep/manage', to: 'prep_questions#manage'
+  get 'daily_prep/answers', to: 'prep_questions#answers'
+  resources :prep_questions, only: [:create, :update, :destroy]
+  resources :prep_responses, only: [:create, :update]
   get 'habits', to: 'habits#index'
   get 'analytics', to: 'analytics#index'
   get 'documents', to: 'documents#index'

@@ -22,6 +22,8 @@ class User < ApplicationRecord
   has_many :checklist_items, dependent: :destroy
   has_many :lists, dependent: :destroy
   has_many :list_attachments, dependent: :destroy
+  has_many :prep_questions, dependent: :destroy
+  has_many :prep_responses, dependent: :destroy
 
   after_create :create_default_time_blocks
   after_create :create_default_importance_levels
