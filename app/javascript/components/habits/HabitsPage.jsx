@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import useHabitsStore from '../../stores/habitsStore';
 import HabitGroup from './HabitGroup';
@@ -11,6 +11,7 @@ import { tagsApi } from '../../utils/api';
 
 const HabitsPage = () => {
   const { viewMode, selectedDate, setViewMode, goToPreviousDay, goToNextDay, goToToday, openNewModal } = useHabitsStore();
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Update sidebar date when selectedDate changes
   useEffect(() => {
@@ -93,14 +94,30 @@ const HabitsPage = () => {
     return date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' });
   };
 
+  // Filter habits by search query
+  const filteredHabits = useMemo(() => {
+    if (!habitsData) return [];
+    if (!searchQuery.trim()) return habitsData.habits;
+
+    const query = searchQuery.toLowerCase();
+    return habitsData.habits.filter(habit =>
+      habit.name.toLowerCase().includes(query) ||
+      habit.category_name?.toLowerCase().includes(query)
+    );
+  }, [habitsData, searchQuery]);
+
   // Group habits
   const groupedHabits = useMemo(() => {
     if (!habitsData) return [];
 
+    if (viewMode === 'none') {
+      return [{ id: 'all', title: 'All Habits', habits: filteredHabits, hideHeader: true }];
+    }
+
     if (viewMode === 'category') {
       // Group by category
       const groups = {};
-      habitsData.habits.forEach(habit => {
+      filteredHabits.forEach(habit => {
         const catId = habit.category_id;
         if (!groups[catId]) {
           groups[catId] = {
@@ -119,7 +136,7 @@ const HabitsPage = () => {
       // Group by time_block
       const groups = {};
 
-      habitsData.habits.forEach(habit => {
+      filteredHabits.forEach(habit => {
         const blockId = habit.time_block_id || 'anytime';
 
         if (!groups[blockId]) {
@@ -148,7 +165,7 @@ const HabitsPage = () => {
     } else {
       // Group by priority (importance_level)
       const groups = {};
-      habitsData.habits.forEach(habit => {
+      filteredHabits.forEach(habit => {
         const levelId = habit.importance_level?.id || 'none';
         if (!groups[levelId]) {
           groups[levelId] = {
@@ -173,7 +190,7 @@ const HabitsPage = () => {
       // Sort groups by rank
       return Object.values(groups).sort((a, b) => a.rank - b.rank);
     }
-  }, [habitsData, viewMode, colorMap]);
+  }, [habitsData, filteredHabits, viewMode, colorMap]);
 
   return (
     <>
@@ -189,16 +206,16 @@ const HabitsPage = () => {
 
             <button
               onClick={() => openNewModal({})}
-              className="px-6 py-3 rounded-lg text-white transition transform hover:scale-105"
-              style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', fontWeight: 600, fontFamily: "'Inter', sans-serif", boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
+              className="w-12 h-12 rounded-xl text-white transition transform hover:scale-105 flex items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
+              title="New Habit"
             >
-              <i className="fa-solid fa-plus mr-2"></i>
-              New Habit
+              <i className="fa-solid fa-plus text-lg"></i>
             </button>
           </div>
 
-          {/* Filters */}
-          <div className="flex flex-wrap gap-4 items-center">
+          {/* Filters Row */}
+          <div className="flex flex-wrap gap-4 items-center mb-4">
             {/* View Toggle */}
             <div>
               <span className="block text-xs uppercase tracking-wide mb-2" style={{ color: '#8E8E93', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
@@ -206,6 +223,7 @@ const HabitsPage = () => {
               </span>
               <div className="inline-flex rounded-lg overflow-hidden" style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}>
                 {[
+                  { value: 'none', label: 'None' },
                   { value: 'category', label: 'Category' },
                   { value: 'time', label: 'Time' },
                   { value: 'priority', label: 'Priority' },
@@ -257,6 +275,25 @@ const HabitsPage = () => {
                 </button>
               )}
             </div>
+          </div>
+
+          {/* Search Row */}
+          <div className="relative">
+            <i className="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#8E8E93' }}></i>
+            <input
+              type="text"
+              placeholder="Search habits..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 rounded-lg text-sm focus:outline-none"
+              style={{
+                border: '1px solid rgba(199, 199, 204, 0.4)',
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 400,
+                background: '#F9F9FB',
+                boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.08)'
+              }}
+            />
           </div>
         </div>
       </div>
@@ -316,6 +353,7 @@ const HabitsPage = () => {
                 viewMode={viewMode}
                 selectedDate={selectedDate}
                 isFirst={index === 0}
+                hideHeader={group.hideHeader}
               />
             ))}
           </div>

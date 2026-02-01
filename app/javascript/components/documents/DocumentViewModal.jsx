@@ -1,6 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import BaseModal from '../shared/BaseModal';
+import SlideOverPanel from '../shared/SlideOverPanel';
 import { documentsApi } from '../../utils/api';
 import useDocumentsStore from '../../stores/documentsStore';
 
@@ -105,7 +105,8 @@ const DocumentViewModal = () => {
       case 'document':
         return (
           <div
-            className="prose max-w-none trix-content"
+            className="prose prose-sm max-w-none trix-content"
+            style={{ fontSize: '0.9375rem', lineHeight: '1.6' }}
             dangerouslySetInnerHTML={{ __html: document.body || '' }}
           />
         );
@@ -126,15 +127,14 @@ const DocumentViewModal = () => {
   );
 
   return (
-    <BaseModal
+    <SlideOverPanel
       isOpen={isOpen}
       onClose={closeViewModal}
       title={document?.title || 'Loading...'}
       footer={footer}
-      maxWidth="max-w-4xl"
     >
       {renderContent()}
-    </BaseModal>
+    </SlideOverPanel>
   );
 };
 

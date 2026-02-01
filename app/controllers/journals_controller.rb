@@ -21,7 +21,7 @@ class JournalsController < ApplicationController
       format.json {
         render json: @journals.map { |journal|
           journal.as_json(
-            only: [:id, :created_at, :updated_at],
+            only: [:id, :created_at, :updated_at, :private],
             include: { tags: { only: [:id, :name] } }
           ).merge(content: journal.content.to_s)
         }
@@ -33,7 +33,7 @@ class JournalsController < ApplicationController
     respond_to do |format|
       format.json {
         render json: @journal.as_json(
-          only: [:id, :created_at, :updated_at],
+          only: [:id, :created_at, :updated_at, :private],
           include: { tags: { only: [:id, :name] } }
         ).merge(content: @journal.content.to_s)
       }
@@ -99,6 +99,6 @@ class JournalsController < ApplicationController
   end
 
   def journal_params
-    params.require(:journal).permit(:content, tag_names: [])
+    params.require(:journal).permit(:content, :private, tag_names: [])
   end
 end

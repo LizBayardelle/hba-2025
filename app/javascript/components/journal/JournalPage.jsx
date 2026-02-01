@@ -106,23 +106,32 @@ const JournalPage = () => {
 
             <button
               onClick={openNewModal}
-              className="px-6 py-3 rounded-lg text-white transition transform hover:scale-105"
-              style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', fontWeight: 600, fontFamily: "'Inter', sans-serif", boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
+              className="w-12 h-12 rounded-xl text-white transition transform hover:scale-105 flex items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
+              title="New Entry"
             >
-              <i className="fa-solid fa-plus mr-2"></i>
-              New Entry
+              <i className="fa-solid fa-plus text-lg"></i>
             </button>
           </div>
 
           {/* Search */}
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search journal entries..."
-            className="px-4 py-2 rounded-lg text-sm w-full max-w-md"
-            style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', color: '#1D1D1F', fontWeight: 400, fontFamily: "'Inter', sans-serif", background: '#FFFFFF' }}
-          />
+          <div className="relative">
+            <i className="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#8E8E93' }}></i>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search journal entries..."
+              className="w-full pl-9 pr-4 py-2 rounded-lg text-sm focus:outline-none"
+              style={{
+                border: '1px solid rgba(199, 199, 204, 0.4)',
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 400,
+                background: '#F9F9FB',
+                boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.08)'
+              }}
+            />
+          </div>
         </div>
       </div>
 

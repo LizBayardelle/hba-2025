@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import BaseModal from '../shared/BaseModal';
+import SlideOverPanel from '../shared/SlideOverPanel';
 import useListsStore from '../../stores/listsStore';
 import { listsApi, checklistItemsApi } from '../../utils/api';
 
@@ -9,6 +9,7 @@ const ListShowModal = () => {
   const { showModal, closeShowModal } = useListsStore();
   const { isOpen, listId } = showModal;
   const [copiedId, setCopiedId] = useState(null);
+  const [recentlyChecked, setRecentlyChecked] = useState(new Set());
 
   // Fetch the list data
   const { data: list, isLoading } = useQuery({
@@ -16,6 +17,13 @@ const ListShowModal = () => {
     queryFn: () => listsApi.fetchOne(listId),
     enabled: isOpen && !!listId,
   });
+
+  // Reset recently checked when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setRecentlyChecked(new Set());
+    }
+  }, [isOpen]);
 
   // Toggle mutation
   const toggleMutation = useMutation({
@@ -30,9 +38,24 @@ const ListShowModal = () => {
   });
 
   const handleToggle = (item) => {
+    const newCompleted = !item.completed;
+
+    // If checking off, add to recently checked (delays move to bottom)
+    if (newCompleted) {
+      setRecentlyChecked(prev => new Set([...prev, item.id]));
+      // After delay, remove from recently checked so it moves to bottom
+      setTimeout(() => {
+        setRecentlyChecked(prev => {
+          const next = new Set(prev);
+          next.delete(item.id);
+          return next;
+        });
+      }, 800);
+    }
+
     toggleMutation.mutate({
       checklistItemId: item.id,
-      completed: !item.completed,
+      completed: newCompleted,
     });
   };
 
@@ -51,6 +74,22 @@ const ListShowModal = () => {
   const completedCount = checklistItems.filter(i => i.completed).length;
   const totalCount = checklistItems.length;
   const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+
+  // Sort items: incomplete first, then completed (but recently checked stay in place)
+  const sortedItems = useMemo(() => {
+    return [...checklistItems].sort((a, b) => {
+      const aIsRecentlyChecked = recentlyChecked.has(a.id);
+      const bIsRecentlyChecked = recentlyChecked.has(b.id);
+
+      // Recently checked items stay in their original position
+      if (aIsRecentlyChecked || bIsRecentlyChecked) return 0;
+
+      // Otherwise, incomplete items first
+      if (a.completed && !b.completed) return 1;
+      if (!a.completed && b.completed) return -1;
+      return 0;
+    });
+  }, [checklistItems, recentlyChecked]);
 
   const footer = (
     <button
@@ -71,7 +110,7 @@ const ListShowModal = () => {
   );
 
   return (
-    <BaseModal
+    <SlideOverPanel
       isOpen={isOpen}
       onClose={closeShowModal}
       title={list?.name || 'List'}
@@ -140,10 +179,10 @@ const ListShowModal = () => {
 
           {/* Checklist items */}
           <div className="space-y-2">
-            {checklistItems.map((item) => (
+            {sortedItems.map((item) => (
               <div
                 key={item.id}
-                className="relative flex items-center gap-3 p-3 rounded-lg group"
+                className="relative flex items-center gap-3 p-3 rounded-lg group transition-all duration-300"
                 style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
               >
                 {/* Checkbox */}
@@ -194,7 +233,7 @@ const ListShowModal = () => {
           )}
         </div>
       )}
-    </BaseModal>
+    </SlideOverPanel>
   );
 };
 

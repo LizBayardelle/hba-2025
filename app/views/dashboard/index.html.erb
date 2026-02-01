@@ -688,7 +688,28 @@ function switchFocusView(view) {
     const habitsDiv = document.createElement('div');
     habitsDiv.className = 'space-y-2';
 
-    groups[groupName].forEach(habitItem => {
+    // Sort items: non-optional first, optional last
+    const sortedItems = groups[groupName].sort((a, b) => {
+      const aOptional = a.dataset.priorityName === 'Optional';
+      const bOptional = b.dataset.priorityName === 'Optional';
+      if (aOptional && !bOptional) return 1;
+      if (!aOptional && bOptional) return -1;
+      return 0;
+    });
+
+    sortedItems.forEach(habitItem => {
+      // Add subtle grey background for optional items
+      if (habitItem.dataset.priorityName === 'Optional') {
+        habitItem.style.backgroundColor = 'rgba(142, 142, 147, 0.08)';
+        habitItem.style.borderRadius = '6px';
+        habitItem.style.padding = '4px 8px';
+        habitItem.style.margin = '0 -8px';
+      } else {
+        habitItem.style.backgroundColor = '';
+        habitItem.style.borderRadius = '';
+        habitItem.style.padding = '';
+        habitItem.style.margin = '';
+      }
       habitsDiv.appendChild(habitItem);
     });
 
@@ -991,7 +1012,28 @@ function switchTasksView(view) {
     const tasksDiv = document.createElement('div');
     tasksDiv.className = 'space-y-2';
 
-    groups[groupName].forEach(taskItem => {
+    // Sort items: non-optional first, optional last
+    const sortedItems = groups[groupName].sort((a, b) => {
+      const aOptional = a.dataset.priorityName === 'Optional';
+      const bOptional = b.dataset.priorityName === 'Optional';
+      if (aOptional && !bOptional) return 1;
+      if (!aOptional && bOptional) return -1;
+      return 0;
+    });
+
+    sortedItems.forEach(taskItem => {
+      // Add subtle grey background for optional items
+      if (taskItem.dataset.priorityName === 'Optional') {
+        taskItem.style.backgroundColor = 'rgba(142, 142, 147, 0.08)';
+        taskItem.style.borderRadius = '6px';
+        taskItem.style.padding = '4px 8px';
+        taskItem.style.margin = '0 -8px';
+      } else {
+        taskItem.style.backgroundColor = '';
+        taskItem.style.borderRadius = '';
+        taskItem.style.padding = '';
+        taskItem.style.margin = '';
+      }
       tasksDiv.appendChild(taskItem);
     });
 

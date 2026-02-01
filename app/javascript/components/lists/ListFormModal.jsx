@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import BaseModal from '../shared/BaseModal';
+import SlideOverPanel from '../shared/SlideOverPanel';
 import useListsStore from '../../stores/listsStore';
 import { categoriesApi, checklistItemsApi, listsApi } from '../../utils/api';
 
@@ -16,6 +16,8 @@ const ListFormModal = () => {
   const [checklistItems, setChecklistItems] = useState([]);
   const [newItemName, setNewItemName] = useState('');
   const [itemsToDelete, setItemsToDelete] = useState([]);
+  const [draggedIndex, setDraggedIndex] = useState(null);
+  const [dragOverIndex, setDragOverIndex] = useState(null);
 
   // Fetch categories
   const { data: categories = [] } = useQuery({
@@ -99,14 +101,24 @@ const ListFormModal = () => {
         await checklistItemsApi.deleteForList(itemId, deleteId);
       }
 
-      // Add new items
-      const newItems = data.checklistItems.filter(item => !item.isExisting);
-      for (let i = 0; i < newItems.length; i++) {
-        const item = newItems[i];
-        await checklistItemsApi.createForList(itemId, {
-          name: item.name,
-          position: data.checklistItems.length + i,
-        });
+      // Build ordered list of IDs, creating new items as we go
+      const orderedIds = [];
+      for (const item of data.checklistItems) {
+        if (item.isExisting) {
+          orderedIds.push(item.id);
+        } else {
+          // Create new item and get its ID
+          const response = await checklistItemsApi.createForList(itemId, {
+            name: item.name,
+            position: orderedIds.length,
+          });
+          orderedIds.push(response.checklist_item.id);
+        }
+      }
+
+      // Reorder all items to save final positions
+      if (orderedIds.length > 0) {
+        await checklistItemsApi.reorderForList(itemId, orderedIds);
       }
 
       return { success: true };
@@ -144,6 +156,52 @@ const ListFormModal = () => {
     setChecklistItems(checklistItems.filter((i) => i.id !== item.id));
   };
 
+  const handleDragStart = (e, index) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', index);
+    // Add a slight delay to allow the drag image to be set
+    setTimeout(() => {
+      e.target.style.opacity = '0.5';
+    }, 0);
+  };
+
+  const handleDragEnd = (e) => {
+    e.target.style.opacity = '1';
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (index !== dragOverIndex) {
+      setDragOverIndex(index);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = (e, dropIndex) => {
+    e.preventDefault();
+    const dragIndex = draggedIndex;
+
+    if (dragIndex === null || dragIndex === dropIndex) {
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    const newItems = [...checklistItems];
+    const [draggedItem] = newItems.splice(dragIndex, 1);
+    newItems.splice(dropIndex, 0, draggedItem);
+    setChecklistItems(newItems);
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.name.trim()) return;
@@ -177,22 +235,22 @@ const ListFormModal = () => {
         <button
           type="button"
           onClick={handleDelete}
-          className="mr-auto w-10 h-10 rounded-lg transition hover:bg-white/10 flex items-center justify-center"
+          className="mr-auto w-10 h-10 rounded-lg transition hover:bg-red-50 flex items-center justify-center"
           disabled={deleteMutation.isPending}
           title="Delete list"
         >
           {deleteMutation.isPending ? (
-            <i className="fa-solid fa-spinner fa-spin text-white"></i>
+            <i className="fa-solid fa-spinner fa-spin" style={{ color: '#DC2626' }}></i>
           ) : (
-            <i className="fa-solid fa-trash text-white text-lg"></i>
+            <i className="fa-solid fa-trash text-lg" style={{ color: '#DC2626' }}></i>
           )}
         </button>
       )}
       <button
         type="button"
         onClick={closeFormModal}
-        className="px-6 py-3 rounded-lg transition text-white hover:opacity-70"
-        style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
+        className="px-6 py-3 rounded-lg transition hover:bg-gray-100"
+        style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F', border: '0.5px solid rgba(199, 199, 204, 0.3)', backgroundColor: 'white' }}
         disabled={currentMutation.isPending}
       >
         Cancel
@@ -219,7 +277,7 @@ const ListFormModal = () => {
   );
 
   return (
-    <BaseModal
+    <SlideOverPanel
       isOpen={isOpen}
       onClose={closeFormModal}
       title={mode === 'edit' ? 'Edit List' : 'Create a New List'}
@@ -352,9 +410,27 @@ const ListFormModal = () => {
               {checklistItems.map((item, index) => (
                 <div
                   key={item.id}
-                  className="flex items-center gap-2 p-2 rounded-lg"
-                  style={{ backgroundColor: '#F5F5F7' }}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, index)}
+                  onDragEnd={handleDragEnd}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => handleDrop(e, index)}
+                  className={`flex items-center gap-2 p-2 rounded-lg transition-all ${
+                    dragOverIndex === index && draggedIndex !== index ? 'ring-2 ring-gray-400' : ''
+                  }`}
+                  style={{
+                    backgroundColor: draggedIndex === index ? '#E5E5E7' : '#F5F5F7',
+                    cursor: 'grab',
+                  }}
                 >
+                  {/* Drag handle */}
+                  <div
+                    className="flex items-center justify-center w-6 h-6 cursor-grab active:cursor-grabbing"
+                    title="Drag to reorder"
+                  >
+                    <i className="fa-solid fa-grip-vertical text-sm" style={{ color: '#8E8E93' }}></i>
+                  </div>
                   <span
                     className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold"
                     style={{ backgroundColor: '#E5E5E7', color: '#1D1D1F' }}
@@ -379,30 +455,31 @@ const ListFormModal = () => {
             </div>
           )}
 
-          <div className="flex gap-2">
-            <input
-              type="text"
+          <div className="flex gap-2 items-end">
+            <textarea
               value={newItemName}
               onChange={(e) => setNewItemName(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') {
+                if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
                   handleAddItem(e);
                 }
               }}
-              className="flex-1 px-4 py-2 rounded-lg focus:outline-none transition"
+              className="flex-1 px-4 py-2 rounded-lg focus:outline-none transition resize-none"
               style={{
                 border: '0.5px solid rgba(199, 199, 204, 0.3)',
                 fontFamily: "'Inter', sans-serif",
                 fontWeight: 200,
+                minHeight: '80px',
               }}
-              placeholder="Add an item..."
+              placeholder="Add an item... (Shift+Enter for new line)"
+              rows={3}
             />
             <button
               type="button"
               onClick={handleAddItem}
               disabled={!newItemName.trim()}
-              className="px-4 py-2 rounded-lg transition disabled:opacity-50"
+              className="px-4 py-3 rounded-lg transition disabled:opacity-50"
               style={{
                 background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)',
                 color: 'white',
@@ -424,7 +501,7 @@ const ListFormModal = () => {
           )}
         </div>
       </form>
-    </BaseModal>
+    </SlideOverPanel>
   );
 };
 

@@ -22,23 +22,37 @@ const ChecklistSection = ({
   const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
   // API methods based on parent type
-  const apiMethods = parentType === 'task'
-    ? {
+  const getApiMethods = () => {
+    if (parentType === 'task') {
+      return {
         create: (data) => checklistItemsApi.createForTask(parentId, data),
         update: (itemId, data) => checklistItemsApi.updateForTask(parentId, itemId, data),
         delete: (itemId) => checklistItemsApi.deleteForTask(parentId, itemId),
-      }
-    : {
+      };
+    } else if (parentType === 'list') {
+      return {
+        create: (data) => checklistItemsApi.createForList(parentId, data),
+        update: (itemId, data) => checklistItemsApi.updateForList(parentId, itemId, data),
+        delete: (itemId) => checklistItemsApi.deleteForList(parentId, itemId),
+      };
+    } else {
+      return {
         create: (data) => checklistItemsApi.createForHabit(parentId, data),
         update: (itemId, data) => checklistItemsApi.updateForHabit(parentId, itemId, data),
         delete: (itemId) => checklistItemsApi.deleteForHabit(parentId, itemId),
       };
+    }
+  };
+  const apiMethods = getApiMethods();
 
   // Invalidate queries based on parent type
   const invalidateQueries = () => {
     if (parentType === 'task') {
       queryClient.invalidateQueries(['tasks']);
       queryClient.invalidateQueries(['task', parentId]);
+    } else if (parentType === 'list') {
+      queryClient.invalidateQueries(['lists']);
+      queryClient.invalidateQueries(['list', parentId]);
     } else {
       queryClient.invalidateQueries(['habits']);
       queryClient.invalidateQueries(['habit', parentId]);

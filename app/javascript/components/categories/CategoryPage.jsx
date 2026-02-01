@@ -200,14 +200,24 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
         </div>
         {group.habits.length > 0 ? (
           <div className="space-y-3">
-            {group.habits.map(habit => (
-              <HabitCard
-                key={habit.id}
-                habit={habit}
-                categoryColor={categoryColor}
-                categoryDarkColor={colors.dark}
-              />
-            ))}
+            {/* Sort: non-optional first, optional last */}
+            {[...group.habits]
+              .sort((a, b) => {
+                const aOptional = a.importance_level?.name === 'Optional';
+                const bOptional = b.importance_level?.name === 'Optional';
+                if (aOptional && !bOptional) return 1;
+                if (!aOptional && bOptional) return -1;
+                return 0;
+              })
+              .map(habit => (
+                <HabitCard
+                  key={habit.id}
+                  habit={habit}
+                  categoryColor={categoryColor}
+                  categoryDarkColor={colors.dark}
+                  isOptional={habit.importance_level?.name === 'Optional'}
+                />
+              ))}
           </div>
         ) : (
           <div className="py-6 text-center">
@@ -248,16 +258,14 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
             <div className="flex flex-col items-center gap-2">
               <button
                 onClick={() => openNewHabitModal(categoryId)}
-                className="px-6 py-3 rounded-lg text-white transition transform hover:scale-105"
+                className="w-12 h-12 rounded-xl text-white transition transform hover:scale-105 flex items-center justify-center"
                 style={{
                   backgroundColor: categoryColor,
-                  fontWeight: 600,
-                  fontFamily: "'Inter', sans-serif",
                   boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
                 }}
+                title="New Habit"
               >
-                <i className="fa-solid fa-plus mr-2"></i>
-                New Habit
+                <i className="fa-solid fa-plus text-lg"></i>
               </button>
               <button
                 onClick={() => openCategoryEditModal(categoryId)}

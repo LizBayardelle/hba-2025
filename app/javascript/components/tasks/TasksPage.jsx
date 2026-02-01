@@ -93,6 +93,10 @@ const TasksPage = () => {
 
   // Group tasks based on groupBy setting
   const groupedTasks = useMemo(() => {
+    if (groupBy === 'none') {
+      return [{ title: 'All Tasks', tasks, hideHeader: true }];
+    }
+
     if (groupBy === 'status') {
       // For completed tab, group by completion date
       const metallicGrey = '#8E8E93'; // Theme grey for system groups
@@ -320,25 +324,27 @@ const TasksPage = () => {
     return (
       <div key={group.title} className={`mb-6 ${index !== 0 ? 'mt-8' : ''}`}>
         {/* Full-width colored stripe header */}
-        <div
-          className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3"
-          style={{
-            background: `linear-gradient(to bottom, color-mix(in srgb, ${groupColor} 85%, white) 0%, ${groupColor} 100%)`,
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
-          }}
-        >
-          <i className={`fa-solid ${groupIcon} text-white text-lg`}></i>
-          <h3 className="text-3xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
-            {group.title} ({group.tasks.length})
-          </h3>
-          <button
-            onClick={() => handleNewTaskForGroup(group)}
-            className="w-8 h-8 rounded-md flex items-center justify-center transition btn-glass"
-            title="New task"
+        {!group.hideHeader && (
+          <div
+            className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3"
+            style={{
+              background: `linear-gradient(to bottom, color-mix(in srgb, ${groupColor} 85%, white) 0%, ${groupColor} 100%)`,
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+            }}
           >
-            <i className="fa-solid fa-plus text-white"></i>
-          </button>
-        </div>
+            <i className={`fa-solid ${groupIcon} text-white text-lg`}></i>
+            <h3 className="text-3xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
+              {group.title} ({group.tasks.length})
+            </h3>
+            <button
+              onClick={() => handleNewTaskForGroup(group)}
+              className="w-8 h-8 rounded-md flex items-center justify-center transition btn-glass"
+              title="New task"
+            >
+              <i className="fa-solid fa-plus text-white"></i>
+            </button>
+          </div>
+        )}
         <div className="space-y-2">
           {group.tasks.map(task => (
             <TaskItem key={task.id} task={task} />
@@ -362,44 +368,16 @@ const TasksPage = () => {
 
             <button
               onClick={() => openNewModal({})}
-              className="px-6 py-3 rounded-lg text-white transition transform hover:scale-105"
-              style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', fontWeight: 600, fontFamily: "'Inter', sans-serif", boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
+              className="w-12 h-12 rounded-xl text-white transition transform hover:scale-105 flex items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
+              title="New Task"
             >
-              <i className="fa-solid fa-plus mr-2"></i>
-              New Task
+              <i className="fa-solid fa-plus text-lg"></i>
             </button>
           </div>
 
-          {/* Filters */}
-          <div className="flex flex-wrap gap-6 items-end">
-            {/* Status Filter */}
-            <div>
-              <span className="block text-xs uppercase tracking-wide mb-2" style={{ color: '#8E8E93', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
-                Viewing
-              </span>
-              <div className="inline-flex rounded-lg overflow-hidden" style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}>
-                {[
-                  { value: 'active', label: 'Active' },
-                  { value: 'on_hold', label: 'On Hold' },
-                  { value: 'completed', label: 'Completed' },
-                ].map(({ value, label }) => (
-                  <button
-                    key={value}
-                    onClick={() => setStatusFilter(value)}
-                    className="px-4 py-2 text-sm transition"
-                    style={{
-                      background: statusFilter === value ? 'linear-gradient(to bottom, #A8A8AD 0%, #8E8E93 100%)' : '#F5F5F7',
-                      color: statusFilter === value ? '#FFFFFF' : '#1D1D1F',
-                      fontWeight: 500,
-                      fontFamily: "'Inter', sans-serif",
-                    }}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
+          {/* Filters Row */}
+          <div className="flex items-center gap-6 mb-4">
             {/* Group By */}
             <div>
               <span className="block text-xs uppercase tracking-wide mb-2" style={{ color: '#8E8E93', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
@@ -407,6 +385,7 @@ const TasksPage = () => {
               </span>
               <div className="inline-flex rounded-lg overflow-hidden" style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}>
                 {[
+                  { value: 'none', label: 'None' },
                   { value: 'status', label: 'Date Added' },
                   { value: 'category', label: 'Category' },
                   { value: 'due_date', label: 'Due Date' },
@@ -429,14 +408,37 @@ const TasksPage = () => {
               </div>
             </div>
 
-            {/* Search */}
+            {/* Active Only Checkbox - far right */}
+            <label className="flex items-center gap-2 cursor-pointer select-none ml-auto">
+              <input
+                type="checkbox"
+                checked={statusFilter === 'active'}
+                onChange={(e) => setStatusFilter(e.target.checked ? 'active' : 'all')}
+                className="w-4 h-4 rounded cursor-pointer"
+                style={{ accentColor: '#8E8E93' }}
+              />
+              <span style={{ color: '#8E8E93', fontWeight: 400, fontFamily: "'Inter', sans-serif", fontSize: '0.8125rem' }}>
+                Active only
+              </span>
+            </label>
+          </div>
+
+          {/* Search Row */}
+          <div className="relative">
+            <i className="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#8E8E93' }}></i>
             <input
               type="text"
               placeholder="Search tasks..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="px-4 py-2 rounded-lg text-sm flex-1 min-w-[200px] ml-auto"
-              style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', color: '#1D1D1F', fontWeight: 400, fontFamily: "'Inter', sans-serif", background: '#FFFFFF' }}
+              className="w-full pl-9 pr-4 py-2 rounded-lg text-sm focus:outline-none"
+              style={{
+                border: '1px solid rgba(199, 199, 204, 0.4)',
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 400,
+                background: '#F9F9FB',
+                boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.08)'
+              }}
             />
           </div>
         </div>

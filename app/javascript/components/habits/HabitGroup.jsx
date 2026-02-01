@@ -2,7 +2,7 @@ import React from 'react';
 import HabitCard from '../categories/HabitCard';
 import useHabitsStore from '../../stores/habitsStore';
 
-const HabitGroup = ({ groupId, title, icon, color, darkColor, habits, viewMode, selectedDate, isFirst = false }) => {
+const HabitGroup = ({ groupId, title, icon, color, darkColor, habits, viewMode, selectedDate, isFirst = false, hideHeader = false }) => {
   const { openNewModal } = useHabitsStore();
 
   // Sort habits: due habits first, then non-due; within each group: non-optional first, then optional
@@ -36,28 +36,34 @@ const HabitGroup = ({ groupId, title, icon, color, darkColor, habits, viewMode, 
     }
   };
 
+  const marginClass = hideHeader
+    ? (isFirst ? 'mt-2' : 'mt-4')
+    : (!isFirst ? 'mt-8' : '-mt-6');
+
   return (
-    <div className={`mb-6 ${!isFirst ? 'mt-8' : '-mt-6'}`}>
+    <div className={`mb-6 ${marginClass}`}>
       {/* Full-width colored stripe header - breaks out of parent padding */}
-      <div
-        className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3"
-        style={{
-          background: `linear-gradient(to bottom, color-mix(in srgb, ${color} 85%, white) 0%, ${color} 100%)`,
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
-        }}
-      >
-        <i className={`fa-solid ${icon} text-white text-lg`}></i>
-        <h2 className="text-3xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
-          {title}
-        </h2>
-        <button
-          onClick={handleNewHabit}
-          className="w-8 h-8 rounded-md flex items-center justify-center transition btn-glass"
-          title={`New habit`}
+      {!hideHeader && (
+        <div
+          className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3"
+          style={{
+            background: `linear-gradient(to bottom, color-mix(in srgb, ${color} 85%, white) 0%, ${color} 100%)`,
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+          }}
         >
-          <i className="fa-solid fa-plus text-white"></i>
-        </button>
-      </div>
+          <i className={`fa-solid ${icon} text-white text-lg`}></i>
+          <h2 className="text-3xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
+            {title}
+          </h2>
+          <button
+            onClick={handleNewHabit}
+            className="w-8 h-8 rounded-md flex items-center justify-center transition btn-glass"
+            title={`New habit`}
+          >
+            <i className="fa-solid fa-plus text-white"></i>
+          </button>
+        </div>
+      )}
 
       {/* Habits List */}
       <div className="space-y-3">

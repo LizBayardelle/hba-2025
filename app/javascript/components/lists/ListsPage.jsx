@@ -39,6 +39,10 @@ const ListsPage = () => {
 
   // Group lists based on selected grouping
   const groupedLists = useMemo(() => {
+    if (groupBy === 'none') {
+      return [{ key: 'all', title: 'All Lists', lists: filteredLists, hideHeader: true }];
+    }
+
     if (groupBy === 'type') {
       const groups = [
         { key: 'habits', title: 'Attached to Habits', icon: 'fa-chart-line', color: '#8E8E93', lists: [] },
@@ -108,57 +112,65 @@ const ListsPage = () => {
 
             <button
               onClick={openFormModal}
-              className="px-6 py-3 rounded-lg text-white transition transform hover:scale-105"
-              style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', fontWeight: 600, fontFamily: "'Inter', sans-serif", boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
+              className="w-12 h-12 rounded-xl text-white transition transform hover:scale-105 flex items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
+              title="New List"
             >
-              <i className="fa-solid fa-plus mr-2"></i>
-              New List
+              <i className="fa-solid fa-plus text-lg"></i>
             </button>
           </div>
 
-          {/* Search and Group By */}
-          <div className="flex items-end gap-8">
-            {lists.length > 0 && (
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search lists..."
-                className="px-4 py-2 rounded-lg text-sm w-full max-w-md"
-                style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', color: '#1D1D1F', fontWeight: 400, fontFamily: "'Inter', sans-serif", background: '#FFFFFF' }}
-              />
-            )}
-
+          {/* Filters Row */}
+          <div className="flex flex-col md:flex-row md:items-end gap-4 md:gap-6">
             {/* Group By */}
             <div>
-              <span className="block text-xs uppercase tracking-wide mb-2" style={{ color: '#8E8E93', fontWeight: 600 }}>
+              <span className="block text-xs uppercase tracking-wide mb-2" style={{ color: '#8E8E93', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
                 Group By
               </span>
-              <div className="flex rounded-lg overflow-hidden" style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}>
-                <button
-                  onClick={() => setGroupBy('type')}
-                  className="px-4 py-2 text-sm transition"
+              <div className="inline-flex rounded-lg overflow-hidden" style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}>
+                {[
+                  { value: 'none', label: 'None' },
+                  { value: 'type', label: 'Type' },
+                  { value: 'category', label: 'Category' },
+                ].map(({ value, label }) => (
+                  <button
+                    key={value}
+                    onClick={() => setGroupBy(value)}
+                    className="px-4 py-2 text-sm transition"
+                    style={{
+                      background: groupBy === value ? 'linear-gradient(to bottom, #A8A8AD 0%, #8E8E93 100%)' : '#F5F5F7',
+                      color: groupBy === value ? '#FFFFFF' : '#1D1D1F',
+                      fontWeight: 500,
+                      fontFamily: "'Inter', sans-serif",
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Search */}
+            <div className="flex-1">
+              <span className="block text-xs uppercase tracking-wide mb-2" style={{ color: '#8E8E93', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
+                Search
+              </span>
+              <div className="relative">
+                <i className="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#8E8E93' }}></i>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search lists..."
+                  className="w-full pl-9 pr-4 py-2 rounded-lg text-sm focus:outline-none"
                   style={{
-                    background: groupBy === 'type' ? 'linear-gradient(to bottom, #A8A8AD 0%, #8E8E93 100%)' : '#F5F5F7',
-                    color: groupBy === 'type' ? '#FFFFFF' : '#1D1D1F',
-                    fontWeight: 500,
+                    border: '1px solid rgba(199, 199, 204, 0.4)',
                     fontFamily: "'Inter', sans-serif",
+                    fontWeight: 400,
+                    background: '#F9F9FB',
+                    boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.08)'
                   }}
-                >
-                  Type
-                </button>
-                <button
-                  onClick={() => setGroupBy('category')}
-                  className="px-4 py-2 text-sm transition"
-                  style={{
-                    background: groupBy === 'category' ? 'linear-gradient(to bottom, #A8A8AD 0%, #8E8E93 100%)' : '#F5F5F7',
-                    color: groupBy === 'category' ? '#FFFFFF' : '#1D1D1F',
-                    fontWeight: 500,
-                    fontFamily: "'Inter', sans-serif",
-                  }}
-                >
-                  Category
-                </button>
+                />
               </div>
             </div>
           </div>
@@ -185,25 +197,27 @@ const ListsPage = () => {
             {groupedLists.map((group, index) => (
               <div key={group.key} className={index !== 0 ? 'mt-8' : ''}>
                 {/* Full-width stripe header */}
-                <div
-                  className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3"
-                  style={{
-                    background: `linear-gradient(to bottom, color-mix(in srgb, ${group.color} 85%, white) 0%, ${group.color} 100%)`,
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                  }}
-                >
-                  <i className={`fa-solid ${group.icon} text-white text-lg`}></i>
-                  <h3 className="text-3xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
-                    {group.title} ({group.lists.length})
-                  </h3>
-                  <button
-                    onClick={openFormModal}
-                    className="w-8 h-8 rounded-md flex items-center justify-center transition btn-glass"
-                    title="New list"
+                {!group.hideHeader && (
+                  <div
+                    className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3"
+                    style={{
+                      background: `linear-gradient(to bottom, color-mix(in srgb, ${group.color} 85%, white) 0%, ${group.color} 100%)`,
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                    }}
                   >
-                    <i className="fa-solid fa-plus text-white"></i>
-                  </button>
-                </div>
+                    <i className={`fa-solid ${group.icon} text-white text-lg`}></i>
+                    <h3 className="text-3xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
+                      {group.title} ({group.lists.length})
+                    </h3>
+                    <button
+                      onClick={openFormModal}
+                      className="w-8 h-8 rounded-md flex items-center justify-center transition btn-glass"
+                      title="New list"
+                    >
+                      <i className="fa-solid fa-plus text-white"></i>
+                    </button>
+                  </div>
+                )}
                 {group.lists.length > 0 ? (
                   <div className="space-y-4">
                     {group.lists.map((list) => (
@@ -311,7 +325,6 @@ const ListCard = ({ list, onEdit }) => {
         color={color}
         editable={false}
         compact={true}
-        readOnly={true}
       />
     </div>
   );

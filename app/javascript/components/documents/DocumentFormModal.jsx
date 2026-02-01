@@ -1,8 +1,34 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import BaseModal from '../shared/BaseModal';
+import SlideOverPanel from '../shared/SlideOverPanel';
 import { documentsApi, tasksApi, categoriesApi } from '../../utils/api';
 import useDocumentsStore from '../../stores/documentsStore';
+
+// Helper function to detect content type from URL
+const detectContentType = (url) => {
+  if (!url || !url.trim()) {
+    return 'document';
+  }
+
+  const lowerUrl = url.toLowerCase();
+
+  // YouTube
+  if (lowerUrl.includes('youtube.com') || lowerUrl.includes('youtu.be')) {
+    return 'youtube';
+  }
+
+  // Video platforms
+  if (lowerUrl.includes('vimeo.com') ||
+      lowerUrl.includes('dailymotion.com') ||
+      lowerUrl.includes('twitch.tv') ||
+      lowerUrl.includes('wistia.com') ||
+      lowerUrl.match(/\.(mp4|webm|mov|avi|mkv)(\?|$)/i)) {
+    return 'video';
+  }
+
+  // Any other URL is a link
+  return 'link';
+};
 
 const DocumentFormModal = ({ habits, allTags }) => {
   const { formModal, closeFormModal } = useDocumentsStore();
@@ -11,7 +37,6 @@ const DocumentFormModal = ({ habits, allTags }) => {
   const trixEditorRef = useRef(null);
 
   const [formData, setFormData] = useState({
-    content_type: 'document',
     title: '',
     url: '',
     habit_ids: [],
@@ -51,7 +76,6 @@ const DocumentFormModal = ({ habits, allTags }) => {
   useEffect(() => {
     if (document && mode === 'edit') {
       setFormData({
-        content_type: document.content_type,
         title: document.title,
         url: document.metadata?.url || '',
         habit_ids: document.habits?.map(h => h.id.toString()) || [],
@@ -60,16 +84,13 @@ const DocumentFormModal = ({ habits, allTags }) => {
       });
       setSelectedTags(document.tags?.map(t => t.name) || []);
 
-      // Set Trix content if document type
-      if (document.content_type === 'document' && trixEditorRef.current) {
-        // Wait for Trix to be ready
-        setTimeout(() => {
-          const trixEditor = trixEditorRef.current?.editor;
-          if (trixEditor && document.body) {
-            trixEditor.loadHTML(document.body || '');
-          }
-        }, 100);
-      }
+      // Set Trix content
+      setTimeout(() => {
+        const trixEditor = trixEditorRef.current?.editor;
+        if (trixEditor && document.body) {
+          trixEditor.loadHTML(document.body || '');
+        }
+      }, 100);
     }
   }, [document, mode]);
 
@@ -77,7 +98,6 @@ const DocumentFormModal = ({ habits, allTags }) => {
   useEffect(() => {
     if (isOpen && mode === 'new') {
       setFormData({
-        content_type: 'document',
         title: '',
         url: '',
         habit_ids: [],
@@ -118,8 +138,11 @@ const DocumentFormModal = ({ habits, allTags }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    // Auto-detect content type from URL
+    const contentType = detectContentType(formData.url);
+
     const data = {
-      content_type: formData.content_type,
+      content_type: contentType,
       title: formData.title,
       habit_ids: formData.habit_ids,
       task_ids: formData.task_ids,
@@ -130,8 +153,8 @@ const DocumentFormModal = ({ habits, allTags }) => {
       },
     };
 
-    // Get Trix content for document type
-    if (formData.content_type === 'document' && trixEditorRef.current) {
+    // Always include body content from Trix editor
+    if (trixEditorRef.current) {
       data.body = trixEditorRef.current.value;
     }
 
@@ -208,8 +231,8 @@ const DocumentFormModal = ({ habits, allTags }) => {
       <button
         type="button"
         onClick={closeFormModal}
-        className="px-6 py-3 rounded-lg font-semibold transition text-white hover:opacity-70"
-        style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
+        className="px-6 py-3 rounded-lg transition hover:bg-gray-100"
+        style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F', border: '0.5px solid rgba(199, 199, 204, 0.3)', backgroundColor: 'white' }}
         disabled={currentMutation.isPending}
       >
         Cancel
@@ -227,7 +250,7 @@ const DocumentFormModal = ({ habits, allTags }) => {
   );
 
   return (
-    <BaseModal
+    <SlideOverPanel
       isOpen={isOpen}
       onClose={closeFormModal}
       title={mode === 'edit' ? 'Edit Document' : 'Add New Document'}
@@ -241,51 +264,6 @@ const DocumentFormModal = ({ habits, allTags }) => {
           </div>
         )}
 
-        {/* Content Type */}
-        <div className="mb-6">
-          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>Content Type</label>
-          <div className="grid grid-cols-4 gap-3">
-            {['document', 'youtube', 'video', 'link'].map((type) => (
-              <label key={type} className="cursor-pointer">
-                <input
-                  type="radio"
-                  name="content_type"
-                  value={type}
-                  checked={formData.content_type === type}
-                  onChange={(e) => setFormData({ ...formData, content_type: e.target.value })}
-                  className="hidden"
-                />
-                <div
-                  className={`p-3 rounded-lg border-2 transition hover:shadow-md ${
-                    formData.content_type === type ? 'border-[#6B8A99] bg-[#E8EEF1]' : 'border-gray-200'
-                  }`}
-                >
-                  <div className="flex flex-col items-center gap-1">
-                    <i
-                      className={`fa-solid ${
-                        type === 'document'
-                          ? 'fa-file-alt'
-                          : type === 'youtube'
-                          ? 'fa-brands fa-youtube'
-                          : type === 'video'
-                          ? 'fa-video'
-                          : 'fa-link'
-                      } text-lg`}
-                      style={{ color: formData.content_type === type ? '#1d3e4c' : '#9CA3A8' }}
-                    ></i>
-                    <span
-                      className="font-semibold capitalize text-xs"
-                      style={{ color: formData.content_type === type ? '#1d3e4c' : '#657b84' }}
-                    >
-                      {type}
-                    </span>
-                  </div>
-                </div>
-              </label>
-            ))}
-          </div>
-        </div>
-
         {/* Title */}
         <div className="mb-6">
           <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>Title</label>
@@ -296,8 +274,35 @@ const DocumentFormModal = ({ habits, allTags }) => {
             required
             className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light"
             style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
-            placeholder="e.g., Morning Prayer, Spanish Lesson 1"
+            placeholder="e.g., Daily Affirmations, World Domination Plans"
           />
+        </div>
+
+        {/* Document Body */}
+        <div className="mb-6">
+          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+            Content <span className="font-normal" style={{ color: '#8E8E93' }}>(optional)</span>
+          </label>
+          <input type="hidden" name="body" id="document-form-body-hidden" />
+          <trix-editor ref={trixEditorRef} input="document-form-body-hidden" className="trix-content"></trix-editor>
+        </div>
+
+        {/* URL Field */}
+        <div className="mb-6">
+          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+            URL <span className="font-normal" style={{ color: '#8E8E93' }}>(optional)</span>
+          </label>
+          <input
+            type="url"
+            value={formData.url}
+            onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+            className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light"
+            style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
+            placeholder="https://youtube.com/watch?v=... or any link"
+          />
+          <p className="text-xs font-light mt-2" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#8E8E93' }}>
+            Add a URL to embed YouTube, Vimeo, or link to external content
+          </p>
         </div>
 
         {/* Categories */}
@@ -343,33 +348,6 @@ const DocumentFormModal = ({ habits, allTags }) => {
             })}
           </div>
         </div>
-
-        {/* URL Field (for youtube, video, link) */}
-        {['youtube', 'video', 'link'].includes(formData.content_type) && (
-          <div className="mb-6">
-            <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>URL</label>
-            <input
-              type="url"
-              value={formData.url}
-              onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-              className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light"
-              style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
-              placeholder="https://www.youtube.com/watch?v=..."
-            />
-            <p className="text-xs font-light mt-2" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#8E8E93' }}>
-              Paste the full URL - we'll handle the rest!
-            </p>
-          </div>
-        )}
-
-        {/* Document Body (for document type) */}
-        {formData.content_type === 'document' && (
-          <div className="mb-6">
-            <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>Document Content</label>
-            <input type="hidden" name="body" id="document-form-body-hidden" />
-            <trix-editor ref={trixEditorRef} input="document-form-body-hidden" className="trix-content"></trix-editor>
-          </div>
-        )}
 
         {/* Attach to Habits and Tasks - Side by Side */}
         <div className="grid grid-cols-2 gap-4 mb-6">
@@ -602,7 +580,7 @@ const DocumentFormModal = ({ habits, allTags }) => {
           )}
         </div>
       </form>
-    </BaseModal>
+    </SlideOverPanel>
   );
 };
 

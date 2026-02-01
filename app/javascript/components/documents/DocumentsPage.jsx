@@ -7,6 +7,7 @@ import DocumentFormModal from './DocumentFormModal';
 
 const DocumentsPage = ({ habits }) => {
   const [groupBy, setGroupBy] = useState('type');
+  const [searchQuery, setSearchQuery] = useState('');
   const queryClient = useQueryClient();
   const { openViewModal, openNewModal, openEditModal } = useDocumentsStore();
 
@@ -66,8 +67,31 @@ const DocumentsPage = ({ habits }) => {
     { type: 'link', icon: 'fa-link', color: '#22D3EE', label: 'Links' },
   ];
 
+  // Filter documents based on search query
+  const filteredDocuments = useMemo(() => {
+    if (!searchQuery.trim()) return documents;
+
+    const query = searchQuery.toLowerCase();
+    return documents.filter(doc => {
+      // Search in title
+      if (doc.title?.toLowerCase().includes(query)) return true;
+      // Search in tags
+      if (doc.tags?.some(tag => tag.name.toLowerCase().includes(query))) return true;
+      // Search in body/content (strip HTML for searching)
+      if (doc.body) {
+        const textContent = doc.body.replace(/<[^>]*>/g, '').toLowerCase();
+        if (textContent.includes(query)) return true;
+      }
+      return false;
+    });
+  }, [documents, searchQuery]);
+
   // Group documents based on groupBy setting
   const groupedDocuments = useMemo(() => {
+    if (groupBy === 'none') {
+      return [{ id: 'all', title: 'All Documents', documents: filteredDocuments, color: '#2C2C2E', icon: 'fa-file-alt', hideHeader: true }];
+    }
+
     if (groupBy === 'type') {
       // Start with all content types
       const groups = {};
@@ -82,7 +106,7 @@ const DocumentsPage = ({ habits }) => {
         };
       });
 
-      documents.forEach(doc => {
+      filteredDocuments.forEach(doc => {
         const type = doc.content_type || 'document';
         if (groups[type]) {
           groups[type].documents.push(doc);
@@ -113,7 +137,7 @@ const DocumentsPage = ({ habits }) => {
       // Add "Untagged" group
       const untagged = { id: 'untagged', title: 'Untagged', color: '#9CA3A8', icon: 'fa-tag', documents: [] };
 
-      documents.forEach(doc => {
+      filteredDocuments.forEach(doc => {
         if (doc.tags && doc.tags.length > 0) {
           doc.tags.forEach(tag => {
             if (groups[tag.id]) {
@@ -150,7 +174,7 @@ const DocumentsPage = ({ habits }) => {
       // Add "Uncategorized" group
       const uncategorized = { id: 'uncategorized', title: 'Uncategorized', color: '#9CA3A8', icon: 'fa-folder', documents: [] };
 
-      documents.forEach(doc => {
+      filteredDocuments.forEach(doc => {
         if (doc.categories && doc.categories.length > 0) {
           // Document has direct category associations
           doc.categories.forEach(category => {
@@ -173,8 +197,8 @@ const DocumentsPage = ({ habits }) => {
       return result;
     }
 
-    return [{ title: 'All Documents', documents, color: '#9CA3A8', icon: 'fa-file-alt' }];
-  }, [documents, groupBy, allTags, habits, categories]);
+    return [{ title: 'All Documents', documents: filteredDocuments, color: '#9CA3A8', icon: 'fa-file-alt' }];
+  }, [filteredDocuments, groupBy, allTags, habits, categories]);
 
   // Render a document card
   const renderDocumentCard = (content) => {
@@ -277,20 +301,22 @@ const DocumentsPage = ({ habits }) => {
     const groupIcon = group.icon || 'fa-file';
 
     return (
-      <div key={group.id || group.title} className={`mb-6 ${index !== 0 ? 'mt-8' : ''}`}>
+      <div key={group.id || group.title} className={`mb-6 ${index !== 0 && !group.hideHeader ? 'mt-8' : 'mt-4'}`}>
         {/* Full-width colored stripe header */}
-        <div
-          className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3"
-          style={{
-            background: `linear-gradient(to bottom, color-mix(in srgb, ${groupColor} 85%, white) 0%, ${groupColor} 100%)`,
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
-          }}
-        >
-          <i className={`${groupIcon.includes('fa-brands') ? groupIcon : `fa-solid ${groupIcon}`} text-white text-lg`}></i>
-          <h3 className="text-3xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
-            {group.title} ({group.documents.length})
-          </h3>
-        </div>
+        {!group.hideHeader && (
+          <div
+            className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3"
+            style={{
+              background: `linear-gradient(to bottom, color-mix(in srgb, ${groupColor} 85%, white) 0%, ${groupColor} 100%)`,
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+            }}
+          >
+            <i className={`${groupIcon.includes('fa-brands') ? groupIcon : `fa-solid ${groupIcon}`} text-white text-lg`}></i>
+            <h3 className="text-3xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
+              {group.title} ({group.documents.length})
+            </h3>
+          </div>
+        )}
         {group.documents.length > 0 ? (
           <div className="space-y-3">
             {group.documents.map(doc => renderDocumentCard(doc))}
@@ -318,43 +344,69 @@ const DocumentsPage = ({ habits }) => {
               </h1>
             </div>
 
-            <div className="flex flex-col items-center gap-2">
-              <button
-                onClick={openNewModal}
-                className="px-6 py-3 rounded-lg text-white transition transform hover:scale-105"
-                style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', fontWeight: 600, fontFamily: "'Inter', sans-serif", boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
-              >
-                <i className="fa-solid fa-plus mr-2"></i>
-                New Document
-              </button>
-            </div>
+            <button
+              onClick={openNewModal}
+              className="w-12 h-12 rounded-xl text-white transition transform hover:scale-105 flex items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
+              title="New Document"
+            >
+              <i className="fa-solid fa-plus text-lg"></i>
+            </button>
           </div>
 
-          {/* Group By Filter */}
-          <div>
-            <span className="block text-xs uppercase tracking-wide mb-2" style={{ color: '#8E8E93', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
-              Group By
-            </span>
-            <div className="inline-flex rounded-lg overflow-hidden" style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}>
-              {[
-                { value: 'type', label: 'Type' },
-                { value: 'tag', label: 'Tag' },
-                { value: 'category', label: 'Category' },
-              ].map(({ value, label }) => (
-                <button
-                  key={value}
-                  onClick={() => setGroupBy(value)}
-                  className="px-4 py-2 text-sm transition"
+          {/* Filters Row */}
+          <div className="flex flex-col md:flex-row md:items-end gap-4 md:gap-6">
+            {/* Group By Filter */}
+            <div>
+              <span className="block text-xs uppercase tracking-wide mb-2" style={{ color: '#8E8E93', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
+                Group By
+              </span>
+              <div className="inline-flex rounded-lg overflow-hidden" style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}>
+                {[
+                  { value: 'none', label: 'None' },
+                  { value: 'type', label: 'Type' },
+                  { value: 'tag', label: 'Tag' },
+                  { value: 'category', label: 'Category' },
+                ].map(({ value, label }) => (
+                  <button
+                    key={value}
+                    onClick={() => setGroupBy(value)}
+                    className="px-4 py-2 text-sm transition"
+                    style={{
+                      background: groupBy === value ? 'linear-gradient(to bottom, #A8A8AD 0%, #8E8E93 100%)' : '#F5F5F7',
+                      color: groupBy === value ? '#FFFFFF' : '#1D1D1F',
+                      fontWeight: 500,
+                      fontFamily: "'Inter', sans-serif",
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Search */}
+            <div className="flex-1">
+              <span className="block text-xs uppercase tracking-wide mb-2" style={{ color: '#8E8E93', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
+                Search
+              </span>
+              <div className="relative">
+                <i className="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#8E8E93' }}></i>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search title, tags, or content..."
+                  className="w-full pl-9 pr-4 py-2 rounded-lg text-sm focus:outline-none"
                   style={{
-                    background: groupBy === value ? 'linear-gradient(to bottom, #A8A8AD 0%, #8E8E93 100%)' : '#F5F5F7',
-                    color: groupBy === value ? '#FFFFFF' : '#1D1D1F',
-                    fontWeight: 500,
+                    border: '1px solid rgba(199, 199, 204, 0.4)',
                     fontFamily: "'Inter', sans-serif",
+                    fontWeight: 400,
+                    background: '#F9F9FB',
+                    boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.08)'
                   }}
-                >
-                  {label}
-                </button>
-              ))}
+                />
+              </div>
             </div>
           </div>
         </div>

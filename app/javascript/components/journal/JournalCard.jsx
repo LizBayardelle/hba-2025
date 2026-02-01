@@ -28,6 +28,14 @@ const JournalCard = ({ journal }) => {
     return count === 1 ? '1 Word' : `${count} Words`;
   };
 
+  const getSnippet = (htmlContent, maxLength = 150) => {
+    if (!htmlContent) return '';
+    // Strip HTML tags and get plain text
+    const text = htmlContent.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength).trim() + '...';
+  };
+
   return (
     <div className="flex items-center gap-3">
       <div
@@ -37,12 +45,23 @@ const JournalCard = ({ journal }) => {
       >
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <h3 className="text-lg font-bold display-font mb-1" style={{ color: '#1d3e4c' }}>
-              {formatWordCount(getWordCount(journal.content))}
-            </h3>
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="text-lg font-bold display-font" style={{ color: '#1d3e4c' }}>
+                {formatWordCount(getWordCount(journal.content))}
+              </h3>
+              {journal.private && (
+                <i className="fa-solid fa-lock text-xs" style={{ color: '#8E8E93' }} title="Private entry"></i>
+              )}
+            </div>
             <div className="text-sm font-light mb-2" style={{ color: '#657b84' }}>
               {formatDate(journal.created_at)}
             </div>
+            {/* Show snippet for non-private entries */}
+            {!journal.private && journal.content && (
+              <p className="text-sm mb-2" style={{ color: '#4A5568', fontFamily: "'Inter', sans-serif", fontWeight: 300, lineHeight: 1.5 }}>
+                {getSnippet(journal.content)}
+              </p>
+            )}
             {journal.tags && journal.tags.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {journal.tags.map((tag) => (

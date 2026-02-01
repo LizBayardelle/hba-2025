@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import BaseModal from '../shared/BaseModal';
+import SlideOverPanel from '../shared/SlideOverPanel';
 import { journalsApi } from '../../utils/api';
 import useJournalStore from '../../stores/journalStore';
 
@@ -13,6 +13,7 @@ const JournalFormModal = ({ allTags }) => {
   const [tagInput, setTagInput] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(false);
 
   // Fetch journal data if editing
   const { data: journal } = useQuery({
@@ -25,6 +26,7 @@ const JournalFormModal = ({ allTags }) => {
   useEffect(() => {
     if (journal && mode === 'edit') {
       setSelectedTags(journal.tags?.map(t => t.name) || []);
+      setIsPrivate(journal.private || false);
 
       // Set Trix content
       if (trixEditorRef.current) {
@@ -43,6 +45,7 @@ const JournalFormModal = ({ allTags }) => {
     if (isOpen && mode === 'new') {
       setSelectedTags([]);
       setTagInput('');
+      setIsPrivate(false);
       if (trixEditorRef.current?.editor) {
         trixEditorRef.current.editor.loadHTML('');
       }
@@ -92,6 +95,7 @@ const JournalFormModal = ({ allTags }) => {
     const data = {
       content: trixEditorRef.current?.value || '',
       tag_names: selectedTags,
+      private: isPrivate,
     };
 
     if (mode === 'edit') {
@@ -148,22 +152,22 @@ const JournalFormModal = ({ allTags }) => {
         <button
           type="button"
           onClick={handleDelete}
-          className="mr-auto w-10 h-10 rounded-lg transition hover:bg-white/10 flex items-center justify-center"
+          className="mr-auto w-10 h-10 rounded-lg transition hover:bg-red-50 flex items-center justify-center"
           disabled={deleteMutation.isPending}
           title="Delete journal entry"
         >
           {deleteMutation.isPending ? (
-            <i className="fa-solid fa-spinner fa-spin text-white"></i>
+            <i className="fa-solid fa-spinner fa-spin" style={{ color: '#DC2626' }}></i>
           ) : (
-            <i className="fa-solid fa-trash text-white text-lg"></i>
+            <i className="fa-solid fa-trash text-lg" style={{ color: '#DC2626' }}></i>
           )}
         </button>
       )}
       <button
         type="button"
         onClick={closeFormModal}
-        className="px-6 py-3 rounded-lg font-semibold transition text-white hover:opacity-70"
-        style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
+        className="px-6 py-3 rounded-lg transition hover:bg-gray-100"
+        style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F', border: '0.5px solid rgba(199, 199, 204, 0.3)', backgroundColor: 'white' }}
         disabled={currentMutation.isPending}
       >
         Cancel
@@ -171,8 +175,15 @@ const JournalFormModal = ({ allTags }) => {
       <button
         type="submit"
         form="journal-form"
-        className="px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition cursor-pointer disabled:opacity-50 hover:opacity-90"
-        style={{ background: 'linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%)', border: '0.5px solid rgba(255, 255, 255, 0.3)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)', color: '#1D1D1F', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
+        className="px-6 py-3 rounded-lg transition cursor-pointer disabled:opacity-50 hover:opacity-90"
+        style={{
+          background: 'linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%)',
+          border: '0.5px solid rgba(255, 255, 255, 0.3)',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)',
+          color: '#1D1D1F',
+          fontWeight: 600,
+          fontFamily: "'Inter', sans-serif",
+        }}
         disabled={currentMutation.isPending}
       >
         {currentMutation.isPending
@@ -185,12 +196,11 @@ const JournalFormModal = ({ allTags }) => {
   );
 
   return (
-    <BaseModal
+    <SlideOverPanel
       isOpen={isOpen}
       onClose={closeFormModal}
       title={mode === 'edit' ? 'Edit Journal Entry' : 'New Journal Entry'}
       footer={footer}
-      maxWidth="max-w-4xl"
     >
       <form id="journal-form" onSubmit={handleSubmit}>
         {currentMutation.isError && (
@@ -202,6 +212,39 @@ const JournalFormModal = ({ allTags }) => {
             {currentMutation.error?.message || 'An error occurred'}
           </div>
         )}
+
+        {/* Entry Content */}
+        <div className="mb-6">
+          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+            Entry
+          </label>
+          <input type="hidden" name="content" id="journal-form-content-hidden" />
+          <trix-editor ref={trixEditorRef} input="journal-form-content-hidden" className="trix-content"></trix-editor>
+        </div>
+
+        {/* Private Toggle */}
+        <div className="mb-6">
+          <label className="flex items-center gap-3 cursor-pointer select-none">
+            <div
+              onClick={() => setIsPrivate(!isPrivate)}
+              className="relative w-12 h-7 rounded-full transition-colors cursor-pointer"
+              style={{ backgroundColor: isPrivate ? '#2C2C2E' : '#E5E5E7' }}
+            >
+              <div
+                className="absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-transform"
+                style={{ transform: isPrivate ? 'translateX(22px)' : 'translateX(4px)' }}
+              />
+            </div>
+            <div>
+              <span className="text-sm font-semibold" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+                Private Entry
+              </span>
+              <p className="text-xs" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#8E8E93' }}>
+                Do Not Show Preview on Journal List
+              </p>
+            </div>
+          </label>
+        </div>
 
         {/* Tags */}
         <div className="mb-6">
@@ -219,8 +262,8 @@ const JournalFormModal = ({ allTags }) => {
               onKeyDown={handleTagInputKeyDown}
               onFocus={() => tagInput.length > 0 && setShowTagSuggestions(true)}
               onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
-              className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light"
-              style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#1d3e4c' }}
+              className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light input-inset"
+              style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#1d3e4c' }}
               placeholder="Type to search or add new tag"
             />
 
@@ -286,17 +329,8 @@ const JournalFormModal = ({ allTags }) => {
             </div>
           )}
         </div>
-
-        {/* Content */}
-        <div className="mb-6">
-          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
-            Entry
-          </label>
-          <input type="hidden" name="content" id="journal-form-content-hidden" />
-          <trix-editor ref={trixEditorRef} input="journal-form-content-hidden" className="trix-content"></trix-editor>
-        </div>
       </form>
-    </BaseModal>
+    </SlideOverPanel>
   );
 };
 

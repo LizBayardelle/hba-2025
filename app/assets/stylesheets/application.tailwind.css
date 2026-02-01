@@ -26,6 +26,50 @@ label {
   color: #566e78;
 }
 
+/* Form Input Inset Style */
+.input-inset,
+input[type="text"].input-inset,
+input[type="email"].input-inset,
+input[type="password"].input-inset,
+textarea.input-inset {
+  background-color: #F9F9FB;
+  border: 1px solid rgba(199, 199, 204, 0.4);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-radius: 0.5rem;
+}
+
+.input-inset:focus {
+  outline: none;
+  border-color: rgba(142, 142, 147, 0.6);
+}
+
+/* Trix Editor Inset Style */
+trix-editor {
+  background-color: #F9F9FB;
+  border: 1px solid rgba(199, 199, 204, 0.4);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  min-height: 200px;
+}
+
+trix-editor:focus {
+  outline: none;
+  border-color: rgba(142, 142, 147, 0.6);
+}
+
+trix-toolbar {
+  background-color: #F9F9FB;
+  border: 1px solid rgba(199, 199, 204, 0.4);
+  border-bottom: none;
+  border-radius: 0.5rem 0.5rem 0 0;
+  padding: 0.5rem;
+}
+
+trix-toolbar + trix-editor {
+  border-radius: 0 0 0.5rem 0.5rem;
+}
+
 /* Trix Content Styling */
 .trix-content h1 {
   font-size: 2.25em;
