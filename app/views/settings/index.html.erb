@@ -219,7 +219,7 @@
             <br><strong>Darker colors work best with white text.</strong>
           </p>
 
-          <div id="importance-levels-list" class="space-y-3">
+          <div id="importance-levels-list" class="space-y-2">
             <!-- Importance levels will be loaded here -->
           </div>
         </div>
@@ -240,7 +240,7 @@
             <br><strong>Darker colors work best with white text.</strong>
           </p>
 
-          <div id="time-blocks-list" class="space-y-3">
+          <div id="time-blocks-list" class="space-y-2">
             <!-- Time blocks will be loaded here -->
           </div>
         </div>
@@ -322,10 +322,27 @@
               calendar: { name: 'Calendar', icon: 'fa-calendar' },
               quick_links: { name: 'Quick Links', icon: 'fa-link' },
               habits: { name: 'Habits', icon: 'fa-chart-line' },
-              tasks: { name: 'Tasks', icon: 'fa-check' }
+              tasks: { name: 'Tasks', icon: 'fa-check' },
+              daily_prep: { name: 'Daily Prep', icon: 'fa-clipboard-check' }
             };
 
-            let currentLayout = <%= raw (current_user.dashboard_layout.presence || User::DEFAULT_DASHBOARD_LAYOUT).to_json %>;
+            // Merge user's layout with default to include any new blocks
+            const defaultLayout = <%= raw User::DEFAULT_DASHBOARD_LAYOUT.to_json %>;
+            const savedLayout = <%= raw (current_user.dashboard_layout.presence || []).to_json %>;
+
+            // Start with saved layout, then add any missing blocks from default
+            let currentLayout = [...savedLayout];
+            const existingBlocks = new Set(currentLayout.map(b => b.block));
+            defaultLayout.forEach(defaultBlock => {
+              if (!existingBlocks.has(defaultBlock.block)) {
+                // Add missing block at the end with visible: false
+                currentLayout.push({
+                  ...defaultBlock,
+                  position: currentLayout.length,
+                  visible: false
+                });
+              }
+            });
 
             function renderLayout() {
               // Sort by position only (maintains drag order)
@@ -1096,23 +1113,16 @@
             levelsList.innerHTML = importanceLevels.map(level => {
               const isOptional = level.name === 'Optional';
               return `
-              <div class="flex items-center gap-4 p-4 rounded-lg border-2 bg-gray-50 hover:bg-gray-100 transition" style="border-color: #E8EEF1;" data-level-id="${level.id}">
-                <div class="cursor-move text-gray-400">
-                  <i class="fa-solid fa-grip-vertical"></i>
-                </div>
-                <div class="text-xl" style="color: ${level.color};">
-                  <i class="${level.icon || 'fa-solid fa-star'}"></i>
-                </div>
-                <div class="flex-1">
-                  <div class="font-semibold" style="color: #1D1D1F;">${level.name}${isOptional ? ' <span class="text-xs font-normal" style="color: #8E8E93;">(default)</span>' : ''}</div>
-                  <div class="text-xs font-light" style="color: #8E8E93;">Rank: ${level.rank}</div>
-                </div>
-                <div class="w-8 h-8 rounded border-2" style="background-color: ${level.color}; border-color: #E8EEF1;"></div>
-                <button onclick="editImportanceLevel(${level.id})" class="px-3 py-2 rounded-lg text-sm font-semibold transition hover:bg-gray-200">
-                  <i class="fa-solid fa-edit"></i>
+              <div class="flex items-center gap-3 p-3 rounded-lg border bg-white cursor-grab active:cursor-grabbing" style="border-color: #E8EEF1;" data-level-id="${level.id}">
+                <i class="fa-solid fa-grip-vertical" style="color: #C7C7CC;"></i>
+                <i class="${level.icon || 'fa-solid fa-star'} w-5 text-center" style="color: ${level.color};"></i>
+                <span class="flex-1 text-sm font-medium" style="color: #1D1D1F;">${level.name}${isOptional ? ' <span class="text-xs font-normal" style="color: #8E8E93;">(default)</span>' : ''}</span>
+                <div class="w-6 h-6 rounded" style="background-color: ${level.color};"></div>
+                <button onclick="editImportanceLevel(${level.id})" class="p-1.5 rounded hover:bg-gray-100 transition">
+                  <i class="fa-solid fa-pen text-xs" style="color: #8E8E93;"></i>
                 </button>
-                ${isOptional ? '' : `<button onclick="deleteImportanceLevel(${level.id})" class="px-3 py-2 rounded-lg text-sm font-semibold transition hover:bg-red-100 text-red-600">
-                  <i class="fa-solid fa-trash"></i>
+                ${isOptional ? '' : `<button onclick="deleteImportanceLevel(${level.id})" class="p-1.5 rounded hover:bg-red-50 transition">
+                  <i class="fa-solid fa-trash text-xs" style="color: #DC2626;"></i>
                 </button>`}
               </div>
             `}).join('');
@@ -1415,23 +1425,16 @@
 
           function renderTimeBlocks() {
             timeBlocksList.innerHTML = timeBlocks.map(block => `
-              <div class="flex items-center gap-4 p-4 rounded-lg border-2 bg-gray-50 hover:bg-gray-100 transition" style="border-color: #E8EEF1;" data-block-id="${block.id}">
-                <div class="cursor-move text-gray-400">
-                  <i class="fa-solid fa-grip-vertical"></i>
-                </div>
-                <div class="text-xl" style="color: ${block.color};">
-                  <i class="${block.icon || 'fa-solid fa-clock'}"></i>
-                </div>
-                <div class="flex-1">
-                  <div class="font-semibold" style="color: #1D1D1F;">${block.name}</div>
-                  <div class="text-xs font-light" style="color: #8E8E93;">Rank: ${block.rank}</div>
-                </div>
-                <div class="w-8 h-8 rounded border-2" style="background-color: ${block.color}; border-color: #E8EEF1;"></div>
-                <button onclick="editTimeBlock(${block.id})" class="px-3 py-2 rounded-lg text-sm font-semibold transition hover:bg-gray-200">
-                  <i class="fa-solid fa-edit"></i>
+              <div class="flex items-center gap-3 p-3 rounded-lg border bg-white cursor-grab active:cursor-grabbing" style="border-color: #E8EEF1;" data-block-id="${block.id}">
+                <i class="fa-solid fa-grip-vertical" style="color: #C7C7CC;"></i>
+                <i class="${block.icon || 'fa-solid fa-clock'} w-5 text-center" style="color: ${block.color};"></i>
+                <span class="flex-1 text-sm font-medium" style="color: #1D1D1F;">${block.name}</span>
+                <div class="w-6 h-6 rounded" style="background-color: ${block.color};"></div>
+                <button onclick="editTimeBlock(${block.id})" class="p-1.5 rounded hover:bg-gray-100 transition">
+                  <i class="fa-solid fa-pen text-xs" style="color: #8E8E93;"></i>
                 </button>
-                <button onclick="deleteTimeBlock(${block.id})" class="px-3 py-2 rounded-lg text-sm font-semibold transition hover:bg-red-100 text-red-600">
-                  <i class="fa-solid fa-trash"></i>
+                <button onclick="deleteTimeBlock(${block.id})" class="p-1.5 rounded hover:bg-red-50 transition">
+                  <i class="fa-solid fa-trash text-xs" style="color: #DC2626;"></i>
                 </button>
               </div>
             `).join('');

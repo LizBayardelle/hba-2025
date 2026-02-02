@@ -1,0 +1,283 @@
+<div class="rounded-xl p-6" style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
+  <!-- Header -->
+  <div class="mb-4">
+    <div class="flex items-center justify-between">
+      <h2 class="text-2xl font-display" style="color: #1D1D1F;">Daily Prep</h2>
+      <%= link_to daily_prep_path, class: "text-xs hover:underline", style: "color: #8E8E93;" do %>
+        View All
+      <% end %>
+    </div>
+    <% answered_count = @prep_response_map.count { |_, r| r.response_value.present? || r.long_response.present? } %>
+    <div class="text-sm mt-1" style="color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif;">
+      <%= answered_count %> / <%= @prep_questions.count %> answered
+    </div>
+  </div>
+
+  <!-- Questions -->
+  <div>
+    <% if @prep_questions.any? %>
+      <div class="space-y-5">
+        <% @prep_questions.each_with_index do |question, index| %>
+          <% response = @prep_response_map[question.id] %>
+          <div class="prep-question-item" data-question-id="<%= question.id %>" data-question-type="<%= question.question_type %>" data-today="<%= @today %>">
+            <!-- Question text -->
+            <div class="flex items-start gap-3 mb-2">
+              <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs flex-shrink-0" style="background: #F5F5F7; color: #8E8E93;">
+                <%= index + 1 %>
+              </span>
+              <p class="text-sm font-medium" style="color: #1D1D1F;"><%= question.question_text %></p>
+            </div>
+
+            <!-- Response input -->
+            <div class="ml-9">
+              <% case question.question_type %>
+              <% when 'short_answer' %>
+                <input
+                  type="text"
+                  class="prep-input w-full px-3 py-2 rounded-lg text-sm focus:outline-none transition"
+                  style="border: 1px solid rgba(199, 199, 204, 0.4); background: #F9F9FB;"
+                  placeholder="Type your answer..."
+                  value="<%= response&.response_value&.dig('text') || '' %>"
+                  data-response-id="<%= response&.id %>"
+                />
+
+              <% when 'long_answer' %>
+                <div class="prep-long-answer-wrapper">
+                  <% input_id = "prep-trix-#{question.id}" %>
+                  <input id="<%= input_id %>" type="hidden" value="<%= response&.long_response.to_s %>" data-response-id="<%= response&.id %>">
+                  <trix-editor
+                    input="<%= input_id %>"
+                    class="prep-trix trix-content text-sm rounded-lg"
+                    style="border: 1px solid rgba(199, 199, 204, 0.4); background: #F9F9FB; min-height: 80px;"
+                  ></trix-editor>
+                </div>
+
+              <% when 'checkbox' %>
+                <% checked = response&.response_value&.dig('checked') || false %>
+                <div
+                  class="prep-checkbox flex items-center gap-3 cursor-pointer select-none"
+                  data-checked="<%= checked %>"
+                  data-response-id="<%= response&.id %>"
+                >
+                  <div
+                    class="prep-toggle relative w-12 h-7 rounded-full transition-colors duration-200"
+                    style="background-color: <%= checked ? '#34C759' : '#E5E5E7' %>;"
+                  >
+                    <div
+                      class="prep-toggle-knob absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200"
+                      style="transform: translateX(<%= checked ? '22px' : '4px' %>);"
+                    ></div>
+                  </div>
+                  <span class="prep-toggle-label text-sm" style="color: #1D1D1F;"><%= checked ? 'Yes' : 'No' %></span>
+                </div>
+
+              <% when 'multiple_choice' %>
+                <% selected = response&.response_value&.dig('selected') || [] %>
+                <div class="prep-multiple-choice space-y-2" data-allow-multiple="<%= question.allow_multiple %>" data-response-id="<%= response&.id %>">
+                  <% (question.options || []).each_with_index do |option, opt_index| %>
+                    <% is_selected = selected.include?(opt_index) %>
+                    <button
+                      type="button"
+                      class="prep-option w-full text-left px-3 py-2 rounded-lg transition flex items-center gap-3 text-sm"
+                      style="background: <%= is_selected ? '#E8F5E9' : '#F9F9FB' %>; border: <%= is_selected ? '2px solid #34C759' : '1px solid rgba(199, 199, 204, 0.4)' %>;"
+                      data-index="<%= opt_index %>"
+                      data-selected="<%= is_selected %>"
+                    >
+                      <div
+                        class="w-5 h-5 rounded-<%= question.allow_multiple ? 'md' : 'full' %> border-2 flex items-center justify-center transition"
+                        style="border-color: <%= is_selected ? '#34C759' : '#C7C7CC' %>; background-color: <%= is_selected ? '#34C759' : 'transparent' %>;"
+                      >
+                        <% if is_selected %>
+                          <i class="fa-solid fa-check text-white text-xs"></i>
+                        <% end %>
+                      </div>
+                      <span style="color: #1D1D1F;"><%= option %></span>
+                    </button>
+                  <% end %>
+                </div>
+              <% end %>
+
+              <!-- Save status indicator -->
+              <div class="prep-status mt-1 text-xs" style="color: #8E8E93; display: none;"></div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-center py-6">
+        <i class="fa-solid fa-clipboard-list text-4xl mb-3" style="color: #E5E5E7;"></i>
+        <p class="text-sm" style="color: #8E8E93;">No prep questions configured</p>
+        <%= link_to "Add Questions", daily_prep_manage_path, class: "inline-block mt-2 text-sm hover:underline", style: "color: #8E8E93;" %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // CSRF token
+  const csrfToken = document.querySelector('[name=csrf-token]')?.content;
+
+  // Save prep response
+  async function savePrepResponse(questionId, questionType, value, today) {
+    const payload = {
+      prep_response: {
+        prep_question_id: questionId,
+        response_date: today
+      }
+    };
+
+    if (questionType === 'long_answer') {
+      payload.prep_response.long_response = value;
+    } else if (questionType === 'short_answer') {
+      payload.prep_response.response_value = { text: value };
+    } else {
+      payload.prep_response.response_value = value;
+    }
+
+    try {
+      const response = await fetch('/prep_responses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken
+        },
+        body: JSON.stringify(payload)
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('Error saving prep response:', error);
+      return { success: false };
+    }
+  }
+
+  // Show status
+  function showStatus(container, status) {
+    const statusEl = container.querySelector('.prep-status');
+    if (!statusEl) return;
+
+    statusEl.style.display = 'block';
+    if (status === 'saving') {
+      statusEl.textContent = 'Saving...';
+      statusEl.style.color = '#8E8E93';
+    } else if (status === 'saved') {
+      statusEl.textContent = 'Saved';
+      statusEl.style.color = '#34C759';
+      setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
+    } else if (status === 'error') {
+      statusEl.textContent = 'Error saving';
+      statusEl.style.color = '#DC2626';
+    }
+  }
+
+  // Short answer inputs - save on blur
+  document.querySelectorAll('.prep-question-item .prep-input').forEach(input => {
+    const container = input.closest('.prep-question-item');
+    const questionId = container.dataset.questionId;
+    const questionType = container.dataset.questionType;
+    const today = container.dataset.today;
+
+    input.addEventListener('blur', async () => {
+      showStatus(container, 'saving');
+      const result = await savePrepResponse(questionId, questionType, input.value, today);
+      showStatus(container, result.success ? 'saved' : 'error');
+    });
+  });
+
+  // Long answer (Trix) - save on blur
+  document.querySelectorAll('.prep-question-item trix-editor').forEach(editor => {
+    const container = editor.closest('.prep-question-item');
+    const questionId = container.dataset.questionId;
+    const questionType = container.dataset.questionType;
+    const today = container.dataset.today;
+
+    editor.addEventListener('trix-blur', async () => {
+      showStatus(container, 'saving');
+      const result = await savePrepResponse(questionId, questionType, editor.innerHTML, today);
+      showStatus(container, result.success ? 'saved' : 'error');
+    });
+  });
+
+  // Checkbox toggles - save immediately
+  document.querySelectorAll('.prep-question-item .prep-checkbox').forEach(checkbox => {
+    const container = checkbox.closest('.prep-question-item');
+    const questionId = container.dataset.questionId;
+    const questionType = container.dataset.questionType;
+    const today = container.dataset.today;
+
+    checkbox.addEventListener('click', async () => {
+      const isChecked = checkbox.dataset.checked === 'true';
+      const newChecked = !isChecked;
+
+      // Update UI
+      checkbox.dataset.checked = newChecked;
+      const toggle = checkbox.querySelector('.prep-toggle');
+      const knob = checkbox.querySelector('.prep-toggle-knob');
+      const label = checkbox.querySelector('.prep-toggle-label');
+
+      toggle.style.backgroundColor = newChecked ? '#34C759' : '#E5E5E7';
+      knob.style.transform = newChecked ? 'translateX(22px)' : 'translateX(4px)';
+      label.textContent = newChecked ? 'Yes' : 'No';
+
+      // Save
+      showStatus(container, 'saving');
+      const result = await savePrepResponse(questionId, questionType, { checked: newChecked }, today);
+      showStatus(container, result.success ? 'saved' : 'error');
+    });
+  });
+
+  // Multiple choice - save immediately
+  document.querySelectorAll('.prep-question-item .prep-multiple-choice').forEach(mcContainer => {
+    const container = mcContainer.closest('.prep-question-item');
+    const questionId = container.dataset.questionId;
+    const questionType = container.dataset.questionType;
+    const today = container.dataset.today;
+    const allowMultiple = mcContainer.dataset.allowMultiple === 'true';
+
+    mcContainer.querySelectorAll('.prep-option').forEach(option => {
+      option.addEventListener('click', async () => {
+        const index = parseInt(option.dataset.index);
+        const wasSelected = option.dataset.selected === 'true';
+
+        // Get current selections
+        let selected = [];
+        mcContainer.querySelectorAll('.prep-option').forEach(opt => {
+          if (opt.dataset.selected === 'true') {
+            selected.push(parseInt(opt.dataset.index));
+          }
+        });
+
+        // Update selections
+        if (allowMultiple) {
+          if (wasSelected) {
+            selected = selected.filter(i => i !== index);
+          } else {
+            selected.push(index);
+          }
+        } else {
+          selected = wasSelected ? [] : [index];
+        }
+
+        // Update all options UI
+        mcContainer.querySelectorAll('.prep-option').forEach(opt => {
+          const optIndex = parseInt(opt.dataset.index);
+          const isSelected = selected.includes(optIndex);
+          opt.dataset.selected = isSelected;
+          opt.style.background = isSelected ? '#E8F5E9' : '#F9F9FB';
+          opt.style.border = isSelected ? '2px solid #34C759' : '1px solid rgba(199, 199, 204, 0.4)';
+
+          const checkDiv = opt.querySelector('div');
+          checkDiv.style.borderColor = isSelected ? '#34C759' : '#C7C7CC';
+          checkDiv.style.backgroundColor = isSelected ? '#34C759' : 'transparent';
+          checkDiv.innerHTML = isSelected ? '<i class="fa-solid fa-check text-white text-xs"></i>' : '';
+        });
+
+        // Save
+        showStatus(container, 'saving');
+        const result = await savePrepResponse(questionId, questionType, { selected }, today);
+        showStatus(container, result.success ? 'saved' : 'error');
+      });
+    });
+  });
+});
+</script>

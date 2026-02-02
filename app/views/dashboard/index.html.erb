@@ -202,6 +202,8 @@
             <%= render 'dashboard/habits_block' %>
           <% when 'tasks' %>
             <%= render 'dashboard/tasks_block' %>
+          <% when 'daily_prep' %>
+            <%= render 'dashboard/daily_prep_block' %>
           <% end %>
         <% else %>
           <!-- Two Column Row -->
@@ -217,6 +219,8 @@
                   <%= render 'dashboard/habits_block' %>
                 <% when 'tasks' %>
                   <%= render 'dashboard/tasks_block' %>
+                <% when 'daily_prep' %>
+                  <%= render 'dashboard/daily_prep_block' %>
                 <% end %>
               <% end %>
             </div>
@@ -231,6 +235,8 @@
                   <%= render 'dashboard/habits_block' %>
                 <% when 'tasks' %>
                   <%= render 'dashboard/tasks_block' %>
+                <% when 'daily_prep' %>
+                  <%= render 'dashboard/daily_prep_block' %>
                 <% end %>
               <% end %>
             </div>

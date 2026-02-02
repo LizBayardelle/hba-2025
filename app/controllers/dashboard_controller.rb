@@ -69,5 +69,10 @@ class DashboardController < ApplicationController
     else
       @calendar_events = []
     end
+
+    # === Daily Prep Questions ===
+    @prep_questions = current_user.prep_questions.active.ordered
+    @prep_responses = current_user.prep_responses.for_date(@today).includes(:prep_question)
+    @prep_response_map = @prep_responses.index_by(&:prep_question_id)
   end
 end
