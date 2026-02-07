@@ -440,23 +440,45 @@ function switchFocusView(view) {
     const habitsDiv = document.createElement('div');
     habitsDiv.className = 'space-y-2';
 
-    // Sort items: non-optional first, optional last
+    // Sort items: Daily → Scheduled → Optional
     const sortedItems = groups[groupName].sort((a, b) => {
       const aOptional = a.dataset.priorityName === 'Optional';
       const bOptional = b.dataset.priorityName === 'Optional';
+      const aScheduled = a.dataset.isScheduled === 'true';
+      const bScheduled = b.dataset.isScheduled === 'true';
+
+      // Optional items go last
       if (aOptional && !bOptional) return 1;
       if (!aOptional && bOptional) return -1;
+
+      // Among non-optional: Daily (not scheduled) first, then Scheduled
+      if (!aOptional && !bOptional) {
+        if (!aScheduled && bScheduled) return -1;
+        if (aScheduled && !bScheduled) return 1;
+      }
+
       return 0;
     });
 
     sortedItems.forEach(habitItem => {
-      // Add subtle grey background for optional items
-      if (habitItem.dataset.priorityName === 'Optional') {
+      const isOptional = habitItem.dataset.priorityName === 'Optional';
+      const isScheduled = habitItem.dataset.isScheduled === 'true';
+
+      // Apply background styling based on type
+      if (isOptional) {
+        // Optional: grey background
         habitItem.style.backgroundColor = 'rgba(142, 142, 147, 0.08)';
         habitItem.style.borderRadius = '6px';
         habitItem.style.padding = '4px 8px';
         habitItem.style.margin = '0 -8px';
+      } else if (isScheduled) {
+        // Scheduled (non-daily): very subtle indigo tint (lighter than optional)
+        habitItem.style.backgroundColor = 'rgba(99, 102, 241, 0.03)';
+        habitItem.style.borderRadius = '6px';
+        habitItem.style.padding = '4px 8px';
+        habitItem.style.margin = '0 -8px';
       } else {
+        // Daily: no background
         habitItem.style.backgroundColor = '';
         habitItem.style.borderRadius = '';
         habitItem.style.padding = '';

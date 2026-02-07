@@ -13,7 +13,8 @@ class DashboardController < ApplicationController
     end
 
     # === Today's Habits ===
-    @habits = current_user.habits.active.includes(:category, :habit_completions, :importance_level, :time_block)
+    all_habits = current_user.habits.active.includes(:category, :habit_completions, :importance_level, :time_block)
+    @habits = all_habits.select { |h| h.due_on?(@today) }
 
     @today_completions = HabitCompletion.where(
       habit_id: @habits.pluck(:id),

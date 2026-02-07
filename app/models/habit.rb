@@ -42,7 +42,27 @@ class Habit < ApplicationRecord
     when 'interval'
       anchor = Date.parse(schedule_config['anchor_date']) rescue (start_date || created_at.to_date)
       interval = schedule_config['interval_days'] || 1
-      ((date - anchor).to_i % interval).zero?
+      unit = schedule_config['interval_unit'] || 'days'
+
+      case unit
+      when 'weeks'
+        # Match same day of week as anchor, on correct week intervals
+        return false unless date.wday == anchor.wday
+        weeks_diff = ((date - anchor).to_i / 7.0).round
+        (weeks_diff % interval).zero?
+      when 'months'
+        # Match same day of month as anchor, on correct month intervals
+        anchor_day = anchor.day
+        # Handle edge cases (31st of month, etc.)
+        target_day = [anchor_day, date.end_of_month.day].min
+        return false unless date.day == target_day
+
+        months_diff = (date.year * 12 + date.month) - (anchor.year * 12 + anchor.month)
+        (months_diff % interval).zero?
+      else
+        # Days interval
+        ((date - anchor).to_i % interval).zero?
+      end
     else
       true
     end
@@ -65,8 +85,20 @@ class Habit < ApplicationRecord
       days.map { |d| Date::ABBR_DAYNAMES[d] }.join('/')
     when 'interval'
       n = schedule_config['interval_days'] || 1
-      n == 1 ? 'Daily' : n == 2 ? 'Every other day' : "Every #{n} days"
+      unit = schedule_config['interval_unit'] || 'days'
+      case unit
+      when 'weeks'
+        n == 1 ? 'Weekly' : n == 2 ? 'Biweekly' : "Every #{n} weeks"
+      when 'months'
+        n == 1 ? 'Monthly' : "Every #{n} months"
+      else
+        n == 1 ? 'Daily' : n == 2 ? 'Every other day' : "Every #{n} days"
+      end
     end
+  end
+
+  def scheduled?
+    schedule_mode != 'flexible'
   end
 
   # Helper method to assign documents by ID
@@ -285,6 +317,10 @@ class Habit < ApplicationRecord
       interval = schedule_config['interval_days']
       if interval.present? && (!interval.is_a?(Integer) || interval < 1)
         errors.add(:schedule_config, 'interval_days must be a positive integer')
+      end
+      unit = schedule_config['interval_unit']
+      if unit.present? && !%w[days weeks months].include?(unit)
+        errors.add(:schedule_config, 'interval_unit must be days, weeks, or months')
       end
     end
   end

@@ -12,6 +12,9 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = fa
   // Determine schedule mode (default to 'flexible')
   const scheduleMode = habit.schedule_mode || 'flexible';
 
+  // Check if habit is scheduled (non-flexible)
+  const isScheduled = scheduleMode !== 'flexible';
+
   // Compute schedule description with fallback
   const getScheduleDescription = () => {
     if (habit.schedule_description) return habit.schedule_description;
@@ -23,9 +26,8 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = fa
   };
   const scheduleDescription = getScheduleDescription();
 
-  // Show schedule badge if not the default (flexible 1x/day)
-  const isDefaultSchedule = scheduleMode === 'flexible' && habit.target_count === 1 && habit.frequency_type === 'day';
-  const showScheduleBadge = !isDefaultSchedule && scheduleDescription;
+  // Show schedule badge for scheduled (non-flexible) habits
+  const showScheduleBadge = isScheduled && scheduleDescription;
 
   const queryClient = useQueryClient();
   const categoryStore = useCategoryStore();
@@ -170,6 +172,22 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = fa
               {habit.name}
             </div>
 
+            {/* Schedule badge for non-flexible habits */}
+            {showScheduleBadge && (
+              <span
+                className="text-xs px-1.5 py-0.5 rounded-full"
+                style={{
+                  backgroundColor: 'rgba(142, 142, 147, 0.15)',
+                  color: '#8E8E93',
+                  fontWeight: 500,
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: '0.65rem',
+                }}
+              >
+                {scheduleDescription}
+              </span>
+            )}
+
             {/* Importance Level badge */}
             {habit.importance_level && (
               <div
@@ -198,19 +216,6 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = fa
                 <i className="fa-solid fa-file-alt text-[10px] flex-shrink-0"></i>
                 <span className="truncate min-w-0 block">{habit.habit_contents[0].title}</span>
               </button>
-            )}
-
-            {/* Schedule badge - show for anything other than flexible 1x/day */}
-            {showScheduleBadge && (
-              <span
-                className="text-xs px-2 py-0.5 rounded-full font-semibold flex items-center gap-1"
-                style={{
-                  backgroundColor: categoryColor,
-                  color: 'white',
-                }}
-              >
-                {scheduleDescription}
-              </span>
             )}
 
             {/* Not due today indicator */}

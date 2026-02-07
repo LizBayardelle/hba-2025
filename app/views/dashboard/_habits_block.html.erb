@@ -92,7 +92,9 @@
              data-category-name="<%= habit_data[:category_name] %>"
              data-category-icon="<%= habit_data[:category_icon] %>"
              data-category-color="<%= category.color %>"
-             data-light-color="<%= light_color %>">
+             data-light-color="<%= light_color %>"
+             data-is-scheduled="<%= habit.scheduled? %>"
+             data-schedule-description="<%= habit.schedule_description %>">
           <button
             onclick="toggleDashboardHabit(<%= habit.id %>, <%= is_complete ? 'true' : 'false' %>)"
             class="flex-shrink-0 cursor-pointer transition-transform hover:scale-110">
@@ -106,6 +108,11 @@
             <div class="text-sm font-semibold <%= is_complete ? 'line-through opacity-60' : '' %>" style="color: <%= is_complete ? light_color : category.color %>;">
               <%= habit.name %>
             </div>
+            <% if habit.scheduled? %>
+              <span class="schedule-badge text-xs px-1.5 py-0.5 rounded-full" style="background-color: rgba(142, 142, 147, 0.15); color: #8E8E93; font-weight: 500; font-family: 'Inter', sans-serif; font-size: 0.65rem;">
+                <%= habit.schedule_description %>
+              </span>
+            <% end %>
             <% if habit.documents.any? %>
               <%= link_to habit_content_path(habit.documents.first),
                   class: "flex-shrink-0 text-xs hover:opacity-70 transition",

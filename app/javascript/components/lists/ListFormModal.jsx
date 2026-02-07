@@ -7,7 +7,7 @@ import { categoriesApi, checklistItemsApi, listsApi } from '../../utils/api';
 const ListFormModal = () => {
   const queryClient = useQueryClient();
   const { formModal, closeFormModal } = useListsStore();
-  const { isOpen, mode, itemId } = formModal;
+  const { isOpen, mode, itemId, categoryId: defaultCategoryId } = formModal;
 
   const [formData, setFormData] = useState({
     name: '',
@@ -52,12 +52,12 @@ const ListFormModal = () => {
   // Reset form when modal opens for new
   useEffect(() => {
     if (isOpen && mode === 'new') {
-      setFormData({ name: '', category_id: '' });
+      setFormData({ name: '', category_id: defaultCategoryId || '' });
       setChecklistItems([]);
       setNewItemName('');
       setItemsToDelete([]);
     }
-  }, [isOpen, mode]);
+  }, [isOpen, mode, defaultCategoryId]);
 
   // Create mutation
   const createMutation = useMutation({

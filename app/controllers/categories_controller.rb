@@ -58,6 +58,17 @@ class CategoriesController < ApplicationController
                                       .where(completed_at: Time.zone.today)
                                       .index_by(&:habit_id)
 
+    # Fetch tasks for this category
+    @tasks = @category.tasks.where(archived_at: nil, completed: false)
+                      .includes(:importance_level, :time_block, :tags, :checklist_items, :list_attachments)
+                      .order(:due_date, :name)
+
+    # Fetch documents for this category
+    @documents = @category.documents.order(:title)
+
+    # Fetch lists for this category
+    @lists = @category.lists.active.includes(:checklist_items).order(:name)
+
     respond_to do |format|
       format.html
       format.json {
@@ -78,8 +89,55 @@ class CategoriesController < ApplicationController
               documents: habit.documents.map { |content|
                 { id: content.id, title: content.title, content_type: content.content_type }
               },
+              habit_contents: habit.documents.map { |content|
+                { id: content.id, title: content.title }
+              },
               is_due_today: habit.due_today?,
               schedule_description: habit.schedule_description
+            )
+          },
+          tasks: @tasks.map { |task|
+            task.as_json(
+              only: [:id, :name, :due_date, :due_time, :completed, :on_hold, :url, :location_name, :repeat_frequency, :repeat_interval],
+              include: {
+                importance_level: { only: [:id, :name, :icon, :color, :rank] },
+                time_block: { only: [:id, :name, :icon, :color, :rank] },
+                tags: { only: [:id, :name] }
+              }
+            ).merge(
+              checklist_items: task.checklist_items.ordered.map { |item|
+                { id: item.id, name: item.name, completed: item.completed, position: item.position }
+              },
+              list_attachments: task.list_attachments.includes(list: [:category, :checklist_items]).map { |la|
+                {
+                  id: la.id,
+                  list_id: la.list_id,
+                  list_name: la.list.name,
+                  list_category: la.list.category ? {
+                    id: la.list.category.id,
+                    name: la.list.category.name,
+                    color: la.list.category.color,
+                    icon: la.list.category.icon
+                  } : nil,
+                  checklist_items: la.list.checklist_items.ordered.map { |item|
+                    { id: item.id, name: item.name, completed: item.completed, position: item.position }
+                  }
+                }
+              }
+            )
+          },
+          documents: @documents.map { |doc|
+            doc.as_json(only: [:id, :title, :content_type]).merge(
+              metadata: doc.metadata
+            )
+          },
+          lists: @lists.map { |list|
+            list.as_json(only: [:id, :name]).merge(
+              checklist_items: list.checklist_items.ordered.map { |item|
+                { id: item.id, name: item.name, completed: item.completed, position: item.position }
+              },
+              completed_count: list.checklist_items.where(completed: true).count,
+              total_count: list.checklist_items.count
             )
           }
         }

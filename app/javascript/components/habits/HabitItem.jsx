@@ -10,6 +10,19 @@ const HabitItem = ({ habit, categoryColor, categoryDarkColor, isFirst, onComplet
   const { openEditModal } = useHabitsStore();
   const { openShowModal: openListShowModal } = useListsStore();
 
+  // Check if habit is scheduled (non-flexible)
+  const isScheduled = habit.schedule_mode && habit.schedule_mode !== 'flexible';
+
+  // Compute schedule description
+  const getScheduleDescription = () => {
+    if (habit.schedule_description) return habit.schedule_description;
+    if (habit.schedule_mode === 'flexible') {
+      return `${habit.target_count}x/${habit.frequency_type}`;
+    }
+    return null;
+  };
+  const scheduleDescription = getScheduleDescription();
+
   const [count, setCount] = useState(habit.today_count || 0);
   const [streak, setStreak] = useState(habit.current_streak || 0);
 
@@ -173,6 +186,22 @@ const HabitItem = ({ habit, categoryColor, categoryDarkColor, isFirst, onComplet
             <div className="font-semibold" style={{ color: categoryDarkColor }}>
               {habit.name}
             </div>
+
+            {/* Schedule badge for non-flexible habits */}
+            {isScheduled && scheduleDescription && (
+              <span
+                className="text-xs px-1.5 py-0.5 rounded-full"
+                style={{
+                  backgroundColor: 'rgba(142, 142, 147, 0.15)',
+                  color: '#8E8E93',
+                  fontWeight: 500,
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: '0.65rem',
+                }}
+              >
+                {scheduleDescription}
+              </span>
+            )}
 
             {/* Importance Level badge */}
             {habit.importance_level && (

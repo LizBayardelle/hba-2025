@@ -256,7 +256,7 @@ class HabitsController < ApplicationController
     if params[:habit].key?(:schedule_config)
       config = params[:habit][:schedule_config]
       if config.is_a?(ActionController::Parameters)
-        permitted[:schedule_config] = config.permit(:interval_days, :anchor_date, days_of_week: []).to_h
+        permitted[:schedule_config] = config.permit(:interval_days, :interval_unit, :anchor_date, days_of_week: []).to_h
       else
         permitted[:schedule_config] = {}
       end

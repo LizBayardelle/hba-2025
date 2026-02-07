@@ -592,7 +592,23 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
                   className="w-16 px-3 py-2 rounded-lg focus:outline-none transition text-center bg-white"
                   style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
                 />
-                <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, color: '#1D1D1F' }}>days</span>
+                <select
+                  value={formData.schedule_config?.interval_unit || 'days'}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    schedule_config: {
+                      ...formData.schedule_config,
+                      interval_unit: e.target.value,
+                      anchor_date: formData.schedule_config?.anchor_date || new Date().toISOString().split('T')[0]
+                    }
+                  })}
+                  className="px-3 py-2 rounded-lg focus:outline-none transition bg-white"
+                  style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 500, color: '#1D1D1F' }}
+                >
+                  <option value="days">days</option>
+                  <option value="weeks">weeks</option>
+                  <option value="months">months</option>
+                </select>
               </div>
             )}
           </div>
