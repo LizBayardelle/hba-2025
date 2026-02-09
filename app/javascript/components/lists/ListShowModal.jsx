@@ -10,6 +10,7 @@ const ListShowModal = () => {
   const { isOpen, listId } = showModal;
   const [copiedId, setCopiedId] = useState(null);
   const [recentlyChecked, setRecentlyChecked] = useState(new Set());
+  const [togglingItemId, setTogglingItemId] = useState(null);
 
   // Fetch the list data
   const { data: list, isLoading } = useQuery({
@@ -34,6 +35,10 @@ const ListShowModal = () => {
       queryClient.invalidateQueries({ queryKey: ['list', listId] });
       queryClient.invalidateQueries({ queryKey: ['lists'] });
       queryClient.invalidateQueries({ queryKey: ['habits'] });
+      setTogglingItemId(null);
+    },
+    onError: () => {
+      setTogglingItemId(null);
     },
   });
 
@@ -53,6 +58,7 @@ const ListShowModal = () => {
       }, 800);
     }
 
+    setTogglingItemId(item.id);
     toggleMutation.mutate({
       checklistItemId: item.id,
       completed: newCompleted,
@@ -188,16 +194,18 @@ const ListShowModal = () => {
                 {/* Checkbox */}
                 <button
                   onClick={() => handleToggle(item)}
-                  disabled={toggleMutation.isPending}
+                  disabled={togglingItemId === item.id}
                   className="w-6 h-6 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition hover:scale-110"
                   style={{
                     borderColor: color,
                     backgroundColor: item.completed ? color : 'transparent',
                   }}
                 >
-                  {item.completed && (
+                  {togglingItemId === item.id ? (
+                    <i className="fa-solid fa-spinner fa-spin text-xs" style={{ color: item.completed ? 'white' : color }}></i>
+                  ) : item.completed ? (
                     <i className="fa-solid fa-check text-white text-xs"></i>
-                  )}
+                  ) : null}
                 </button>
 
                 {/* Selectable text */}

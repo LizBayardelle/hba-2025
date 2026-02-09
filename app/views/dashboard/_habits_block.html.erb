@@ -123,8 +123,18 @@
               <% end %>
             <% end %>
           </div>
-          <div class="text-xs font-light" style="color: #657b84;">
-            <%= completion_count %> / <%= habit.target_count %>
+          <div class="flex items-center gap-2">
+            <% if habit.current_streak > 0 %>
+              <div class="flex items-center gap-1 text-xs" style="color: #8E8E93;">
+                <i class="fa-solid fa-fire"></i>
+                <span><%= habit.current_streak %></span>
+              </div>
+            <% end %>
+            <% if habit.target_count > 1 %>
+              <div class="text-xs font-light" style="color: #657b84;">
+                <%= completion_count %> / <%= habit.target_count %>
+              </div>
+            <% end %>
           </div>
         </div>
       <% end %>

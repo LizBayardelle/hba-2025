@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import SlideOverPanel from '../shared/SlideOverPanel';
 import useListsStore from '../../stores/listsStore';
@@ -18,6 +18,11 @@ const ListFormModal = () => {
   const [itemsToDelete, setItemsToDelete] = useState([]);
   const [draggedIndex, setDraggedIndex] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
+
+  // Save status tracking (for edit mode only)
+  const [saveStatus, setSaveStatus] = useState(null); // 'saving', 'saved', 'error'
+  const saveTimeoutRef = useRef(null);
+  const debounceTimeoutRef = useRef(null);
 
   // Fetch categories
   const { data: categories = [] } = useQuery({
@@ -47,7 +52,7 @@ const ListFormModal = () => {
       );
       setItemsToDelete([]);
     }
-  }, [mode, existingList]);
+  }, [mode, existingList, itemId]);
 
   // Reset form when modal opens for new
   useEffect(() => {
@@ -56,10 +61,28 @@ const ListFormModal = () => {
       setChecklistItems([]);
       setNewItemName('');
       setItemsToDelete([]);
+      setSaveStatus(null);
     }
   }, [isOpen, mode, defaultCategoryId]);
 
-  // Create mutation
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+    };
+  }, []);
+
+  // Show saved status briefly
+  const showSavedStatus = useCallback(() => {
+    setSaveStatus('saved');
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => {
+      setSaveStatus(null);
+    }, 2000);
+  }, []);
+
+  // Create mutation (for new mode - button click)
   const createMutation = useMutation({
     mutationFn: async (data) => {
       // Create the list first
@@ -87,51 +110,78 @@ const ListFormModal = () => {
     },
   });
 
-  // Update mutation
+  // Update list name/category mutation (for edit mode - auto-save)
   const updateMutation = useMutation({
     mutationFn: async (data) => {
-      // Update the list name and category
       await listsApi.update(itemId, {
         name: data.name,
         category_id: data.category_id || null,
       });
-
-      // Delete removed items
-      for (const deleteId of data.itemsToDelete) {
-        await checklistItemsApi.deleteForList(itemId, deleteId);
-      }
-
-      // Build ordered list of IDs, creating new items as we go
-      const orderedIds = [];
-      for (const item of data.checklistItems) {
-        if (item.isExisting) {
-          orderedIds.push(item.id);
-        } else {
-          // Create new item and get its ID
-          const response = await checklistItemsApi.createForList(itemId, {
-            name: item.name,
-            position: orderedIds.length,
-          });
-          orderedIds.push(response.checklist_item.id);
-        }
-      }
-
-      // Reorder all items to save final positions
-      if (orderedIds.length > 0) {
-        await checklistItemsApi.reorderForList(itemId, orderedIds);
-      }
-
-      return { success: true };
     },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['lists'] });
-      await queryClient.invalidateQueries({ queryKey: ['list', itemId] });
-      await queryClient.invalidateQueries({ queryKey: ['habits'] });
-      closeFormModal();
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lists'] });
+      queryClient.invalidateQueries({ queryKey: ['list', itemId] });
+      showSavedStatus();
+    },
+    onError: () => {
+      setSaveStatus('error');
     },
   });
 
-  // Delete mutation
+  // Add checklist item mutation (for edit mode - immediate save)
+  const addItemMutation = useMutation({
+    mutationFn: async ({ name, position }) => {
+      return checklistItemsApi.createForList(itemId, { name, position });
+    },
+    onSuccess: (response, variables) => {
+      // Update local state with the real item
+      setChecklistItems(prev => prev.map(item =>
+        item.id === variables.tempId
+          ? { ...response.checklist_item, isExisting: true }
+          : item
+      ));
+      queryClient.invalidateQueries({ queryKey: ['lists'] });
+      queryClient.invalidateQueries({ queryKey: ['list', itemId] });
+      showSavedStatus();
+    },
+    onError: (error, variables) => {
+      // Remove the temp item on error
+      setChecklistItems(prev => prev.filter(item => item.id !== variables.tempId));
+      setSaveStatus('error');
+    },
+  });
+
+  // Delete checklist item mutation (for edit mode - immediate save)
+  const deleteItemMutation = useMutation({
+    mutationFn: async (itemId) => {
+      return checklistItemsApi.deleteForList(itemId, itemId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lists'] });
+      queryClient.invalidateQueries({ queryKey: ['list', itemId] });
+      showSavedStatus();
+    },
+    onError: () => {
+      setSaveStatus('error');
+    },
+  });
+
+  // Reorder checklist items mutation (for edit mode)
+  const reorderMutation = useMutation({
+    mutationFn: async (orderedIds) => {
+      return checklistItemsApi.reorderForList(itemId, orderedIds);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lists'] });
+      queryClient.invalidateQueries({ queryKey: ['list', itemId] });
+      showSavedStatus();
+    },
+    onError: () => {
+      setSaveStatus('error');
+    },
+  });
+
+  // Delete list mutation
   const deleteMutation = useMutation({
     mutationFn: () => listsApi.delete(itemId),
     onSuccess: async () => {
@@ -141,26 +191,87 @@ const ListFormModal = () => {
     },
   });
 
+  // Auto-save for edit mode (debounced)
+  const autoSaveList = useCallback((newFormData) => {
+    if (mode !== 'edit') return;
+    if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+    if (!newFormData.name.trim()) return;
+
+    setSaveStatus('saving');
+    debounceTimeoutRef.current = setTimeout(() => {
+      updateMutation.mutate(newFormData);
+    }, 500);
+  }, [mode, updateMutation]);
+
+  // Handle name change
+  const handleNameChange = (e) => {
+    const newFormData = { ...formData, name: e.target.value };
+    setFormData(newFormData);
+    if (mode === 'edit') {
+      autoSaveList(newFormData);
+    }
+  };
+
+  // Handle category change
+  const handleCategoryChange = (categoryId) => {
+    const newFormData = { ...formData, category_id: categoryId };
+    setFormData(newFormData);
+    if (mode === 'edit' && formData.name.trim()) {
+      setSaveStatus('saving');
+      updateMutation.mutate(newFormData);
+    }
+  };
+
+  // Handle adding a new checklist item
   const handleAddItem = (e) => {
     e.preventDefault();
-    if (newItemName.trim()) {
-      setChecklistItems([...checklistItems, { name: newItemName.trim(), id: `new-${Date.now()}`, isExisting: false }]);
-      setNewItemName('');
+    if (!newItemName.trim()) return;
+
+    if (mode === 'edit') {
+      // Edit mode: save immediately
+      const tempId = `temp-${Date.now()}`;
+      const newItem = {
+        id: tempId,
+        name: newItemName.trim(),
+        isExisting: false,
+        completed: false,
+      };
+      setChecklistItems([...checklistItems, newItem]);
+      setSaveStatus('saving');
+      addItemMutation.mutate({
+        name: newItemName.trim(),
+        position: checklistItems.length,
+        tempId,
+      });
+    } else {
+      // New mode: just add to local state
+      setChecklistItems([...checklistItems, {
+        id: `new-${Date.now()}`,
+        name: newItemName.trim(),
+        isExisting: false,
+        completed: false,
+      }]);
     }
+    setNewItemName('');
   };
 
+  // Handle removing a checklist item
   const handleRemoveItem = (item) => {
-    if (item.isExisting) {
+    setChecklistItems(checklistItems.filter((i) => i.id !== item.id));
+
+    if (mode === 'edit' && item.isExisting) {
+      setSaveStatus('saving');
+      deleteItemMutation.mutate(item.id);
+    } else if (mode === 'new' && item.isExisting) {
       setItemsToDelete([...itemsToDelete, item.id]);
     }
-    setChecklistItems(checklistItems.filter((i) => i.id !== item.id));
   };
 
+  // Drag and drop handlers
   const handleDragStart = (e, index) => {
     setDraggedIndex(index);
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', index);
-    // Add a slight delay to allow the drag image to be set
     setTimeout(() => {
       e.target.style.opacity = '0.5';
     }, 0);
@@ -200,25 +311,25 @@ const ListFormModal = () => {
     setChecklistItems(newItems);
     setDraggedIndex(null);
     setDragOverIndex(null);
+
+    // In edit mode, save the new order immediately
+    if (mode === 'edit' && newItems.every(item => item.isExisting)) {
+      const orderedIds = newItems.map(item => item.id);
+      setSaveStatus('saving');
+      reorderMutation.mutate(orderedIds);
+    }
   };
 
+  // Handle form submit (new mode only)
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.name.trim()) return;
     if (checklistItems.length === 0) return;
 
-    if (mode === 'edit') {
-      updateMutation.mutate({
-        ...formData,
-        checklistItems,
-        itemsToDelete,
-      });
-    } else {
-      createMutation.mutate({
-        ...formData,
-        checklistItems,
-      });
-    }
+    createMutation.mutate({
+      ...formData,
+      checklistItems,
+    });
   };
 
   const handleDelete = () => {
@@ -227,31 +338,81 @@ const ListFormModal = () => {
     }
   };
 
-  const currentMutation = mode === 'edit' ? updateMutation : createMutation;
+  const handleClose = () => {
+    if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+    closeFormModal();
+  };
 
-  const footer = (
+  // Status indicator component (edit mode only)
+  const StatusIndicator = () => {
+    if (mode !== 'edit' || !saveStatus) return null;
+
+    return (
+      <div className="flex items-center gap-2 text-sm" style={{ fontFamily: "'Inter', sans-serif" }}>
+        {saveStatus === 'saving' && (
+          <>
+            <i className="fa-solid fa-spinner fa-spin" style={{ color: '#8E8E93' }}></i>
+            <span style={{ color: '#8E8E93' }}>Saving...</span>
+          </>
+        )}
+        {saveStatus === 'saved' && (
+          <>
+            <i className="fa-solid fa-check" style={{ color: '#22C55E' }}></i>
+            <span style={{ color: '#22C55E' }}>Saved</span>
+          </>
+        )}
+        {saveStatus === 'error' && (
+          <>
+            <i className="fa-solid fa-exclamation-circle" style={{ color: '#DC2626' }}></i>
+            <span style={{ color: '#DC2626' }}>Error saving</span>
+          </>
+        )}
+      </div>
+    );
+  };
+
+  const footer = mode === 'edit' ? (
+    // Edit mode: Delete button, status, and Done
     <>
-      {mode === 'edit' && (
-        <button
-          type="button"
-          onClick={handleDelete}
-          className="mr-auto w-10 h-10 rounded-lg transition hover:bg-red-50 flex items-center justify-center"
-          disabled={deleteMutation.isPending}
-          title="Delete list"
-        >
-          {deleteMutation.isPending ? (
-            <i className="fa-solid fa-spinner fa-spin" style={{ color: '#DC2626' }}></i>
-          ) : (
-            <i className="fa-solid fa-trash text-lg" style={{ color: '#DC2626' }}></i>
-          )}
-        </button>
-      )}
       <button
         type="button"
-        onClick={closeFormModal}
+        onClick={handleDelete}
+        className="mr-auto w-10 h-10 rounded-lg transition hover:bg-red-50 flex items-center justify-center"
+        disabled={deleteMutation.isPending}
+        title="Delete list"
+      >
+        {deleteMutation.isPending ? (
+          <i className="fa-solid fa-spinner fa-spin" style={{ color: '#DC2626' }}></i>
+        ) : (
+          <i className="fa-solid fa-trash text-lg" style={{ color: '#DC2626' }}></i>
+        )}
+      </button>
+      <StatusIndicator />
+      <button
+        type="button"
+        onClick={handleClose}
+        className="px-6 py-3 rounded-lg transition cursor-pointer hover:opacity-90"
+        style={{
+          background: 'linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%)',
+          border: '0.5px solid rgba(255, 255, 255, 0.3)',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)',
+          color: '#1D1D1F',
+          fontWeight: 600,
+          fontFamily: "'Inter', sans-serif",
+        }}
+      >
+        Done
+      </button>
+    </>
+  ) : (
+    // New mode: Cancel and Create buttons
+    <>
+      <button
+        type="button"
+        onClick={handleClose}
         className="px-6 py-3 rounded-lg transition hover:bg-gray-100"
         style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F', border: '0.5px solid rgba(199, 199, 204, 0.3)', backgroundColor: 'white' }}
-        disabled={currentMutation.isPending}
+        disabled={createMutation.isPending}
       >
         Cancel
       </button>
@@ -267,11 +428,9 @@ const ListFormModal = () => {
           fontWeight: 600,
           fontFamily: "'Inter', sans-serif",
         }}
-        disabled={currentMutation.isPending || !formData.name.trim() || checklistItems.length === 0}
+        disabled={createMutation.isPending || !formData.name.trim() || checklistItems.length === 0}
       >
-        {currentMutation.isPending
-          ? (mode === 'edit' ? 'Saving...' : 'Creating...')
-          : (mode === 'edit' ? 'Save Changes' : 'Create List')}
+        {createMutation.isPending ? 'Creating...' : 'Create List'}
       </button>
     </>
   );
@@ -279,18 +438,11 @@ const ListFormModal = () => {
   return (
     <SlideOverPanel
       isOpen={isOpen}
-      onClose={closeFormModal}
+      onClose={handleClose}
       title={mode === 'edit' ? 'Edit List' : 'Create a New List'}
       footer={footer}
     >
       <form id="list-form" onSubmit={handleSubmit}>
-        {currentMutation.isError && (
-          <div className="mb-4 p-4 rounded-lg" style={{ backgroundColor: '#FEE2E2', color: '#DC2626' }}>
-            <i className="fa-solid fa-exclamation-circle mr-2"></i>
-            {currentMutation.error?.message || 'An error occurred'}
-          </div>
-        )}
-
         {/* List Name */}
         <div className="mb-6">
           <label
@@ -302,7 +454,7 @@ const ListFormModal = () => {
           <input
             type="text"
             value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            onChange={handleNameChange}
             required
             className="w-full px-4 py-3 rounded-lg focus:outline-none transition"
             style={{
@@ -326,7 +478,7 @@ const ListFormModal = () => {
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() => setFormData({ ...formData, category_id: '' })}
+              onClick={() => handleCategoryChange('')}
               className={`flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-full transition hover:scale-105 ${
                 formData.category_id === '' ? 'ring-2 ring-offset-2' : ''
               }`}
@@ -359,7 +511,7 @@ const ListFormModal = () => {
               <button
                 key={category.id}
                 type="button"
-                onClick={() => setFormData({ ...formData, category_id: category.id })}
+                onClick={() => handleCategoryChange(category.id)}
                 className={`flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-full transition hover:scale-105 ${
                   formData.category_id === category.id ? 'ring-2 ring-offset-2' : ''
                 }`}
@@ -443,6 +595,9 @@ const ListFormModal = () => {
                   >
                     {item.name}
                   </span>
+                  {!item.isExisting && mode === 'edit' && (
+                    <i className="fa-solid fa-spinner fa-spin text-xs" style={{ color: '#8E8E93' }}></i>
+                  )}
                   <button
                     type="button"
                     onClick={() => handleRemoveItem(item)}

@@ -1,4 +1,6 @@
-<div class="flex h-screen relative" style="background-color: #F5F5F7;">
+<div class="flex h-screen relative" style="background-color: #F5F5F7;"
+     data-default-habits-grouping="<%= current_user.default_habits_grouping %>"
+     data-default-tasks-grouping="<%= current_user.default_tasks_grouping %>">
   <%= render 'shared/sidebar' %>
 
   <!-- Mobile overlay -->
@@ -515,12 +517,42 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   totalHabitsCount = habitStates.size;
 
-  // Now initialize the view to time grouping
-  switchFocusView('time');
+  // Get user's default habits grouping preference
+  const container = document.querySelector('[data-default-habits-grouping]');
+  const userHabitsGrouping = container?.dataset?.defaultHabitsGrouping || 'time';
+
+  // Map user preference to dashboard view options
+  // Dashboard supports: 'time', 'category', 'priority'
+  // User settings: 'none', 'category', 'time', 'priority'
+  const habitsViewMap = {
+    'none': 'time',      // Fallback - dashboard doesn't have 'none'
+    'category': 'category',
+    'time': 'time',
+    'priority': 'priority'
+  };
+  const initialHabitsView = habitsViewMap[userHabitsGrouping] || 'time';
+
+  switchFocusView(initialHabitsView);
 });
 
 async function toggleDashboardHabit(habitId, wasComplete) {
   const action = wasComplete ? 'decrement' : 'increment';
+
+  // Find the habit row - use more specific selector
+  const habitRow = document.querySelector(`.habit-item[data-habit-id="${habitId}"]`);
+  if (!habitRow) {
+    console.error('Could not find habit row for ID:', habitId);
+    return;
+  }
+
+  const button = habitRow.querySelector('button');
+  const icon = button.querySelector('i');
+
+  // Save original state and show spinner
+  const originalIconClass = icon.className;
+  const originalIconColor = icon.style.color;
+  icon.className = 'fa-solid fa-spinner fa-spin text-sm';
+  button.disabled = true;
 
   try {
     const response = await fetch(`/habits/${habitId}/completions/${action}`, {
@@ -533,15 +565,6 @@ async function toggleDashboardHabit(habitId, wasComplete) {
 
     const data = await response.json();
 
-    // Find the habit row - use more specific selector
-    const habitRow = document.querySelector(`.habit-item[data-habit-id="${habitId}"]`);
-    if (!habitRow) {
-      console.error('Could not find habit row for ID:', habitId);
-      return;
-    }
-
-    const button = habitRow.querySelector('button');
-    const icon = button.querySelector('i');
     const nameDiv = habitRow.querySelector('.flex-1');
     const countDiv = habitRow.querySelector('.text-xs');
     const targetCount = parseInt(habitRow.dataset.target);
@@ -596,6 +619,11 @@ async function toggleDashboardHabit(habitId, wasComplete) {
 
   } catch (error) {
     console.error('Error toggling habit:', error);
+    // Restore original icon on error
+    icon.className = originalIconClass;
+    icon.style.color = originalIconColor;
+  } finally {
+    button.disabled = false;
   }
 }
 
@@ -822,13 +850,46 @@ function switchTasksView(view) {
 document.addEventListener('DOMContentLoaded', () => {
   const tasksContainer = document.getElementById('tasks-container');
   if (tasksContainer && tasksContainer.querySelectorAll('.task-item').length > 0) {
-    switchTasksView('date');
+    // Get user's default tasks grouping preference
+    const container = document.querySelector('[data-default-tasks-grouping]');
+    const userTasksGrouping = container?.dataset?.defaultTasksGrouping || 'due_date';
+
+    // Map user preference to dashboard view options
+    // Dashboard supports: 'date', 'category', 'priority'
+    // User settings: 'none', 'status', 'category', 'due_date', 'importance'
+    const tasksViewMap = {
+      'none': 'date',        // Fallback - dashboard doesn't have 'none'
+      'status': 'date',      // Fallback - Date Added doesn't exist on dashboard
+      'category': 'category',
+      'due_date': 'date',
+      'importance': 'priority'
+    };
+    const initialTasksView = tasksViewMap[userTasksGrouping] || 'date';
+
+    switchTasksView(initialTasksView);
   }
 });
 
 // Toggle task completion
 async function toggleTask(taskId, wasCompleted) {
   const newCompleted = !wasCompleted;
+
+  // Find the task item and show spinner
+  const taskItem = document.querySelector(`.task-item[data-task-id="${taskId}"]`);
+  if (!taskItem) {
+    console.error('Could not find task item for ID:', taskId);
+    return;
+  }
+
+  const button = taskItem.querySelector('button');
+  const icon = button.querySelector('i');
+  const dateGroup = taskItem.dataset.dateGroup;
+  const color = dateGroup === 'overdue' ? '#F8796D' : (dateGroup === 'today' ? '#1d3e4c' : '#657b84');
+
+  // Save original icon state and show spinner
+  const originalIconClass = icon.className;
+  icon.className = 'fa-solid fa-spinner fa-spin text-xs';
+  button.disabled = true;
 
   try {
     const response = await fetch(`/tasks/${taskId}`, {
@@ -848,24 +909,11 @@ async function toggleTask(taskId, wasCompleted) {
     const data = await response.json();
 
     if (data.success) {
-      // Find the task item
-      const taskItem = document.querySelector(`.task-item[data-task-id="${taskId}"]`);
-      if (!taskItem) {
-        console.error('Could not find task item for ID:', taskId);
-        return;
-      }
-
       // Update data attribute
       taskItem.dataset.completed = newCompleted;
 
-      // Find elements
-      const button = taskItem.querySelector('button');
-      const icon = button.querySelector('i');
+      // Find name span
       const nameSpan = taskItem.querySelector('.flex-1');
-
-      // Get color from data attributes based on date group
-      const dateGroup = taskItem.dataset.dateGroup;
-      const color = dateGroup === 'overdue' ? '#F8796D' : (dateGroup === 'today' ? '#1d3e4c' : '#657b84');
 
       // Update UI
       if (newCompleted) {
@@ -881,9 +929,15 @@ async function toggleTask(taskId, wasCompleted) {
       button.setAttribute('onclick', `toggleTask(${taskId}, ${newCompleted})`);
     } else {
       console.error('Error toggling task:', data.errors);
+      // Restore original icon on error
+      icon.className = originalIconClass;
     }
   } catch (error) {
     console.error('Error toggling task:', error);
+    // Restore original icon on error
+    icon.className = originalIconClass;
+  } finally {
+    button.disabled = false;
   }
 }
 </script>

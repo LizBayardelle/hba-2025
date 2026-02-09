@@ -131,7 +131,11 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = fa
                 backgroundColor: count > 0 ? (isDueToday ? categoryColor : '#9CA3AF') : 'transparent',
               }}
             >
-              <i className={`fa-solid ${count > 0 ? 'fa-check' : 'fa-plus'}`}></i>
+              {incrementMutation.isPending || decrementMutation.isPending ? (
+                <i className="fa-solid fa-spinner fa-spin"></i>
+              ) : (
+                <i className={`fa-solid ${count > 0 ? 'fa-check' : 'fa-plus'}`}></i>
+              )}
             </button>
           ) : (
             // Counter with +/- buttons
@@ -141,25 +145,37 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = fa
             >
               <button
                 onClick={() => decrementMutation.mutate()}
-                disabled={decrementMutation.isPending}
+                disabled={decrementMutation.isPending || incrementMutation.isPending}
                 className="flex-1 h-10 px-[5px] flex items-center justify-center font-bold transition hover:bg-gray-50"
                 style={{ color: isDueToday ? categoryColor : '#9CA3AF' }}
               >
-                <i className="fa-solid fa-minus"></i>
+                {decrementMutation.isPending ? (
+                  <i className="fa-solid fa-spinner fa-spin text-sm"></i>
+                ) : (
+                  <i className="fa-solid fa-minus"></i>
+                )}
               </button>
               <div
                 className="flex-[2] h-10 px-[10px] flex items-center justify-center font-bold"
                 style={{ color: isDueToday ? categoryColor : '#9CA3AF' }}
               >
-                {count}
+                {incrementMutation.isPending || decrementMutation.isPending ? (
+                  <i className="fa-solid fa-spinner fa-spin text-sm"></i>
+                ) : (
+                  count
+                )}
               </div>
               <button
                 onClick={() => incrementMutation.mutate()}
-                disabled={incrementMutation.isPending}
+                disabled={incrementMutation.isPending || decrementMutation.isPending}
                 className="flex-1 h-10 px-[5px] flex items-center justify-center font-bold transition hover:bg-gray-50"
                 style={{ color: isDueToday ? categoryColor : '#9CA3AF' }}
               >
-                <i className="fa-solid fa-plus"></i>
+                {incrementMutation.isPending ? (
+                  <i className="fa-solid fa-spinner fa-spin text-sm"></i>
+                ) : (
+                  <i className="fa-solid fa-plus"></i>
+                )}
               </button>
             </div>
           )}

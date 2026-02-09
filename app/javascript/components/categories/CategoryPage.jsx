@@ -19,6 +19,8 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
   const queryClient = useQueryClient();
   const [groupBy, setGroupBy] = useState(initialSort);
   const [activeSection, setActiveSection] = useState('habits');
+  const [taskFilter, setTaskFilter] = useState('today'); // 'today' or 'all'
+  const [togglingTaskId, setTogglingTaskId] = useState(null);
   const { openNewHabitModal, openCategoryEditModal } = useCategoryStore();
   const { openNewModal: openNewTaskModal, openViewModal: openTaskViewModal, openEditModal: openTaskEditModal } = useTasksStore();
   const { openFormModal: openNewListModal, openShowModal: openListShowModal } = useListsStore();
@@ -65,6 +67,10 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
     mutationFn: ({ taskId, completed }) => tasksApi.update(taskId, { task: { completed } }),
     onSuccess: () => {
       queryClient.invalidateQueries(['category', categoryId]);
+      setTogglingTaskId(null);
+    },
+    onError: () => {
+      setTogglingTaskId(null);
     },
   });
 
@@ -159,6 +165,23 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
     return [{ title: 'All Habits', habits, color: '#9CA3A8', icon: 'fa-list' }];
   }, [categoryData, groupBy, importanceLevels, timeBlocks]);
 
+  // Calculate today's task count (overdue, today, or no due date)
+  // Must be before early returns to satisfy React hooks rules
+  const todayTaskCount = useMemo(() => {
+    const tasks = categoryData?.tasks;
+    if (!tasks) return 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return tasks.filter(task => {
+      if (!task.due_date) return true; // No due date - counts as today
+      const dueDate = new Date(task.due_date);
+      dueDate.setHours(0, 0, 0, 0);
+      const diffDays = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+      return diffDays <= 0; // Today or overdue
+    }).length;
+  }, [categoryData?.tasks]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -195,7 +218,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
   // Section tabs configuration
   const sections = [
     { id: 'habits', label: 'Habits', icon: 'fa-list-check', count: habits?.length || 0 },
-    { id: 'tasks', label: 'Tasks', icon: 'fa-square-check', count: tasks?.length || 0 },
+    { id: 'tasks', label: 'Tasks', icon: 'fa-square-check', count: todayTaskCount },
     { id: 'documents', label: 'Documents', icon: 'fa-file-lines', count: documents?.length || 0 },
     { id: 'lists', label: 'Lists', icon: 'fa-clipboard-list', count: lists?.length || 0 },
   ];
@@ -318,53 +341,151 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
       dueDate.setHours(0, 0, 0, 0);
       const diffDays = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
 
-      if (diffDays < 0) return { text: 'Overdue', color: '#FB7185' };
-      if (diffDays === 0) return { text: 'Today', color: '#E5C730' };
-      if (diffDays <= 7) return { text: `${diffDays}d`, color: '#22D3EE' };
-      return { text: new Date(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), color: '#8E8E93' };
+      if (diffDays < 0) return { text: 'Overdue', color: '#FB7185', isToday: false, isOverdue: true };
+      if (diffDays === 0) return { text: 'Today', color: '#E5C730', isToday: true, isOverdue: false };
+      if (diffDays <= 7) return { text: `${diffDays}d`, color: '#22D3EE', isToday: false, isOverdue: false };
+      return { text: new Date(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), color: '#8E8E93', isToday: false, isOverdue: false };
     };
+
+    // Get repeat frequency description
+    const getRepeatDescription = (task) => {
+      if (!task.repeat_frequency) return null;
+      const interval = task.repeat_interval || 1;
+      switch (task.repeat_frequency) {
+        case 'daily': return interval === 1 ? 'Daily' : `Every ${interval} days`;
+        case 'weekly': return interval === 1 ? 'Weekly' : `Every ${interval} weeks`;
+        case 'monthly': return interval === 1 ? 'Monthly' : `Every ${interval} months`;
+        case 'yearly': return interval === 1 ? 'Yearly' : `Every ${interval} years`;
+        default: return null;
+      }
+    };
+
+    // Filter tasks based on taskFilter
+    const filteredTasks = tasks?.filter(task => {
+      if (taskFilter === 'all') return true;
+      // For 'today' filter: show overdue, due today, or no due date
+      const status = getDueDateStatus(task);
+      if (!task.due_date) return true; // No due date - always show
+      if (!status) return true;
+      return status.isToday || status.isOverdue;
+    }) || [];
+
+    // Sort: overdue first, then today, then no date
+    const sortedTasks = [...filteredTasks].sort((a, b) => {
+      const aStatus = getDueDateStatus(a);
+      const bStatus = getDueDateStatus(b);
+
+      // Overdue first
+      if (aStatus?.isOverdue && !bStatus?.isOverdue) return -1;
+      if (!aStatus?.isOverdue && bStatus?.isOverdue) return 1;
+
+      // Then today
+      if (aStatus?.isToday && !bStatus?.isToday) return -1;
+      if (!aStatus?.isToday && bStatus?.isToday) return 1;
+
+      return 0;
+    });
+
+    const todayCount = tasks?.filter(task => {
+      const status = getDueDateStatus(task);
+      if (!task.due_date) return true;
+      if (!status) return true;
+      return status.isToday || status.isOverdue;
+    }).length || 0;
 
     return (
       <div className="rounded-xl p-6" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)' }}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-display" style={{ color: '#1D1D1F' }}>Tasks</h2>
-          <button
-            onClick={() => openNewTaskModal({ categoryId })}
-            className="w-8 h-8 rounded-lg text-white transition transform hover:scale-105 flex items-center justify-center"
-            style={{ backgroundColor: categoryColor }}
-            title="New Task"
-          >
-            <i className="fa-solid fa-plus text-sm"></i>
-          </button>
+          <div className="flex items-center gap-3">
+            {/* Today/All Toggle */}
+            <div className="inline-flex rounded-lg overflow-hidden" style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}>
+              {[
+                { value: 'today', label: `Today (${todayCount})` },
+                { value: 'all', label: `All (${tasks?.length || 0})` },
+              ].map(({ value, label }) => (
+                <button
+                  key={value}
+                  onClick={() => setTaskFilter(value)}
+                  className="px-3 py-1.5 text-xs transition"
+                  style={{
+                    background: taskFilter === value ? categoryColor : '#F5F5F7',
+                    color: taskFilter === value ? '#FFFFFF' : '#1D1D1F',
+                    fontWeight: 500,
+                    fontFamily: "'Inter', sans-serif",
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => openNewTaskModal({ categoryId })}
+              className="w-8 h-8 rounded-lg text-white transition transform hover:scale-105 flex items-center justify-center"
+              style={{ backgroundColor: categoryColor }}
+              title="New Task"
+            >
+              <i className="fa-solid fa-plus text-sm"></i>
+            </button>
+          </div>
         </div>
 
-        {tasks && tasks.length > 0 ? (
+        {sortedTasks.length > 0 ? (
           <div className="space-y-2">
-            {tasks.map(task => {
+            {sortedTasks.map(task => {
               const dueDateStatus = getDueDateStatus(task);
+              const repeatDesc = getRepeatDescription(task);
+              const isRepeating = !!task.repeat_frequency;
+
               return (
                 <div
                   key={task.id}
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition cursor-pointer"
-                  style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
+                  className="flex items-center gap-3 p-3 rounded-lg hover:shadow-sm transition cursor-pointer"
+                  style={{
+                    border: '0.5px solid rgba(199, 199, 204, 0.3)',
+                    backgroundColor: isRepeating ? 'rgba(99, 102, 241, 0.03)' : 'transparent',
+                  }}
                   onClick={() => openTaskViewModal(task.id)}
                 >
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
+                      setTogglingTaskId(task.id);
                       toggleTaskMutation.mutate({ taskId: task.id, completed: !task.completed });
                     }}
+                    disabled={togglingTaskId === task.id}
                     className="w-6 h-6 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition hover:scale-110"
                     style={{
                       borderColor: categoryColor,
                       backgroundColor: task.completed ? categoryColor : 'transparent',
                     }}
                   >
-                    {task.completed && <i className="fa-solid fa-check text-white text-xs"></i>}
+                    {togglingTaskId === task.id ? (
+                      <i className="fa-solid fa-spinner fa-spin text-xs" style={{ color: task.completed ? 'white' : categoryColor }}></i>
+                    ) : task.completed ? (
+                      <i className="fa-solid fa-check text-white text-xs"></i>
+                    ) : null}
                   </button>
                   <div className="flex-1 min-w-0">
-                    <div className={`font-medium ${task.completed ? 'line-through opacity-60' : ''}`} style={{ color: '#1D1D1F' }}>
-                      {task.name}
+                    <div className="flex items-center gap-2">
+                      <span className={`font-medium ${task.completed ? 'line-through opacity-60' : ''}`} style={{ color: '#1D1D1F' }}>
+                        {task.name}
+                      </span>
+                      {/* Repeat badge - grey pill like habit schedule badge */}
+                      {repeatDesc && (
+                        <span
+                          className="text-xs px-1.5 py-0.5 rounded-full"
+                          style={{
+                            backgroundColor: 'rgba(142, 142, 147, 0.15)',
+                            color: '#8E8E93',
+                            fontWeight: 500,
+                            fontFamily: "'Inter', sans-serif",
+                            fontSize: '0.65rem',
+                          }}
+                        >
+                          {repeatDesc}
+                        </span>
+                      )}
                     </div>
                     <div className="flex flex-wrap items-center gap-1.5 mt-1">
                       {task.importance_level && (
@@ -402,7 +523,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
           <div className="py-8 text-center">
             <i className="fa-solid fa-square-check text-4xl mb-2" style={{ color: '#E5E5E7' }}></i>
             <p className="text-sm mb-4" style={{ color: '#8E8E93', fontWeight: 200, fontFamily: "'Inter', sans-serif" }}>
-              No tasks yet
+              {taskFilter === 'today' ? 'No tasks due today' : 'No tasks yet'}
             </p>
             <button
               onClick={() => openNewTaskModal({ categoryId })}

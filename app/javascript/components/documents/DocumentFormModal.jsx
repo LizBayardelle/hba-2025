@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import SlideOverPanel from '../shared/SlideOverPanel';
 import { documentsApi, tasksApi, categoriesApi } from '../../utils/api';
@@ -50,6 +50,11 @@ const DocumentFormModal = ({ habits, allTags }) => {
   const [tagInput, setTagInput] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
+
+  // Save status tracking (for edit mode only)
+  const [saveStatus, setSaveStatus] = useState(null); // 'saving', 'saved', 'error'
+  const saveTimeoutRef = useRef(null);
+  const debounceTimeoutRef = useRef(null);
 
   // Fetch document data if editing
   const { data: document } = useQuery({
@@ -108,48 +113,45 @@ const DocumentFormModal = ({ habits, allTags }) => {
       setTagInput('');
       setHabitFilter('');
       setTaskFilter('');
+      setSaveStatus(null);
       if (trixEditorRef.current?.editor) {
         trixEditorRef.current.editor.loadHTML('');
       }
     }
   }, [isOpen, mode]);
 
-  // Create mutation
-  const createMutation = useMutation({
-    mutationFn: (data) => documentsApi.create({ habit_content: data }),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['documents'] });
-      closeFormModal();
-    },
-  });
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+    };
+  }, []);
 
-  // Update mutation
-  const updateMutation = useMutation({
-    mutationFn: (data) => documentsApi.update(documentId, { habit_content: data }),
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['documents'] }),
-        queryClient.invalidateQueries({ queryKey: ['document', documentId] })
-      ]);
-      closeFormModal();
-    },
-  });
+  // Show saved status briefly
+  const showSavedStatus = useCallback(() => {
+    setSaveStatus('saved');
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => {
+      setSaveStatus(null);
+    }, 2000);
+  }, []);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    // Auto-detect content type from URL
-    const contentType = detectContentType(formData.url);
+  // Build document data for saving
+  const buildDocumentData = useCallback((overrides = {}) => {
+    const currentFormData = { ...formData, ...overrides };
+    const currentTags = overrides.tags !== undefined ? overrides.tags : selectedTags;
+    const contentType = detectContentType(currentFormData.url);
 
     const data = {
       content_type: contentType,
-      title: formData.title,
-      habit_ids: formData.habit_ids,
-      task_ids: formData.task_ids,
-      category_ids: formData.category_ids,
-      tag_names: selectedTags,
+      title: currentFormData.title,
+      habit_ids: currentFormData.habit_ids,
+      task_ids: currentFormData.task_ids,
+      category_ids: currentFormData.category_ids,
+      tag_names: currentTags,
       metadata: {
-        url: formData.url,
+        url: currentFormData.url,
       },
     };
 
@@ -158,21 +160,164 @@ const DocumentFormModal = ({ habits, allTags }) => {
       data.body = trixEditorRef.current.value;
     }
 
-    if (mode === 'edit') {
+    return data;
+  }, [formData, selectedTags]);
+
+  // Create mutation (for new mode - button click)
+  const createMutation = useMutation({
+    mutationFn: (data) => documentsApi.create({ habit_content: data }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['documents'] });
+      closeFormModal();
+    },
+  });
+
+  // Update mutation (for edit mode - auto-save)
+  const updateMutation = useMutation({
+    mutationFn: (data) => documentsApi.update(documentId, { habit_content: data }),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['documents'] }),
+        queryClient.invalidateQueries({ queryKey: ['document', documentId] })
+      ]);
+      showSavedStatus();
+    },
+    onError: () => {
+      setSaveStatus('error');
+    },
+  });
+
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: () => documentsApi.delete(documentId),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['documents'] });
+      closeFormModal();
+    },
+  });
+
+  // Auto-save for edit mode (debounced)
+  const autoSave = useCallback((overrides = {}) => {
+    if (mode !== 'edit') return;
+    if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+
+    const currentFormData = { ...formData, ...overrides };
+    if (!currentFormData.title.trim()) return;
+
+    setSaveStatus('saving');
+    debounceTimeoutRef.current = setTimeout(() => {
+      const data = buildDocumentData(overrides);
       updateMutation.mutate(data);
-    } else {
-      createMutation.mutate(data);
+    }, 500);
+  }, [mode, formData, buildDocumentData, updateMutation]);
+
+  // Immediate save for edit mode (selections)
+  const immediateSave = useCallback((overrides = {}) => {
+    if (mode !== 'edit') return;
+
+    const currentFormData = { ...formData, ...overrides };
+    if (!currentFormData.title.trim()) return;
+
+    setSaveStatus('saving');
+    const data = buildDocumentData(overrides);
+    updateMutation.mutate(data);
+  }, [mode, formData, buildDocumentData, updateMutation]);
+
+  // Handle title change
+  const handleTitleChange = (e) => {
+    const newFormData = { ...formData, title: e.target.value };
+    setFormData(newFormData);
+    if (mode === 'edit') {
+      autoSave({ title: e.target.value });
     }
   };
 
+  // Handle URL change
+  const handleUrlChange = (e) => {
+    const newFormData = { ...formData, url: e.target.value };
+    setFormData(newFormData);
+    if (mode === 'edit') {
+      autoSave({ url: e.target.value });
+    }
+  };
+
+  // Handle Trix editor changes (edit mode only)
+  useEffect(() => {
+    if (mode !== 'edit') return;
+
+    const trixEditor = trixEditorRef.current;
+    if (!trixEditor) return;
+
+    const handleTrixChange = () => {
+      if (formData.title.trim()) {
+        autoSave({});
+      }
+    };
+
+    trixEditor.addEventListener('trix-change', handleTrixChange);
+    return () => {
+      trixEditor.removeEventListener('trix-change', handleTrixChange);
+    };
+  }, [mode, autoSave, formData.title]);
+
+  // Handle category toggle
+  const handleCategoryToggle = (categoryId) => {
+    const isSelected = formData.category_ids.includes(categoryId.toString());
+    const newCategoryIds = isSelected
+      ? formData.category_ids.filter(id => id !== categoryId.toString())
+      : [...formData.category_ids, categoryId.toString()];
+
+    setFormData(prev => ({ ...prev, category_ids: newCategoryIds }));
+    if (mode === 'edit') {
+      immediateSave({ category_ids: newCategoryIds });
+    }
+  };
+
+  // Handle habit toggle
+  const handleHabitToggle = (habitId, isChecked) => {
+    const newHabitIds = isChecked
+      ? [...formData.habit_ids, habitId]
+      : formData.habit_ids.filter((id) => id !== habitId);
+
+    setFormData(prev => ({ ...prev, habit_ids: newHabitIds }));
+    if (mode === 'edit') {
+      immediateSave({ habit_ids: newHabitIds });
+    }
+  };
+
+  // Handle task toggle
+  const handleTaskToggle = (taskId, isChecked) => {
+    const newTaskIds = isChecked
+      ? [...formData.task_ids, taskId]
+      : formData.task_ids.filter((id) => id !== taskId);
+
+    setFormData(prev => ({ ...prev, task_ids: newTaskIds }));
+    if (mode === 'edit') {
+      immediateSave({ task_ids: newTaskIds });
+    }
+  };
+
+  // Handle adding a tag
   const handleAddTag = (tagName) => {
     const trimmedTag = tagName.trim();
-    // Case insensitive check for duplicates
     if (trimmedTag && !selectedTags.some(tag => tag.toLowerCase() === trimmedTag.toLowerCase())) {
-      setSelectedTags([...selectedTags, trimmedTag]);
+      const newTags = [...selectedTags, trimmedTag];
+      setSelectedTags(newTags);
+      if (mode === 'edit' && formData.title.trim()) {
+        immediateSave({ tags: newTags });
+      }
     }
     setTagInput('');
     setShowTagSuggestions(false);
+  };
+
+  // Handle removing a tag
+  const handleRemoveTag = (tagToRemove) => {
+    const newTags = selectedTags.filter(tag => tag !== tagToRemove);
+    setSelectedTags(newTags);
+    if (mode === 'edit' && formData.title.trim()) {
+      immediateSave({ tags: newTags });
+    }
   };
 
   const handleTagInputKeyDown = (e) => {
@@ -186,8 +331,23 @@ const DocumentFormModal = ({ habits, allTags }) => {
     }
   };
 
-  const handleRemoveTag = (tagToRemove) => {
-    setSelectedTags(selectedTags.filter(tag => tag !== tagToRemove));
+  // Handle form submit (new mode only)
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const data = buildDocumentData();
+    createMutation.mutate(data);
+  };
+
+  // Handle delete
+  const handleDelete = () => {
+    if (window.confirm('Are you sure you want to delete this document?')) {
+      deleteMutation.mutate();
+    }
+  };
+
+  const handleClose = () => {
+    if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+    closeFormModal();
   };
 
   // Filter suggestions based on input (case insensitive)
@@ -197,8 +357,6 @@ const DocumentFormModal = ({ habits, allTags }) => {
       !selectedTags.some(selectedTag => selectedTag.toLowerCase() === tag.name.toLowerCase())
     )
     .slice(0, 5);
-
-  const currentMutation = mode === 'edit' ? updateMutation : createMutation;
 
   // Group habits by category
   const groupedHabits = habits.reduce((acc, habit) => {
@@ -226,14 +384,76 @@ const DocumentFormModal = ({ habits, allTags }) => {
     task.name?.toLowerCase().includes(taskFilter.toLowerCase())
   );
 
-  const footer = (
+  // Status indicator component (edit mode only)
+  const StatusIndicator = () => {
+    if (mode !== 'edit' || !saveStatus) return null;
+
+    return (
+      <div className="flex items-center gap-2 text-sm" style={{ fontFamily: "'Inter', sans-serif" }}>
+        {saveStatus === 'saving' && (
+          <>
+            <i className="fa-solid fa-spinner fa-spin" style={{ color: '#8E8E93' }}></i>
+            <span style={{ color: '#8E8E93' }}>Saving...</span>
+          </>
+        )}
+        {saveStatus === 'saved' && (
+          <>
+            <i className="fa-solid fa-check" style={{ color: '#22C55E' }}></i>
+            <span style={{ color: '#22C55E' }}>Saved</span>
+          </>
+        )}
+        {saveStatus === 'error' && (
+          <>
+            <i className="fa-solid fa-exclamation-circle" style={{ color: '#DC2626' }}></i>
+            <span style={{ color: '#DC2626' }}>Error saving</span>
+          </>
+        )}
+      </div>
+    );
+  };
+
+  const footer = mode === 'edit' ? (
+    // Edit mode: Delete button, status, and Done
     <>
       <button
         type="button"
-        onClick={closeFormModal}
+        onClick={handleDelete}
+        className="mr-auto w-10 h-10 rounded-lg transition hover:bg-red-50 flex items-center justify-center"
+        disabled={deleteMutation.isPending}
+        title="Delete document"
+      >
+        {deleteMutation.isPending ? (
+          <i className="fa-solid fa-spinner fa-spin" style={{ color: '#DC2626' }}></i>
+        ) : (
+          <i className="fa-solid fa-trash text-lg" style={{ color: '#DC2626' }}></i>
+        )}
+      </button>
+      <StatusIndicator />
+      <button
+        type="button"
+        onClick={handleClose}
+        className="px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition cursor-pointer hover:opacity-90"
+        style={{
+          background: 'linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%)',
+          border: '0.5px solid rgba(255, 255, 255, 0.3)',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)',
+          color: '#1D1D1F',
+          fontWeight: 600,
+          fontFamily: "'Inter', sans-serif",
+        }}
+      >
+        Done
+      </button>
+    </>
+  ) : (
+    // New mode: Cancel and Create buttons
+    <>
+      <button
+        type="button"
+        onClick={handleClose}
         className="px-6 py-3 rounded-lg transition hover:bg-gray-100"
         style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F', border: '0.5px solid rgba(199, 199, 204, 0.3)', backgroundColor: 'white' }}
-        disabled={currentMutation.isPending}
+        disabled={createMutation.isPending}
       >
         Cancel
       </button>
@@ -241,10 +461,17 @@ const DocumentFormModal = ({ habits, allTags }) => {
         type="submit"
         form="document-form"
         className="px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition cursor-pointer disabled:opacity-50 hover:opacity-90"
-        style={{ background: 'linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%)', border: '0.5px solid rgba(255, 255, 255, 0.3)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)', color: '#1D1D1F', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
-        disabled={currentMutation.isPending}
+        style={{
+          background: 'linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%)',
+          border: '0.5px solid rgba(255, 255, 255, 0.3)',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)',
+          color: '#1D1D1F',
+          fontWeight: 600,
+          fontFamily: "'Inter', sans-serif",
+        }}
+        disabled={createMutation.isPending || !formData.title.trim()}
       >
-        {currentMutation.isPending ? 'Saving...' : mode === 'edit' ? 'Update Document' : 'Add Document'}
+        {createMutation.isPending ? 'Creating...' : 'Add Document'}
       </button>
     </>
   );
@@ -252,15 +479,15 @@ const DocumentFormModal = ({ habits, allTags }) => {
   return (
     <SlideOverPanel
       isOpen={isOpen}
-      onClose={closeFormModal}
+      onClose={handleClose}
       title={mode === 'edit' ? 'Edit Document' : 'Add New Document'}
       footer={footer}
     >
       <form id="document-form" onSubmit={handleSubmit}>
-        {currentMutation.isError && (
+        {createMutation.isError && (
           <div className="mb-4 p-4 rounded-lg" style={{ backgroundColor: '#FEE2E2', color: '#DC2626' }}>
             <i className="fa-solid fa-exclamation-circle mr-2"></i>
-            {currentMutation.error?.message || 'An error occurred'}
+            {createMutation.error?.message || 'An error occurred'}
           </div>
         )}
 
@@ -270,11 +497,12 @@ const DocumentFormModal = ({ habits, allTags }) => {
           <input
             type="text"
             value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            onChange={handleTitleChange}
             required
             className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light"
             style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
             placeholder="e.g., Daily Affirmations, World Domination Plans"
+            autoFocus={mode === 'new'}
           />
         </div>
 
@@ -295,7 +523,7 @@ const DocumentFormModal = ({ habits, allTags }) => {
           <input
             type="url"
             value={formData.url}
-            onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+            onChange={handleUrlChange}
             className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light"
             style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
             placeholder="https://youtube.com/watch?v=... or any link"
@@ -317,14 +545,7 @@ const DocumentFormModal = ({ habits, allTags }) => {
                 <button
                   key={category.id}
                   type="button"
-                  onClick={() => {
-                    setFormData(prev => ({
-                      ...prev,
-                      category_ids: isSelected
-                        ? prev.category_ids.filter(id => id !== category.id.toString())
-                        : [...prev.category_ids, category.id.toString()]
-                    }));
-                  }}
+                  onClick={() => handleCategoryToggle(category.id)}
                   className="flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-full transition hover:scale-105"
                   style={{
                     backgroundColor: isSelected ? category.color : 'white',
@@ -400,15 +621,7 @@ const DocumentFormModal = ({ habits, allTags }) => {
                             type="checkbox"
                             value={habit.id}
                             checked={formData.habit_ids.includes(habit.id.toString())}
-                            onChange={(e) => {
-                              const habitId = e.target.value;
-                              setFormData((prev) => ({
-                                ...prev,
-                                habit_ids: e.target.checked
-                                  ? [...prev.habit_ids, habitId]
-                                  : prev.habit_ids.filter((id) => id !== habitId),
-                              }));
-                            }}
+                            onChange={(e) => handleHabitToggle(e.target.value, e.target.checked)}
                             className="rounded border-gray-300"
                           />
                           <span className="text-sm font-light" style={{ color: '#1d3e4c' }}>
@@ -473,15 +686,7 @@ const DocumentFormModal = ({ habits, allTags }) => {
                           type="checkbox"
                           value={task.id}
                           checked={formData.task_ids.includes(task.id.toString())}
-                          onChange={(e) => {
-                            const taskId = e.target.value;
-                            setFormData((prev) => ({
-                              ...prev,
-                              task_ids: e.target.checked
-                                ? [...prev.task_ids, taskId]
-                                : prev.task_ids.filter((id) => id !== taskId),
-                            }));
-                          }}
+                          onChange={(e) => handleTaskToggle(e.target.value, e.target.checked)}
                           className="rounded border-gray-300"
                         />
                         <span className="text-sm font-light" style={{ color: '#1d3e4c' }}>

@@ -67,18 +67,21 @@ const TaskItem = ({ task }) => {
     <div className="flex items-start gap-3">
       {/* Checkbox - outside card on left */}
       <div className="flex-shrink-0 mt-0.5">
-        <input
-          type="checkbox"
-          checked={task.completed}
-          onChange={handleCheckboxChange}
-          className="w-6 h-6 rounded cursor-pointer shadow-md"
+        <button
+          onClick={handleCheckboxChange}
+          disabled={toggleCompleteMutation.isPending}
+          className="w-6 h-6 rounded-md border-2 flex items-center justify-center transition hover:scale-110 cursor-pointer"
           style={{
-            accentColor: task.category?.color || '#1d3e4c',
-            backgroundColor: 'white',
-            border: 'none',
+            borderColor: task.category?.color || '#1d3e4c',
+            backgroundColor: task.completed ? (task.category?.color || '#1d3e4c') : 'white',
           }}
-          onClick={(e) => e.stopPropagation()}
-        />
+        >
+          {toggleCompleteMutation.isPending ? (
+            <i className="fa-solid fa-spinner fa-spin text-xs" style={{ color: task.completed ? 'white' : (task.category?.color || '#1d3e4c') }}></i>
+          ) : task.completed ? (
+            <i className="fa-solid fa-check text-white text-xs"></i>
+          ) : null}
+        </button>
       </div>
 
       <div

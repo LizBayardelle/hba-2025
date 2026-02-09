@@ -116,16 +116,21 @@ const TaskViewModal = () => {
       <div className="space-y-6">
         {/* Task Name with Checkbox */}
         <div className="flex items-start gap-4">
-          <input
-            type="checkbox"
-            checked={task.completed}
-            onChange={(e) => toggleCompleteMutation.mutate(e.target.checked)}
-            className="w-6 h-6 rounded border-2 cursor-pointer mt-1"
+          <button
+            onClick={() => toggleCompleteMutation.mutate(!task.completed)}
+            disabled={toggleCompleteMutation.isPending}
+            className="w-6 h-6 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition hover:scale-110 cursor-pointer mt-1"
             style={{
-              accentColor: '#2C2C2E',
-              borderColor: '#6B8A99',
+              borderColor: task.category?.color || '#6B8A99',
+              backgroundColor: task.completed ? (task.category?.color || '#6B8A99') : 'transparent',
             }}
-          />
+          >
+            {toggleCompleteMutation.isPending ? (
+              <i className="fa-solid fa-spinner fa-spin text-xs" style={{ color: task.completed ? 'white' : (task.category?.color || '#6B8A99') }}></i>
+            ) : task.completed ? (
+              <i className="fa-solid fa-check text-white text-xs"></i>
+            ) : null}
+          </button>
           <h2
             className={`text-2xl font-bold ${task.completed ? 'line-through opacity-60' : ''}`}
             style={{ color: '#1d3e4c' }}

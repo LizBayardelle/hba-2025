@@ -26,6 +26,25 @@ label {
   color: #566e78;
 }
 
+/* Prevent iOS auto-zoom on input focus - requires 16px minimum font size */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="search"],
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"],
+  textarea,
+  select,
+  trix-editor {
+    font-size: 16px !important;
+  }
+}
+
 /* Form Input Inset Style */
 .input-inset,
 input[type="text"].input-inset,
