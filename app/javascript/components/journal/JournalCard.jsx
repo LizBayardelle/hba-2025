@@ -18,8 +18,10 @@ const JournalCard = ({ journal }) => {
 
   const getWordCount = (htmlContent) => {
     if (!htmlContent) return 0;
-    // Strip HTML tags and count words
-    const text = htmlContent.replace(/<[^>]*>/g, ' ').trim();
+    // Strip HTML tags and decode HTML entities
+    const temp = document.createElement('div');
+    temp.innerHTML = htmlContent;
+    const text = (temp.textContent || temp.innerText || '').trim();
     const words = text.split(/\s+/).filter(word => word.length > 0);
     return words.length;
   };
@@ -30,8 +32,10 @@ const JournalCard = ({ journal }) => {
 
   const getSnippet = (htmlContent, maxLength = 150) => {
     if (!htmlContent) return '';
-    // Strip HTML tags and get plain text
-    const text = htmlContent.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    // Strip HTML tags and decode HTML entities
+    const temp = document.createElement('div');
+    temp.innerHTML = htmlContent;
+    const text = (temp.textContent || temp.innerText || '').replace(/\s+/g, ' ').trim();
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength).trim() + '...';
   };

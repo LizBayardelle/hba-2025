@@ -506,8 +506,19 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.habit-item[data-habit-id]').forEach(row => {
     const habitId = parseInt(row.dataset.habitId);
     const targetCount = parseInt(row.dataset.target);
-    const countText = row.querySelector('.text-xs').textContent.trim();
-    const currentCount = parseInt(countText.split('/')[0]);
+
+    // Find count display (has both text-xs and font-light classes)
+    // For habits with target_count == 1, there's no count display
+    const countEl = row.querySelector('.text-xs.font-light');
+    let currentCount = 0;
+    if (countEl) {
+      const countText = countEl.textContent.trim();
+      currentCount = parseInt(countText.split('/')[0]) || 0;
+    } else {
+      // For single-target habits, check completion via the icon
+      const icon = row.querySelector('button i');
+      currentCount = icon?.classList.contains('fa-circle-check') ? 1 : 0;
+    }
 
     habitStates.set(habitId, {
       currentCount,
