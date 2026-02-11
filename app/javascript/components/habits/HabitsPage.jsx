@@ -8,6 +8,7 @@ import DocumentViewModal from '../documents/DocumentViewModal';
 import DocumentFormModal from '../documents/DocumentFormModal';
 import ListShowModal from '../lists/ListShowModal';
 import { tagsApi } from '../../utils/api';
+import { getColorVariants } from '../../utils/colorUtils';
 
 const HabitsPage = () => {
   const { viewMode, selectedDate, setViewMode, goToPreviousDay, goToNextDay, goToToday, openNewModal } = useHabitsStore();
@@ -54,24 +55,6 @@ const HabitsPage = () => {
     queryKey: ['tags'],
     queryFn: tagsApi.fetchAll,
   });
-
-  // Color mapping
-  const colorMap = {
-    '#6B8A99': { light: '#E8EEF1', dark: '#1d3e4c' },
-    '#9C8B7E': { light: '#E8E0D5', dark: '#5C4F45' },
-    '#F8796D': { light: '#FFD4CE', dark: '#B8352A' },
-    '#FFA07A': { light: '#FFE4D6', dark: '#D66A3E' },
-    '#E5C730': { light: '#FEF7C3', dark: '#B89F0A' },
-    '#A8A356': { light: '#E8EBCD', dark: '#7A7637' },
-    '#7CB342': { light: '#D7EDCB', dark: '#4A6B27' },
-    '#6EE7B7': { light: '#D1FAF0', dark: '#2C9D73' },
-    '#22D3EE': { light: '#CFFAFE', dark: '#0E7490' },
-    '#6366F1': { light: '#E0E7FF', dark: '#3730A3' },
-    '#A78BFA': { light: '#EDE9FE', dark: '#6B21A8' },
-    '#E879F9': { light: '#FAE8FF', dark: '#A21CAF' },
-    '#FB7185': { light: '#FFE4E6', dark: '#BE123C' },
-    '#9CA3A8': { light: '#E8E8E8', dark: '#4A5057' },
-  };
 
   // Calculate stats
   const stats = useMemo(() => {
@@ -125,7 +108,7 @@ const HabitsPage = () => {
             title: habit.category_name,
             icon: habit.category_icon,
             color: habit.category_color,
-            darkColor: colorMap[habit.category_color]?.dark || '#1d3e4c',
+            darkColor: getColorVariants(habit.category_color).dark,
             habits: [],
           };
         }
@@ -145,7 +128,7 @@ const HabitsPage = () => {
             title: habit.time_block_name || 'Anytime',
             icon: habit.time_block_icon || 'fa-clock',
             color: habit.time_block_color || '#1d3e4c',
-            darkColor: colorMap[habit.time_block_color]?.dark || '#1d3e4c',
+            darkColor: habit.time_block_color ? getColorVariants(habit.time_block_color).dark : '#1d3e4c',
             rank: habit.time_block_rank != null ? habit.time_block_rank : 999,
             habits: [],
           };
@@ -155,7 +138,7 @@ const HabitsPage = () => {
         const habitWithColor = {
           ...habit,
           category_color: habit.category_color,
-          category_dark_color: colorMap[habit.category_color]?.dark || '#1d3e4c',
+          category_dark_color: getColorVariants(habit.category_color).dark,
         };
         groups[blockId].habits.push(habitWithColor);
       });
@@ -182,7 +165,7 @@ const HabitsPage = () => {
         const habitWithColor = {
           ...habit,
           category_color: habit.category_color,
-          category_dark_color: colorMap[habit.category_color]?.dark || '#1d3e4c',
+          category_dark_color: getColorVariants(habit.category_color).dark,
         };
         groups[levelId].habits.push(habitWithColor);
       });
@@ -190,7 +173,7 @@ const HabitsPage = () => {
       // Sort groups by rank
       return Object.values(groups).sort((a, b) => a.rank - b.rank);
     }
-  }, [habitsData, filteredHabits, viewMode, colorMap]);
+  }, [habitsData, filteredHabits, viewMode]);
 
   return (
     <>

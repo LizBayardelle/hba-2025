@@ -35,6 +35,7 @@ const DocumentFormModal = ({ habits, allTags }) => {
   const { isOpen, mode, documentId } = formModal;
   const queryClient = useQueryClient();
   const trixEditorRef = useRef(null);
+  const trixLoadedRef = useRef(false);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -42,6 +43,7 @@ const DocumentFormModal = ({ habits, allTags }) => {
     habit_ids: [],
     task_ids: [],
     category_ids: [],
+    pinned: false,
   });
   const [showHabitDropdown, setShowHabitDropdown] = useState(false);
   const [showTaskDropdown, setShowTaskDropdown] = useState(false);
@@ -55,6 +57,8 @@ const DocumentFormModal = ({ habits, allTags }) => {
   const [saveStatus, setSaveStatus] = useState(null); // 'saving', 'saved', 'error'
   const saveTimeoutRef = useRef(null);
   const debounceTimeoutRef = useRef(null);
+  const closeAfterSaveRef = useRef(false);
+  const pendingSaveDataRef = useRef(null);
 
   // Fetch document data if editing
   const { data: document } = useQuery({
@@ -86,16 +90,20 @@ const DocumentFormModal = ({ habits, allTags }) => {
         habit_ids: document.habits?.map(h => h.id.toString()) || [],
         task_ids: document.tasks?.map(t => t.id.toString()) || [],
         category_ids: document.categories?.map(c => c.id.toString()) || [],
+        pinned: document.pinned || false,
       });
       setSelectedTags(document.tags?.map(t => t.name) || []);
 
-      // Set Trix content
-      setTimeout(() => {
-        const trixEditor = trixEditorRef.current?.editor;
-        if (trixEditor && document.body) {
-          trixEditor.loadHTML(document.body || '');
-        }
-      }, 100);
+      // Only load Trix content on initial load, not after autosave refetches
+      if (!trixLoadedRef.current) {
+        setTimeout(() => {
+          const trixEditor = trixEditorRef.current?.editor;
+          if (trixEditor && document.body) {
+            trixEditor.loadHTML(document.body || '');
+          }
+          trixLoadedRef.current = true;
+        }, 100);
+      }
     }
   }, [document, mode]);
 
@@ -108,15 +116,21 @@ const DocumentFormModal = ({ habits, allTags }) => {
         habit_ids: [],
         task_ids: [],
         category_ids: [],
+        pinned: false,
       });
       setSelectedTags([]);
       setTagInput('');
       setHabitFilter('');
       setTaskFilter('');
       setSaveStatus(null);
+      trixLoadedRef.current = false;
       if (trixEditorRef.current?.editor) {
         trixEditorRef.current.editor.loadHTML('');
       }
+    }
+    if (isOpen && mode === 'edit') {
+      trixLoadedRef.current = false;
+      closeAfterSaveRef.current = false;
     }
   }, [isOpen, mode]);
 
@@ -150,6 +164,7 @@ const DocumentFormModal = ({ habits, allTags }) => {
       task_ids: currentFormData.task_ids,
       category_ids: currentFormData.category_ids,
       tag_names: currentTags,
+      pinned: currentFormData.pinned,
       metadata: {
         url: currentFormData.url,
       },
@@ -180,10 +195,19 @@ const DocumentFormModal = ({ habits, allTags }) => {
         queryClient.invalidateQueries({ queryKey: ['documents'] }),
         queryClient.invalidateQueries({ queryKey: ['document', documentId] })
       ]);
-      showSavedStatus();
+      if (closeAfterSaveRef.current) {
+        closeAfterSaveRef.current = false;
+        closeFormModal();
+      } else {
+        showSavedStatus();
+      }
     },
     onError: () => {
       setSaveStatus('error');
+      if (closeAfterSaveRef.current) {
+        closeAfterSaveRef.current = false;
+        closeFormModal();
+      }
     },
   });
 
@@ -205,7 +229,9 @@ const DocumentFormModal = ({ habits, allTags }) => {
     if (!currentFormData.title.trim()) return;
 
     setSaveStatus('saving');
+    pendingSaveDataRef.current = overrides;
     debounceTimeoutRef.current = setTimeout(() => {
+      pendingSaveDataRef.current = null;
       const data = buildDocumentData(overrides);
       updateMutation.mutate(data);
     }, 500);
@@ -259,6 +285,15 @@ const DocumentFormModal = ({ habits, allTags }) => {
       trixEditor.removeEventListener('trix-change', handleTrixChange);
     };
   }, [mode, autoSave, formData.title]);
+
+  // Handle pin toggle
+  const handlePinToggle = () => {
+    const newPinned = !formData.pinned;
+    setFormData(prev => ({ ...prev, pinned: newPinned }));
+    if (mode === 'edit') {
+      immediateSave({ pinned: newPinned });
+    }
+  };
 
   // Handle category toggle
   const handleCategoryToggle = (categoryId) => {
@@ -346,7 +381,30 @@ const DocumentFormModal = ({ habits, allTags }) => {
   };
 
   const handleClose = () => {
-    if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
+    if (mode !== 'edit') {
+      closeFormModal();
+      return;
+    }
+
+    // If there's a pending debounced save, flush it immediately
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+      debounceTimeoutRef.current = null;
+      const overrides = pendingSaveDataRef.current || {};
+      pendingSaveDataRef.current = null;
+      closeAfterSaveRef.current = true;
+      const data = buildDocumentData(overrides);
+      updateMutation.mutate(data);
+      return;
+    }
+
+    // If a save is currently in-flight, wait for it
+    if (updateMutation.isPending) {
+      closeAfterSaveRef.current = true;
+      return;
+    }
+
+    // Nothing pending, close immediately
     closeFormModal();
   };
 
@@ -412,41 +470,28 @@ const DocumentFormModal = ({ habits, allTags }) => {
     );
   };
 
-  const footer = mode === 'edit' ? (
-    // Edit mode: Delete button, status, and Done
+  // Header actions for edit mode: delete button + save status
+  const headerActions = mode === 'edit' ? (
     <>
       <button
         type="button"
         onClick={handleDelete}
-        className="mr-auto w-10 h-10 rounded-lg transition hover:bg-red-50 flex items-center justify-center"
+        className="w-8 h-8 rounded-lg transition hover:bg-red-50 flex items-center justify-center"
         disabled={deleteMutation.isPending}
         title="Delete document"
       >
         {deleteMutation.isPending ? (
-          <i className="fa-solid fa-spinner fa-spin" style={{ color: '#DC2626' }}></i>
+          <i className="fa-solid fa-spinner fa-spin text-sm" style={{ color: '#DC2626' }}></i>
         ) : (
-          <i className="fa-solid fa-trash text-lg" style={{ color: '#DC2626' }}></i>
+          <i className="fa-solid fa-trash text-sm" style={{ color: '#DC2626' }}></i>
         )}
       </button>
       <StatusIndicator />
-      <button
-        type="button"
-        onClick={handleClose}
-        className="px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition cursor-pointer hover:opacity-90"
-        style={{
-          background: 'linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%)',
-          border: '0.5px solid rgba(255, 255, 255, 0.3)',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)',
-          color: '#1D1D1F',
-          fontWeight: 600,
-          fontFamily: "'Inter', sans-serif",
-        }}
-      >
-        Done
-      </button>
     </>
-  ) : (
-    // New mode: Cancel and Create buttons
+  ) : null;
+
+  // Footer only for new mode
+  const footer = mode === 'new' ? (
     <>
       <button
         type="button"
@@ -474,14 +519,15 @@ const DocumentFormModal = ({ habits, allTags }) => {
         {createMutation.isPending ? 'Creating...' : 'Add Document'}
       </button>
     </>
-  );
+  ) : null;
 
   return (
     <SlideOverPanel
       isOpen={isOpen}
       onClose={handleClose}
-      title={mode === 'edit' ? 'Edit Document' : 'Add New Document'}
+      title={mode === 'edit' ? (formData.title.trim() || 'Edit Document') : 'Add New Document'}
       footer={footer}
+      headerActions={headerActions}
     >
       <form id="document-form" onSubmit={handleSubmit}>
         {createMutation.isError && (
@@ -491,9 +537,26 @@ const DocumentFormModal = ({ habits, allTags }) => {
           </div>
         )}
 
-        {/* Title */}
+        {/* Title and Pin Toggle */}
         <div className="mb-6">
-          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>Title</label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-sm font-semibold" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>Title</label>
+            <button
+              type="button"
+              onClick={handlePinToggle}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition hover:opacity-80"
+              style={{
+                background: formData.pinned ? 'linear-gradient(135deg, #2D2D2F, #1D1D1F)' : 'rgba(142, 142, 147, 0.1)',
+                color: formData.pinned ? 'white' : '#8E8E93',
+              }}
+              title={formData.pinned ? 'Unpin document' : 'Pin document'}
+            >
+              <i className={`fa-solid fa-thumbtack text-sm ${formData.pinned ? '' : 'opacity-60'}`}></i>
+              <span className="text-xs font-semibold" style={{ fontFamily: "'Inter', sans-serif" }}>
+                {formData.pinned ? 'Pinned' : 'Pin'}
+              </span>
+            </button>
+          </div>
           <input
             type="text"
             value={formData.title}

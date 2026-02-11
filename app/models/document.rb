@@ -15,6 +15,7 @@ class Document < ApplicationRecord
   validate :content_type_requirements
 
   scope :ordered, -> { order(:position) }
+  scope :pinned_first, -> { order(pinned: :desc, created_at: :desc) }
 
   # Helper method to assign tags by name
   def tag_names=(names)

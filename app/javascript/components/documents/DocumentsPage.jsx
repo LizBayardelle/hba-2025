@@ -60,6 +60,14 @@ const DocumentsPage = ({ habits }) => {
     },
   });
 
+  // Toggle pin mutation
+  const togglePinMutation = useMutation({
+    mutationFn: documentsApi.togglePin,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['documents'] });
+    },
+  });
+
   const handleDelete = (id) => {
     if (window.confirm('Are you sure you want to delete this document?')) {
       deleteMutation.mutate(id);
@@ -83,10 +91,10 @@ const DocumentsPage = ({ habits }) => {
 
   // Content type definitions for grouping
   const contentTypes = [
-    { type: 'document', icon: 'fa-file-alt', color: '#6B8A99', label: 'Documents' },
-    { type: 'youtube', icon: 'fa-brands fa-youtube', color: '#FB7185', label: 'YouTube' },
-    { type: 'video', icon: 'fa-video', color: '#A78BFA', label: 'Videos' },
-    { type: 'link', icon: 'fa-link', color: '#22D3EE', label: 'Links' },
+    { type: 'document', icon: 'fa-file-alt', color: '#2C2C2E', label: 'Documents' },
+    { type: 'youtube', icon: 'fa-brands fa-youtube', color: '#2C2C2E', label: 'YouTube' },
+    { type: 'video', icon: 'fa-video', color: '#2C2C2E', label: 'Videos' },
+    { type: 'link', icon: 'fa-link', color: '#2C2C2E', label: 'Links' },
   ];
 
   // Filter documents based on search query
@@ -108,10 +116,19 @@ const DocumentsPage = ({ habits }) => {
     });
   }, [documents, searchQuery]);
 
+  // Helper to sort documents with pinned first
+  const sortPinnedFirst = (docs) => {
+    return [...docs].sort((a, b) => {
+      if (a.pinned && !b.pinned) return -1;
+      if (!a.pinned && b.pinned) return 1;
+      return 0; // Preserve existing order for same pin status
+    });
+  };
+
   // Group documents based on groupBy setting
   const groupedDocuments = useMemo(() => {
     if (groupBy === 'none') {
-      return [{ id: 'all', title: 'All Documents', documents: filteredDocuments, color: '#2C2C2E', icon: 'fa-file-alt', hideHeader: true }];
+      return [{ id: 'all', title: 'All Documents', documents: sortPinnedFirst(filteredDocuments), color: '#2C2C2E', icon: 'fa-file-alt', hideHeader: true }];
     }
 
     if (groupBy === 'type') {
@@ -141,7 +158,11 @@ const DocumentsPage = ({ habits }) => {
         }
       });
 
-      return Object.values(groups);
+      // Sort pinned first within each group
+      return Object.values(groups).map(group => ({
+        ...group,
+        documents: sortPinnedFirst(group.documents),
+      }));
     } else if (groupBy === 'tag') {
       // Group by tags
       const groups = {};
@@ -174,9 +195,12 @@ const DocumentsPage = ({ habits }) => {
         }
       });
 
-      const result = Object.values(groups);
+      const result = Object.values(groups).map(group => ({
+        ...group,
+        documents: sortPinnedFirst(group.documents),
+      }));
       if (untagged.documents.length > 0) {
-        result.push(untagged);
+        result.push({ ...untagged, documents: sortPinnedFirst(untagged.documents) });
       }
       return result;
     } else if (groupBy === 'category') {
@@ -214,12 +238,15 @@ const DocumentsPage = ({ habits }) => {
         }
       });
 
-      const result = Object.values(groups);
-      result.push(uncategorized);
+      const result = Object.values(groups).map(group => ({
+        ...group,
+        documents: sortPinnedFirst(group.documents),
+      }));
+      result.push({ ...uncategorized, documents: sortPinnedFirst(uncategorized.documents) });
       return result;
     }
 
-    return [{ title: 'All Documents', documents: filteredDocuments, color: '#9CA3A8', icon: 'fa-file-alt' }];
+    return [{ title: 'All Documents', documents: sortPinnedFirst(filteredDocuments), color: '#9CA3A8', icon: 'fa-file-alt' }];
   }, [filteredDocuments, groupBy, allTags, habits, categories]);
 
   // Render a document card
@@ -229,10 +256,31 @@ const DocumentsPage = ({ habits }) => {
       <div key={content.id} className="flex items-start gap-3 min-w-0">
         <div
           onClick={() => openViewModal(content.id)}
-          className="rounded-lg p-4 transition cursor-pointer flex-1 min-w-0 overflow-hidden"
-          style={{ background: '#FFFFFF', border: '0.5px solid rgba(199, 199, 204, 0.3)', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)' }}
+          className="rounded-lg p-4 transition cursor-pointer flex-1 min-w-0 overflow-hidden relative"
+          style={{
+            background: '#FFFFFF',
+            border: content.pinned ? '1px solid rgba(45, 45, 47, 0.3)' : '0.5px solid rgba(199, 199, 204, 0.3)',
+            boxShadow: content.pinned
+              ? '0 1px 3px rgba(45, 45, 47, 0.15), 0 0 0 0.5px rgba(45, 45, 47, 0.2)'
+              : '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)'
+          }}
         >
-          <div className="flex items-start gap-4 min-w-0">
+          {/* Pin toggle button - top right */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              togglePinMutation.mutate(content.id);
+            }}
+            className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center transition hover:scale-110 rounded-full hover:bg-gray-100"
+            title={content.pinned ? 'Unpin document' : 'Pin document'}
+          >
+            <i
+              className={`fa-solid fa-thumbtack text-sm transition ${content.pinned ? '' : 'opacity-30 hover:opacity-60'}`}
+              style={{ color: content.pinned ? '#2D2D2F' : '#8E8E93' }}
+            ></i>
+          </button>
+
+          <div className="flex items-start gap-4 min-w-0 pr-8">
             {/* Content Info */}
             <div className="flex-1 min-w-0 overflow-hidden">
               <h3
@@ -323,7 +371,7 @@ const DocumentsPage = ({ habits }) => {
     const groupIcon = group.icon || 'fa-file';
 
     return (
-      <div key={group.id || group.title} className={`mb-6 ${index !== 0 && !group.hideHeader ? 'mt-8' : 'mt-4'}`}>
+      <div key={group.id || group.title} className={`mb-6 ${index !== 0 && !group.hideHeader ? 'mt-8' : ''} ${group.hideHeader ? 'mt-4' : ''}`}>
         {/* Full-width colored stripe header */}
         {!group.hideHeader && (
           <div

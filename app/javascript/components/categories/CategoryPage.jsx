@@ -14,6 +14,7 @@ import TaskViewModal from '../tasks/TaskViewModal';
 import ListFormModal from '../lists/ListFormModal';
 import ListShowModal from '../lists/ListShowModal';
 import { tagsApi, tasksApi } from '../../utils/api';
+import { getColorVariants } from '../../utils/colorUtils';
 
 const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
   const queryClient = useQueryClient();
@@ -73,24 +74,6 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
       setTogglingTaskId(null);
     },
   });
-
-  // Color mapping for light/dark variants
-  const colorMap = {
-    '#6B8A99': { light: '#E8EEF1', dark: '#1d3e4c' },
-    '#9C8B7E': { light: '#E8E0D5', dark: '#5C4F45' },
-    '#F8796D': { light: '#FFD4CE', dark: '#B8352A' },
-    '#FFA07A': { light: '#FFE4D6', dark: '#D66A3E' },
-    '#E5C730': { light: '#FEF7C3', dark: '#B89F0A' },
-    '#A8A356': { light: '#E8EBCD', dark: '#7A7637' },
-    '#7CB342': { light: '#D7EDCB', dark: '#4A6B27' },
-    '#6EE7B7': { light: '#D1FAF0', dark: '#2C9D73' },
-    '#22D3EE': { light: '#CFFAFE', dark: '#0E7490' },
-    '#6366F1': { light: '#E0E7FF', dark: '#3730A3' },
-    '#A78BFA': { light: '#EDE9FE', dark: '#6B21A8' },
-    '#E879F9': { light: '#FAE8FF', dark: '#A21CAF' },
-    '#FB7185': { light: '#FFE4E6', dark: '#BE123C' },
-    '#9CA3A8': { light: '#E8E8E8', dark: '#4A5057' },
-  };
 
   // Group habits based on groupBy setting
   const groupedHabits = useMemo(() => {
@@ -206,7 +189,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
 
   const { category, habits, tasks = [], documents = [], lists = [] } = categoryData;
   const categoryColor = category.color;
-  const colors = colorMap[categoryColor] || { light: '#E8EEF1', dark: '#1d3e4c' };
+  const colors = getColorVariants(categoryColor);
 
   // Format habits for DocumentFormModal
   const formattedHabits = habits?.map(habit => ({

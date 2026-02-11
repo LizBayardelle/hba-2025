@@ -5,7 +5,7 @@ import { documentsApi } from '../../utils/api';
 import useDocumentsStore from '../../stores/documentsStore';
 
 const DocumentViewModal = () => {
-  const { viewModal, closeViewModal } = useDocumentsStore();
+  const { viewModal, closeViewModal, openEditModal } = useDocumentsStore();
   const { documentId, isOpen } = viewModal;
 
   // Fetch document data
@@ -116,22 +116,28 @@ const DocumentViewModal = () => {
     }
   };
 
-  const footer = (
+  const handleEdit = () => {
+    closeViewModal();
+    openEditModal(documentId);
+  };
+
+  const headerActions = document ? (
     <button
-      onClick={closeViewModal}
-      className="px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition hover:opacity-90"
-      style={{ background: 'linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%)', border: '0.5px solid rgba(255, 255, 255, 0.3)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)', color: '#1D1D1F', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
+      type="button"
+      onClick={handleEdit}
+      className="w-8 h-8 rounded-lg transition hover:bg-gray-100 flex items-center justify-center"
+      title="Edit document"
     >
-      Close
+      <i className="fa-solid fa-pencil text-sm" style={{ color: '#8E8E93' }}></i>
     </button>
-  );
+  ) : null;
 
   return (
     <SlideOverPanel
       isOpen={isOpen}
       onClose={closeViewModal}
       title={document?.title || 'Loading...'}
-      footer={footer}
+      headerActions={headerActions}
     >
       {renderContent()}
     </SlideOverPanel>

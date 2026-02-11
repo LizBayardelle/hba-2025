@@ -13,6 +13,9 @@ Rails.application.routes.draw do
   get 'analytics', to: 'analytics#index'
   get 'documents', to: 'documents#index'
   resources :lists, only: [:index, :show, :create, :update, :destroy] do
+    member do
+      post :toggle_pin
+    end
     resources :checklist_items, only: [:create, :update, :destroy], module: :lists do
       collection do
         patch :reorder
@@ -77,6 +80,7 @@ Rails.application.routes.draw do
     member do
       post 'attach_habit'
       delete 'detach_habit/:habit_id', action: :detach_habit, as: :detach_habit
+      post 'toggle_pin'
     end
   end
 

@@ -53,6 +53,11 @@ export const documentsApi = {
   delete: (id) => apiRequest(`/contents/${id}`, {
     method: 'DELETE',
   }),
+
+  // Toggle pin status
+  togglePin: (id) => apiRequest(`/contents/${id}/toggle_pin`, {
+    method: 'POST',
+  }),
 };
 
 // Journal API methods
@@ -168,6 +173,11 @@ export const listsApi = {
   // Delete list
   delete: (id) => apiRequest(`/lists/${id}`, {
     method: 'DELETE',
+  }),
+
+  // Toggle pin status
+  togglePin: (id) => apiRequest(`/lists/${id}/toggle_pin`, {
+    method: 'POST',
   }),
 };
 

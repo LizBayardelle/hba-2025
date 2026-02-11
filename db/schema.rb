@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_02_01_200001) do
+ActiveRecord::Schema[7.2].define(version: 2026_02_11_162548) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -95,6 +95,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_01_200001) do
     t.integer "position", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "pinned", default: false, null: false
+    t.index ["pinned"], name: "index_documents_on_pinned"
   end
 
   create_table "documents_habits", id: false, force: :cascade do |t|
@@ -205,7 +207,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_01_200001) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "archived_at"
+    t.boolean "pinned", default: false, null: false
     t.index ["category_id"], name: "index_lists_on_category_id"
+    t.index ["pinned"], name: "index_lists_on_pinned"
     t.index ["user_id"], name: "index_lists_on_user_id"
   end
 

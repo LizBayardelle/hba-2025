@@ -1,6 +1,6 @@
 class HabitContentsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_habit_content, only: [:show, :edit, :update, :destroy, :attach_habit, :detach_habit]
+  before_action :set_habit_content, only: [:show, :edit, :update, :destroy, :attach_habit, :detach_habit, :toggle_pin]
 
   def index
     respond_to do |format|
@@ -10,7 +10,7 @@ class HabitContentsController < ApplicationController
                                        .where('habits.id IS NULL OR habits.user_id = ?', current_user.id)
                                        .distinct
                                        .includes(habits: :category, tasks: [], tags: [], categories: [])
-                                       .order(created_at: :desc)
+                                       .order(pinned: :desc, created_at: :desc)
 
         render json: @habit_contents.map { |content|
           content.as_json(
@@ -141,6 +141,15 @@ class HabitContentsController < ApplicationController
     end
   end
 
+  def toggle_pin
+    new_pinned = !@habit_content.pinned
+    @habit_content.update_column(:pinned, new_pinned)
+
+    respond_to do |format|
+      format.json { render json: { success: true, pinned: new_pinned }, status: :ok }
+    end
+  end
+
   def destroy
     @habit_content.destroy
 
@@ -162,6 +171,6 @@ class HabitContentsController < ApplicationController
   end
 
   def habit_content_params
-    params.require(:habit_content).permit(:content_type, :title, :body, :position, metadata: {}, habit_ids: [], task_ids: [], tag_names: [], category_ids: [])
+    params.require(:habit_content).permit(:content_type, :title, :body, :position, :pinned, metadata: {}, habit_ids: [], task_ids: [], tag_names: [], category_ids: [])
   end
 end

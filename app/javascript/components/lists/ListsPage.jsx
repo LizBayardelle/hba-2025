@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ChecklistSection from '../shared/ChecklistSection';
 import ListFormModal from './ListFormModal';
 import useListsStore from '../../stores/listsStore';
@@ -19,6 +19,15 @@ const ListsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [groupBy, setGroupBy] = useState(getInitialGrouping);
   const { openFormModal, openEditModal } = useListsStore();
+  const queryClient = useQueryClient();
+
+  // Toggle pin mutation
+  const togglePinMutation = useMutation({
+    mutationFn: listsApi.togglePin,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['lists'] });
+    },
+  });
 
   // Update URL when groupBy changes
   useEffect(() => {
@@ -59,10 +68,19 @@ const ListsPage = () => {
 
   const filteredLists = lists.filter(filterItem);
 
+  // Helper to sort lists with pinned first
+  const sortPinnedFirst = (items) => {
+    return [...items].sort((a, b) => {
+      if (a.pinned && !b.pinned) return -1;
+      if (!a.pinned && b.pinned) return 1;
+      return 0;
+    });
+  };
+
   // Group lists based on selected grouping
   const groupedLists = useMemo(() => {
     if (groupBy === 'none') {
-      return [{ key: 'all', title: 'All Lists', lists: filteredLists, hideHeader: true }];
+      return [{ key: 'all', title: 'All Lists', lists: sortPinnedFirst(filteredLists), hideHeader: true }];
     }
 
     if (groupBy === 'type') {
@@ -85,7 +103,11 @@ const ListsPage = () => {
         }
       });
 
-      return groups; // Always return all three groups
+      // Sort pinned first within each group
+      return groups.map(group => ({
+        ...group,
+        lists: sortPinnedFirst(group.lists),
+      }));
     } else {
       // Group by category - start with all categories
       const result = categories.map(cat => ({
@@ -113,7 +135,12 @@ const ListsPage = () => {
       // Sort by name and add uncategorized at the end
       result.sort((a, b) => a.title.localeCompare(b.title));
       result.push(uncategorized);
-      return result;
+
+      // Sort pinned first within each group
+      return result.map(group => ({
+        ...group,
+        lists: sortPinnedFirst(group.lists),
+      }));
     }
   }, [filteredLists, groupBy, categories]);
 
@@ -247,6 +274,7 @@ const ListsPage = () => {
                         key={list.id}
                         list={list}
                         onEdit={openEditModal}
+                        onTogglePin={() => togglePinMutation.mutate(list.id)}
                       />
                     ))}
                   </div>
@@ -267,21 +295,36 @@ const ListsPage = () => {
   );
 };
 
-const ListCard = ({ list, onEdit }) => {
+const ListCard = ({ list, onEdit, onTogglePin }) => {
   const color = list.category?.color || '#1d3e4c';
   const completedCount = list.checklist_items.filter(i => i.completed).length;
   const totalCount = list.checklist_items.length;
 
   return (
     <div
-      className="rounded-xl p-5 transition"
+      className="rounded-xl p-5 transition relative"
       style={{
         background: '#FFFFFF',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)',
+        border: list.pinned ? '1px solid rgba(45, 45, 47, 0.3)' : '0.5px solid rgba(199, 199, 204, 0.2)',
+        boxShadow: list.pinned
+          ? '0 1px 3px rgba(45, 45, 47, 0.15), 0 0 0 0.5px rgba(45, 45, 47, 0.2)'
+          : '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)',
       }}
     >
+      {/* Pin toggle button - top right */}
+      <button
+        onClick={onTogglePin}
+        className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center transition hover:scale-110 rounded-full hover:bg-gray-100"
+        title={list.pinned ? 'Unpin list' : 'Pin list'}
+      >
+        <i
+          className={`fa-solid fa-thumbtack text-sm transition ${list.pinned ? '' : 'opacity-30 hover:opacity-60'}`}
+          style={{ color: list.pinned ? '#2D2D2F' : '#8E8E93' }}
+        ></i>
+      </button>
+
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-3 pr-8">
         <div className="flex items-center gap-3">
           {/* Category Icon */}
           <div

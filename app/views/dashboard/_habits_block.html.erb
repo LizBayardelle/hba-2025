@@ -24,15 +24,6 @@
     <!-- Render all habits once with grouping metadata -->
     <div id="focus-habits-container" class="space-y-4">
       <%
-        # Light color mapping
-        light_color_map = {
-          '#6B8A99' => '#E8EEF1', '#9C8B7E' => '#E8E0D5', '#F8796D' => '#FFD4CE',
-          '#FFA07A' => '#FFE4D6', '#E5C730' => '#FEF7C3', '#A8A356' => '#E8EBCD',
-          '#7CB342' => '#D7EDCB', '#6EE7B7' => '#D1FAF0', '#22D3EE' => '#CFFAFE',
-          '#6366F1' => '#E0E7FF', '#A78BFA' => '#EDE9FE', '#E879F9' => '#FAE8FF',
-          '#FB7185' => '#FFE4E6', '#9CA3A8' => '#E8E8E8'
-        }
-
         # Create a single list of all habits with their grouping info
         all_habits_with_groups = @habits.map do |habit|
           time_block_id = habit.time_block_id || 'anytime'
@@ -71,7 +62,7 @@
           completion_count = @today_completions[habit.id] || 0
           is_complete = completion_count >= habit.target_count
           category = habit.category
-          light_color = light_color_map[category.color] || (category.color + '20')
+          light_color = generate_light_color(category.color)
         %>
         <div class="habit-item flex items-center gap-2"
              data-habit-id="<%= habit.id %>"

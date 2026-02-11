@@ -9,6 +9,7 @@ class List < ApplicationRecord
   validates :name, presence: true
 
   scope :ordered, -> { order(:name) }
+  scope :pinned_first, -> { order(pinned: :desc, name: :asc) }
   scope :active, -> { where(archived_at: nil) }
   scope :archived, -> { where.not(archived_at: nil) }
 

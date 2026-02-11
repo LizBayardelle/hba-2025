@@ -346,13 +346,7 @@
             <% if @view_mode == 'category' %>
               <%
                 category = group
-                dark_color = {
-                  '#6B8A99' => '#1d3e4c', '#9C8B7E' => '#5C4F45', '#F8796D' => '#B8352A',
-                  '#FFA07A' => '#D66A3E', '#E5C730' => '#B89F0A', '#A8A356' => '#7A7637',
-                  '#7CB342' => '#4A6B27', '#6EE7B7' => '#2C9D73', '#22D3EE' => '#0E7490',
-                  '#6366F1' => '#3730A3', '#A78BFA' => '#6B21A8', '#E879F9' => '#A21CAF',
-                  '#FB7185' => '#BE123C', '#9CA3A8' => '#4A5057'
-                }[category.color] || '#1d3e4c'
+                dark_color = generate_dark_color(category.color)
                 avg_health = (habits.sum(&:health) / habits.count.to_f).round
               %>
               <!-- Category Header -->
@@ -456,15 +450,7 @@
                 <!-- Habits List -->
                 <div class="section-content space-y-3 py-4">
                   <% habits.each do |habit| %>
-                    <%
-                      habit_dark_color = {
-                        '#6B8A99' => '#1d3e4c', '#9C8B7E' => '#5C4F45', '#F8796D' => '#B8352A',
-                        '#FFA07A' => '#D66A3E', '#E5C730' => '#B89F0A', '#A8A356' => '#7A7637',
-                        '#7CB342' => '#4A6B27', '#6EE7B7' => '#2C9D73', '#22D3EE' => '#0E7490',
-                        '#6366F1' => '#3730A3', '#A78BFA' => '#6B21A8', '#E879F9' => '#A21CAF',
-                        '#FB7185' => '#BE123C', '#9CA3A8' => '#4A5057'
-                      }[habit.category.color] || '#1d3e4c'
-                    %>
+                    <% habit_dark_color = generate_dark_color(habit.category.color) %>
                     <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 bg-white rounded-xl p-4" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
                       <!-- Habit Name and Info -->
                       <div class="flex-1">
@@ -539,15 +525,7 @@
                 <!-- Habits List -->
                 <div class="section-content space-y-3 py-4">
                   <% habits.each do |habit| %>
-                    <%
-                      habit_dark_color = {
-                        '#6B8A99' => '#1d3e4c', '#9C8B7E' => '#5C4F45', '#F8796D' => '#B8352A',
-                        '#FFA07A' => '#D66A3E', '#E5C730' => '#B89F0A', '#A8A356' => '#7A7637',
-                        '#7CB342' => '#4A6B27', '#6EE7B7' => '#2C9D73', '#22D3EE' => '#0E7490',
-                        '#6366F1' => '#3730A3', '#A78BFA' => '#6B21A8', '#E879F9' => '#A21CAF',
-                        '#FB7185' => '#BE123C', '#9CA3A8' => '#4A5057'
-                      }[habit.category.color] || '#1d3e4c'
-                    %>
+                    <% habit_dark_color = generate_dark_color(habit.category.color) %>
                     <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 bg-white rounded-xl p-4" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
                       <!-- Habit Name and Info -->
                       <div class="flex-1">

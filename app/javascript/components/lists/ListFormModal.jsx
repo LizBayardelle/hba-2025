@@ -12,6 +12,7 @@ const ListFormModal = () => {
   const [formData, setFormData] = useState({
     name: '',
     category_id: '',
+    pinned: false,
   });
   const [checklistItems, setChecklistItems] = useState([]);
   const [newItemName, setNewItemName] = useState('');
@@ -43,6 +44,7 @@ const ListFormModal = () => {
       setFormData({
         name: existingList.name || '',
         category_id: existingList.category_id || '',
+        pinned: existingList.pinned || false,
       });
       setChecklistItems(
         (existingList.checklist_items || []).map(item => ({
@@ -57,7 +59,7 @@ const ListFormModal = () => {
   // Reset form when modal opens for new
   useEffect(() => {
     if (isOpen && mode === 'new') {
-      setFormData({ name: '', category_id: defaultCategoryId || '' });
+      setFormData({ name: '', category_id: defaultCategoryId || '', pinned: false });
       setChecklistItems([]);
       setNewItemName('');
       setItemsToDelete([]);
@@ -215,6 +217,16 @@ const ListFormModal = () => {
   // Handle category change
   const handleCategoryChange = (categoryId) => {
     const newFormData = { ...formData, category_id: categoryId };
+    setFormData(newFormData);
+    if (mode === 'edit' && formData.name.trim()) {
+      setSaveStatus('saving');
+      updateMutation.mutate(newFormData);
+    }
+  };
+
+  // Handle pin toggle
+  const handlePinToggle = () => {
+    const newFormData = { ...formData, pinned: !formData.pinned };
     setFormData(newFormData);
     if (mode === 'edit' && formData.name.trim()) {
       setSaveStatus('saving');
@@ -445,12 +457,29 @@ const ListFormModal = () => {
       <form id="list-form" onSubmit={handleSubmit}>
         {/* List Name */}
         <div className="mb-6">
-          <label
-            className="block mb-2"
-            style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}
-          >
-            List Name
-          </label>
+          <div className="flex items-center justify-between mb-2">
+            <label
+              className="block"
+              style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}
+            >
+              List Name
+            </label>
+            <button
+              type="button"
+              onClick={handlePinToggle}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition hover:opacity-80"
+              style={{
+                background: formData.pinned ? 'linear-gradient(135deg, #2D2D2F, #1D1D1F)' : 'rgba(142, 142, 147, 0.1)',
+                color: formData.pinned ? 'white' : '#8E8E93',
+              }}
+              title={formData.pinned ? 'Unpin list' : 'Pin list'}
+            >
+              <i className={`fa-solid fa-thumbtack text-sm ${formData.pinned ? '' : 'opacity-60'}`}></i>
+              <span className="text-xs font-semibold" style={{ fontFamily: "'Inter', sans-serif" }}>
+                {formData.pinned ? 'Pinned' : 'Pin'}
+              </span>
+            </button>
+          </div>
           <input
             type="text"
             value={formData.name}

@@ -1,9 +1,9 @@
 class ListsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_list, only: [:show, :update, :destroy]
+  before_action :set_list, only: [:show, :update, :destroy, :toggle_pin]
 
   def index
-    @lists = current_user.lists.active.includes(:category, :checklist_items, :habit_attachments, :task_attachments).ordered
+    @lists = current_user.lists.active.includes(:category, :checklist_items, :habit_attachments, :task_attachments).pinned_first
 
     respond_to do |format|
       format.html
@@ -13,6 +13,7 @@ class ListsController < ApplicationController
             {
               id: list.id,
               name: list.name,
+              pinned: list.pinned,
               category: list.category ? {
                 id: list.category.id,
                 name: list.category.name,
@@ -43,6 +44,7 @@ class ListsController < ApplicationController
         render json: {
           id: @list.id,
           name: @list.name,
+          pinned: @list.pinned,
           category_id: @list.category_id,
           category: @list.category ? {
             id: @list.category.id,
@@ -122,6 +124,15 @@ class ListsController < ApplicationController
     end
   end
 
+  def toggle_pin
+    new_pinned = !@list.pinned
+    @list.update_column(:pinned, new_pinned)
+
+    respond_to do |format|
+      format.json { render json: { success: true, pinned: new_pinned }, status: :ok }
+    end
+  end
+
   private
 
   def set_list
@@ -129,6 +140,6 @@ class ListsController < ApplicationController
   end
 
   def list_params
-    params.require(:list).permit(:name, :category_id)
+    params.require(:list).permit(:name, :category_id, :pinned)
   end
 end

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-const SlideOverPanel = ({ isOpen, onClose, title, children, footer }) => {
+const SlideOverPanel = ({ isOpen, onClose, title, children, footer, headerActions }) => {
   // Lock body scroll when open
   useEffect(() => {
     if (isOpen) {
@@ -46,12 +46,15 @@ const SlideOverPanel = ({ isOpen, onClose, title, children, footer }) => {
           className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b"
           style={{ borderColor: 'rgba(199, 199, 204, 0.3)', backgroundColor: '#FAFAFA' }}
         >
-          <h2
-            className="text-2xl font-display"
-            style={{ color: '#1D1D1F', fontWeight: 500 }}
-          >
-            {title}
-          </h2>
+          <div className="flex items-center gap-3">
+            <h2
+              className="text-2xl font-display"
+              style={{ color: '#1D1D1F', fontWeight: 500 }}
+            >
+              {title}
+            </h2>
+            {headerActions}
+          </div>
           <button
             onClick={onClose}
             className="w-10 h-10 rounded-full flex items-center justify-center transition hover:bg-gray-100"
