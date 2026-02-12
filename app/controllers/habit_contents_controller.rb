@@ -9,7 +9,7 @@ class HabitContentsController < ApplicationController
         @habit_contents = Document.left_joins(:habits)
                                        .where('habits.id IS NULL OR habits.user_id = ?', current_user.id)
                                        .distinct
-                                       .includes(habits: :category, tasks: [], tags: [], categories: [])
+                                       .includes(habits: :category, tasks: [], tags: [], categories: [], files_attachments: :blob)
                                        .order(pinned: :desc, created_at: :desc)
 
         render json: @habit_contents.map { |content|
@@ -21,7 +21,7 @@ class HabitContentsController < ApplicationController
               categories: { only: [:id, :name, :color, :icon] }
             },
             methods: [:youtube_embed_url]
-          ).merge(body: content.body.to_s)
+          ).merge(body: content.body.to_s, files: file_attachments_json(content))
         }
       }
     end
@@ -40,7 +40,7 @@ class HabitContentsController < ApplicationController
             categories: { only: [:id, :name, :color, :icon] }
           },
           methods: [:youtube_embed_url]
-        ).merge(body: @habit_content.body.to_s)
+        ).merge(body: @habit_content.body.to_s, files: file_attachments_json(@habit_content))
       }
     end
   end
@@ -94,7 +94,15 @@ class HabitContentsController < ApplicationController
     task_ids = params[:habit_content][:task_ids].reject(&:blank?) if params[:habit_content][:task_ids]
     category_ids = params[:habit_content][:category_ids]&.reject(&:blank?)
 
-    if @habit_content.update(habit_content_params.except(:habit_ids, :task_ids, :tag_names, :category_ids))
+    # Purge any files requested for removal
+    if params[:habit_content][:remove_file_ids].present?
+      params[:habit_content][:remove_file_ids].each do |file_id|
+        attachment = @habit_content.files.find { |f| f.id.to_s == file_id.to_s }
+        attachment&.purge_later
+      end
+    end
+
+    if @habit_content.update(habit_content_params.except(:habit_ids, :task_ids, :tag_names, :category_ids, :remove_file_ids))
       @habit_content.habit_ids = habit_ids if habit_ids
       @habit_content.task_ids = task_ids if task_ids
       @habit_content.category_ids = category_ids if category_ids
@@ -170,7 +178,19 @@ class HabitContentsController < ApplicationController
     end
   end
 
+  def file_attachments_json(record)
+    record.files.map do |file|
+      {
+        id: file.id,
+        filename: file.filename.to_s,
+        content_type: file.content_type,
+        byte_size: file.byte_size,
+        url: Rails.application.routes.url_helpers.rails_blob_path(file, only_path: true)
+      }
+    end
+  end
+
   def habit_content_params
-    params.require(:habit_content).permit(:content_type, :title, :body, :position, :pinned, metadata: {}, habit_ids: [], task_ids: [], tag_names: [], category_ids: [])
+    params.require(:habit_content).permit(:content_type, :title, :body, :position, :pinned, metadata: {}, habit_ids: [], task_ids: [], tag_names: [], category_ids: [], files: [], remove_file_ids: [])
   end
 end

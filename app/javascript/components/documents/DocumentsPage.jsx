@@ -265,20 +265,30 @@ const DocumentsPage = ({ habits }) => {
               : '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)'
           }}
         >
-          {/* Pin toggle button - top right */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              togglePinMutation.mutate(content.id);
-            }}
-            className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center transition hover:scale-110 rounded-full hover:bg-gray-100"
-            title={content.pinned ? 'Unpin document' : 'Pin document'}
-          >
-            <i
-              className={`fa-solid fa-thumbtack text-sm transition ${content.pinned ? '' : 'opacity-30 hover:opacity-60'}`}
-              style={{ color: content.pinned ? '#2D2D2F' : '#8E8E93' }}
-            ></i>
-          </button>
+          {/* Top-right icons */}
+          <div className="absolute top-2 right-2 flex items-center gap-1">
+            {content.files && content.files.length > 0 && (
+              <span
+                className="w-7 h-7 flex items-center justify-center"
+                title={`${content.files.length} attachment${content.files.length === 1 ? '' : 's'}`}
+              >
+                <i className="fa-solid fa-paperclip text-sm" style={{ color: '#8E8E93' }}></i>
+              </span>
+            )}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                togglePinMutation.mutate(content.id);
+              }}
+              className="w-7 h-7 flex items-center justify-center transition hover:scale-110 rounded-full hover:bg-gray-100"
+              title={content.pinned ? 'Unpin document' : 'Pin document'}
+            >
+              <i
+                className={`fa-solid fa-thumbtack text-sm transition ${content.pinned ? '' : 'opacity-30 hover:opacity-60'}`}
+                style={{ color: content.pinned ? '#2D2D2F' : '#8E8E93' }}
+              ></i>
+            </button>
+          </div>
 
           <div className="flex items-start gap-4 min-w-0 pr-8">
             {/* Content Info */}

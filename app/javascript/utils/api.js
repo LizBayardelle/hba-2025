@@ -29,6 +29,27 @@ const apiRequest = async (url, options = {}) => {
   return response.json();
 };
 
+// Multipart fetch wrapper (for file uploads via FormData)
+const multipartRequest = async (url, options = {}) => {
+  const config = {
+    ...options,
+    headers: {
+      'Accept': 'application/json',
+      'X-CSRF-Token': getCsrfToken(),
+      ...options.headers,
+    },
+  };
+
+  const response = await fetch(url, config);
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Request failed' }));
+    throw new Error(error.message || `Request failed with status ${response.status}`);
+  }
+
+  return response.json();
+};
+
 // Document API methods
 export const documentsApi = {
   // Fetch all documents
@@ -57,6 +78,24 @@ export const documentsApi = {
   // Toggle pin status
   togglePin: (id) => apiRequest(`/contents/${id}/toggle_pin`, {
     method: 'POST',
+  }),
+
+  // Add files to a document
+  addFiles: (id, files) => {
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append('habit_content[files][]', file);
+    });
+    return multipartRequest(`/contents/${id}`, {
+      method: 'PATCH',
+      body: formData,
+    });
+  },
+
+  // Remove a file attachment from a document
+  removeFile: (id, fileId) => apiRequest(`/contents/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ habit_content: { remove_file_ids: [fileId] } }),
   }),
 };
 

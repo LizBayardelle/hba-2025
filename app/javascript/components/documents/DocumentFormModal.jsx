@@ -2,6 +2,14 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import SlideOverPanel from '../shared/SlideOverPanel';
 import { documentsApi, tasksApi, categoriesApi } from '../../utils/api';
+
+const ACCEPTED_FILE_TYPES = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.png,.jpg,.jpeg,.gif,.webp,.svg';
+
+const formatFileSize = (bytes) => {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
 import useDocumentsStore from '../../stores/documentsStore';
 
 // Helper function to detect content type from URL
@@ -123,6 +131,7 @@ const DocumentFormModal = ({ habits, allTags }) => {
       setHabitFilter('');
       setTaskFilter('');
       setSaveStatus(null);
+      setPendingFiles([]);
       trixLoadedRef.current = false;
       if (trixEditorRef.current?.editor) {
         trixEditorRef.current.editor.loadHTML('');
@@ -181,7 +190,12 @@ const DocumentFormModal = ({ habits, allTags }) => {
   // Create mutation (for new mode - button click)
   const createMutation = useMutation({
     mutationFn: (data) => documentsApi.create({ habit_content: data }),
-    onSuccess: async () => {
+    onSuccess: async (response) => {
+      // Upload pending files if any
+      if (pendingFiles.length > 0 && response.content?.id) {
+        await documentsApi.addFiles(response.content.id, pendingFiles);
+        setPendingFiles([]);
+      }
       await queryClient.invalidateQueries({ queryKey: ['documents'] });
       closeFormModal();
     },
@@ -219,6 +233,63 @@ const DocumentFormModal = ({ habits, allTags }) => {
       closeFormModal();
     },
   });
+
+  // File upload state
+  const [isUploadingFiles, setIsUploadingFiles] = useState(false);
+  const [pendingFiles, setPendingFiles] = useState([]); // Local files for new mode
+  const fileInputRef = useRef(null);
+
+  // Add files mutation (edit mode only)
+  const addFilesMutation = useMutation({
+    mutationFn: (files) => documentsApi.addFiles(documentId, files),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['documents'] }),
+        queryClient.invalidateQueries({ queryKey: ['document', documentId] }),
+      ]);
+      setIsUploadingFiles(false);
+    },
+    onError: () => {
+      setIsUploadingFiles(false);
+    },
+  });
+
+  // Remove file mutation (edit mode only)
+  const removeFileMutation = useMutation({
+    mutationFn: (fileId) => documentsApi.removeFile(documentId, fileId),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['documents'] }),
+        queryClient.invalidateQueries({ queryKey: ['document', documentId] }),
+      ]);
+    },
+  });
+
+  // Handle file selection
+  const handleFileSelect = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    if (mode === 'edit') {
+      setIsUploadingFiles(true);
+      addFilesMutation.mutate(files);
+    } else {
+      // New mode: collect files locally
+      setPendingFiles(prev => [...prev, ...files]);
+    }
+    // Reset input so the same file can be re-selected
+    e.target.value = '';
+  };
+
+  // Handle file removal
+  const handleRemoveFile = (fileId, isPending = false) => {
+    if (isPending) {
+      // Remove from local pending files by index
+      setPendingFiles(prev => prev.filter((_, i) => i !== fileId));
+    } else {
+      removeFileMutation.mutate(fileId);
+    }
+  };
 
   // Auto-save for edit mode (debounced)
   const autoSave = useCallback((overrides = {}) => {
@@ -593,6 +664,115 @@ const DocumentFormModal = ({ habits, allTags }) => {
           />
           <p className="text-xs font-light mt-2" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#8E8E93' }}>
             Add a URL to embed YouTube, Vimeo, or link to external content
+          </p>
+        </div>
+
+        {/* File Attachments */}
+        <div className="mb-6">
+          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+            Attachments <span className="font-normal" style={{ color: '#8E8E93' }}>(optional)</span>
+          </label>
+
+          {/* Existing server files (edit mode) */}
+          {mode === 'edit' && document?.files && document.files.length > 0 && (
+            <div className="space-y-2 mb-3">
+              {document.files.map((file) => (
+                <div
+                  key={file.id}
+                  className="flex items-center justify-between px-3 py-2 rounded-lg"
+                  style={{ backgroundColor: 'rgba(142, 142, 147, 0.08)', border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <i className={`fa-solid ${file.content_type?.startsWith('image/') ? 'fa-image' : file.content_type === 'application/pdf' ? 'fa-file-pdf' : 'fa-file'} text-sm`} style={{ color: '#8E8E93' }}></i>
+                    <span className="text-sm truncate" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, color: '#1D1D1F' }}>
+                      {file.filename}
+                    </span>
+                    <span className="text-xs flex-shrink-0" style={{ color: '#8E8E93' }}>
+                      {formatFileSize(file.byte_size)}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveFile(file.id)}
+                    disabled={removeFileMutation.isPending}
+                    className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-50 transition"
+                    title="Remove file"
+                  >
+                    <i className="fa-solid fa-times text-xs" style={{ color: '#DC2626' }}></i>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Pending local files (new mode) */}
+          {mode === 'new' && pendingFiles.length > 0 && (
+            <div className="space-y-2 mb-3">
+              {pendingFiles.map((file, index) => (
+                <div
+                  key={`${file.name}-${index}`}
+                  className="flex items-center justify-between px-3 py-2 rounded-lg"
+                  style={{ backgroundColor: 'rgba(142, 142, 147, 0.08)', border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <i className={`fa-solid ${file.type?.startsWith('image/') ? 'fa-image' : file.type === 'application/pdf' ? 'fa-file-pdf' : 'fa-file'} text-sm`} style={{ color: '#8E8E93' }}></i>
+                    <span className="text-sm truncate" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, color: '#1D1D1F' }}>
+                      {file.name}
+                    </span>
+                    <span className="text-xs flex-shrink-0" style={{ color: '#8E8E93' }}>
+                      {formatFileSize(file.size)}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveFile(index, true)}
+                    className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-50 transition"
+                    title="Remove file"
+                  >
+                    <i className="fa-solid fa-times text-xs" style={{ color: '#DC2626' }}></i>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Upload button */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept={ACCEPTED_FILE_TYPES}
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploadingFiles}
+            className="w-full px-4 py-3 rounded-lg transition hover:opacity-80 flex items-center justify-center gap-2"
+            style={{
+              border: '1.5px dashed rgba(142, 142, 147, 0.4)',
+              backgroundColor: 'rgba(142, 142, 147, 0.04)',
+              color: '#8E8E93',
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 500,
+              fontSize: '0.875rem',
+            }}
+          >
+            {isUploadingFiles ? (
+              <>
+                <i className="fa-solid fa-spinner fa-spin text-sm"></i>
+                <span>Uploading...</span>
+              </>
+            ) : (
+              <>
+                <i className="fa-solid fa-paperclip text-sm"></i>
+                <span>Attach Files</span>
+              </>
+            )}
+          </button>
+          <p className="text-xs font-light mt-2" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#8E8E93' }}>
+            PDFs, images, documents, spreadsheets
           </p>
         </div>
 
