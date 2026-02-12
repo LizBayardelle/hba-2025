@@ -34,6 +34,9 @@ gem "bootsnap", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
 
+# Use Active Storage with Amazon S3
+gem "aws-sdk-s3", require: false
+
 # Google Calendar integration
 gem "google-apis-calendar_v3"
 gem "omniauth-google-oauth2"
