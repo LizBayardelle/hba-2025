@@ -1,0 +1,46 @@
+<% content_for :head do %>
+  <%= javascript_include_tag "goals_app", type: "module" %>
+<% end %>
+
+<div class="flex h-screen relative" style="background-color: #F5F5F7;">
+  <%= render 'shared/sidebar' %>
+
+  <!-- Mobile overlay -->
+  <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 md:hidden hidden"></div>
+
+  <!-- Menu flag button -->
+  <button id="menu-button" class="fixed left-0 z-20 md:hidden rounded-r-lg shadow-lg flex items-center justify-center py-1.5 px-3 transition-all"
+    style="top: 200px; background: linear-gradient(135deg, #424245, #2C2C2E); writing-mode: vertical-rl;">
+    <span class="text-white font-bold text-sm tracking-wider">MENU</span>
+  </button>
+
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const menuButton = document.getElementById('menu-button');
+    const closeButton = document.getElementById('sidebar-close');
+
+    function openSidebar() {
+      sidebar.classList.remove('-translate-x-full');
+      sidebar.classList.add('translate-x-0');
+      overlay.classList.remove('hidden');
+      menuButton.classList.add('hidden');
+    }
+
+    function closeSidebar() {
+      sidebar.classList.add('-translate-x-full');
+      sidebar.classList.remove('translate-x-0');
+      overlay.classList.add('hidden');
+      menuButton.classList.remove('hidden');
+    }
+
+    menuButton.addEventListener('click', openSidebar);
+    closeButton.addEventListener('click', closeSidebar);
+    overlay.addEventListener('click', closeSidebar);
+  </script>
+
+  <!-- Main Content Area - React will mount here -->
+  <main class="flex-1 overflow-y-auto" style="background-color: #F5F5F7;">
+    <div id="goals-react-root"></div>
+  </main>
+</div>

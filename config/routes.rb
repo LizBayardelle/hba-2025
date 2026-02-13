@@ -23,6 +23,7 @@ Rails.application.routes.draw do
     end
   end
   get 'journal', to: 'journals#index'
+  get 'goals', to: 'goals#index'
   get 'tasks', to: 'tasks#index'
   get 'tags', to: 'tags#index'
   get 'settings', to: 'settings#index'
@@ -55,6 +56,17 @@ Rails.application.routes.draw do
   resources :journals, only: [:index, :show, :create, :update, :destroy]
   resources :tasks, only: [:index, :show, :create, :update, :destroy] do
     resources :checklist_items, only: [:create, :update, :destroy], module: :tasks do
+      collection do
+        patch :reorder
+      end
+    end
+  end
+  resources :goals, only: [:index, :show, :create, :update, :destroy] do
+    member do
+      post :increment
+      post :decrement
+    end
+    resources :checklist_items, only: [:create, :update, :destroy], module: :goals do
       collection do
         patch :reorder
       end

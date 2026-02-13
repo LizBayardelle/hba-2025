@@ -36,6 +36,12 @@ const ChecklistSection = ({
         update: (itemId, data) => checklistItemsApi.updateForList(parentId, itemId, data),
         delete: (itemId) => checklistItemsApi.deleteForList(parentId, itemId),
       };
+    } else if (parentType === 'goal') {
+      return {
+        create: (data) => checklistItemsApi.createForGoal(parentId, data),
+        update: (itemId, data) => checklistItemsApi.updateForGoal(parentId, itemId, data),
+        delete: (itemId) => checklistItemsApi.deleteForGoal(parentId, itemId),
+      };
     } else {
       return {
         create: (data) => checklistItemsApi.createForHabit(parentId, data),
@@ -54,6 +60,9 @@ const ChecklistSection = ({
     } else if (parentType === 'list') {
       queryClient.invalidateQueries(['lists']);
       queryClient.invalidateQueries(['list', parentId]);
+    } else if (parentType === 'goal') {
+      queryClient.invalidateQueries(['goals']);
+      queryClient.invalidateQueries(['goal', parentId]);
     } else {
       queryClient.invalidateQueries(['habits']);
       queryClient.invalidateQueries(['habit', parentId]);

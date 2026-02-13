@@ -2,6 +2,7 @@ class Category < ApplicationRecord
   belongs_to :user
   has_many :habits, dependent: :destroy
   has_many :tasks, dependent: :nullify
+  has_many :goals, dependent: :nullify
   has_many :lists, dependent: :nullify
   has_and_belongs_to_many :documents
 

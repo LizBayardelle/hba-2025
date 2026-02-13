@@ -17,6 +17,7 @@ class User < ApplicationRecord
   has_many :habit_completions, dependent: :destroy
   has_many :journals, dependent: :destroy
   has_many :tasks, dependent: :destroy
+  has_many :goals, dependent: :destroy
   has_many :tags, dependent: :destroy
   has_many :importance_levels, dependent: :destroy
   has_many :time_blocks, dependent: :destroy

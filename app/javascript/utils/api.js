@@ -177,9 +177,34 @@ export const tasksApi = {
   }),
 };
 
+// Goals API methods
+export const goalsApi = {
+  fetchAll: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return apiRequest(`/goals.json${query ? `?${query}` : ''}`);
+  },
+  fetchOne: (id) => apiRequest(`/goals/${id}.json`),
+  create: (data) => apiRequest('/goals', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  update: (id, data) => apiRequest(`/goals/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  }),
+  delete: (id) => apiRequest(`/goals/${id}`, {
+    method: 'DELETE',
+  }),
+  increment: (id) => apiRequest(`/goals/${id}/increment`, {
+    method: 'POST',
+  }),
+  decrement: (id) => apiRequest(`/goals/${id}/decrement`, {
+    method: 'POST',
+  }),
+};
+
 // Categories API methods
 export const categoriesApi = {
-  // Fetch all categories
   fetchAll: () => apiRequest('/categories.json'),
 };
 
@@ -319,6 +344,26 @@ export const checklistItemsApi = {
   }),
 
   reorderForList: (listId, itemIds) => apiRequest(`/lists/${listId}/checklist_items/reorder`, {
+    method: 'PATCH',
+    body: JSON.stringify({ item_ids: itemIds }),
+  }),
+
+  // Goal checklist items
+  createForGoal: (goalId, data) => apiRequest(`/goals/${goalId}/checklist_items`, {
+    method: 'POST',
+    body: JSON.stringify({ checklist_item: data }),
+  }),
+
+  updateForGoal: (goalId, itemId, data) => apiRequest(`/goals/${goalId}/checklist_items/${itemId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ checklist_item: data }),
+  }),
+
+  deleteForGoal: (goalId, itemId) => apiRequest(`/goals/${goalId}/checklist_items/${itemId}`, {
+    method: 'DELETE',
+  }),
+
+  reorderForGoal: (goalId, itemIds) => apiRequest(`/goals/${goalId}/checklist_items/reorder`, {
     method: 'PATCH',
     body: JSON.stringify({ item_ids: itemIds }),
   }),

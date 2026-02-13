@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_02_11_162548) do
+ActiveRecord::Schema[7.2].define(version: 2026_02_12_200000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -99,6 +99,13 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_11_162548) do
     t.index ["pinned"], name: "index_documents_on_pinned"
   end
 
+  create_table "documents_goals", id: false, force: :cascade do |t|
+    t.bigint "document_id", null: false
+    t.bigint "goal_id", null: false
+    t.index ["document_id", "goal_id"], name: "index_documents_goals_on_document_id_and_goal_id", unique: true
+    t.index ["goal_id", "document_id"], name: "index_documents_goals_on_goal_id_and_document_id"
+  end
+
   create_table "documents_habits", id: false, force: :cascade do |t|
     t.bigint "document_id", null: false
     t.bigint "habit_id", null: false
@@ -114,6 +121,32 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_11_162548) do
     t.index ["document_id", "task_id"], name: "index_documents_tasks_on_document_id_and_task_id", unique: true
     t.index ["document_id"], name: "index_documents_tasks_on_document_id"
     t.index ["task_id"], name: "index_documents_tasks_on_task_id"
+  end
+
+  create_table "goals", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "description"
+    t.string "goal_type", default: "counted", null: false
+    t.integer "target_count", default: 1
+    t.integer "current_count", default: 0
+    t.string "unit_name"
+    t.bigint "user_id", null: false
+    t.bigint "category_id"
+    t.bigint "importance_level_id"
+    t.bigint "time_block_id"
+    t.boolean "completed", default: false, null: false
+    t.datetime "completed_at"
+    t.datetime "archived_at"
+    t.integer "position"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["archived_at"], name: "index_goals_on_archived_at"
+    t.index ["category_id"], name: "index_goals_on_category_id"
+    t.index ["completed"], name: "index_goals_on_completed"
+    t.index ["goal_type"], name: "index_goals_on_goal_type"
+    t.index ["importance_level_id"], name: "index_goals_on_importance_level_id"
+    t.index ["time_block_id"], name: "index_goals_on_time_block_id"
+    t.index ["user_id"], name: "index_goals_on_user_id"
   end
 
   create_table "habit_completions", force: :cascade do |t|
@@ -345,6 +378,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_11_162548) do
   add_foreign_key "checklist_items", "users"
   add_foreign_key "documents_tasks", "documents"
   add_foreign_key "documents_tasks", "tasks"
+  add_foreign_key "goals", "categories"
+  add_foreign_key "goals", "importance_levels"
+  add_foreign_key "goals", "time_blocks"
+  add_foreign_key "goals", "users"
   add_foreign_key "habit_completions", "habits"
   add_foreign_key "habit_completions", "users"
   add_foreign_key "habits", "categories"
