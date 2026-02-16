@@ -252,7 +252,107 @@
 <!-- React Modal Root for Dashboard -->
 <div id="dashboard-modals-root"></div>
 
+<style>
+  @keyframes dashCompletionPulse {
+    0% { transform: scale(1); }
+    25% { transform: scale(1.6); }
+    50% { transform: scale(0.9); }
+    100% { transform: scale(1); }
+  }
+  @keyframes dashSparkleFloat {
+    0% { opacity: 1; transform: translate(0, 0) scale(1); }
+    60% { opacity: 0.8; }
+    100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.4); }
+  }
+  @keyframes dashRingBurst {
+    0% { transform: scale(0.5); opacity: 0.8; }
+    100% { transform: scale(2.8); opacity: 0; }
+  }
+  @keyframes dashRowGlow {
+    0% { background-color: var(--glow-color); }
+    100% { background-color: transparent; }
+  }
+  @keyframes dashStreakPop {
+    0% { transform: scale(1); opacity: 0.6; }
+    40% { transform: scale(1.5); opacity: 1; }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes dashStreakFirePulse {
+    0% { transform: scale(1); filter: brightness(1); }
+    30% { transform: scale(1.4); filter: brightness(1.5); }
+    60% { transform: scale(0.95); filter: brightness(1); }
+    100% { transform: scale(1); filter: brightness(1); }
+  }
+</style>
+
 <script>
+// Completion celebration animation — plays on habit/task completion
+function playCompletionAnimation(buttonEl, color) {
+  // 1) Icon pulse
+  const icon = buttonEl.querySelector('i');
+  if (icon) {
+    icon.style.animation = 'dashCompletionPulse 0.45s ease-out';
+    icon.addEventListener('animationend', () => { icon.style.animation = ''; }, { once: true });
+  }
+
+  // 2) Ring burst
+  const ring = document.createElement('div');
+  Object.assign(ring.style, {
+    position: 'absolute',
+    top: '50%', left: '50%',
+    width: '20px', height: '20px',
+    marginTop: '-10px', marginLeft: '-10px',
+    borderRadius: '50%',
+    border: `2px solid ${color}`,
+    pointerEvents: 'none',
+    animation: 'dashRingBurst 0.5s ease-out forwards',
+  });
+  buttonEl.style.position = 'relative';
+  buttonEl.style.overflow = 'visible';
+  buttonEl.appendChild(ring);
+  ring.addEventListener('animationend', () => ring.remove(), { once: true });
+
+  // 3) Sparkle particles — small symbols floating outward
+  const symbols = ['\u2713', '\u2728', '\u2605', '\u2713']; // ✓ ✨ ★ ✓
+  for (let i = 0; i < 5; i++) {
+    const spark = document.createElement('div');
+    const angle = (Math.PI * 2 * i) / 5 + (Math.random() - 0.5) * 0.6;
+    const dist = 28 + Math.random() * 18;
+    const dx = Math.cos(angle) * dist;
+    const dy = Math.sin(angle) * dist - 12; // bias upward
+    spark.textContent = symbols[i % symbols.length];
+    Object.assign(spark.style, {
+      position: 'absolute',
+      top: '50%', left: '50%',
+      marginTop: '-6px', marginLeft: '-6px',
+      fontSize: '0.7rem',
+      fontWeight: '800',
+      color: color,
+      pointerEvents: 'none',
+      zIndex: '10',
+      '--dx': dx + 'px',
+      '--dy': dy + 'px',
+      animation: `dashSparkleFloat 0.65s ease-out ${i * 40}ms forwards`,
+      opacity: '0',
+    });
+    buttonEl.appendChild(spark);
+    setTimeout(() => spark.remove(), 750);
+  }
+
+  // 4) Row glow — brief flash of color across the item row
+  const row = buttonEl.closest('.habit-item, .task-item');
+  if (row) {
+    row.style.setProperty('--glow-color', color + '18');
+    row.style.borderRadius = '6px';
+    row.style.animation = 'dashRowGlow 0.8s ease-out forwards';
+    row.addEventListener('animationend', () => { row.style.animation = ''; }, { once: true });
+  }
+}
+
+// The selected dashboard date (may be a past date via arrow navigation)
+const DASHBOARD_DATE = '<%= @today.strftime('%Y-%m-%d') %>';
+
 // Today's Focus view toggle
 function switchFocusView(view) {
   const container = document.getElementById('focus-habits-container');
@@ -571,13 +671,14 @@ async function toggleDashboardHabit(habitId, wasComplete) {
       headers: {
         'X-CSRF-Token': document.querySelector('[name=csrf-token]').content,
         'Content-Type': 'application/json'
-      }
+      },
+      body: JSON.stringify({ date: DASHBOARD_DATE })
     });
 
     const data = await response.json();
 
     const nameDiv = habitRow.querySelector('.flex-1');
-    const countDiv = habitRow.querySelector('.text-xs');
+    const countDiv = habitRow.querySelector('.text-xs.font-light');
     const targetCount = parseInt(habitRow.dataset.target);
 
     // Get category colors from data attributes
@@ -598,12 +699,17 @@ async function toggleDashboardHabit(habitId, wasComplete) {
       isComplete: newIsComplete
     });
 
+    // Always update onclick first so uncheck works
+    button.setAttribute('onclick', `toggleDashboardHabit(${habitId}, ${newIsComplete})`);
+
     // Update UI
     if (newIsComplete) {
       icon.className = 'fa-solid fa-circle-check text-sm';
       icon.style.color = categoryColor;
       nameDiv.classList.add('line-through', 'opacity-60');
       nameDiv.style.color = lightColor;
+      // Celebrate completion
+      if (statusChanged) playCompletionAnimation(button, categoryColor);
     } else {
       icon.className = 'fa-regular fa-circle text-sm';
       icon.style.color = lightColor;
@@ -611,8 +717,34 @@ async function toggleDashboardHabit(habitId, wasComplete) {
       nameDiv.style.color = categoryColor;
     }
 
-    countDiv.textContent = `${data.count} / ${targetCount}`;
-    button.setAttribute('onclick', `toggleDashboardHabit(${habitId}, ${newIsComplete})`);
+    if (countDiv) countDiv.textContent = `${data.count} / ${targetCount}`;
+
+    // Update streak display
+    const streakDisplay = habitRow.querySelector('.streak-display');
+    const streakCount = habitRow.querySelector('.streak-count');
+    if (streakDisplay && streakCount) {
+      const newStreak = data.streak || 0;
+      const oldStreak = parseInt(streakCount.textContent) || 0;
+
+      if (newStreak > 0) {
+        streakDisplay.style.display = '';
+        streakCount.textContent = newStreak;
+        streakDisplay.style.color = newIsComplete ? categoryColor : '#8E8E93';
+
+        // Animate if streak changed
+        if (newStreak !== oldStreak) {
+          const fireIcon = streakDisplay.querySelector('i');
+          if (fireIcon) {
+            fireIcon.style.animation = 'dashStreakFirePulse 0.5s ease-out';
+            fireIcon.addEventListener('animationend', () => { fireIcon.style.animation = ''; }, { once: true });
+          }
+          streakCount.style.animation = 'dashStreakPop 0.45s ease-out';
+          streakCount.addEventListener('animationend', () => { streakCount.style.animation = ''; }, { once: true });
+        }
+      } else {
+        streakDisplay.style.display = 'none';
+      }
+    }
 
     // Recalculate totals
     let totalComplete = 0;
@@ -931,6 +1063,8 @@ async function toggleTask(taskId, wasCompleted) {
         icon.className = 'fa-solid fa-circle-check text-xs';
         icon.style.color = color;
         nameSpan.classList.add('line-through', 'opacity-60');
+        // Celebrate completion
+        playCompletionAnimation(button, color);
       } else {
         icon.className = 'fa-regular fa-circle text-xs';
         icon.style.color = color;

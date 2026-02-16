@@ -161,6 +161,27 @@ class Habit < ApplicationRecord
     streak
   end
 
+  # Single source of truth for streak display on any date.
+  # Returns the "at risk" streak (previous due date's streak) when the given date is incomplete.
+  def streak_for_date(date)
+    current_streak = calculate_streak!(date)
+    return current_streak if current_streak > 0
+
+    # If 0, look back to find an "at risk" streak from the previous due date
+    if schedule_mode == 'flexible'
+      calculate_streak!(date - 1.day)
+    else
+      check_date = date - 1.day
+      365.times do
+        if due_on?(check_date)
+          return calculate_streak!(check_date)
+        end
+        check_date -= 1.day
+      end
+      0
+    end
+  end
+
   def target_met_today?
     completion = habit_completions.find_by(completed_at: Time.zone.today)
     completion && completion.count >= target_count

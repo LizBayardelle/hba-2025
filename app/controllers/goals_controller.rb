@@ -8,8 +8,8 @@ class GoalsController < ApplicationController
     case params[:status]
     when 'completed'
       @goals = @goals.where(completed: true)
-    when 'active'
-      @goals = @goals.where(completed: false, archived_at: nil)
+    when 'all'
+      @goals = @goals.where(archived_at: nil)
     else
       @goals = @goals.where(completed: false, archived_at: nil)
     end

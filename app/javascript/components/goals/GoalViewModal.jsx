@@ -123,12 +123,13 @@ const GoalViewModal = () => {
           <div
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium"
             style={{
-              backgroundColor: goal.goal_type === 'counted' ? '#7C3AED' : '#0891B2',
+              backgroundColor: '#1d3e4c',
               color: 'white',
             }}
           >
-            <i className={`fa-solid ${goal.goal_type === 'counted' ? 'fa-hashtag' : 'fa-list-ol'}`}></i>
-            <span>{goal.goal_type === 'counted' ? 'Counted' : 'Named Steps'}</span>
+            {goal.goal_type === 'counted' && !goal.unit_name && <i className="fa-solid fa-hashtag"></i>}
+            {goal.goal_type !== 'counted' && <i className="fa-solid fa-list-ol"></i>}
+            <span>{goal.goal_type === 'counted' ? (goal.unit_name ? `# of ${goal.unit_name}` : 'Counted') : 'Named Steps'}</span>
           </div>
 
           {/* Category */}

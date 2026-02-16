@@ -46,10 +46,7 @@ const GoalsPage = () => {
   const { data: goals = [], isLoading, error } = useQuery({
     queryKey: ['goals', statusFilter, searchQuery],
     queryFn: () => {
-      const params = {};
-      if (statusFilter !== 'all') {
-        params.status = statusFilter;
-      }
+      const params = { status: statusFilter };
       if (searchQuery) params.search = searchQuery;
       return goalsApi.fetchAll(params);
     },
