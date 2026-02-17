@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { checklistItemsApi } from '../../utils/api';
 
@@ -17,8 +17,24 @@ const ChecklistSection = ({
   const [editingItemId, setEditingItemId] = useState(null);
   const [editingName, setEditingName] = useState('');
   const [togglingItemId, setTogglingItemId] = useState(null);
+  const [optimisticToggles, setOptimisticToggles] = useState({});
 
-  const completedCount = items.filter(item => item.completed).length;
+  // Clear optimistic toggles when server data arrives
+  useEffect(() => {
+    setOptimisticToggles({});
+  }, [items]);
+
+  // Merge optimistic toggles with server data
+  const displayItems = useMemo(() => {
+    return items.map(item => {
+      if (item.id in optimisticToggles) {
+        return { ...item, completed: optimisticToggles[item.id] };
+      }
+      return item;
+    });
+  }, [items, optimisticToggles]);
+
+  const completedCount = displayItems.filter(item => item.completed).length;
   const totalCount = items.length;
   const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
@@ -106,10 +122,12 @@ const ChecklistSection = ({
   };
 
   const handleToggleItem = (item) => {
+    const newCompleted = !item.completed;
+    setOptimisticToggles(prev => ({ ...prev, [item.id]: newCompleted }));
     setTogglingItemId(item.id);
     updateMutation.mutate({
       itemId: item.id,
-      data: { completed: !item.completed },
+      data: { completed: newCompleted },
     });
   };
 
@@ -131,6 +149,15 @@ const ChecklistSection = ({
   const handleDeleteItem = (itemId) => {
     deleteMutation.mutate(itemId);
   };
+
+  // Sort items: incomplete first, then completed (preserving relative order within each group)
+  const sortedItems = useMemo(() => {
+    return [...displayItems].sort((a, b) => {
+      if (a.completed && !b.completed) return 1;
+      if (!a.completed && b.completed) return -1;
+      return 0;
+    });
+  }, [displayItems]);
 
   // Don't render anything if there are no items and not editable
   if (items.length === 0 && !editable) {
@@ -184,7 +211,7 @@ const ChecklistSection = ({
 
       {/* Checklist items */}
       <div className="space-y-1">
-        {items.map((item) => (
+        {sortedItems.map((item) => (
           <div
             key={item.id}
             className="flex items-center gap-2 group"
