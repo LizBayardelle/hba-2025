@@ -269,7 +269,7 @@ const HabitItem = ({ habit, categoryColor, categoryDarkColor, isFirst, onComplet
                 className="text-xs px-2 py-0.5 rounded-full font-semibold hover:opacity-70 transition cursor-pointer flex items-center gap-1"
                 style={{
                   backgroundColor: '#E8EEF1',
-                  color: '#1d3e4c',
+                  color: '#1D1D1F',
                 }}
               >
                 <i className="fa-solid fa-tags text-[10px]"></i>

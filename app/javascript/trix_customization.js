@@ -1,3 +1,41 @@
+import Trix from "trix"
+
+// Register heading levels 2-6 as custom block attributes (heading1 is built-in)
+Trix.config.blockAttributes.heading2 = {
+  tagName: "h2",
+  terminal: true,
+  breakOnReturn: true,
+  group: false
+}
+
+Trix.config.blockAttributes.heading3 = {
+  tagName: "h3",
+  terminal: true,
+  breakOnReturn: true,
+  group: false
+}
+
+Trix.config.blockAttributes.heading4 = {
+  tagName: "h4",
+  terminal: true,
+  breakOnReturn: true,
+  group: false
+}
+
+Trix.config.blockAttributes.heading5 = {
+  tagName: "h5",
+  terminal: true,
+  breakOnReturn: true,
+  group: false
+}
+
+Trix.config.blockAttributes.heading6 = {
+  tagName: "h6",
+  terminal: true,
+  breakOnReturn: true,
+  group: false
+}
+
 // Customize Trix editor to add heading dropdown
 document.addEventListener('trix-initialize', function(event) {
   const editor = event.target;
@@ -43,12 +81,12 @@ document.addEventListener('trix-initialize', function(event) {
 
     // Create heading options
     const headings = [
-      { level: 1, label: 'Heading 1', size: '2em' },
-      { level: 2, label: 'Heading 2', size: '1.5em' },
-      { level: 3, label: 'Heading 3', size: '1.25em' },
-      { level: 4, label: 'Heading 4', size: '1.1em' },
-      { level: 5, label: 'Heading 5', size: '1em' },
-      { level: 6, label: 'Heading 6', size: '0.9em' }
+      { level: 1, label: 'Heading 1', size: '1.875em', weight: '700' },
+      { level: 2, label: 'Heading 2', size: '1.5em', weight: '700' },
+      { level: 3, label: 'Heading 3', size: '1.25em', weight: '600' },
+      { level: 4, label: 'Heading 4', size: '1.1em', weight: '600' },
+      { level: 5, label: 'Heading 5', size: '1em', weight: '600' },
+      { level: 6, label: 'Heading 6', size: '0.925em', weight: '600' }
     ];
 
     headings.forEach(heading => {
@@ -64,8 +102,8 @@ document.addEventListener('trix-initialize', function(event) {
         border: none;
         background: none;
         font-size: ${heading.size};
-        font-weight: 600;
-        color: #1d3e4c;
+        font-weight: ${heading.weight};
+        color: #1D1D1F;
         cursor: pointer;
         font-family: 'Space Grotesk', sans-serif;
       `;

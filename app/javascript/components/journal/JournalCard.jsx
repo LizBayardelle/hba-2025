@@ -50,7 +50,7 @@ const JournalCard = ({ journal }) => {
         <div className="flex items-center justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-lg font-bold display-font" style={{ color: '#1d3e4c' }}>
+              <h3 className="text-lg font-bold display-font" style={{ color: '#1D1D1F' }}>
                 {formatWordCount(getWordCount(journal.content))}
               </h3>
               {journal.private && (
@@ -75,7 +75,7 @@ const JournalCard = ({ journal }) => {
                     onClick={(e) => e.stopPropagation()}
                     className="text-xs px-2 py-1 rounded-lg font-medium hover:opacity-70 transition cursor-pointer flex items-center gap-1"
                     style={{
-                      backgroundColor: '#1d3e4c',
+                      backgroundColor: '#1D1D1F',
                       color: 'white',
                     }}
                   >

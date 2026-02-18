@@ -75,7 +75,7 @@ const GoalViewModal = () => {
         <div className="flex items-center justify-center py-12">
           <div
             className="animate-spin rounded-full h-12 w-12 border-b-2"
-            style={{ borderColor: '#1d3e4c' }}
+            style={{ borderColor: '#1D1D1F' }}
           ></div>
         </div>
       );
@@ -105,7 +105,7 @@ const GoalViewModal = () => {
           <div className="flex-1">
             <h2
               className={`text-2xl font-bold ${goal.completed ? 'line-through opacity-60' : ''}`}
-              style={{ color: '#1d3e4c' }}
+              style={{ color: '#1D1D1F' }}
             >
               {goal.name}
             </h2>
@@ -123,7 +123,7 @@ const GoalViewModal = () => {
           <div
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium"
             style={{
-              backgroundColor: '#1d3e4c',
+              backgroundColor: '#1D1D1F',
               color: 'white',
             }}
           >
@@ -234,7 +234,7 @@ const GoalViewModal = () => {
                   <i className="fa-solid fa-minus" style={{ color: '#1D1D1F' }}></i>
                 )}
               </button>
-              <div className="text-xl font-bold" style={{ color: '#1d3e4c', fontFamily: "'Inter', sans-serif" }}>
+              <div className="text-xl font-bold" style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif" }}>
                 {goal.current_count} / {goal.target_count}
                 {goal.unit_name && <span className="text-sm font-normal ml-1" style={{ color: '#8E8E93' }}>{goal.unit_name}</span>}
               </div>

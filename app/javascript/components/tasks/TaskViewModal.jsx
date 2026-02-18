@@ -92,7 +92,7 @@ const TaskViewModal = () => {
         <div className="flex items-center justify-center py-12">
           <div
             className="animate-spin rounded-full h-12 w-12 border-b-2"
-            style={{ borderColor: '#1d3e4c' }}
+            style={{ borderColor: '#1D1D1F' }}
           ></div>
         </div>
       );
@@ -133,7 +133,7 @@ const TaskViewModal = () => {
           </button>
           <h2
             className={`text-2xl font-bold ${task.completed ? 'line-through opacity-60' : ''}`}
-            style={{ color: '#1d3e4c' }}
+            style={{ color: '#1D1D1F' }}
           >
             {task.name}
           </h2>
@@ -241,7 +241,7 @@ const TaskViewModal = () => {
             <h3 className="text-sm mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
               Due Date
             </h3>
-            <p style={{ color: '#1d3e4c' }}>
+            <p style={{ color: '#1D1D1F' }}>
               {formatDate(task.due_date)}
               {task.due_time && ` at ${task.due_time}`}
             </p>
@@ -273,7 +273,7 @@ const TaskViewModal = () => {
             <h3 className="text-sm mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
               Location
             </h3>
-            <p style={{ color: '#1d3e4c' }}>
+            <p style={{ color: '#1D1D1F' }}>
               <i className="fa-solid fa-location-dot mr-2"></i>
               {task.location_name}
               {task.location_lat && task.location_lng && (
@@ -293,6 +293,7 @@ const TaskViewModal = () => {
             </h3>
             <div
               className="prose max-w-none trix-content"
+              style={task.category?.color ? { '--heading-color': task.category.color } : undefined}
               dangerouslySetInnerHTML={{ __html: task.notes || '' }}
             />
           </div>

@@ -3,7 +3,7 @@
   <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden" onclick="event.stopPropagation()">
     <!-- Header -->
     <div class="p-6 border-b flex items-center justify-between" style="border-color: #E8EEF1;">
-      <h2 class="text-2xl font-bold display-font" style="color: #1d3e4c;">
+      <h2 class="text-2xl font-bold display-font" style="color: #1D1D1F;">
         <%= @habit_content.title %>
       </h2>
       <button onclick="closeHabitContentModal()" class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center transition">
@@ -35,7 +35,7 @@
           <%= link_to @habit_content.metadata['url'], @habit_content.metadata['url'],
               target: '_blank',
               class: "inline-flex items-center gap-2 px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition",
-              style: "background: linear-gradient(135deg, #1d3e4c, #45606b);" do %>
+              style: "background: linear-gradient(135deg, #1D1D1F, #45606b);" do %>
             <i class="fa-solid fa-external-link-alt"></i>
             Open Link
           <% end %>
@@ -52,7 +52,7 @@
     <div class="p-6 border-t flex justify-end" style="border-color: #E8EEF1;">
       <button onclick="closeHabitContentModal()"
           class="px-6 py-2 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition"
-          style="background: linear-gradient(135deg, #1d3e4c, #45606b);">
+          style="background: linear-gradient(135deg, #1D1D1F, #45606b);">
         Close
       </button>
     </div>

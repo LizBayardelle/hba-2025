@@ -6,7 +6,7 @@
 
   <!-- Menu flag button -->
   <button id="menu-button" class="fixed left-0 z-20 md:hidden rounded-r-lg shadow-lg flex items-center justify-center py-1.5 px-3 transition-all"
-    style="top: 200px; background: linear-gradient(135deg, #1d3e4c, #45606b); writing-mode: vertical-rl;">
+    style="top: 200px; background: linear-gradient(135deg, #1D1D1F, #45606b); writing-mode: vertical-rl;">
     <span class="text-white font-bold text-sm tracking-wider">MENU</span>
   </button>
 
@@ -44,7 +44,7 @@
       <div class="max-w-3xl mx-auto">
         <!-- Header -->
         <div class="mb-8">
-          <h1 class="text-3xl font-bold display-font mb-2" style="color: #1d3e4c;">
+          <h1 class="text-3xl font-bold display-font mb-2" style="color: #1D1D1F;">
             Edit Content
           </h1>
           <p class="text-sm font-light" style="color: #657b84;">
@@ -71,7 +71,7 @@
 
             <!-- Content Type (read-only display) -->
             <div class="mb-6">
-              <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">Content Type</label>
+              <label class="block text-sm font-semibold mb-2" style="color: #1D1D1F;">Content Type</label>
               <div class="px-4 py-3 rounded-lg bg-gray-100 font-light text-gray-600 capitalize">
                 <%= @habit_content.content_type %>
               </div>
@@ -80,7 +80,7 @@
 
             <!-- Title -->
             <div class="mb-6">
-              <%= f.label :title, class: "block text-sm font-semibold mb-2", style: "color: #1d3e4c;" %>
+              <%= f.label :title, class: "block text-sm font-semibold mb-2", style: "color: #1D1D1F;" %>
               <%= f.text_field :title,
                   class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light",
                   style: "border-color: #E8EEF1;" %>
@@ -89,7 +89,7 @@
             <!-- URL Field (for youtube, video, link) -->
             <% if ['youtube', 'video', 'link'].include?(@habit_content.content_type) %>
               <div class="mb-6">
-                <%= label_tag 'habit_content[metadata][url]', "URL", class: "block text-sm font-semibold mb-2", style: "color: #1d3e4c;" %>
+                <%= label_tag 'habit_content[metadata][url]', "URL", class: "block text-sm font-semibold mb-2", style: "color: #1D1D1F;" %>
                 <%= text_field_tag 'habit_content[metadata][url]',
                     @habit_content.metadata['url'],
                     class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light",
@@ -100,7 +100,7 @@
             <!-- Document Body (for document type) -->
             <% if @habit_content.content_type == 'document' %>
               <div class="mb-6">
-                <%= f.label :body, "Document Content", class: "block text-sm font-semibold mb-2", style: "color: #1d3e4c;" %>
+                <%= f.label :body, "Document Content", class: "block text-sm font-semibold mb-2", style: "color: #1D1D1F;" %>
                 <%= f.rich_text_area :body,
                     class: "w-full rounded-lg border-2",
                     style: "border-color: #E8EEF1;" %>
@@ -111,10 +111,10 @@
             <div class="flex gap-3">
               <%= f.submit "Update Content",
                   class: "px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition cursor-pointer",
-                  style: "background: linear-gradient(135deg, #1d3e4c, #45606b);" %>
+                  style: "background: linear-gradient(135deg, #1D1D1F, #45606b);" %>
               <%= link_to "Cancel", habit_habit_content_path(@habit, @habit_content),
                   class: "px-6 py-3 rounded-lg font-semibold border-2 transition",
-                  style: "color: #1d3e4c; border-color: #E8EEF1;" %>
+                  style: "color: #1D1D1F; border-color: #E8EEF1;" %>
             </div>
           <% end %>
         </div>

@@ -901,7 +901,7 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
                               openListShowModal(list.id);
                             }}
                             className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0"
-                            style={{ backgroundColor: list.category?.color || '#1d3e4c' }}
+                            style={{ backgroundColor: list.category?.color || '#1D1D1F' }}
                             title="Preview list"
                           >
                             <i className={`fa-solid ${list.category?.icon || 'fa-list-check'} text-white`} style={{ fontSize: '0.6rem' }}></i>

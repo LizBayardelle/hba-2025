@@ -164,7 +164,7 @@
       <template x-teleport="body">
         <div x-show="showModal" @click.self="showModal = false" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" style="display: none;">
         <div @click.stop class="bg-white rounded-2xl shadow-2xl p-6 md:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-          <h2 class="text-2xl font-bold mb-6 display-font" style="color: #1d3e4c;">New Category</h2>
+          <h2 class="text-2xl font-bold mb-6 display-font" style="color: #1D1D1F;">New Category</h2>
 
           <%= form_with model: Category.new, url: categories_path, method: :post, local: true do |f| %>
             <!-- Preview Box -->
@@ -182,14 +182,14 @@
 
             <!-- Category Name -->
             <div class="mb-5">
-              <%= f.label :name, "Category Name", class: "block text-sm font-semibold mb-2", style: "color: #1d3e4c;" %>
-              <%= f.text_field :name, "x-model": "categoryName", placeholder: "e.g., Health & Fitness", class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light", style: "border-color: #E8EEF1; color: #1d3e4c;" %>
+              <%= f.label :name, "Category Name", class: "block text-sm font-semibold mb-2", style: "color: #1D1D1F;" %>
+              <%= f.text_field :name, "x-model": "categoryName", placeholder: "e.g., Health & Fitness", class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light", style: "border-color: #E8EEF1; color: #1D1D1F;" %>
             </div>
 
             <!-- Description -->
             <div class="mb-5">
-              <%= f.label :description, "Description (Optional)", class: "block text-sm font-semibold mb-2", style: "color: #1d3e4c;" %>
-              <%= f.text_area :description, rows: 2, placeholder: "e.g., Daily exercise and nutrition habits", class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light resize-none", style: "border-color: #E8EEF1; color: #1d3e4c;" %>
+              <%= f.label :description, "Description (Optional)", class: "block text-sm font-semibold mb-2", style: "color: #1D1D1F;" %>
+              <%= f.text_area :description, rows: 2, placeholder: "e.g., Daily exercise and nutrition habits", class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light resize-none", style: "border-color: #E8EEF1; color: #1D1D1F;" %>
             </div>
 
             <!-- Hidden fields for color and icon -->
@@ -198,68 +198,68 @@
 
             <!-- Icon Selector -->
             <div class="mb-5">
-              <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">Icon</label>
+              <label class="block text-sm font-semibold mb-2" style="color: #1D1D1F;">Icon</label>
               <div class="grid grid-cols-8 md:grid-cols-12 gap-2 max-h-48 overflow-y-auto p-2 border rounded-lg" style="border-color: #E8EEF1;">
                 <button type="button" @click="selectedIcon = 'fa-check'" :class="selectedIcon === 'fa-check' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-check text-sm" style="color: #1d3e4c;"></i>
+                  <i class="fa-solid fa-check text-sm" style="color: #1D1D1F;"></i>
                 </button>
                 <button type="button" @click="selectedIcon = 'fa-dumbbell'" :class="selectedIcon === 'fa-dumbbell' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-dumbbell text-sm" style="color: #1d3e4c;"></i>
+                  <i class="fa-solid fa-dumbbell text-sm" style="color: #1D1D1F;"></i>
                 </button>
                 <button type="button" @click="selectedIcon = 'fa-book'" :class="selectedIcon === 'fa-book' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-book text-sm" style="color: #1d3e4c;"></i>
+                  <i class="fa-solid fa-book text-sm" style="color: #1D1D1F;"></i>
                 </button>
                 <button type="button" @click="selectedIcon = 'fa-heart'" :class="selectedIcon === 'fa-heart' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-heart text-sm" style="color: #1d3e4c;"></i>
+                  <i class="fa-solid fa-heart text-sm" style="color: #1D1D1F;"></i>
                 </button>
                 <button type="button" @click="selectedIcon = 'fa-briefcase'" :class="selectedIcon === 'fa-briefcase' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-briefcase text-sm" style="color: #1d3e4c;"></i>
+                  <i class="fa-solid fa-briefcase text-sm" style="color: #1D1D1F;"></i>
                 </button>
                 <button type="button" @click="selectedIcon = 'fa-utensils'" :class="selectedIcon === 'fa-utensils' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-utensils text-sm" style="color: #1d3e4c;"></i>
+                  <i class="fa-solid fa-utensils text-sm" style="color: #1D1D1F;"></i>
                 </button>
                 <button type="button" @click="selectedIcon = 'fa-bed'" :class="selectedIcon === 'fa-bed' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-bed text-sm" style="color: #1d3e4c;"></i>
+                  <i class="fa-solid fa-bed text-sm" style="color: #1D1D1F;"></i>
                 </button>
                 <button type="button" @click="selectedIcon = 'fa-apple-whole'" :class="selectedIcon === 'fa-apple-whole' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-apple-whole text-sm" style="color: #1d3e4c;"></i>
+                  <i class="fa-solid fa-apple-whole text-sm" style="color: #1D1D1F;"></i>
                 </button>
                 <button type="button" @click="selectedIcon = 'fa-mug-hot'" :class="selectedIcon === 'fa-mug-hot' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-mug-hot text-sm" style="color: #1d3e4c;"></i>
+                  <i class="fa-solid fa-mug-hot text-sm" style="color: #1D1D1F;"></i>
                 </button>
                 <button type="button" @click="selectedIcon = 'fa-person-running'" :class="selectedIcon === 'fa-person-running' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-person-running text-sm" style="color: #1d3e4c;"></i>
+                  <i class="fa-solid fa-person-running text-sm" style="color: #1D1D1F;"></i>
                 </button>
                 <button type="button" @click="selectedIcon = 'fa-pills'" :class="selectedIcon === 'fa-pills' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-pills text-sm" style="color: #1d3e4c;"></i>
+                  <i class="fa-solid fa-pills text-sm" style="color: #1D1D1F;"></i>
                 </button>
                 <button type="button" @click="selectedIcon = 'fa-brain'" :class="selectedIcon === 'fa-brain' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-brain text-sm" style="color: #1d3e4c;"></i>
+                  <i class="fa-solid fa-brain text-sm" style="color: #1D1D1F;"></i>
                 </button>
                 <button type="button" @click="selectedIcon = 'fa-music'" :class="selectedIcon === 'fa-music' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-music text-sm" style="color: #1d3e4c;"></i>
+                  <i class="fa-solid fa-music text-sm" style="color: #1D1D1F;"></i>
                 </button>
                 <button type="button" @click="selectedIcon = 'fa-paintbrush'" :class="selectedIcon === 'fa-paintbrush' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-paintbrush text-sm" style="color: #1d3e4c;"></i>
+                  <i class="fa-solid fa-paintbrush text-sm" style="color: #1D1D1F;"></i>
                 </button>
                 <button type="button" @click="selectedIcon = 'fa-droplet'" :class="selectedIcon === 'fa-droplet' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-droplet text-sm" style="color: #1d3e4c;"></i>
+                  <i class="fa-solid fa-droplet text-sm" style="color: #1D1D1F;"></i>
                 </button>
                 <button type="button" @click="selectedIcon = 'fa-users'" :class="selectedIcon === 'fa-users' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-users text-sm" style="color: #1d3e4c;"></i>
+                  <i class="fa-solid fa-users text-sm" style="color: #1D1D1F;"></i>
                 </button>
                 <button type="button" @click="selectedIcon = 'fa-star'" :class="selectedIcon === 'fa-star' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-star text-sm" style="color: #1d3e4c;"></i>
+                  <i class="fa-solid fa-star text-sm" style="color: #1D1D1F;"></i>
                 </button>
                 <button type="button" @click="selectedIcon = 'fa-pen'" :class="selectedIcon === 'fa-pen' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-pen text-sm" style="color: #1d3e4c;"></i>
+                  <i class="fa-solid fa-pen text-sm" style="color: #1D1D1F;"></i>
                 </button>
               </div>
             </div>
 
             <!-- Color Selector -->
             <div class="mb-6">
-              <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">Color</label>
+              <label class="block text-sm font-semibold mb-2" style="color: #1D1D1F;">Color</label>
               <div class="flex gap-2 p-2 border rounded-lg overflow-x-auto" style="border-color: #E8EEF1;">
                 <button type="button" @click="selectedColor = '#6B8A99'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition relative flex items-center justify-center" :class="selectedColor === '#6B8A99' ? 'border-gray-800' : 'border-white'" style="background-color: #6B8A99;">
                   <i x-show="selectedColor === '#6B8A99'" class="fa-solid fa-check text-white text-sm font-black"></i>
@@ -308,10 +308,10 @@
 
             <!-- Buttons -->
             <div class="flex gap-3">
-              <button type="button" @click="showModal = false" class="flex-1 py-3 px-4 rounded-lg font-semibold border-2 transition" style="color: #1d3e4c; border-color: #E8EEF1;">
+              <button type="button" @click="showModal = false" class="flex-1 py-3 px-4 rounded-lg font-semibold border-2 transition" style="color: #1D1D1F; border-color: #E8EEF1;">
                 Cancel
               </button>
-              <%= f.submit "Create Category", class: "flex-1 py-3 px-4 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition transform hover:scale-[1.02]", style: "background: linear-gradient(135deg, #1d3e4c, #45606b);" %>
+              <%= f.submit "Create Category", class: "flex-1 py-3 px-4 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition transform hover:scale-[1.02]", style: "background: linear-gradient(135deg, #1D1D1F, #45606b);" %>
             </div>
           <% end %>
         </div>

@@ -60,7 +60,7 @@ const TaskItem = ({ task }) => {
   const dueDateStatus = getDueDateStatus();
 
   // Theme color for non-category badges
-  const themeColor = '#1d3e4c';
+  const themeColor = '#1D1D1F';
   const themeBgColor = '#E8EEF1';
 
   return (
@@ -72,12 +72,12 @@ const TaskItem = ({ task }) => {
           disabled={toggleCompleteMutation.isPending}
           className="w-6 h-6 rounded-md border-2 flex items-center justify-center transition hover:scale-110 cursor-pointer"
           style={{
-            borderColor: task.category?.color || '#1d3e4c',
-            backgroundColor: task.completed ? (task.category?.color || '#1d3e4c') : 'white',
+            borderColor: task.category?.color || '#1D1D1F',
+            backgroundColor: task.completed ? (task.category?.color || '#1D1D1F') : 'white',
           }}
         >
           {toggleCompleteMutation.isPending ? (
-            <i className="fa-solid fa-spinner fa-spin text-xs" style={{ color: task.completed ? 'white' : (task.category?.color || '#1d3e4c') }}></i>
+            <i className="fa-solid fa-spinner fa-spin text-xs" style={{ color: task.completed ? 'white' : (task.category?.color || '#1D1D1F') }}></i>
           ) : task.completed ? (
             <i className="fa-solid fa-check text-white text-xs"></i>
           ) : null}
@@ -97,7 +97,7 @@ const TaskItem = ({ task }) => {
           <div className="mb-0">
             <h4
               className={`font-semibold ${task.completed ? 'line-through' : ''}`}
-              style={{ color: '#1d3e4c' }}
+              style={{ color: '#1D1D1F' }}
             >
               {task.name}
             </h4>

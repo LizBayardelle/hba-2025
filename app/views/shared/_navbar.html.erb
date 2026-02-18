@@ -2,7 +2,7 @@
 <header class="bg-white shadow-sm" style="border-bottom: 1px solid #e5e7eb;">
   <div class="px-8 py-4 flex items-center justify-between">
     <div>
-      <h2 class="text-2xl font-bold display-font" style="color: #1d3e4c;">Dashboard</h2>
+      <h2 class="text-2xl font-bold display-font" style="color: #1D1D1F;">Dashboard</h2>
     </div>
     <div class="flex items-center gap-4">
       <!-- User Dropdown -->
@@ -25,21 +25,21 @@
             <!-- Logged In Menu -->
             <%= link_to edit_user_registration_path, class: "flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition" do %>
               <i class="fa-solid fa-user" style="color: #45606b;"></i>
-              <span class="text-sm font-medium" style="color: #1d3e4c;">My Account</span>
+              <span class="text-sm font-medium" style="color: #1D1D1F;">My Account</span>
             <% end %>
             <%= button_to destroy_user_session_path, method: :delete, class: "w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition text-left" do %>
               <i class="fa-solid fa-arrow-right-from-bracket" style="color: #45606b;"></i>
-              <span class="text-sm font-medium" style="color: #1d3e4c;">Sign Out</span>
+              <span class="text-sm font-medium" style="color: #1D1D1F;">Sign Out</span>
             <% end %>
           <% else %>
             <!-- Logged Out Menu -->
             <%= link_to new_user_session_path, class: "flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition" do %>
               <i class="fa-solid fa-arrow-right-to-bracket" style="color: #45606b;"></i>
-              <span class="text-sm font-medium" style="color: #1d3e4c;">Sign In</span>
+              <span class="text-sm font-medium" style="color: #1D1D1F;">Sign In</span>
             <% end %>
             <%= link_to new_user_registration_path, class: "flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition" do %>
               <i class="fa-solid fa-user-plus" style="color: #45606b;"></i>
-              <span class="text-sm font-medium" style="color: #1d3e4c;">Create Account</span>
+              <span class="text-sm font-medium" style="color: #1D1D1F;">Create Account</span>
             <% end %>
           <% end %>
         </div>

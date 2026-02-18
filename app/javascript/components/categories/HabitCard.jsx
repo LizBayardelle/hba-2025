@@ -270,7 +270,7 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = fa
                 href={`/tags?tag_id=${tag.id}`}
                 className="text-xs px-2 py-0.5 rounded-full font-semibold hover:opacity-70 transition cursor-pointer flex items-center gap-1"
                 style={{
-                  backgroundColor: '#1d3e4c',
+                  backgroundColor: '#1D1D1F',
                   color: 'white',
                 }}
               >

@@ -6,6 +6,7 @@ import TaskItem from './TaskItem';
 import TaskFormModal from './TaskFormModal';
 import TaskViewModal from './TaskViewModal';
 import DocumentViewModal from '../documents/DocumentViewModal';
+import DocumentFormModal from '../documents/DocumentFormModal';
 import ListShowModal from '../lists/ListShowModal';
 
 const TasksPage = () => {
@@ -485,6 +486,7 @@ const TasksPage = () => {
       <TaskFormModal allTags={allTags} categories={categories} documents={documents} />
       <TaskViewModal />
       <DocumentViewModal />
+      <DocumentFormModal />
       <ListShowModal />
     </>
   );

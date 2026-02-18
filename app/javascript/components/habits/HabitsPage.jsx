@@ -127,8 +127,8 @@ const HabitsPage = () => {
             id: blockId,
             title: habit.time_block_name || 'Anytime',
             icon: habit.time_block_icon || 'fa-clock',
-            color: habit.time_block_color || '#1d3e4c',
-            darkColor: habit.time_block_color ? getColorVariants(habit.time_block_color).dark : '#1d3e4c',
+            color: habit.time_block_color || '#1D1D1F',
+            darkColor: habit.time_block_color ? getColorVariants(habit.time_block_color).dark : '#1D1D1F',
             rank: habit.time_block_rank != null ? habit.time_block_rank : 999,
             habits: [],
           };
@@ -156,7 +156,7 @@ const HabitsPage = () => {
             title: habit.importance_level?.name || 'No Priority',
             icon: habit.importance_level?.icon || 'fa-circle',
             color: habit.importance_level?.color || '#9CA3A8',
-            darkColor: '#1d3e4c',
+            darkColor: '#1D1D1F',
             rank: habit.importance_level?.rank || 999,
             habits: [],
           };

@@ -823,7 +823,7 @@ function switchTasksView(view) {
     };
     groupColors = {
       'overdue': '#F8796D',
-      'today': '#1d3e4c',
+      'today': '#1D1D1F',
       'no_date': '#657b84',
       'future': '#657b84'
     };
@@ -1027,7 +1027,7 @@ async function toggleTask(taskId, wasCompleted) {
   const button = taskItem.querySelector('button');
   const icon = button.querySelector('i');
   const dateGroup = taskItem.dataset.dateGroup;
-  const color = dateGroup === 'overdue' ? '#F8796D' : (dateGroup === 'today' ? '#1d3e4c' : '#657b84');
+  const color = dateGroup === 'overdue' ? '#F8796D' : (dateGroup === 'today' ? '#1D1D1F' : '#657b84');
 
   // Save original icon state and show spinner
   const originalIconClass = icon.className;

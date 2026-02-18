@@ -5,14 +5,14 @@
     selectedHabitIds: preselectedHabitId ? [preselectedHabitId.toString()] : [],
     showHabitDropdown: false
   }">
-    <h2 class="text-2xl font-bold mb-6 display-font" style="color: #1d3e4c;">Add New Document</h2>
+    <h2 class="text-2xl font-bold mb-6 display-font" style="color: #1D1D1F;">Add New Document</h2>
 
     <form @submit.prevent="submitNewDocument">
       <div id="modal-errors"></div>
 
       <!-- Attach to Habits -->
       <div class="mb-6">
-        <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">Attach to Habits (optional)</label>
+        <label class="block text-sm font-semibold mb-2" style="color: #1D1D1F;">Attach to Habits (optional)</label>
         <div class="relative">
           <button type="button" @click="showHabitDropdown = !showHabitDropdown" class="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light text-left flex items-center justify-between" style="border-color: #E8EEF1;">
             <span x-text="selectedHabitIds.length === 0 ? 'No habits selected' : selectedHabitIds.length + ' habit(s) selected'" style="color: #657b84;"></span>
@@ -33,7 +33,7 @@
                            value="<%= habit.id %>"
                            x-model="selectedHabitIds"
                            class="rounded border-gray-300">
-                    <span class="text-sm font-light" style="color: #1d3e4c;"><%= habit.name %></span>
+                    <span class="text-sm font-light" style="color: #1D1D1F;"><%= habit.name %></span>
                   </label>
                 <% end %>
               </div>
@@ -65,8 +65,8 @@
                     when 'youtube' then 'fa-brands fa-youtube'
                     when 'video' then 'fa-video'
                     when 'link' then 'fa-link'
-                    end %> text-lg" :style="contentType === '<%= type %>' ? 'color: #1d3e4c;' : 'color: #9CA3A8;'"></i>
-                  <span class="font-semibold capitalize" :style="contentType === '<%= type %>' ? 'color: #1d3e4c;' : 'color: #657b84;'">
+                    end %> text-lg" :style="contentType === '<%= type %>' ? 'color: #1D1D1F;' : 'color: #9CA3A8;'"></i>
+                  <span class="font-semibold capitalize" :style="contentType === '<%= type %>' ? 'color: #1D1D1F;' : 'color: #657b84;'">
                     <%= type %>
                   </span>
                 </div>
@@ -100,10 +100,10 @@
 
       <!-- Actions -->
       <div class="flex gap-3 justify-end">
-        <button type="button" @click="showNewDocumentModal = false" class="px-6 py-3 rounded-lg font-semibold border-2 transition" style="color: #1d3e4c; border-color: #E8EEF1;">
+        <button type="button" @click="showNewDocumentModal = false" class="px-6 py-3 rounded-lg font-semibold border-2 transition" style="color: #1D1D1F; border-color: #E8EEF1;">
           Cancel
         </button>
-        <button type="submit" class="px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition cursor-pointer" style="background: linear-gradient(135deg, #1d3e4c, #45606b);">
+        <button type="submit" class="px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition cursor-pointer" style="background: linear-gradient(135deg, #1D1D1F, #45606b);">
           Add Document
         </button>
       </div>

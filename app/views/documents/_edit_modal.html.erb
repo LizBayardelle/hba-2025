@@ -1,13 +1,13 @@
 <!-- Edit Document Modal -->
 <div x-show="editDocumentId === <%= content.id %>" @click.self="editDocumentId = null" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style="display: none; z-index: 100;">
   <div @click.stop class="bg-white rounded-2xl shadow-2xl p-6 md:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-    <h2 class="text-2xl font-bold mb-6 display-font" style="color: #1d3e4c;">Edit Document</h2>
+    <h2 class="text-2xl font-bold mb-6 display-font" style="color: #1D1D1F;">Edit Document</h2>
 
     <form @submit.prevent="updateDocument(<%= content.id %>, <%= content.habit.id %>)" id="edit-form-<%= content.id %>">
       <div id="edit-modal-errors-<%= content.id %>"></div>
       <!-- Content Type (read-only display) -->
       <div class="mb-6">
-        <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">Content Type</label>
+        <label class="block text-sm font-semibold mb-2" style="color: #1D1D1F;">Content Type</label>
         <div class="px-4 py-3 rounded-lg bg-gray-100 font-light text-gray-600 capitalize">
           <%= content.content_type %>
         </div>
@@ -16,7 +16,7 @@
 
       <!-- Habit (read-only display) -->
       <div class="mb-6">
-        <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">Attached to Habit</label>
+        <label class="block text-sm font-semibold mb-2" style="color: #1D1D1F;">Attached to Habit</label>
         <div class="px-4 py-3 rounded-lg bg-gray-100 font-light text-gray-600">
           <%= content.habit.category.name %> - <%= content.habit.name %>
         </div>
@@ -24,7 +24,7 @@
 
       <!-- Title -->
       <div class="mb-6">
-        <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">Title</label>
+        <label class="block text-sm font-semibold mb-2" style="color: #1D1D1F;">Title</label>
         <input type="text" name="habit_content[title]" value="<%= content.title %>"
             class="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
             style="border-color: #E8EEF1;">
@@ -33,7 +33,7 @@
       <!-- URL Field (for youtube, video, link) -->
       <% if ['youtube', 'video', 'link'].include?(content.content_type) %>
         <div class="mb-6">
-          <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">URL</label>
+          <label class="block text-sm font-semibold mb-2" style="color: #1D1D1F;">URL</label>
           <input type="text" name="habit_content[metadata][url]" value="<%= content.metadata['url'] %>"
               class="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
               style="border-color: #E8EEF1;">
@@ -43,7 +43,7 @@
       <!-- Document Body (for document type) -->
       <% if content.content_type == 'document' %>
         <div class="mb-6">
-          <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">Document Content</label>
+          <label class="block text-sm font-semibold mb-2" style="color: #1D1D1F;">Document Content</label>
           <input type="hidden" name="habit_content[body]" id="edit-document-body-hidden-<%= content.id %>" value="<%= content.body.to_s %>">
           <trix-editor input="edit-document-body-hidden-<%= content.id %>" class="trix-content"></trix-editor>
         </div>
@@ -57,10 +57,10 @@
           </button>
         </div>
         <div class="flex gap-3">
-          <button type="button" @click="editDocumentId = null" class="px-6 py-3 rounded-lg font-semibold border-2 transition" style="color: #1d3e4c; border-color: #E8EEF1;">
+          <button type="button" @click="editDocumentId = null" class="px-6 py-3 rounded-lg font-semibold border-2 transition" style="color: #1D1D1F; border-color: #E8EEF1;">
             Cancel
           </button>
-          <button type="submit" class="px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition cursor-pointer" style="background: linear-gradient(135deg, #1d3e4c, #45606b);">
+          <button type="submit" class="px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition cursor-pointer" style="background: linear-gradient(135deg, #1D1D1F, #45606b);">
             Update Document
           </button>
         </div>

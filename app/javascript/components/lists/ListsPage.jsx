@@ -296,7 +296,7 @@ const ListsPage = () => {
 };
 
 const ListCard = ({ list, onEdit, onTogglePin }) => {
-  const color = list.category?.color || '#1d3e4c';
+  const color = list.category?.color || '#1D1D1F';
   const completedCount = list.checklist_items.filter(i => i.completed).length;
   const totalCount = list.checklist_items.length;
 

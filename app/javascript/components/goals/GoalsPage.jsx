@@ -6,6 +6,7 @@ import GoalItem from './GoalItem';
 import GoalFormModal from './GoalFormModal';
 import GoalViewModal from './GoalViewModal';
 import DocumentViewModal from '../documents/DocumentViewModal';
+import DocumentFormModal from '../documents/DocumentFormModal';
 import ListShowModal from '../lists/ListShowModal';
 
 const GoalsPage = () => {
@@ -319,6 +320,7 @@ const GoalsPage = () => {
       <GoalFormModal allTags={allTags} categories={categories} documents={documents} />
       <GoalViewModal />
       <DocumentViewModal />
+      <DocumentFormModal />
       <ListShowModal />
     </>
   );

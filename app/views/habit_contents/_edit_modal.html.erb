@@ -5,14 +5,14 @@
     showHabitDropdown: false
   }">
     <div class="p-6 md:p-8 overflow-y-auto flex-1">
-      <h2 class="text-2xl font-bold mb-6 display-font" style="color: #1d3e4c;">Edit Document</h2>
+      <h2 class="text-2xl font-bold mb-6 display-font" style="color: #1D1D1F;">Edit Document</h2>
 
       <form @submit.prevent="updateDocument(<%= content.id %>)" id="edit-form-<%= content.id %>">
       <div id="edit-modal-errors-<%= content.id %>"></div>
 
       <!-- Attach to Habits -->
       <div class="mb-6">
-        <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">Attach to Habits (optional)</label>
+        <label class="block text-sm font-semibold mb-2" style="color: #1D1D1F;">Attach to Habits (optional)</label>
         <div class="relative">
           <button type="button" @click="showHabitDropdown = !showHabitDropdown" class="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light text-left flex items-center justify-between" style="border-color: #E8EEF1;">
             <span x-text="selectedHabitIds.length === 0 ? 'No habits selected' : selectedHabitIds.length + ' habit(s) selected'" style="color: #657b84;"></span>
@@ -33,7 +33,7 @@
                            value="<%= habit.id %>"
                            x-model="selectedHabitIds"
                            class="rounded border-gray-300">
-                    <span class="text-sm font-light" style="color: #1d3e4c;"><%= habit.name %></span>
+                    <span class="text-sm font-light" style="color: #1D1D1F;"><%= habit.name %></span>
                   </label>
                 <% end %>
               </div>
@@ -47,7 +47,7 @@
 
       <!-- Content Type (read-only) -->
       <div class="mb-6">
-        <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">Content Type</label>
+        <label class="block text-sm font-semibold mb-2" style="color: #1D1D1F;">Content Type</label>
         <div class="px-4 py-3 rounded-lg bg-gray-100 font-light text-gray-600 capitalize">
           <%= content.content_type %>
         </div>
@@ -56,7 +56,7 @@
 
       <!-- Title -->
       <div class="mb-6">
-        <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">Title</label>
+        <label class="block text-sm font-semibold mb-2" style="color: #1D1D1F;">Title</label>
         <input type="text" name="habit_content[title]" value="<%= content.title %>"
             class="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
             style="border-color: #E8EEF1;">
@@ -65,7 +65,7 @@
       <!-- URL Field (for youtube, video, link) -->
       <% if ['youtube', 'video', 'link'].include?(content.content_type) %>
         <div class="mb-6">
-          <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">URL</label>
+          <label class="block text-sm font-semibold mb-2" style="color: #1D1D1F;">URL</label>
           <input type="text" name="habit_content[metadata][url]" value="<%= content.metadata['url'] %>"
               class="w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light"
               style="border-color: #E8EEF1;">
@@ -75,7 +75,7 @@
       <!-- Document Body (for document type) -->
       <% if content.content_type == 'document' %>
         <div class="mb-6">
-          <label class="block text-sm font-semibold mb-2" style="color: #1d3e4c;">Document Content</label>
+          <label class="block text-sm font-semibold mb-2" style="color: #1D1D1F;">Document Content</label>
           <input type="hidden" name="habit_content[body]" id="edit-document-body-hidden-<%= content.id %>" value="<%= content.body.to_s.gsub('"', '&quot;') %>">
           <trix-editor input="edit-document-body-hidden-<%= content.id %>" class="trix-content" style="min-height: 200px;"></trix-editor>
         </div>
@@ -89,10 +89,10 @@
             </button>
           </div>
           <div class="flex gap-3">
-            <button type="button" @click="editDocumentId = null" class="px-6 py-3 rounded-lg font-semibold border-2 transition" style="color: #1d3e4c; border-color: #E8EEF1;">
+            <button type="button" @click="editDocumentId = null" class="px-6 py-3 rounded-lg font-semibold border-2 transition" style="color: #1D1D1F; border-color: #E8EEF1;">
               Cancel
             </button>
-            <button type="submit" class="px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition cursor-pointer" style="background: linear-gradient(135deg, #1d3e4c, #45606b);">
+            <button type="submit" class="px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition cursor-pointer" style="background: linear-gradient(135deg, #1D1D1F, #45606b);">
               Update Document
             </button>
           </div>

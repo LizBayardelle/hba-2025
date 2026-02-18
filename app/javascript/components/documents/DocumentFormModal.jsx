@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import SlideOverPanel from '../shared/SlideOverPanel';
-import { documentsApi, tasksApi, categoriesApi } from '../../utils/api';
+import { documentsApi, tasksApi, categoriesApi, tagsApi } from '../../utils/api';
 
 const ACCEPTED_FILE_TYPES = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.png,.jpg,.jpeg,.gif,.webp,.svg';
 
@@ -38,7 +38,7 @@ const detectContentType = (url) => {
   return 'link';
 };
 
-const DocumentFormModal = ({ habits, allTags }) => {
+const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
   const { formModal, closeFormModal } = useDocumentsStore();
   const { isOpen, mode, documentId } = formModal;
   const queryClient = useQueryClient();
@@ -88,6 +88,24 @@ const DocumentFormModal = ({ habits, allTags }) => {
     queryFn: categoriesApi.fetchAll,
     enabled: isOpen,
   });
+
+  // Self-fetch habits and tags when not provided as props
+  const { data: fetchedTags = [] } = useQuery({
+    queryKey: ['tags'],
+    queryFn: tagsApi.fetchAll,
+    enabled: isOpen && !allTagsProp,
+  });
+
+  const { data: fetchedCategories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: categoriesApi.fetchAll,
+    enabled: isOpen && !habitsProp,
+  });
+
+  const allTags = allTagsProp || fetchedTags;
+  const habits = habitsProp || (fetchedCategories || []).flatMap(cat =>
+    (cat.habits || []).map(h => ({ ...h, category_name: cat.name }))
+  );
 
   // Load document data when editing
   useEffect(() => {
@@ -150,6 +168,18 @@ const DocumentFormModal = ({ habits, allTags }) => {
       if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
     };
   }, []);
+
+  // Set heading color CSS variable on trix editor based on selected category
+  useEffect(() => {
+    const el = trixEditorRef.current;
+    if (!el) return;
+    const selectedCat = categories.find(c => formData.category_ids.includes(c.id.toString()));
+    if (selectedCat?.color) {
+      el.style.setProperty('--heading-color', selectedCat.color);
+    } else {
+      el.style.removeProperty('--heading-color');
+    }
+  }, [formData.category_ids, categories]);
 
   // Show saved status briefly
   const showSavedStatus = useCallback(() => {
@@ -867,7 +897,7 @@ const DocumentFormModal = ({ habits, allTags }) => {
                             onChange={(e) => handleHabitToggle(e.target.value, e.target.checked)}
                             className="rounded border-gray-300"
                           />
-                          <span className="text-sm font-light" style={{ color: '#1d3e4c' }}>
+                          <span className="text-sm font-light" style={{ color: '#1D1D1F' }}>
                             {habit.name}
                           </span>
                         </label>
@@ -932,7 +962,7 @@ const DocumentFormModal = ({ habits, allTags }) => {
                           onChange={(e) => handleTaskToggle(e.target.value, e.target.checked)}
                           className="rounded border-gray-300"
                         />
-                        <span className="text-sm font-light" style={{ color: '#1d3e4c' }}>
+                        <span className="text-sm font-light" style={{ color: '#1D1D1F' }}>
                           {task.name}
                         </span>
                       </label>
@@ -982,7 +1012,7 @@ const DocumentFormModal = ({ habits, allTags }) => {
                     type="button"
                     onClick={() => handleAddTag(tag.name)}
                     className="w-full text-left px-4 py-2 hover:bg-gray-50 transition font-light"
-                    style={{ color: '#1d3e4c' }}
+                    style={{ color: '#1D1D1F' }}
                   >
                     {tag.name}
                   </button>
@@ -992,9 +1022,9 @@ const DocumentFormModal = ({ habits, allTags }) => {
                     type="button"
                     onClick={() => handleAddTag(tagInput)}
                     className="w-full text-left px-4 py-2 hover:bg-gray-50 transition font-light border-t"
-                    style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', color: '#1d3e4c' }}
+                    style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', color: '#1D1D1F' }}
                   >
-                    <i className="fa-solid fa-plus mr-2" style={{ color: '#1d3e4c' }}></i>
+                    <i className="fa-solid fa-plus mr-2" style={{ color: '#1D1D1F' }}></i>
                     Create "<strong>{tagInput.trim()}</strong>"
                   </button>
                 )}

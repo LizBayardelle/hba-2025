@@ -50,7 +50,7 @@ const GoalItem = ({ goal }) => {
     incrementMutation.mutate();
   }, [incrementMutation]);
 
-  const themeColor = '#1d3e4c';
+  const themeColor = '#1D1D1F';
   const categoryColor = goal.category?.color || themeColor;
 
   const getCountLabel = () => {

@@ -125,7 +125,7 @@ const DocumentViewModal = () => {
     if (isLoading) {
       return (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#1d3e4c' }}></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#1D1D1F' }}></div>
         </div>
       );
     }
@@ -224,10 +224,11 @@ const DocumentViewModal = () => {
         );
 
       case 'document':
+        const categoryColor = document.categories?.[0]?.color;
         return (
           <div
             className="prose prose-sm max-w-none trix-content"
-            style={{ fontSize: '0.9375rem', lineHeight: '1.6' }}
+            style={{ fontSize: '0.9375rem', lineHeight: '1.6', ...(categoryColor && { '--heading-color': categoryColor }) }}
             dangerouslySetInnerHTML={{ __html: document.body || '' }}
           />
         );

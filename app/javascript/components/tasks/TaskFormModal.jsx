@@ -170,6 +170,18 @@ const TaskFormModal = ({ allTags, categories }) => {
     }
   }, [isOpen, mode, initialCategoryId, initialImportanceLevelId, initialTimeBlockId]);
 
+  // Set heading color CSS variable on trix editor based on selected category
+  useEffect(() => {
+    const el = trixEditorRef.current;
+    if (!el) return;
+    const selectedCat = categories?.find(c => c.id.toString() === formData.category_id?.toString());
+    if (selectedCat?.color) {
+      el.style.setProperty('--heading-color', selectedCat.color);
+    } else {
+      el.style.removeProperty('--heading-color');
+    }
+  }, [formData.category_id, categories]);
+
   // Create mutation
   const createMutation = useMutation({
     mutationFn: (data) => tasksApi.create({ task: data }),

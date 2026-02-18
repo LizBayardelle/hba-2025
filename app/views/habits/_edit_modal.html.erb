@@ -1,7 +1,7 @@
 <!-- Edit Habit Modal -->
 <div x-show="editHabitId === <%= habit.id %>" @click.self="editHabitId = null" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style="display: none; z-index: 100;">
   <div @click.stop class="bg-white rounded-2xl shadow-2xl p-6 md:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-    <h2 class="text-2xl font-bold mb-6 display-font" style="color: #1d3e4c;">Edit Habit</h2>
+    <h2 class="text-2xl font-bold mb-6 display-font" style="color: #1D1D1F;">Edit Habit</h2>
 
     <%= form_with model: habit, url: category_habit_path(category, habit), method: :patch, local: true do |f| %>
       <!-- Habit Name -->
@@ -56,10 +56,10 @@
           <%= link_to "Delete", category_habit_path(category, habit), method: :delete, data: { confirm: "Are you sure?" }, class: "px-6 py-3 rounded-lg font-semibold border-2 transition inline-block", style: "color: #DC2626; border-color: #FEE2E2;" %>
         </div>
         <div class="flex gap-3">
-          <button type="button" @click="editHabitId = null" class="px-6 py-3 rounded-lg font-semibold border-2 transition" style="color: #1d3e4c; border-color: #E8EEF1;">
+          <button type="button" @click="editHabitId = null" class="px-6 py-3 rounded-lg font-semibold border-2 transition" style="color: #1D1D1F; border-color: #E8EEF1;">
             Cancel
           </button>
-          <%= f.submit "Update Habit", class: "px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition cursor-pointer", style: "background: linear-gradient(135deg, #1d3e4c, #45606b);" %>
+          <%= f.submit "Update Habit", class: "px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition cursor-pointer", style: "background: linear-gradient(135deg, #1D1D1F, #45606b);" %>
         </div>
       </div>
     <% end %>

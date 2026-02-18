@@ -36,7 +36,7 @@ const HabitViewModal = () => {
     if (isLoading) {
       return (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#1d3e4c' }}></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#1D1D1F' }}></div>
         </div>
       );
     }
@@ -74,7 +74,7 @@ const HabitViewModal = () => {
           <HabitItem
             habit={habit}
             categoryColor={category.color}
-            categoryDarkColor={category.dark_color || '#1d3e4c'}
+            categoryDarkColor={category.dark_color || '#1D1D1F'}
             isFirst={true}
             selectedDate={selectedDate}
           />

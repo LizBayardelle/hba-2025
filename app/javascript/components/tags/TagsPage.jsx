@@ -6,6 +6,7 @@ import TagDetail from './TagDetail';
 import TagEditModal from './TagEditModal';
 import JournalViewModal from '../journal/JournalViewModal';
 import DocumentViewModal from '../documents/DocumentViewModal';
+import DocumentFormModal from '../documents/DocumentFormModal';
 import TaskViewModal from '../tasks/TaskViewModal';
 import HabitViewModal from '../habits/HabitViewModal';
 
@@ -296,6 +297,7 @@ const TagsPage = () => {
       <TagEditModal />
       <JournalViewModal />
       <DocumentViewModal />
+      <DocumentFormModal />
       <TaskViewModal />
       <HabitViewModal />
     </>

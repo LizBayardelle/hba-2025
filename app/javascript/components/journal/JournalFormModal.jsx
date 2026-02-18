@@ -263,7 +263,7 @@ const JournalFormModal = ({ allTags }) => {
               onFocus={() => tagInput.length > 0 && setShowTagSuggestions(true)}
               onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
               className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light input-inset"
-              style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#1d3e4c' }}
+              style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#1D1D1F' }}
               placeholder="Type to search or add new tag"
             />
 
@@ -279,7 +279,7 @@ const JournalFormModal = ({ allTags }) => {
                     type="button"
                     onClick={() => handleAddTag(tag.name)}
                     className="w-full text-left px-4 py-2 hover:bg-gray-50 transition font-light"
-                    style={{ color: '#1d3e4c' }}
+                    style={{ color: '#1D1D1F' }}
                   >
                     {tag.name}
                   </button>
@@ -289,9 +289,9 @@ const JournalFormModal = ({ allTags }) => {
                     type="button"
                     onClick={() => handleAddTag(tagInput)}
                     className="w-full text-left px-4 py-2 hover:bg-gray-50 transition font-light border-t"
-                    style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', color: '#1d3e4c' }}
+                    style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', color: '#1D1D1F' }}
                   >
-                    <i className="fa-solid fa-plus mr-2" style={{ color: '#1d3e4c' }}></i>
+                    <i className="fa-solid fa-plus mr-2" style={{ color: '#1D1D1F' }}></i>
                     Create "<strong>{tagInput.trim()}</strong>"
                   </button>
                 )}

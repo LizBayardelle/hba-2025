@@ -75,7 +75,7 @@ const ListShowModal = () => {
     }
   };
 
-  const color = list?.category?.color || '#1d3e4c';
+  const color = list?.category?.color || '#1D1D1F';
   const checklistItems = list?.checklist_items || [];
   const completedCount = checklistItems.filter(i => i.completed).length;
   const totalCount = checklistItems.length;

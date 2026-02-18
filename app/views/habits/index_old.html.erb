@@ -6,7 +6,7 @@
 
   <!-- Menu flag button -->
   <button id="menu-button" class="fixed left-0 z-20 md:hidden rounded-r-lg shadow-lg flex items-center justify-center py-1.5 px-3 cursor-move"
-    style="top: 200px; background: linear-gradient(135deg, #1d3e4c, #45606b); writing-mode: vertical-rl;">
+    style="top: 200px; background: linear-gradient(135deg, #1D1D1F, #45606b); writing-mode: vertical-rl;">
     <span class="text-white font-bold text-sm tracking-wider">MENU</span>
   </button>
 
@@ -110,7 +110,7 @@
       <div class="p-8 pb-6">
         <!-- Header -->
         <div class="mb-4">
-          <h1 class="text-4xl font-bold display-font mb-1" style="color: #1d3e4c;">Dashboard</h1>
+          <h1 class="text-4xl font-bold display-font mb-1" style="color: #1D1D1F;">Dashboard</h1>
           <p class="text-sm font-light" style="color: #657b84;">Check off your daily habits</p>
         </div>
 
@@ -118,7 +118,7 @@
         <div class="flex items-center gap-6">
           <!-- Today Completed -->
           <div class="text-center">
-            <div class="text-2xl sm:text-3xl font-bold display-font mb-0.5 sm:mb-1" style="color: #1d3e4c;" id="completion-count">
+            <div class="text-2xl sm:text-3xl font-bold display-font mb-0.5 sm:mb-1" style="color: #1D1D1F;" id="completion-count">
               <%= @completed_today %>/<%= @total_habits %>
             </div>
             <div class="text-[10px] sm:text-xs font-semibold uppercase tracking-wide" style="color: #657b84;">Today</div>
@@ -126,7 +126,7 @@
 
           <!-- Today Percentage -->
           <div class="text-center">
-            <div class="text-2xl sm:text-3xl font-bold display-font mb-0.5 sm:mb-1" style="color: #1d3e4c;" id="completion-percentage">
+            <div class="text-2xl sm:text-3xl font-bold display-font mb-0.5 sm:mb-1" style="color: #1D1D1F;" id="completion-percentage">
               <%= @today_percentage %>%
             </div>
             <div class="text-[10px] sm:text-xs font-semibold uppercase tracking-wide" style="color: #657b84;">Complete</div>
@@ -143,16 +143,16 @@
       <!-- Date Navigation -->
       <div class="flex items-center gap-1">
         <%= link_to habits_path(date: @selected_date - 1.day, view: @view_mode), class: "w-8 h-8 rounded-lg hover:bg-white flex items-center justify-center transition" do %>
-          <i class="fa-solid fa-chevron-left text-sm" style="color: #1d3e4c;"></i>
+          <i class="fa-solid fa-chevron-left text-sm" style="color: #1D1D1F;"></i>
         <% end %>
-        <div class="px-2 py-1 text-sm font-semibold whitespace-nowrap" style="color: #1d3e4c;">
+        <div class="px-2 py-1 text-sm font-semibold whitespace-nowrap" style="color: #1D1D1F;">
           <%= @selected_date == Time.zone.today ? "Today" : @selected_date.strftime("%m/%d") %>
         </div>
         <%= link_to habits_path(date: @selected_date + 1.day, view: @view_mode), class: "w-8 h-8 rounded-lg hover:bg-white flex items-center justify-center transition #{'opacity-50 pointer-events-none' if @selected_date >= Time.zone.today}" do %>
-          <i class="fa-solid fa-chevron-right text-sm" style="color: #1d3e4c;"></i>
+          <i class="fa-solid fa-chevron-right text-sm" style="color: #1D1D1F;"></i>
         <% end %>
         <% if @selected_date != Time.zone.today %>
-          <%= link_to habits_path(view: @view_mode), class: "ml-1 px-2 py-1 text-xs font-semibold rounded-lg hover:bg-white transition whitespace-nowrap", style: "color: #1d3e4c;" do %>
+          <%= link_to habits_path(view: @view_mode), class: "ml-1 px-2 py-1 text-xs font-semibold rounded-lg hover:bg-white transition whitespace-nowrap", style: "color: #1D1D1F;" do %>
             Today
           <% end %>
         <% end %>
@@ -160,10 +160,10 @@
 
       <!-- View Toggle -->
       <div class="flex gap-1 bg-white p-0.5 rounded-lg shadow-sm">
-        <%= link_to habits_path(view: 'category', date: params[:date]), class: "px-2 py-1 rounded-lg text-xs font-semibold transition #{@view_mode == 'category' ? 'shadow-sm' : 'hover:bg-gray-100'}", style: @view_mode == 'category' ? "background-color: #E8EEF1; color: #1d3e4c;" : "color: #1d3e4c;" do %>
+        <%= link_to habits_path(view: 'category', date: params[:date]), class: "px-2 py-1 rounded-lg text-xs font-semibold transition #{@view_mode == 'category' ? 'shadow-sm' : 'hover:bg-gray-100'}", style: @view_mode == 'category' ? "background-color: #E8EEF1; color: #1D1D1F;" : "color: #1D1D1F;" do %>
           <i class="fa-solid fa-folder mr-1"></i><span class="hidden sm:inline">Category</span><span class="sm:hidden">Cat</span>
         <% end %>
-        <%= link_to habits_path(view: 'time', date: params[:date]), class: "px-2 py-1 rounded-lg text-xs font-semibold transition #{@view_mode == 'time' ? 'shadow-sm' : 'hover:bg-gray-100'}", style: @view_mode == 'time' ? "background-color: #E8EEF1; color: #1d3e4c;" : "color: #1d3e4c;" do %>
+        <%= link_to habits_path(view: 'time', date: params[:date]), class: "px-2 py-1 rounded-lg text-xs font-semibold transition #{@view_mode == 'time' ? 'shadow-sm' : 'hover:bg-gray-100'}", style: @view_mode == 'time' ? "background-color: #E8EEF1; color: #1D1D1F;" : "color: #1D1D1F;" do %>
           <i class="fa-solid fa-clock mr-1"></i><span class="hidden sm:inline">Time</span><span class="sm:hidden">Time</span>
         <% end %>
       </div>
@@ -177,12 +177,12 @@
             <%
               category = group
               dark_color = {
-                '#6B8A99' => '#1d3e4c', '#9C8B7E' => '#5C4F45', '#F8796D' => '#B8352A',
+                '#6B8A99' => '#1D1D1F', '#9C8B7E' => '#5C4F45', '#F8796D' => '#B8352A',
                 '#FFA07A' => '#D66A3E', '#E5C730' => '#B89F0A', '#A8A356' => '#7A7637',
                 '#7CB342' => '#4A6B27', '#6EE7B7' => '#2C9D73', '#22D3EE' => '#0E7490',
                 '#6366F1' => '#3730A3', '#A78BFA' => '#6B21A8', '#E879F9' => '#A21CAF',
                 '#FB7185' => '#BE123C', '#9CA3A8' => '#4A5057'
-              }[category.color] || '#1d3e4c'
+              }[category.color] || '#1D1D1F'
             %>
             <!-- Category Section -->
             <div class="bg-white rounded-xl shadow-lg overflow-hidden border" style="border-color: <%= category.color %>;" data-section-id="category-<%= category.id %>">
@@ -231,13 +231,13 @@
               }
               time_info = time_labels[group] || time_labels['anytime']
             %>
-            <div class="bg-white rounded-xl shadow-lg overflow-hidden border" style="border-color: #1d3e4c;" data-section-id="time-<%= group %>">
-              <button onclick="toggleSection('time-<%= group %>')" class="w-full p-4 flex items-center gap-3 hover:opacity-90 transition text-left border-b" style="background-color: #1d3e4c20; border-color: #1d3e4c;">
-                <div class="w-10 h-10 rounded-lg flex items-center justify-center shadow-sm" style="background-color: #1d3e4c;">
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden border" style="border-color: #1D1D1F;" data-section-id="time-<%= group %>">
+              <button onclick="toggleSection('time-<%= group %>')" class="w-full p-4 flex items-center gap-3 hover:opacity-90 transition text-left border-b" style="background-color: #1D1D1F20; border-color: #1D1D1F;">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center shadow-sm" style="background-color: #1D1D1F;">
                   <i class="fa-solid <%= time_info[:icon] %> text-white"></i>
                 </div>
                 <div class="flex-1">
-                  <h2 class="text-lg font-bold display-font" style="color: #1d3e4c;">
+                  <h2 class="text-lg font-bold display-font" style="color: #1D1D1F;">
                     <%= time_info[:label] %>
                   </h2>
                   <p class="text-xs font-light" style="color: #657b84;">
@@ -245,7 +245,7 @@
                   </p>
                 </div>
                 <div class="flex-shrink-0">
-                  <i class="fa-solid fa-chevron-down section-chevron transition-transform duration-200" style="color: #1d3e4c;"></i>
+                  <i class="fa-solid fa-chevron-down section-chevron transition-transform duration-200" style="color: #1D1D1F;"></i>
                 </div>
               </button>
 
@@ -254,12 +254,12 @@
                 <% habits.each_with_index do |habit, index| %>
                   <%
                     habit_dark_color = {
-                      '#6B8A99' => '#1d3e4c', '#9C8B7E' => '#5C4F45', '#F8796D' => '#B8352A',
+                      '#6B8A99' => '#1D1D1F', '#9C8B7E' => '#5C4F45', '#F8796D' => '#B8352A',
                       '#FFA07A' => '#D66A3E', '#E5C730' => '#B89F0A', '#A8A356' => '#7A7637',
                       '#7CB342' => '#4A6B27', '#6EE7B7' => '#2C9D73', '#22D3EE' => '#0E7490',
                       '#6366F1' => '#3730A3', '#A78BFA' => '#6B21A8', '#E879F9' => '#A21CAF',
                       '#FB7185' => '#BE123C', '#9CA3A8' => '#4A5057'
-                    }[habit.category.color] || '#1d3e4c'
+                    }[habit.category.color] || '#1D1D1F'
 
                     habit_light_color = {
                       '#6B8A99' => '#E8EEF1', '#9C8B7E' => '#E8E0D5', '#F8796D' => '#FFD4CE',
@@ -279,9 +279,9 @@
     <% else %>
       <div class="bg-white rounded-xl shadow-md p-12 text-center">
         <i class="fa-solid fa-clipboard-list text-6xl mb-4" style="color: #E8EEF1;"></i>
-        <h3 class="text-xl font-bold display-font mb-2" style="color: #1d3e4c;">No Habits Yet</h3>
+        <h3 class="text-xl font-bold display-font mb-2" style="color: #1D1D1F;">No Habits Yet</h3>
         <p class="text-gray-500 font-light mb-4">Start building better habits by creating your first one!</p>
-        <%= link_to "Browse Categories", root_path, class: "inline-block px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition", style: "background: linear-gradient(135deg, #1d3e4c, #45606b);" %>
+        <%= link_to "Browse Categories", root_path, class: "inline-block px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition", style: "background: linear-gradient(135deg, #1D1D1F, #45606b);" %>
       </div>
     <% end %>
     </div>

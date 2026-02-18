@@ -273,7 +273,7 @@ const CategoryEditModal = () => {
             value={formData.name}
             onChange={handleNameChange}
             className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light"
-            style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#1d3e4c' }}
+            style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#1D1D1F' }}
             placeholder="e.g., Health & Fitness"
           />
         </div>
@@ -288,7 +288,7 @@ const CategoryEditModal = () => {
             onChange={handleDescriptionChange}
             rows={2}
             className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light resize-none"
-            style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#1d3e4c' }}
+            style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#1D1D1F' }}
             placeholder="Optional description"
           />
         </div>
@@ -308,7 +308,7 @@ const CategoryEditModal = () => {
                   formData.icon === icon ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'
                 }`}
               >
-                <i className={`fa-solid ${icon} text-base`} style={{ color: '#1d3e4c' }}></i>
+                <i className={`fa-solid ${icon} text-base`} style={{ color: '#1D1D1F' }}></i>
               </button>
             ))}
           </div>

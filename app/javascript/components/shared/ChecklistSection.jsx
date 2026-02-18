@@ -6,7 +6,7 @@ const ChecklistSection = ({
   parentType, // 'task' or 'habit'
   parentId,
   items = [],
-  color = '#1d3e4c',
+  color = '#1D1D1F',
   editable = false,
   compact = false,
   resetsDaily = false, // For habits - shows indicator that items reset
@@ -276,7 +276,7 @@ const ChecklistSection = ({
             ) : (
               <span
                 className={`flex-1 text-sm ${item.completed ? 'line-through opacity-60' : ''}`}
-                style={{ color: '#1d3e4c' }}
+                style={{ color: '#1D1D1F' }}
               >
                 {item.name}
               </span>
