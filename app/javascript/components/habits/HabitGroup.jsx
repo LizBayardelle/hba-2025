@@ -36,51 +36,58 @@ const HabitGroup = ({ groupId, title, icon, color, darkColor, habits, viewMode, 
     }
   };
 
-  const marginClass = hideHeader
-    ? (isFirst ? 'mt-2' : 'mt-4')
-    : (!isFirst ? 'mt-8' : '-mt-6');
+  const habitCards = sortedHabits.map((habit) => (
+    <HabitCard
+      key={habit.id}
+      habit={{
+        ...habit,
+        today_count: habit.today_count || 0,
+        current_streak: habit.current_streak || 0,
+      }}
+      categoryColor={viewMode === 'category' ? color : habit.category_color}
+      categoryDarkColor={viewMode === 'category' ? darkColor : habit.category_dark_color}
+      viewMode={viewMode}
+      useHabitsPage={true}
+      isOptional={habit.importance_level?.name === 'Optional'}
+    />
+  ));
 
+  // No grouping — flat list
+  if (hideHeader) {
+    return (
+      <div className="space-y-3">
+        {habitCards}
+      </div>
+    );
+  }
+
+  // Grouped — full-width shiny header + tinted background section
   return (
-    <div className={`mb-6 ${marginClass}`}>
-      {/* Full-width colored stripe header - breaks out of parent padding */}
-      {!hideHeader && (
-        <div
-          className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3"
-          style={{
-            background: `linear-gradient(to bottom, color-mix(in srgb, ${color} 85%, white) 0%, ${color} 100%)`,
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
-          }}
+    <div
+      className="-mx-8 px-8 pb-8"
+      style={{ backgroundColor: `color-mix(in srgb, ${color} 18%, white)` }}
+    >
+      {/* Header — liquid-surface-subtle shiny overlay, breaks out of padding */}
+      <div
+        className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3 liquid-surface-subtle"
+        style={{ '--surface-color': color }}
+      >
+        <i className={`fa-solid ${icon} text-white text-lg`}></i>
+        <h2 className="text-3xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
+          {title}
+        </h2>
+        <button
+          onClick={handleNewHabit}
+          className="w-8 h-8 rounded-md flex items-center justify-center transition btn-glass"
+          title="New habit"
         >
-          <i className={`fa-solid ${icon} text-white text-lg`}></i>
-          <h2 className="text-3xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
-            {title}
-          </h2>
-          <button
-            onClick={handleNewHabit}
-            className="w-8 h-8 rounded-md flex items-center justify-center transition btn-glass"
-            title={`New habit`}
-          >
-            <i className="fa-solid fa-plus text-white"></i>
-          </button>
-        </div>
-      )}
+          <i className="fa-solid fa-plus text-white"></i>
+        </button>
+      </div>
 
       {/* Habits List */}
       <div className="space-y-3">
-        {sortedHabits.map((habit) => (
-          <HabitCard
-            key={habit.id}
-            habit={{
-              ...habit,
-              today_count: habit.today_count || 0,
-              current_streak: habit.current_streak || 0,
-            }}
-            categoryColor={viewMode === 'category' ? color : habit.category_color}
-            categoryDarkColor={viewMode === 'category' ? darkColor : habit.category_dark_color}
-            useHabitsPage={true}
-            isOptional={habit.importance_level?.name === 'Optional'}
-          />
-        ))}
+        {habitCards}
       </div>
     </div>
   );

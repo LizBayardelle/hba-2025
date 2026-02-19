@@ -113,7 +113,6 @@ const JournalFormModal = ({ allTags }) => {
 
   const handleAddTag = (tagName) => {
     const trimmedTag = tagName.trim();
-    // Case insensitive check for duplicates
     if (trimmedTag && !selectedTags.some(tag => tag.toLowerCase() === trimmedTag.toLowerCase())) {
       setSelectedTags([...selectedTags, trimmedTag]);
     }
@@ -152,12 +151,12 @@ const JournalFormModal = ({ allTags }) => {
         <button
           type="button"
           onClick={handleDelete}
-          className="mr-auto w-10 h-10 rounded-lg transition hover:bg-red-50 flex items-center justify-center"
+          className="btn-delete-icon"
           disabled={deleteMutation.isPending}
           title="Delete journal entry"
         >
           {deleteMutation.isPending ? (
-            <i className="fa-solid fa-spinner fa-spin" style={{ color: '#DC2626' }}></i>
+            <i className="fa-solid fa-spinner fa-spin" style={{ color: '#8E8E93' }}></i>
           ) : (
             <i className="fa-solid fa-trash text-lg" style={{ color: '#DC2626' }}></i>
           )}
@@ -166,8 +165,7 @@ const JournalFormModal = ({ allTags }) => {
       <button
         type="button"
         onClick={closeFormModal}
-        className="px-6 py-3 rounded-lg transition hover:bg-gray-100"
-        style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F', border: '0.5px solid rgba(199, 199, 204, 0.3)', backgroundColor: 'white' }}
+        className="btn-liquid-outline-light"
         disabled={currentMutation.isPending}
       >
         Cancel
@@ -175,15 +173,7 @@ const JournalFormModal = ({ allTags }) => {
       <button
         type="submit"
         form="journal-form"
-        className="px-6 py-3 rounded-lg transition cursor-pointer disabled:opacity-50 hover:opacity-90"
-        style={{
-          background: 'linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%)',
-          border: '0.5px solid rgba(255, 255, 255, 0.3)',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)',
-          color: '#1D1D1F',
-          fontWeight: 600,
-          fontFamily: "'Inter', sans-serif",
-        }}
+        className="btn-liquid"
         disabled={currentMutation.isPending}
       >
         {currentMutation.isPending
@@ -204,18 +194,17 @@ const JournalFormModal = ({ allTags }) => {
     >
       <form id="journal-form" onSubmit={handleSubmit}>
         {currentMutation.isError && (
-          <div
-            className="mb-4 p-4 rounded-lg"
-            style={{ backgroundColor: '#FEE2E2', color: '#DC2626' }}
-          >
-            <i className="fa-solid fa-exclamation-circle mr-2"></i>
-            {currentMutation.error?.message || 'An error occurred'}
+          <div className="form-error">
+            <i className="fa-solid fa-circle-exclamation form-error-icon"></i>
+            <span className="form-error-text">
+              {currentMutation.error?.message || 'An error occurred'}
+            </span>
           </div>
         )}
 
         {/* Entry Content */}
         <div className="mb-6">
-          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+          <label className="form-label">
             Entry
           </label>
           <input type="hidden" name="content" id="journal-form-content-hidden" />
@@ -224,7 +213,7 @@ const JournalFormModal = ({ allTags }) => {
 
         {/* Private Toggle */}
         <div className="mb-6">
-          <label className="flex items-center gap-3 cursor-pointer select-none">
+          <label className="checkbox-row cursor-pointer select-none" style={{ gap: '0.75rem' }}>
             <div
               onClick={() => setIsPrivate(!isPrivate)}
               className="relative w-12 h-7 rounded-full transition-colors cursor-pointer"
@@ -236,7 +225,7 @@ const JournalFormModal = ({ allTags }) => {
               />
             </div>
             <div>
-              <span className="text-sm font-semibold" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+              <span className="text-sm" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
                 Private Entry
               </span>
               <p className="text-xs" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#8E8E93' }}>
@@ -248,7 +237,7 @@ const JournalFormModal = ({ allTags }) => {
 
         {/* Tags */}
         <div className="mb-6">
-          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+          <label className="form-label">
             Tags (optional)
           </label>
           <div className="relative">
@@ -262,24 +251,18 @@ const JournalFormModal = ({ allTags }) => {
               onKeyDown={handleTagInputKeyDown}
               onFocus={() => tagInput.length > 0 && setShowTagSuggestions(true)}
               onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
-              className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light input-inset"
-              style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#1D1D1F' }}
+              className="form-input"
               placeholder="Type to search or add new tag"
             />
 
             {/* Tag suggestions dropdown */}
             {showTagSuggestions && (filteredSuggestions.length > 0 || tagInput.trim()) && (
-              <div
-                className="absolute z-10 w-full mt-2 bg-white rounded-lg shadow-lg max-h-48 overflow-y-auto"
-                style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
-              >
+              <div className="form-dropdown">
                 {filteredSuggestions.map((tag) => (
                   <button
                     key={tag.id}
                     type="button"
                     onClick={() => handleAddTag(tag.name)}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-50 transition font-light"
-                    style={{ color: '#1D1D1F' }}
                   >
                     {tag.name}
                   </button>
@@ -288,18 +271,17 @@ const JournalFormModal = ({ allTags }) => {
                   <button
                     type="button"
                     onClick={() => handleAddTag(tagInput)}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-50 transition font-light border-t"
-                    style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', color: '#1D1D1F' }}
+                    style={{ borderTop: '1px solid rgba(199, 199, 204, 0.3)' }}
                   >
-                    <i className="fa-solid fa-plus mr-2" style={{ color: '#1D1D1F' }}></i>
-                    Create "<strong>{tagInput.trim()}</strong>"
+                    <i className="fa-solid fa-plus mr-2 text-gray-400"></i>
+                    Create "{tagInput.trim()}"
                   </button>
                 )}
               </div>
             )}
           </div>
 
-          <p className="text-xs font-light mt-2" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#8E8E93' }}>
+          <p className="text-xs mt-2" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#8E8E93' }}>
             Type to search existing tags or create a new one. Press Enter or click to add.
           </p>
 
@@ -308,10 +290,9 @@ const JournalFormModal = ({ allTags }) => {
               {selectedTags.map((tag) => (
                 <span
                   key={tag}
-                  className="text-xs px-3 py-1.5 rounded-full font-semibold flex items-center gap-2"
+                  className="text-xs px-3 py-1.5 rounded-[10px] flex items-center gap-2 liquid-surface-subtle"
                   style={{
-                    background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)',
-                    color: '#FFFFFF',
+                    '--surface-color': '#2C2C2E',
                     fontFamily: "'Inter', sans-serif",
                     fontWeight: 600,
                   }}

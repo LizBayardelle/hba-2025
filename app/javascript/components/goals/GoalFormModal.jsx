@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import BaseModal from '../shared/BaseModal';
+import SlideOverPanel from '../shared/SlideOverPanel';
 import ChecklistSection from '../shared/ChecklistSection';
 import ListShowModal from '../lists/ListShowModal';
 import { goalsApi, documentsApi, listsApi } from '../../utils/api';
@@ -8,21 +8,20 @@ import useGoalsStore from '../../stores/goalsStore';
 import useDocumentsStore from '../../stores/documentsStore';
 import useListsStore from '../../stores/listsStore';
 
-// Section Component with header and boxed content
-const Section = ({ icon, title, children, isLast = false }) => (
-  <div className={!isLast ? 'mb-5' : ''}>
-    <div className="flex items-center gap-2 mb-2">
-      <i className={`fa-solid ${icon} text-xs`} style={{ color: '#8E8E93' }}></i>
-      <span className="text-xs uppercase tracking-wide" style={{ color: '#8E8E93', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
-        {title}
-      </span>
-    </div>
-    <div
-      className="rounded-xl p-4"
-      style={{ backgroundColor: '#F9F9FB', border: '1px solid rgba(199, 199, 204, 0.25)' }}
+// Section with fieldset-legend style label on border
+const Section = ({ title, children, isLast = false }) => (
+  <div className={!isLast ? 'mb-6' : ''}>
+    <fieldset
+      className="rounded-2xl px-6 pb-6 pt-5"
+      style={{ border: '1px solid rgba(142, 142, 147, 0.3)' }}
     >
+      <legend className="px-3 mx-auto">
+        <span className="uppercase tracking-wider" style={{ fontSize: '1.15rem', color: '#A1A1A6', fontWeight: 500, fontFamily: "'Big Shoulders Inline Display', sans-serif", letterSpacing: '0.1em' }}>
+          {title}
+        </span>
+      </legend>
       {children}
-    </div>
+    </fieldset>
   </div>
 );
 
@@ -226,22 +225,21 @@ const GoalFormModal = ({ allTags, categories }) => {
         <button
           type="button"
           onClick={handleDelete}
-          className="mr-auto w-10 h-10 rounded-lg transition hover:bg-white/10 flex items-center justify-center"
+          className="btn-delete-icon"
           disabled={deleteMutation.isPending}
           title="Delete goal"
         >
           {deleteMutation.isPending ? (
-            <i className="fa-solid fa-spinner fa-spin text-white"></i>
+            <i className="fa-solid fa-spinner fa-spin" style={{ color: '#8E8E93' }}></i>
           ) : (
-            <i className="fa-solid fa-trash text-white text-lg"></i>
+            <i className="fa-solid fa-trash text-lg" style={{ color: '#DC2626' }}></i>
           )}
         </button>
       )}
       <button
         type="button"
         onClick={closeFormModal}
-        className="px-6 py-3 rounded-lg transition hover:bg-gray-100"
-        style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F', border: '0.5px solid rgba(199, 199, 204, 0.3)', backgroundColor: 'white' }}
+        className="btn-liquid-outline-light"
         disabled={currentMutation.isPending}
       >
         Cancel
@@ -249,8 +247,7 @@ const GoalFormModal = ({ allTags, categories }) => {
       <button
         type="submit"
         form="goal-form"
-        className="px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition cursor-pointer disabled:opacity-50 hover:opacity-90"
-        style={{ background: 'linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%)', border: '0.5px solid rgba(255, 255, 255, 0.3)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)', color: '#1D1D1F', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
+        className="btn-liquid"
         disabled={currentMutation.isPending}
       >
         {currentMutation.isPending ? 'Saving...' : mode === 'edit' ? 'Update Goal' : 'Create Goal'}
@@ -260,127 +257,113 @@ const GoalFormModal = ({ allTags, categories }) => {
 
   return (
     <>
-      <BaseModal
+      <SlideOverPanel
         isOpen={isOpen}
         onClose={closeFormModal}
         title={mode === 'edit' ? 'Edit Goal' : 'New Goal'}
         footer={footer}
-        size="large"
       >
         <form id="goal-form" onSubmit={handleSubmit}>
           {currentMutation.isError && (
-            <div
-              className="mb-4 p-4 rounded-lg"
-              style={{ backgroundColor: '#FEE2E2', color: '#DC2626' }}
-            >
-              <i className="fa-solid fa-exclamation-circle mr-2"></i>
-              {currentMutation.error?.message || 'An error occurred'}
+            <div className="form-error">
+              <i className="fa-solid fa-circle-exclamation form-error-icon"></i>
+              <span className="form-error-text">
+                {currentMutation.error?.message || 'An error occurred'}
+              </span>
             </div>
           )}
 
           {/* ==================== BASICS SECTION ==================== */}
-          <Section icon="fa-cube" title="Basics">
+          <Section title="Basics">
             {/* Goal Name */}
             <div className="mb-4">
-              <label className="block mb-2 text-sm" style={{ fontWeight: 500, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
-                Goal Name *
-              </label>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
-                placeholder="Enter goal name..."
-                className="w-full px-4 py-3 rounded-lg focus:outline-none transition"
-                style={{ backgroundColor: 'white', border: '1px solid rgba(199, 199, 204, 0.4)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
+                placeholder="Goal name..."
+                className="form-input-hero"
               />
             </div>
 
             {/* Goal Type Toggle */}
             <div className="mb-4">
-              <label className="block mb-2 text-sm" style={{ fontWeight: 500, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+              <label className="form-label">
                 Goal Type
               </label>
-              <div className="flex gap-2">
+              <div className="button-bar">
                 {[
-                  { value: 'counted', label: 'Counted', icon: 'fa-hashtag', desc: 'Do something N times' },
-                  { value: 'named_steps', label: 'Named Steps', icon: 'fa-list-ol', desc: 'A checklist of milestones' },
-                ].map(({ value, label, icon }) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, goal_type: value })}
-                    className="flex-1 flex items-center gap-2 px-4 py-3 rounded-lg transition hover:scale-[1.02]"
-                    style={{
-                      backgroundColor: formData.goal_type === value ? '#1D1D1F' : 'white',
-                      border: '1px solid ' + (formData.goal_type === value ? '#1D1D1F' : 'rgba(199, 199, 204, 0.4)'),
-                      color: formData.goal_type === value ? 'white' : '#1D1D1F',
-                      fontWeight: 500,
-                      fontSize: '0.875rem',
-                    }}
-                  >
-                    <i className={`fa-solid ${icon}`}></i>
-                    {label}
-                  </button>
-                ))}
+                  { value: 'counted', label: 'Counted', icon: 'fa-hashtag' },
+                  { value: 'named_steps', label: 'Named Steps', icon: 'fa-list-ol' },
+                ].map(({ value, label, icon }) => {
+                  const isActive = formData.goal_type === value;
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, goal_type: value })}
+                      className={`flex items-center gap-2 px-4 py-2.5 ${isActive ? 'liquid-surface-subtle' : ''}`}
+                      style={isActive ? { '--surface-color': '#2C2C2E' } : {}}
+                    >
+                      <i className={`fa-solid ${icon} text-sm`} style={{ color: isActive ? 'white' : '#8E8E93' }}></i>
+                      <span className="bar-item-text" style={{ color: isActive ? 'white' : '#1D1D1F' }}>
+                        {label}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             {/* Category */}
             <div className="mb-4">
-              <label className="block mb-2 text-sm" style={{ fontWeight: 500, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+              <label className="form-label">
                 Category
               </label>
-              <div className="flex flex-wrap gap-2">
+              <div className="button-bar flex-wrap">
+                {/* None option */}
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, category_id: '' })}
-                  className="flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-full transition hover:scale-105"
-                  style={{
-                    backgroundColor: formData.category_id === '' ? '#1D1D1F' : 'white',
-                    border: '1px solid ' + (formData.category_id === '' ? '#1D1D1F' : 'rgba(199, 199, 204, 0.4)'),
-                  }}
+                  className={`flex items-center gap-2 px-4 py-2.5 ${formData.category_id === '' ? 'liquid-surface-subtle' : ''}`}
+                  style={formData.category_id === '' ? { '--surface-color': '#1D1D1F' } : {}}
                 >
                   <i
                     className="fa-solid fa-folder text-sm"
                     style={{ color: formData.category_id === '' ? 'white' : '#8E8E93' }}
                   ></i>
-                  <span style={{ fontWeight: 500, fontSize: '0.8125rem', color: formData.category_id === '' ? 'white' : '#1D1D1F' }}>
+                  <span className="bar-item-text" style={{ color: formData.category_id === '' ? 'white' : '#1D1D1F' }}>
                     None
                   </span>
                 </button>
-                {categories?.map((category) => (
-                  <button
-                    key={category.id}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, category_id: category.id })}
-                    className="flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-full transition hover:scale-105"
-                    style={{
-                      backgroundColor: formData.category_id === category.id ? category.color : 'white',
-                      border: '1px solid ' + (formData.category_id === category.id ? category.color : 'rgba(199, 199, 204, 0.4)'),
-                    }}
-                  >
-                    <i
-                      className={`fa-solid ${category.icon} text-sm`}
-                      style={{ color: formData.category_id === category.id ? 'white' : category.color }}
-                    ></i>
-                    <span style={{
-                      fontWeight: 500,
-                      fontFamily: "'Inter', sans-serif",
-                      fontSize: '0.8125rem',
-                      color: formData.category_id === category.id ? 'white' : '#1D1D1F',
-                    }}>
-                      {category.name}
-                    </span>
-                  </button>
-                ))}
+                {categories?.map((category) => {
+                  const isActive = formData.category_id === category.id;
+                  return (
+                    <button
+                      key={category.id}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, category_id: category.id })}
+                      className={`flex items-center gap-2 px-4 py-2.5 ${isActive ? 'liquid-surface-subtle' : ''}`}
+                      style={isActive ? { '--surface-color': category.color } : {}}
+                    >
+                      <i
+                        className={`fa-solid ${category.icon} text-sm`}
+                        style={{ color: isActive ? 'white' : category.color }}
+                      ></i>
+                      <span className="bar-item-text" style={{ color: isActive ? 'white' : '#1D1D1F' }}>
+                        {category.name}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             {/* Description */}
             <div>
-              <label className="block mb-2 text-sm" style={{ fontWeight: 500, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+              <label className="form-label">
                 Description
               </label>
               <textarea
@@ -389,18 +372,17 @@ const GoalFormModal = ({ allTags, categories }) => {
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Describe your goal..."
                 rows={3}
-                className="w-full px-4 py-3 rounded-lg focus:outline-none transition resize-none"
-                style={{ backgroundColor: 'white', border: '1px solid rgba(199, 199, 204, 0.4)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
+                className="form-input resize-none"
               />
             </div>
           </Section>
 
           {/* ==================== GOAL CONFIG SECTION ==================== */}
-          <Section icon="fa-bullseye" title="Goal Config">
+          <Section title="Goal Config">
             {formData.goal_type === 'counted' ? (
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block mb-2 text-sm" style={{ fontWeight: 500, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+                  <label className="form-label">
                     Target Count *
                   </label>
                   <input
@@ -408,12 +390,11 @@ const GoalFormModal = ({ allTags, categories }) => {
                     min="1"
                     value={formData.target_count}
                     onChange={(e) => setFormData({ ...formData, target_count: parseInt(e.target.value) || 1 })}
-                    className="w-full px-4 py-3 rounded-lg focus:outline-none transition"
-                    style={{ backgroundColor: 'white', border: '1px solid rgba(199, 199, 204, 0.4)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
+                    className="form-input"
                   />
                 </div>
                 <div>
-                  <label className="block mb-2 text-sm" style={{ fontWeight: 500, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+                  <label className="form-label">
                     Unit Name
                   </label>
                   <input
@@ -421,8 +402,7 @@ const GoalFormModal = ({ allTags, categories }) => {
                     value={formData.unit_name}
                     onChange={(e) => setFormData({ ...formData, unit_name: e.target.value })}
                     placeholder="e.g., miles, reps, books..."
-                    className="w-full px-4 py-3 rounded-lg focus:outline-none transition"
-                    style={{ backgroundColor: 'white', border: '1px solid rgba(199, 199, 204, 0.4)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
+                    className="form-input"
                   />
                 </div>
               </div>
@@ -430,21 +410,16 @@ const GoalFormModal = ({ allTags, categories }) => {
               <div>
                 {mode === 'edit' && goalId ? (
                   <div>
-                    <label className="block mb-2 text-sm" style={{ fontWeight: 500, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+                    <label className="form-label">
                       Steps
                     </label>
-                    <div
-                      className="p-3 rounded-lg"
-                      style={{ backgroundColor: 'white', border: '1px solid rgba(199, 199, 204, 0.4)' }}
-                    >
-                      <ChecklistSection
-                        parentType="goal"
-                        parentId={goalId}
-                        items={goal?.checklist_items || []}
-                        color={categories?.find(c => c.id === formData.category_id)?.color || '#1D1D1F'}
-                        editable={true}
-                      />
-                    </div>
+                    <ChecklistSection
+                      parentType="goal"
+                      parentId={goalId}
+                      items={goal?.checklist_items || []}
+                      color={categories?.find(c => c.id === formData.category_id)?.color || '#1D1D1F'}
+                      editable={true}
+                    />
                   </div>
                 ) : (
                   <div className="text-center py-4">
@@ -459,85 +434,82 @@ const GoalFormModal = ({ allTags, categories }) => {
           </Section>
 
           {/* ==================== PRIORITY SECTION ==================== */}
-          <Section icon="fa-sliders" title="Priority">
+          <Section title="Priority">
             {/* Time Block */}
             <div className="mb-4">
-              <label className="block mb-2 text-sm" style={{ fontWeight: 500, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+              <label className="form-label">
                 Time Block
               </label>
-              <div className="flex flex-wrap gap-2">
+              <div className="button-bar flex-wrap">
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, time_block_id: '' })}
-                  className="flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-full transition hover:scale-105"
-                  style={{
-                    backgroundColor: formData.time_block_id === '' ? '#1D1D1F' : 'white',
-                    border: '1px solid ' + (formData.time_block_id === '' ? '#1D1D1F' : 'rgba(199, 199, 204, 0.4)'),
-                  }}
+                  className={`flex items-center gap-2 px-4 py-2.5 ${formData.time_block_id === '' ? 'liquid-surface-subtle' : ''}`}
+                  style={formData.time_block_id === '' ? { '--surface-color': '#1D1D1F' } : {}}
                 >
                   <i
                     className="fa-solid fa-clock text-sm"
-                    style={{ color: formData.time_block_id === '' ? 'white' : '#1D1D1F' }}
+                    style={{ color: formData.time_block_id === '' ? 'white' : '#8E8E93' }}
                   ></i>
-                  <span style={{ fontWeight: 500, fontSize: '0.8125rem', color: formData.time_block_id === '' ? 'white' : '#1D1D1F' }}>
+                  <span className="bar-item-text" style={{ color: formData.time_block_id === '' ? 'white' : '#1D1D1F' }}>
                     Anytime
                   </span>
                 </button>
-                {timeBlocks?.map((block) => (
-                  <button
-                    key={block.id}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, time_block_id: block.id })}
-                    className="flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-full transition hover:scale-105"
-                    style={{
-                      backgroundColor: formData.time_block_id === block.id ? block.color : 'white',
-                      border: '1px solid ' + (formData.time_block_id === block.id ? block.color : 'rgba(199, 199, 204, 0.4)'),
-                    }}
-                  >
-                    <i
-                      className={`${block.icon} text-sm`}
-                      style={{ color: formData.time_block_id === block.id ? 'white' : block.color }}
-                    ></i>
-                    <span style={{ fontWeight: 500, fontSize: '0.8125rem', color: formData.time_block_id === block.id ? 'white' : '#1D1D1F' }}>
-                      {block.name}
-                    </span>
-                  </button>
-                ))}
+                {timeBlocks?.map((block) => {
+                  const isActive = formData.time_block_id === block.id;
+                  return (
+                    <button
+                      key={block.id}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, time_block_id: block.id })}
+                      className={`flex items-center gap-2 px-4 py-2.5 ${isActive ? 'liquid-surface-subtle' : ''}`}
+                      style={isActive ? { '--surface-color': block.color } : {}}
+                    >
+                      <i
+                        className={`${block.icon} text-sm`}
+                        style={{ color: isActive ? 'white' : block.color }}
+                      ></i>
+                      <span className="bar-item-text" style={{ color: isActive ? 'white' : '#1D1D1F' }}>
+                        {block.name}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             {/* Importance Level */}
             <div className="mb-4">
-              <label className="block mb-2 text-sm" style={{ fontWeight: 500, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+              <label className="form-label">
                 Importance Level
               </label>
-              <div className="flex flex-wrap gap-2">
-                {importanceLevels.map((level) => (
-                  <button
-                    key={level.id}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, importance_level_id: level.id })}
-                    className="flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-full transition hover:scale-105"
-                    style={{
-                      backgroundColor: formData.importance_level_id === level.id ? level.color : 'white',
-                      border: '1px solid ' + (formData.importance_level_id === level.id ? level.color : 'rgba(199, 199, 204, 0.4)'),
-                    }}
-                  >
-                    <i
-                      className={`${level.icon} text-sm`}
-                      style={{ color: formData.importance_level_id === level.id ? 'white' : level.color }}
-                    ></i>
-                    <span style={{ fontWeight: 500, fontSize: '0.8125rem', color: formData.importance_level_id === level.id ? 'white' : '#1D1D1F' }}>
-                      {level.name}
-                    </span>
-                  </button>
-                ))}
+              <div className="button-bar flex-wrap">
+                {importanceLevels.map((level) => {
+                  const isActive = formData.importance_level_id === level.id;
+                  return (
+                    <button
+                      key={level.id}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, importance_level_id: level.id })}
+                      className={`flex items-center gap-2 px-4 py-2.5 ${isActive ? 'liquid-surface-subtle' : ''}`}
+                      style={isActive ? { '--surface-color': level.color } : {}}
+                    >
+                      <i
+                        className={`${level.icon} text-sm`}
+                        style={{ color: isActive ? 'white' : level.color }}
+                      ></i>
+                      <span className="bar-item-text" style={{ color: isActive ? 'white' : '#1D1D1F' }}>
+                        {level.name}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             {/* Tags */}
             <div>
-              <label className="block mb-2 text-sm" style={{ fontWeight: 500, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+              <label className="form-label">
                 Tags
               </label>
               <div className="relative">
@@ -551,23 +523,17 @@ const GoalFormModal = ({ allTags, categories }) => {
                   onKeyDown={handleTagInputKeyDown}
                   onFocus={() => tagInput.length > 0 && setShowTagSuggestions(true)}
                   onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
-                  className="w-full px-4 py-2 rounded-lg focus:outline-none transition"
-                  style={{ backgroundColor: 'white', border: '1px solid rgba(199, 199, 204, 0.4)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
+                  className="form-input"
                   placeholder="Type to add tags..."
                 />
 
                 {showTagSuggestions && (filteredSuggestions.length > 0 || tagInput.trim()) && (
-                  <div
-                    className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-lg max-h-40 overflow-y-auto"
-                    style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
-                  >
+                  <div className="form-dropdown">
                     {filteredSuggestions.map((tag) => (
                       <button
                         key={tag.id}
                         type="button"
                         onClick={() => handleAddTag(tag.name)}
-                        className="w-full text-left px-4 py-2 hover:bg-gray-50 transition text-sm"
-                        style={{ color: '#1D1D1F' }}
                       >
                         {tag.name}
                       </button>
@@ -576,8 +542,7 @@ const GoalFormModal = ({ allTags, categories }) => {
                       <button
                         type="button"
                         onClick={() => handleAddTag(tagInput)}
-                        className="w-full text-left px-4 py-2 hover:bg-gray-50 transition border-t text-sm"
-                        style={{ borderColor: 'rgba(199, 199, 204, 0.3)', color: '#1D1D1F' }}
+                        style={{ borderTop: '1px solid rgba(199, 199, 204, 0.3)' }}
                       >
                         <i className="fa-solid fa-plus mr-2 text-gray-400"></i>
                         Create "{tagInput.trim()}"
@@ -592,8 +557,12 @@ const GoalFormModal = ({ allTags, categories }) => {
                   {selectedTags.map((tag) => (
                     <span
                       key={tag}
-                      className="text-xs px-3 py-1.5 rounded-full flex items-center gap-2"
-                      style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', color: '#FFFFFF', fontWeight: 600 }}
+                      className="text-xs px-3 py-1.5 rounded-[10px] flex items-center gap-2 liquid-surface-subtle"
+                      style={{
+                        '--surface-color': '#2C2C2E',
+                        fontFamily: "'Inter', sans-serif",
+                        fontWeight: 600,
+                      }}
                     >
                       {tag}
                       <button type="button" onClick={() => handleRemoveTag(tag)} className="hover:opacity-70">
@@ -607,21 +576,20 @@ const GoalFormModal = ({ allTags, categories }) => {
           </Section>
 
           {/* ==================== ATTACHMENTS SECTION ==================== */}
-          <Section icon="fa-paperclip" title="Attachments" isLast={true}>
+          <Section title="Attachments" isLast={true}>
             <div className="grid grid-cols-2 gap-4">
               {/* Documents */}
               <div>
-                <label className="block mb-2 text-sm" style={{ fontWeight: 500, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+                <label className="form-label">
                   <i className="fa-solid fa-file-lines mr-2 text-xs" style={{ color: '#8E8E93' }}></i>
                   Documents
                 </label>
-                <div className="rounded-lg p-3" style={{ backgroundColor: 'white', border: '1px solid rgba(199, 199, 204, 0.4)' }}>
+                <div>
                   <input
                     type="text"
                     value={documentSearchQuery}
                     onChange={(e) => setDocumentSearchQuery(e.target.value)}
-                    className="w-full px-3 py-2 mb-2 rounded-lg focus:outline-none transition text-sm"
-                    style={{ backgroundColor: '#F9F9FB', border: '1px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
+                    className="form-input mb-2 text-sm"
                     placeholder="Search..."
                   />
                   {documents.length > 0 ? (
@@ -629,7 +597,7 @@ const GoalFormModal = ({ allTags, categories }) => {
                       {documents
                         .filter((doc) => doc.title.toLowerCase().includes(documentSearchQuery.toLowerCase()))
                         .map((doc) => (
-                          <label key={doc.id} className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-50 cursor-pointer">
+                          <label key={doc.id} className="checkbox-row">
                             <input
                               type="checkbox"
                               checked={selectedDocumentIds.includes(doc.id)}
@@ -653,28 +621,26 @@ const GoalFormModal = ({ allTags, categories }) => {
                   <button
                     type="button"
                     onClick={openNewDocumentModal}
-                    className="mt-2 w-full px-2 py-1.5 rounded-lg hover:bg-gray-50 transition text-xs flex items-center justify-center gap-1"
-                    style={{ fontWeight: 500, color: '#8E8E93', border: '1px dashed rgba(199, 199, 204, 0.5)' }}
+                    className="btn-add-dashed mt-2"
                   >
-                    <i className="fa-solid fa-plus"></i>
-                    New
+                    <i className="fa-solid fa-plus" style={{ fontSize: '0.6rem' }}></i>
+                    Add document
                   </button>
                 </div>
               </div>
 
               {/* Lists */}
               <div>
-                <label className="block mb-2 text-sm" style={{ fontWeight: 500, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+                <label className="form-label">
                   <i className="fa-solid fa-list-check mr-2 text-xs" style={{ color: '#8E8E93' }}></i>
                   Lists
                 </label>
-                <div className="rounded-lg p-3" style={{ backgroundColor: 'white', border: '1px solid rgba(199, 199, 204, 0.4)' }}>
+                <div>
                   <input
                     type="text"
                     value={listSearchQuery}
                     onChange={(e) => setListSearchQuery(e.target.value)}
-                    className="w-full px-3 py-2 mb-2 rounded-lg focus:outline-none transition text-sm"
-                    style={{ backgroundColor: '#F9F9FB', border: '1px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
+                    className="form-input mb-2 text-sm"
                     placeholder="Search..."
                   />
                   {availableLists.length > 0 ? (
@@ -686,7 +652,7 @@ const GoalFormModal = ({ allTags, categories }) => {
                           return list.name.toLowerCase().includes(query) || list.category?.name?.toLowerCase().includes(query);
                         })
                         .map((list) => (
-                          <label key={list.id} className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-50 cursor-pointer">
+                          <label key={list.id} className="checkbox-row">
                             <input
                               type="checkbox"
                               checked={selectedListIds.includes(list.id)}
@@ -723,18 +689,17 @@ const GoalFormModal = ({ allTags, categories }) => {
                   <button
                     type="button"
                     onClick={openNewListModal}
-                    className="mt-2 w-full px-2 py-1.5 rounded-lg hover:bg-gray-50 transition text-xs flex items-center justify-center gap-1"
-                    style={{ fontWeight: 500, color: '#8E8E93', border: '1px dashed rgba(199, 199, 204, 0.5)' }}
+                    className="btn-add-dashed mt-2"
                   >
-                    <i className="fa-solid fa-plus"></i>
-                    New
+                    <i className="fa-solid fa-plus" style={{ fontSize: '0.6rem' }}></i>
+                    Add list
                   </button>
                 </div>
               </div>
             </div>
           </Section>
         </form>
-      </BaseModal>
+      </SlideOverPanel>
 
       <ListShowModal />
     </>

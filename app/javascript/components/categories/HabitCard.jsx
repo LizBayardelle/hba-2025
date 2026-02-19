@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import useCategoryStore from '../../stores/categoryStore';
 import useHabitsStore from '../../stores/habitsStore';
 import useDocumentsStore from '../../stores/documentsStore';
 import useListsStore from '../../stores/listsStore';
 
-const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = false, isOptional = false }) => {
+const HabitCard = ({ habit, categoryColor, categoryDarkColor, viewMode, useHabitsPage = false, isOptional = false }) => {
   // Check if habit is due today (default to true for flexible mode or if not provided)
   const isDueToday = habit.is_due_today !== false;
 
@@ -42,6 +42,15 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = fa
 
   const [count, setCount] = useState(habit.today_count || 0);
   const [streak, setStreak] = useState(habit.current_streak || 0);
+  const [celebrateKey, setCelebrateKey] = useState(0);
+
+  // Auto-clear celebration after animation finishes
+  useEffect(() => {
+    if (celebrateKey > 0) {
+      const timer = setTimeout(() => setCelebrateKey(0), 600);
+      return () => clearTimeout(timer);
+    }
+  }, [celebrateKey]);
 
   // Increment mutation
   const incrementMutation = useMutation({
@@ -57,8 +66,9 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = fa
       return response.json();
     },
     onMutate: () => {
-      // Optimistic update
+      // Optimistic update + celebrate
       setCount((prev) => prev + 1);
+      setCelebrateKey((k) => k + 1);
     },
     onSuccess: (data) => {
       setCount(data.count);
@@ -118,66 +128,72 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = fa
       >
         <div className="flex items-start gap-3">
           {/* Completion Indicator */}
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 relative" style={{ overflow: 'visible' }}>
           {habit.target_count === 1 ? (
-            // Single toggle button
-            <button
-              onClick={handleToggle}
-              disabled={incrementMutation.isPending || decrementMutation.isPending}
-              className="w-10 h-10 rounded-lg border-2 flex items-center justify-center font-bold transition hover:scale-110"
-              style={{
-                borderColor: isDueToday ? categoryColor : '#9CA3AF',
-                color: count > 0 ? 'white' : (isDueToday ? categoryColor : '#9CA3AF'),
-                backgroundColor: count > 0 ? (isDueToday ? categoryColor : '#9CA3AF') : 'transparent',
-              }}
+            // Single toggle — no spinner, trust optimistic update
+            <div
+              key={`bounce-${celebrateKey}`}
+              style={celebrateKey > 0 ? { animation: 'celebrate-bounce 0.5s ease-out' } : undefined}
             >
-              {incrementMutation.isPending || decrementMutation.isPending ? (
-                <i className="fa-solid fa-spinner fa-spin"></i>
-              ) : (
+              <button
+                onClick={handleToggle}
+                disabled={incrementMutation.isPending || decrementMutation.isPending}
+                className="w-10 h-10 rounded-lg border-2 flex items-center justify-center font-bold transition hover:scale-110"
+                style={{
+                  borderColor: isDueToday ? categoryColor : '#9CA3AF',
+                  color: count > 0 ? 'white' : (isDueToday ? categoryColor : '#9CA3AF'),
+                  backgroundColor: count > 0 ? (isDueToday ? categoryColor : '#9CA3AF') : 'transparent',
+                }}
+              >
                 <i className={`fa-solid ${count > 0 ? 'fa-check' : 'fa-plus'}`}></i>
-              )}
-            </button>
+              </button>
+            </div>
           ) : (
             // Counter with +/- buttons
             <div
-              className="flex items-center rounded-lg border-2 overflow-hidden"
-              style={{ borderColor: isDueToday ? categoryColor : '#9CA3AF' }}
+              key={`bounce-${celebrateKey}`}
+              style={celebrateKey > 0 ? { animation: 'celebrate-bounce 0.5s ease-out' } : undefined}
             >
-              <button
-                onClick={() => decrementMutation.mutate()}
-                disabled={decrementMutation.isPending || incrementMutation.isPending}
-                className="flex-1 h-10 px-[5px] flex items-center justify-center font-bold transition hover:bg-gray-50"
-                style={{ color: isDueToday ? categoryColor : '#9CA3AF' }}
-              >
-                {decrementMutation.isPending ? (
-                  <i className="fa-solid fa-spinner fa-spin text-sm"></i>
-                ) : (
-                  <i className="fa-solid fa-minus"></i>
-                )}
-              </button>
               <div
-                className="flex-[2] h-10 px-[10px] flex items-center justify-center font-bold"
-                style={{ color: isDueToday ? categoryColor : '#9CA3AF' }}
+                className="flex items-center rounded-lg border-2 overflow-hidden"
+                style={{ borderColor: isDueToday ? categoryColor : '#9CA3AF' }}
               >
-                {incrementMutation.isPending || decrementMutation.isPending ? (
-                  <i className="fa-solid fa-spinner fa-spin text-sm"></i>
-                ) : (
-                  count
-                )}
-              </div>
-              <button
-                onClick={() => incrementMutation.mutate()}
-                disabled={incrementMutation.isPending || decrementMutation.isPending}
-                className="flex-1 h-10 px-[5px] flex items-center justify-center font-bold transition hover:bg-gray-50"
-                style={{ color: isDueToday ? categoryColor : '#9CA3AF' }}
-              >
-                {incrementMutation.isPending ? (
-                  <i className="fa-solid fa-spinner fa-spin text-sm"></i>
-                ) : (
+                <button
+                  onClick={() => decrementMutation.mutate()}
+                  disabled={decrementMutation.isPending || incrementMutation.isPending}
+                  className="flex-1 h-10 px-[5px] flex items-center justify-center font-bold transition hover:bg-gray-50"
+                  style={{ color: isDueToday ? categoryColor : '#9CA3AF' }}
+                >
+                  <i className="fa-solid fa-minus"></i>
+                </button>
+                <div
+                  className="flex-[2] h-10 px-[10px] flex items-center justify-center font-bold"
+                  style={{ color: isDueToday ? categoryColor : '#9CA3AF' }}
+                >
+                  {count}
+                </div>
+                <button
+                  onClick={() => incrementMutation.mutate()}
+                  disabled={incrementMutation.isPending || decrementMutation.isPending}
+                  className="flex-1 h-10 px-[5px] flex items-center justify-center font-bold transition hover:bg-gray-50"
+                  style={{ color: isDueToday ? categoryColor : '#9CA3AF' }}
+                >
                   <i className="fa-solid fa-plus"></i>
-                )}
-              </button>
+                </button>
+              </div>
             </div>
+          )}
+
+          {/* Celebration glow */}
+          {celebrateKey > 0 && (
+            <div
+              key={`glow-${celebrateKey}`}
+              className="absolute inset-0 rounded-lg pointer-events-none"
+              style={{
+                backgroundColor: categoryColor,
+                animation: 'celebrate-glow 0.55s ease-out forwards',
+              }}
+            />
           )}
         </div>
 
@@ -204,20 +220,29 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = fa
               </span>
             )}
 
-            {/* Importance Level badge */}
-            {habit.importance_level && (
-              <div
-                className="flex-shrink-0 w-6 h-6 rounded flex items-center justify-center"
-                style={{ backgroundColor: habit.importance_level.color }}
+            {/* Importance Level icon — hidden when grouped by priority */}
+            {habit.importance_level && viewMode !== 'priority' && (
+              <i
+                className={`${habit.importance_level.icon} text-sm flex-shrink-0`}
+                style={{ color: habit.importance_level.color }}
                 title={habit.importance_level.name}
-              >
-                <i className={`${habit.importance_level.icon} text-white text-xs`}></i>
-              </div>
+              ></i>
             )}
           </div>
 
-          {/* Badges: Document, Frequency, Time, Tags */}
+          {/* Badges: Category, Document, Frequency, Time, Tags */}
           <div className="flex flex-wrap items-center gap-1.5 mt-1">
+            {/* Category badge — hidden when grouped by category */}
+            {habit.category_name && viewMode !== 'category' && (
+              <span
+                className="text-xs px-2 py-0.5 rounded-full font-semibold flex items-center gap-1"
+                style={{ backgroundColor: categoryColor, color: 'white' }}
+              >
+                <i className={`fa-solid ${habit.category_icon || 'fa-folder'} text-[10px]`}></i>
+                {habit.category_name}
+              </span>
+            )}
+
             {/* Document badge */}
             {habit.habit_contents && habit.habit_contents.length > 0 && (
               <button
@@ -248,8 +273,8 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, useHabitsPage = fa
               </span>
             )}
 
-            {/* Time block badge */}
-            {habit.time_block_name &&
+            {/* Time block badge — hidden when grouped by time */}
+            {viewMode !== 'time' && habit.time_block_name &&
               habit.time_block_name.toLowerCase() !== 'anytime' && (
                 <span
                   className="text-xs px-2 py-0.5 rounded-full font-semibold flex items-center gap-1"

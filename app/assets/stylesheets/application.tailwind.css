@@ -16,6 +16,411 @@
   background: linear-gradient(to bottom, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.15) 100%);
 }
 
+/* ═══════════════════════════════════════════
+   Liquid Metallic Surface
+   Usage: class="liquid-surface" style="--surface-color: #EF5350"
+   Works on badges, pills, cards, tags — anything.
+   ═══════════════════════════════════════════ */
+
+.liquid-surface {
+  --surface-color: #8E8E93;
+  background:
+    radial-gradient(ellipse at 25% 15%, rgba(255,255,255,0.4) 0%, transparent 50%),
+    radial-gradient(ellipse at 75% 85%, rgba(0,0,0,0.12) 0%, transparent 50%),
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--surface-color), white 22%) 0%,
+      color-mix(in srgb, var(--surface-color), black 4%) 25%,
+      color-mix(in srgb, var(--surface-color), white 26%) 50%,
+      color-mix(in srgb, var(--surface-color), black 8%) 75%,
+      color-mix(in srgb, var(--surface-color), white 18%) 100%
+    );
+  box-shadow:
+    0 1px 0 0 rgba(255,255,255,0.4) inset,
+    0 -2px 6px -2px rgba(0,0,0,0.1) inset,
+    0 4px 12px -4px rgba(0,0,0,0.3),
+    0 0 0 0.5px rgba(255,255,255,0.1);
+  color: white;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* Subtle variant — less dramatic, for smaller elements */
+.liquid-surface-subtle {
+  --surface-color: #8E8E93;
+  background:
+    radial-gradient(ellipse at 25% 15%, rgba(255,255,255,0.3) 0%, transparent 55%),
+    radial-gradient(ellipse at 75% 85%, rgba(0,0,0,0.08) 0%, transparent 55%),
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--surface-color), white 15%) 0%,
+      var(--surface-color) 30%,
+      color-mix(in srgb, var(--surface-color), white 18%) 50%,
+      color-mix(in srgb, var(--surface-color), black 5%) 70%,
+      color-mix(in srgb, var(--surface-color), white 12%) 100%
+    );
+  box-shadow:
+    0 1px 0 0 rgba(255,255,255,0.3) inset,
+    0 -1px 4px -1px rgba(0,0,0,0.08) inset,
+    0 2px 6px -2px rgba(0,0,0,0.2);
+  color: white;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.15);
+}
+
+/* Segmented button bar */
+.button-bar {
+  display: inline-flex;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(168, 176, 188, 0.35);
+  box-shadow: 0 0.5px 2px 0 rgba(0,0,0,0.06);
+}
+
+.button-bar > * {
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  border-right: 1px solid rgba(168, 176, 188, 0.25) !important;
+  background: linear-gradient(to bottom, #FFFFFF 0%, #F7F7F8 100%) !important;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 0.8125rem;
+  color: #1D1D1F;
+  transition: all 0.2s ease;
+}
+
+.button-bar > *:last-child {
+  border-right: none !important;
+}
+
+.button-bar > *:hover:not(.liquid-surface-subtle) {
+  background: linear-gradient(to bottom, #FFFFFF 0%, #F0F0F2 100%) !important;
+}
+
+/* Let active liquid-surface-subtle win inside button-bar */
+.button-bar > .liquid-surface-subtle {
+  background:
+    radial-gradient(ellipse at 25% 15%, rgba(255,255,255,0.3) 0%, transparent 55%),
+    radial-gradient(ellipse at 75% 85%, rgba(0,0,0,0.08) 0%, transparent 55%),
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--surface-color), white 15%) 0%,
+      var(--surface-color) 30%,
+      color-mix(in srgb, var(--surface-color), white 18%) 50%,
+      color-mix(in srgb, var(--surface-color), black 5%) 70%,
+      color-mix(in srgb, var(--surface-color), white 12%) 100%
+    ) !important;
+  box-shadow:
+    0 1px 0 0 rgba(255,255,255,0.3) inset,
+    0 -1px 4px -1px rgba(0,0,0,0.08) inset !important;
+  color: white !important;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.15);
+  border-right-color: transparent !important;
+}
+
+/* Badge outline — inactive pill/badge style */
+.badge-outline {
+  background: linear-gradient(to bottom, #FFFFFF 0%, #F7F7F8 100%) !important;
+  border: 1px solid rgba(168, 176, 188, 0.35) !important;
+  color: #1D1D1F !important;
+  box-shadow:
+    0 1px 0 0 rgba(255,255,255,0.9) inset,
+    0 0.5px 2px 0 rgba(0,0,0,0.06) !important;
+  transition: all 0.25s ease;
+  text-shadow: none;
+}
+
+.badge-outline:hover {
+  border-color: rgba(142, 142, 147, 0.55) !important;
+  background: linear-gradient(to bottom, #FFFFFF 0%, #F2F2F4 100%) !important;
+  box-shadow:
+    0 1px 0 0 rgba(255,255,255,1) inset,
+    0 3px 8px -2px rgba(0,0,0,0.1) !important;
+  transform: translateY(-1px);
+}
+
+.badge-outline:active {
+  transform: translateY(0) scale(0.97);
+  transition-duration: 0.1s;
+}
+
+/* ═══════════════════════════════════════════
+   Liquid Silver Buttons
+   ═══════════════════════════════════════════ */
+
+/* Filled — primary action */
+.btn-liquid {
+  --glow: #4da6ff;
+  position: relative;
+  padding: 10px 40px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: 'Big Shoulders Inline Display', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #1e2430;
+  background:
+    radial-gradient(ellipse at 30% 20%, #f5f7fa 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 80%, #9aa3b0 0%, transparent 50%),
+    linear-gradient(135deg, #c8ced6 0%, #b0b8c4 25%, #d6dbe2 50%, #a4acb8 75%, #c0c7d0 100%);
+  box-shadow:
+    0 1px 0 0 rgba(255,255,255,0.5) inset,
+    0 -3px 8px -2px rgba(0,0,0,0.12) inset,
+    0 8px 24px -6px rgba(0,0,0,0.5),
+    0 0 0 1px rgba(255,255,255,0.1);
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  overflow: hidden;
+}
+
+.btn-liquid::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -10%;
+  transform: translateY(-50%);
+  width: 0%;
+  height: 10px;
+  background: radial-gradient(ellipse at center, rgba(77,166,255,0.5) 0%, rgba(77,166,255,0.18) 35%, transparent 70%);
+  box-shadow: none;
+  transition: width 0.5s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.3s ease;
+  opacity: 0;
+  z-index: 0;
+}
+
+.btn-liquid::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.3) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.btn-liquid:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 1px 0 0 rgba(255,255,255,0.6) inset,
+    0 -3px 8px -2px rgba(0,0,0,0.1) inset,
+    0 14px 40px -8px rgba(0,0,0,0.55),
+    0 0 0 1px rgba(77,166,255,0.2),
+    0 0 30px -8px rgba(77,166,255,0.2);
+}
+
+.btn-liquid:hover::before { width: 120%; opacity: 1; }
+.btn-liquid:hover::after { opacity: 1; }
+
+.btn-liquid:active {
+  transform: translateY(0px) scale(0.97);
+  transition-duration: 0.12s;
+}
+
+.btn-liquid:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-liquid:disabled:hover {
+  transform: none;
+  box-shadow:
+    0 1px 0 0 rgba(255,255,255,0.5) inset,
+    0 -3px 8px -2px rgba(0,0,0,0.12) inset,
+    0 8px 24px -6px rgba(0,0,0,0.5),
+    0 0 0 1px rgba(255,255,255,0.1);
+}
+
+.btn-liquid:disabled::before,
+.btn-liquid:disabled::after { display: none; }
+
+/* Outline — secondary action (dark backgrounds) */
+.btn-liquid-outline {
+  --glow: #4da6ff;
+  --border-base: rgba(168,176,188,0.35);
+  --border-bright: rgba(200,210,225,0.55);
+  position: relative;
+  padding: 9px 38px;
+  border: 1.5px solid var(--border-base);
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: 'Big Shoulders Inline Display', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #8892a4;
+  background: transparent;
+  box-shadow:
+    0 1px 0 0 rgba(255,255,255,0.04) inset,
+    0 4px 12px -4px rgba(0,0,0,0.3);
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  overflow: hidden;
+}
+
+.btn-liquid-outline::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -10%;
+  transform: translateY(-50%);
+  width: 0%;
+  height: 10px;
+  background: radial-gradient(ellipse at center, rgba(77,166,255,0.45) 0%, rgba(77,166,255,0.15) 35%, transparent 70%);
+  box-shadow: none;
+  transition: width 0.5s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.3s ease;
+  opacity: 0;
+  z-index: 0;
+}
+
+.btn-liquid-outline::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9px;
+  background:
+    radial-gradient(ellipse at 30% 30%, rgba(255,255,255,0.04) 0%, transparent 50%),
+    linear-gradient(135deg, rgba(200,206,214,0.06) 0%, rgba(160,168,180,0.03) 50%, rgba(200,206,214,0.06) 100%);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+.btn-liquid-outline:hover {
+  color: #c8d0dc;
+  border-color: var(--border-bright);
+  transform: translateY(-3px);
+  box-shadow:
+    0 1px 0 0 rgba(255,255,255,0.06) inset,
+    0 10px 30px -6px rgba(0,0,0,0.4),
+    0 0 0 1px rgba(77,166,255,0.12),
+    0 0 25px -6px rgba(77,166,255,0.18);
+}
+
+.btn-liquid-outline:hover::before { width: 120%; opacity: 1; }
+.btn-liquid-outline:hover::after { opacity: 1; }
+
+.btn-liquid-outline:active {
+  transform: translateY(0px) scale(0.97);
+  transition-duration: 0.12s;
+  background: rgba(77,166,255,0.05);
+}
+
+.btn-liquid-outline:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-liquid-outline:disabled:hover {
+  transform: none;
+  color: #8892a4;
+  border-color: var(--border-base);
+  box-shadow:
+    0 1px 0 0 rgba(255,255,255,0.04) inset,
+    0 4px 12px -4px rgba(0,0,0,0.3);
+}
+
+.btn-liquid-outline:disabled::before,
+.btn-liquid-outline:disabled::after { display: none; }
+
+/* Outline — secondary action (light backgrounds) */
+.btn-liquid-outline-light {
+  --glow: #4da6ff;
+  --border-base: #a8b0bc;
+  --border-bright: #8892a0;
+  position: relative;
+  padding: 9px 38px;
+  border: 1.5px solid var(--border-base);
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: 'Big Shoulders Inline Display', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #4a5568;
+  background: transparent;
+  box-shadow:
+    0 1px 0 0 rgba(255,255,255,0.8) inset,
+    0 4px 12px -4px rgba(0,0,0,0.08);
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  overflow: hidden;
+}
+
+.btn-liquid-outline-light::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -10%;
+  transform: translateY(-50%);
+  width: 0%;
+  height: 10px;
+  background: radial-gradient(ellipse at center, rgba(77,166,255,0.4) 0%, rgba(77,166,255,0.12) 35%, transparent 70%);
+  box-shadow: none;
+  transition: width 0.5s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.3s ease;
+  opacity: 0;
+  z-index: 0;
+}
+
+.btn-liquid-outline-light::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9px;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(245,247,250,0.6) 0%, transparent 50%),
+    linear-gradient(135deg, rgba(200,206,214,0.15) 0%, rgba(176,184,196,0.08) 50%, rgba(200,206,214,0.15) 100%);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+.btn-liquid-outline-light:hover {
+  color: #2e3748;
+  border-color: var(--border-bright);
+  transform: translateY(-3px);
+  box-shadow:
+    0 1px 0 0 rgba(255,255,255,0.9) inset,
+    0 10px 30px -6px rgba(0,0,0,0.12),
+    0 0 0 1px rgba(77,166,255,0.1),
+    0 0 20px -6px rgba(77,166,255,0.12);
+}
+
+.btn-liquid-outline-light:hover::before { width: 120%; opacity: 1; }
+.btn-liquid-outline-light:hover::after { opacity: 1; }
+
+.btn-liquid-outline-light:active {
+  transform: translateY(0px) scale(0.97);
+  transition-duration: 0.12s;
+  background: rgba(168,176,188,0.1);
+}
+
+.btn-liquid-outline-light:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-liquid-outline-light:disabled:hover {
+  transform: none;
+  color: #4a5568;
+  border-color: var(--border-base);
+  box-shadow:
+    0 1px 0 0 rgba(255,255,255,0.8) inset,
+    0 4px 12px -4px rgba(0,0,0,0.08);
+}
+
+.btn-liquid-outline-light:disabled::before,
+.btn-liquid-outline-light:disabled::after { display: none; }
+
+/* Focus styles for liquid buttons */
+.btn-liquid:focus-visible,
+.btn-liquid-outline:focus-visible,
+.btn-liquid-outline-light:focus-visible {
+  outline: 2px solid #4da6ff;
+  outline-offset: 3px;
+}
+
 /* Form Label Styling */
 label {
   font-family: 'Inter', sans-serif;
@@ -24,6 +429,223 @@ label {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #566e78;
+}
+
+/* ═══════════════════════════════════════════
+   Form Design System
+   Standardized classes for slide-over form modals.
+   ═══════════════════════════════════════════ */
+
+/* Field label — display font, uppercase, muted */
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  font-family: 'Big Shoulders Inline Display', sans-serif;
+  color: #8E8E93;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Hero input — primary name/title field */
+.form-input-hero {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(199, 199, 204, 0.4);
+  background-color: white;
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: 1.125rem;
+  color: #1D1D1F;
+  transition: all 0.2s ease;
+}
+
+.form-input-hero:focus {
+  outline: none;
+}
+
+/* Standard input — regular text fields */
+.form-input {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(199, 199, 204, 0.4);
+  background-color: white;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  color: #1D1D1F;
+  transition: all 0.2s ease;
+}
+
+.form-input:focus {
+  outline: none;
+}
+
+/* Small input — compact inline fields (numbers, selects in config rows) */
+.form-input-sm {
+  padding: 0.375rem 0.5rem;
+  border-radius: 0.5rem;
+  border: 0.5px solid rgba(199, 199, 204, 0.3);
+  background-color: white;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: #1D1D1F;
+  transition: all 0.2s ease;
+}
+
+.form-input-sm:focus {
+  outline: none;
+}
+
+/* Inline config row — "X times per Y" or "Every X days" sentence style */
+.form-inline-config {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: #8E8E93;
+}
+
+/* Button-bar item text — label inside segmented control buttons */
+.bar-item-text {
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+/* Checkbox row label — resets global label styles for list items */
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  font-size: 0.875rem !important;
+  font-weight: 400 !important;
+  color: #1D1D1F !important;
+}
+
+.checkbox-row:hover {
+  background-color: #F9FAFB;
+}
+
+/* Dashed add button — "Add document", "Add list" etc. */
+.btn-add-dashed {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px dashed rgba(199, 199, 204, 0.5);
+  background: transparent;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 0.75rem;
+  color: #8E8E93;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-add-dashed:hover {
+  border-color: #9CA3AF;
+  color: #6B7280;
+}
+
+/* Error banner — soft muted alert */
+.form-error {
+  margin-bottom: 1.25rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background-color: #FEF2F2;
+  border: 1px solid rgba(220, 38, 38, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.form-error .form-error-icon {
+  color: #DC2626;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+.form-error .form-error-text {
+  color: #991B1B;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 0.8125rem;
+}
+
+/* Delete button — footer trash icon */
+.btn-delete-icon {
+  margin-right: auto;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+
+.btn-delete-icon:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Dropdown menu — tag suggestions, search results */
+.form-dropdown {
+  position: absolute;
+  z-index: 10;
+  width: 100%;
+  margin-top: 0.25rem;
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 0.5px solid rgba(199, 199, 204, 0.3);
+  max-height: 10rem;
+  overflow-y: auto;
+}
+
+.form-dropdown button {
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-family: 'Inter', sans-serif;
+  color: #1D1D1F;
+  transition: background 0.15s ease;
+}
+
+.form-dropdown button:hover {
+  background-color: #F9FAFB;
+}
+
+/* Soft focus glow for form inputs */
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: rgba(142, 142, 147, 0.5) !important;
+  box-shadow: 0 0 0 3px rgba(142, 142, 147, 0.08), inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Softer placeholder text */
+::placeholder {
+  color: #C7C7CC !important;
+  font-weight: 300;
 }
 
 /* Prevent iOS auto-zoom on input focus - requires 16px minimum font size */
@@ -427,4 +1049,20 @@ trix-toolbar + trix-editor {
   --color-slate-grey-light: #E8E8E8;
   --color-slate-grey: #9CA3A8;
   --color-slate-grey-dark: #4A5057;
+}
+
+/* ── Habit completion celebration ── */
+
+@keyframes celebrate-bounce {
+  0%   { transform: scale(1); }
+  20%  { transform: scale(1.3); }
+  40%  { transform: scale(0.88); }
+  60%  { transform: scale(1.1); }
+  80%  { transform: scale(0.97); }
+  100% { transform: scale(1); }
+}
+
+@keyframes celebrate-glow {
+  0%   { transform: scale(1); opacity: 0.45; }
+  100% { transform: scale(2.8); opacity: 0; }
 }

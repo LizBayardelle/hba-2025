@@ -65,10 +65,9 @@ const JournalViewModal = () => {
               <a
                 key={tag.id}
                 href={`/tags?tag_id=${tag.id}`}
-                className="text-xs px-3 py-1.5 rounded-full hover:opacity-70 transition cursor-pointer flex items-center gap-1"
+                className="text-xs px-3 py-1.5 rounded-[10px] hover:opacity-70 transition cursor-pointer flex items-center gap-1 liquid-surface-subtle"
                 style={{
-                  background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)',
-                  color: '#FFFFFF',
+                  '--surface-color': '#2C2C2E',
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 600,
                 }}
@@ -97,22 +96,13 @@ const JournalViewModal = () => {
           closeViewModal();
           openEditModal(journalId);
         }}
-        className="px-6 py-3 rounded-lg transition hover:bg-gray-100"
-        style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F', border: '0.5px solid rgba(199, 199, 204, 0.3)', backgroundColor: 'white' }}
+        className="btn-liquid-outline-light"
       >
         Edit
       </button>
       <button
         onClick={closeViewModal}
-        className="px-6 py-3 rounded-lg transition hover:opacity-90"
-        style={{
-          background: 'linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%)',
-          border: '0.5px solid rgba(255, 255, 255, 0.3)',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)',
-          color: '#1D1D1F',
-          fontWeight: 600,
-          fontFamily: "'Inter', sans-serif",
-        }}
+        className="btn-liquid"
       >
         Close
       </button>

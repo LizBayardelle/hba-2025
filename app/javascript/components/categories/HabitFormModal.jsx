@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import BaseModal from '../shared/BaseModal';
+import SlideOverPanel from '../shared/SlideOverPanel';
 import useCategoryStore from '../../stores/categoryStore';
 import useHabitsStore from '../../stores/habitsStore';
 import useDocumentsStore from '../../stores/documentsStore';
@@ -17,23 +17,20 @@ const darkenColor = (hex, percent = 30) => {
   return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
 };
 
-// Section Component with header and boxed content
-const Section = ({ icon, title, children, isLast = false }) => (
-  <div className={!isLast ? 'mb-5' : ''}>
-    {/* Compact header */}
-    <div className="flex items-center gap-2 mb-2">
-      <i className={`fa-solid ${icon} text-xs`} style={{ color: '#8E8E93' }}></i>
-      <span className="text-xs uppercase tracking-wide" style={{ color: '#8E8E93', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
-        {title}
-      </span>
-    </div>
-    {/* Boxed content */}
-    <div
-      className="rounded-xl p-4"
-      style={{ backgroundColor: '#F9F9FB', border: '1px solid rgba(199, 199, 204, 0.25)' }}
+// Section with fieldset-legend style label on border
+const Section = ({ title, children, isLast = false }) => (
+  <div className={!isLast ? 'mb-6' : ''}>
+    <fieldset
+      className="rounded-2xl px-6 pb-6 pt-5"
+      style={{ border: '1px solid rgba(142, 142, 147, 0.3)' }}
     >
+      <legend className="px-3 mx-auto">
+        <span className="uppercase tracking-wider" style={{ fontSize: '1.15rem', color: '#A1A1A6', fontWeight: 500, fontFamily: "'Big Shoulders Inline Display', sans-serif", letterSpacing: '0.1em' }}>
+          {title}
+        </span>
+      </legend>
       {children}
-    </div>
+    </fieldset>
   </div>
 );
 
@@ -323,22 +320,21 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
         <button
           type="button"
           onClick={handleDelete}
-          className="mr-auto w-10 h-10 rounded-lg transition hover:bg-white/10 flex items-center justify-center"
+          className="btn-delete-icon"
           disabled={deleteMutation.isPending}
           title="Delete habit"
         >
           {deleteMutation.isPending ? (
-            <i className="fa-solid fa-spinner fa-spin text-white"></i>
+            <i className="fa-solid fa-spinner fa-spin" style={{ color: '#8E8E93' }}></i>
           ) : (
-            <i className="fa-solid fa-trash text-white text-lg"></i>
+            <i className="fa-solid fa-trash text-lg" style={{ color: '#DC2626' }}></i>
           )}
         </button>
       )}
       <button
         type="button"
         onClick={closeModal}
-        className="px-6 py-3 rounded-lg transition text-white hover:opacity-70"
-        style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
+        className="btn-liquid-outline-light"
         disabled={currentMutation.isPending}
       >
         Cancel
@@ -346,8 +342,7 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
       <button
         type="submit"
         form="habit-form"
-        className="px-6 py-3 rounded-lg transition cursor-pointer disabled:opacity-50 hover:opacity-90"
-        style={{ background: 'linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%)', border: '0.5px solid rgba(255, 255, 255, 0.3)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)', color: '#1D1D1F', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
+        className="btn-liquid"
         disabled={currentMutation.isPending || (useHabitsPage && !formData.category_id && !propsCategory)}
       >
         {currentMutation.isPending
@@ -360,7 +355,7 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
   );
 
   return (
-    <BaseModal
+    <SlideOverPanel
       isOpen={isOpen}
       onClose={closeModal}
       title={mode === 'edit' ? 'Edit Habit' : 'Create a New Habit'}
@@ -368,146 +363,124 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
     >
       <form id="habit-form" onSubmit={handleSubmit}>
         {currentMutation.isError && (
-          <div
-            className="mb-4 p-4 rounded-lg"
-            style={{ backgroundColor: '#FEE2E2', color: '#DC2626' }}
-          >
-            <i className="fa-solid fa-exclamation-circle mr-2"></i>
-            {currentMutation.error?.message || 'An error occurred'}
+          <div className="form-error">
+            <i className="fa-solid fa-circle-exclamation form-error-icon"></i>
+            <span className="form-error-text">
+              {currentMutation.error?.message || 'An error occurred'}
+            </span>
           </div>
         )}
 
         {/* ==================== BASICS SECTION ==================== */}
-        <Section icon="fa-cube" title="Basics">
+        <Section title="Basics">
           {/* Habit Name */}
           <div className="mb-4">
-            <label className="block mb-2 text-sm" style={{ fontWeight: 500, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
-              Habit Name
-            </label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
-              className="w-full px-4 py-3 rounded-lg focus:outline-none transition"
-              style={{ backgroundColor: 'white', border: '1px solid rgba(199, 199, 204, 0.4)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
-              placeholder="e.g., Morning meditation"
+              className="form-input-hero"
+              placeholder="Habit name..."
             />
           </div>
 
           {/* Category Picker (only on habits page) */}
           {useHabitsPage && (
             <div className="mb-4">
-              <label className="block mb-2 text-sm" style={{ fontWeight: 500, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+              <label className="form-label">
                 Category <span style={{ color: '#DC2626' }}>*</span>
               </label>
-              <div className="flex flex-wrap gap-2">
-                {categories?.map((category) => (
-                  <button
-                    key={category.id}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, category_id: category.id })}
-                    className="flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-full transition hover:scale-105"
-                    style={{
-                      backgroundColor: formData.category_id === category.id ? category.color : 'white',
-                      border: '1px solid ' + (formData.category_id === category.id ? category.color : 'rgba(199, 199, 204, 0.4)'),
-                    }}
-                  >
-                    <i
-                      className={`fa-solid ${category.icon} text-sm`}
-                      style={{ color: formData.category_id === category.id ? 'white' : category.color }}
-                    ></i>
-                    <span style={{
-                      fontWeight: 500,
-                      fontFamily: "'Inter', sans-serif",
-                      fontSize: '0.8125rem',
-                      color: formData.category_id === category.id ? 'white' : '#1D1D1F',
-                      whiteSpace: 'nowrap'
-                    }}>
-                      {category.name}
-                    </span>
-                  </button>
-                ))}
+              <div className="button-bar flex-wrap">
+                {categories?.map((category) => {
+                  const isActive = formData.category_id === category.id;
+                  return (
+                    <button
+                      key={category.id}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, category_id: category.id })}
+                      className={`flex items-center gap-2 px-4 py-2.5 ${isActive ? 'liquid-surface-subtle' : ''}`}
+                      style={isActive ? { '--surface-color': category.color } : {}}
+                    >
+                      <i
+                        className={`fa-solid ${category.icon} text-sm`}
+                        style={{ color: isActive ? 'white' : category.color }}
+                      ></i>
+                      <span className="bar-item-text" style={{ color: isActive ? 'white' : '#1D1D1F' }}>
+                        {category.name}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
 
           {/* Schedule Mode */}
           <div>
-            <label className="block mb-2 text-sm" style={{ fontWeight: 500, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+            <label className="form-label">
               Schedule
             </label>
 
             {/* Mode Toggle Pills */}
-            <div className="flex flex-wrap gap-2 mb-3">
+            <div className="button-bar mb-3">
               {[
                 { value: 'flexible', label: 'Flexible', icon: 'fa-shuffle' },
                 { value: 'specific_days', label: 'Specific Days', icon: 'fa-calendar-week' },
                 { value: 'interval', label: 'Interval', icon: 'fa-repeat' },
-              ].map((scheduleMode) => (
-                <button
-                  key={scheduleMode.value}
-                  type="button"
-                  onClick={() => setFormData({
-                    ...formData,
-                    schedule_mode: scheduleMode.value,
-                    schedule_config: scheduleMode.value === 'specific_days' ? { days_of_week: [] } :
-                                     scheduleMode.value === 'interval' ? { interval_days: 2, anchor_date: new Date().toISOString().split('T')[0] } : {}
-                  })}
-                  className="flex items-center gap-2 px-3 py-2 rounded-full transition hover:scale-105"
-                  style={{
-                    fontFamily: "'Inter', sans-serif",
-                    fontWeight: 500,
-                    fontSize: '0.8125rem',
-                    backgroundColor: formData.schedule_mode === scheduleMode.value ? '#1D1D1F' : 'white',
-                    color: formData.schedule_mode === scheduleMode.value ? 'white' : '#1D1D1F',
-                    border: '1px solid ' + (formData.schedule_mode === scheduleMode.value ? '#1D1D1F' : 'rgba(199, 199, 204, 0.4)'),
-                  }}
-                >
-                  <i className={`fa-solid ${scheduleMode.icon} text-xs`}></i>
-                  {scheduleMode.label}
-                </button>
-              ))}
+              ].map((scheduleMode) => {
+                const isActive = formData.schedule_mode === scheduleMode.value;
+                return (
+                  <button
+                    key={scheduleMode.value}
+                    type="button"
+                    onClick={() => setFormData({
+                      ...formData,
+                      schedule_mode: scheduleMode.value,
+                      schedule_config: scheduleMode.value === 'specific_days' ? { days_of_week: [] } :
+                                       scheduleMode.value === 'interval' ? { interval_days: 2, anchor_date: new Date().toISOString().split('T')[0] } : {}
+                    })}
+                    className={`flex items-center gap-2 px-4 py-2.5 ${isActive ? 'liquid-surface-subtle' : ''}`}
+                    style={isActive ? { '--surface-color': '#2C2C2E' } : {}}
+                  >
+                    <i className={`fa-solid ${scheduleMode.icon} text-xs`} style={{ color: isActive ? 'white' : '#8E8E93' }}></i>
+                    {scheduleMode.label}
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Flexible Mode - Times per Period */}
+            {/* Flexible Mode - Times per Period (inline) */}
             {formData.schedule_mode === 'flexible' && (
-              <div className="grid grid-cols-2 gap-3 p-3 rounded-lg" style={{ backgroundColor: 'white', border: '1px solid rgba(199, 199, 204, 0.4)' }}>
-                <div>
-                  <label className="block mb-1 text-xs" style={{ fontWeight: 500, color: '#8E8E93' }}>Times</label>
-                  <input
-                    type="number"
-                    value={formData.target_count}
-                    onChange={(e) =>
-                      setFormData({ ...formData, target_count: parseInt(e.target.value) || 1 })
-                    }
-                    min="1"
-                    className="w-full px-3 py-2 rounded-lg focus:outline-none transition bg-white"
-                    style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
-                  />
-                </div>
-                <div>
-                  <label className="block mb-1 text-xs" style={{ fontWeight: 500, color: '#8E8E93' }}>Per</label>
-                  <select
-                    value={formData.frequency_type}
-                    onChange={(e) => setFormData({ ...formData, frequency_type: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg focus:outline-none transition bg-white"
-                    style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
-                  >
-                    <option value="day">Day</option>
-                    <option value="week">Week</option>
-                    <option value="month">Month</option>
-                    <option value="year">Year</option>
-                  </select>
-                </div>
+              <div className="form-inline-config">
+                <input
+                  type="number"
+                  value={formData.target_count}
+                  onChange={(e) =>
+                    setFormData({ ...formData, target_count: parseInt(e.target.value) || 1 })
+                  }
+                  min="1"
+                  className="w-14 text-center form-input-sm"
+                />
+                <span style={{ fontWeight: 400 }}>times per</span>
+                <select
+                  value={formData.frequency_type}
+                  onChange={(e) => setFormData({ ...formData, frequency_type: e.target.value })}
+                  className="form-input-sm"
+                >
+                  <option value="day">day</option>
+                  <option value="week">week</option>
+                  <option value="month">month</option>
+                  <option value="year">year</option>
+                </select>
               </div>
             )}
 
             {/* Specific Days Mode */}
             {formData.schedule_mode === 'specific_days' && (
-              <div className="p-3 rounded-lg" style={{ backgroundColor: 'white', border: '1px solid rgba(199, 199, 204, 0.4)' }}>
+              <div className="flex flex-wrap gap-3 items-center">
                 {/* Preset Buttons */}
-                <div className="flex flex-wrap gap-2 mb-3">
+                <div className="button-bar">
                   {[
                     { label: 'Weekdays', days: [1, 2, 3, 4, 5] },
                     { label: 'Weekends', days: [0, 6] },
@@ -524,13 +497,8 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
                           ...formData,
                           schedule_config: { ...formData.schedule_config, days_of_week: preset.days }
                         })}
-                        className="px-3 py-1.5 rounded-full text-xs font-semibold transition"
-                        style={{
-                          fontFamily: "'Inter', sans-serif",
-                          backgroundColor: isActive ? '#1D1D1F' : 'white',
-                          color: isActive ? 'white' : '#1D1D1F',
-                          border: '1px solid ' + (isActive ? '#1D1D1F' : 'rgba(199, 199, 204, 0.4)'),
-                        }}
+                        className={`px-4 h-10 text-xs font-semibold ${isActive ? 'liquid-surface-subtle' : ''}`}
+                        style={isActive ? { '--surface-color': '#2C2C2E' } : {}}
                       >
                         {preset.label}
                       </button>
@@ -539,7 +507,7 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
                 </div>
 
                 {/* Day Toggle Grid */}
-                <div className="flex gap-2">
+                <div className="button-bar">
                   {dayNames.map((day, index) => {
                     const selectedDays = formData.schedule_config?.days_of_week || [];
                     const isSelected = selectedDays.includes(index);
@@ -556,13 +524,8 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
                             schedule_config: { ...formData.schedule_config, days_of_week: newDays }
                           });
                         }}
-                        className="w-9 h-9 rounded-lg font-semibold text-sm transition"
-                        style={{
-                          fontFamily: "'Inter', sans-serif",
-                          backgroundColor: isSelected ? '#1D1D1F' : 'white',
-                          color: isSelected ? 'white' : '#1D1D1F',
-                          border: '1px solid ' + (isSelected ? '#1D1D1F' : 'rgba(199, 199, 204, 0.4)'),
-                        }}
+                        className={`w-10 h-10 font-semibold text-sm ${isSelected ? 'liquid-surface-subtle' : ''}`}
+                        style={isSelected ? { '--surface-color': '#2C2C2E' } : {}}
                         title={fullDayNames[index]}
                       >
                         {day}
@@ -575,8 +538,8 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
 
             {/* Interval Mode */}
             {formData.schedule_mode === 'interval' && (
-              <div className="flex items-center gap-3 p-3 rounded-lg" style={{ backgroundColor: 'white', border: '1px solid rgba(199, 199, 204, 0.4)' }}>
-                <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, color: '#1D1D1F' }}>Every</span>
+              <div className="form-inline-config">
+                <span style={{ fontWeight: 400 }}>Every</span>
                 <input
                   type="number"
                   value={formData.schedule_config?.interval_days || 2}
@@ -589,8 +552,8 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
                     }
                   })}
                   min="1"
-                  className="w-16 px-3 py-2 rounded-lg focus:outline-none transition text-center bg-white"
-                  style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
+                  className="w-14 px-2 py-1.5 rounded-lg focus:outline-none transition text-center bg-white text-sm"
+                  style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 500, color: '#1D1D1F' }}
                 />
                 <select
                   value={formData.schedule_config?.interval_unit || 'days'}
@@ -602,8 +565,7 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
                       anchor_date: formData.schedule_config?.anchor_date || new Date().toISOString().split('T')[0]
                     }
                   })}
-                  className="px-3 py-2 rounded-lg focus:outline-none transition bg-white"
-                  style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 500, color: '#1D1D1F' }}
+                  className="form-input-sm"
                 >
                   <option value="days">days</option>
                   <option value="weeks">weeks</option>
@@ -615,34 +577,26 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
         </Section>
 
         {/* ==================== PRIORITY SECTION ==================== */}
-        <Section icon="fa-sliders" title="Priority">
+        <Section title="Priority">
 
           {/* Time Block */}
           <div className="mb-4">
-            <label className="block mb-2 text-sm" style={{ fontWeight: 500, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+            <label className="form-label">
               Time Block
             </label>
-            <div className="flex flex-wrap gap-2">
+            <div className="button-bar">
               {/* Anytime option */}
               <button
                 type="button"
                 onClick={() => setFormData({ ...formData, time_block_id: '' })}
-                className="flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-full transition hover:scale-105"
-                style={{
-                  backgroundColor: formData.time_block_id === '' ? '#1D1D1F' : 'white',
-                  border: '1px solid ' + (formData.time_block_id === '' ? '#1D1D1F' : 'rgba(199, 199, 204, 0.4)'),
-                }}
+                className={`flex items-center gap-2 px-4 py-2.5 ${formData.time_block_id === '' ? 'liquid-surface-subtle' : ''}`}
+                style={formData.time_block_id === '' ? { '--surface-color': '#1D1D1F' } : {}}
               >
                 <i
                   className="fa-solid fa-clock text-sm"
-                  style={{ color: formData.time_block_id === '' ? 'white' : '#1D1D1F' }}
+                  style={{ color: formData.time_block_id === '' ? 'white' : '#8E8E93' }}
                 ></i>
-                <span style={{
-                  fontWeight: 500,
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: '0.8125rem',
-                  color: formData.time_block_id === '' ? 'white' : '#1D1D1F',
-                }}>
+                <span className="bar-item-text" style={{ color: formData.time_block_id === '' ? 'white' : '#1D1D1F' }}>
                   Anytime
                 </span>
               </button>
@@ -652,22 +606,14 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
                   key={block.id}
                   type="button"
                   onClick={() => setFormData({ ...formData, time_block_id: block.id })}
-                  className="flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-full transition hover:scale-105"
-                  style={{
-                    backgroundColor: formData.time_block_id === block.id ? block.color : 'white',
-                    border: '1px solid ' + (formData.time_block_id === block.id ? block.color : 'rgba(199, 199, 204, 0.4)'),
-                  }}
+                  className={`flex items-center gap-2 px-4 py-2.5 ${formData.time_block_id === block.id ? 'liquid-surface-subtle' : ''}`}
+                  style={formData.time_block_id === block.id ? { '--surface-color': block.color } : {}}
                 >
                   <i
                     className={`${block.icon} text-sm`}
                     style={{ color: formData.time_block_id === block.id ? 'white' : block.color }}
                   ></i>
-                  <span style={{
-                    fontWeight: 500,
-                    fontFamily: "'Inter', sans-serif",
-                    fontSize: '0.8125rem',
-                    color: formData.time_block_id === block.id ? 'white' : '#1D1D1F',
-                  }}>
+                  <span className="bar-item-text" style={{ color: formData.time_block_id === block.id ? 'white' : '#1D1D1F' }}>
                     {block.name}
                   </span>
                 </button>
@@ -677,31 +623,23 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
 
           {/* Importance Level */}
           <div className="mb-4">
-            <label className="block mb-2 text-sm" style={{ fontWeight: 500, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+            <label className="form-label">
               Importance Level
             </label>
-            <div className="flex flex-wrap gap-2">
+            <div className="button-bar">
               {importanceLevels.map((level) => (
                 <button
                   key={level.id}
                   type="button"
                   onClick={() => setFormData({ ...formData, importance_level_id: level.id })}
-                  className="flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-full transition hover:scale-105"
-                  style={{
-                    backgroundColor: formData.importance_level_id === level.id ? level.color : 'white',
-                    border: '1px solid ' + (formData.importance_level_id === level.id ? level.color : 'rgba(199, 199, 204, 0.4)'),
-                  }}
+                  className={`flex items-center gap-2 px-4 py-2.5 ${formData.importance_level_id === level.id ? 'liquid-surface-subtle' : ''}`}
+                  style={formData.importance_level_id === level.id ? { '--surface-color': level.color } : {}}
                 >
                   <i
                     className={`${level.icon} text-sm`}
                     style={{ color: formData.importance_level_id === level.id ? 'white' : level.color }}
                   ></i>
-                  <span style={{
-                    fontWeight: 500,
-                    fontFamily: "'Inter', sans-serif",
-                    fontSize: '0.8125rem',
-                    color: formData.importance_level_id === level.id ? 'white' : '#1D1D1F',
-                  }}>
+                  <span className="bar-item-text" style={{ color: formData.importance_level_id === level.id ? 'white' : '#1D1D1F' }}>
                     {level.name}
                   </span>
                 </button>
@@ -711,7 +649,7 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
 
           {/* Tags */}
           <div>
-            <label className="block mb-2 text-sm" style={{ fontWeight: 500, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+            <label className="form-label">
               Tags
             </label>
             <div className="relative">
@@ -725,23 +663,17 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
                 onKeyDown={handleTagInputKeyDown}
                 onFocus={() => tagInput.length > 0 && setShowTagSuggestions(true)}
                 onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
-                className="w-full px-4 py-2 rounded-lg focus:outline-none transition"
-                style={{ backgroundColor: 'white', border: '1px solid rgba(199, 199, 204, 0.4)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
+                className="form-input"
                 placeholder="Type to add tags..."
               />
 
               {showTagSuggestions && (filteredSuggestions.length > 0 || tagInput.trim()) && (
-                <div
-                  className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-lg max-h-40 overflow-y-auto"
-                  style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
-                >
+                <div className="form-dropdown">
                   {filteredSuggestions.map((tag) => (
                     <button
                       key={tag.id}
                       type="button"
                       onClick={() => handleAddTag(tag.name)}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-50 transition text-sm"
-                      style={{ fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}
                     >
                       {tag.name}
                     </button>
@@ -750,8 +682,7 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
                     <button
                       type="button"
                       onClick={() => handleAddTag(tagInput)}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-50 transition border-t text-sm"
-                      style={{ borderColor: 'rgba(199, 199, 204, 0.3)', color: '#1D1D1F' }}
+                      style={{ borderTop: '1px solid rgba(199, 199, 204, 0.3)' }}
                     >
                       <i className="fa-solid fa-plus mr-2 text-gray-400"></i>
                       Create "{tagInput.trim()}"
@@ -766,10 +697,9 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
                 {selectedTags.map((tag) => (
                   <span
                     key={tag}
-                    className="text-xs px-3 py-1.5 rounded-full flex items-center gap-2"
+                    className="text-xs px-3 py-1.5 rounded-[10px] flex items-center gap-2 liquid-surface-subtle"
                     style={{
-                      background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)',
-                      color: '#FFFFFF',
+                      '--surface-color': '#2C2C2E',
                       fontFamily: "'Inter', sans-serif",
                       fontWeight: 600,
                     }}
@@ -786,21 +716,20 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
         </Section>
 
         {/* ==================== ATTACHMENTS SECTION ==================== */}
-        <Section icon="fa-paperclip" title="Attachments" isLast={true}>
+        <Section title="Attachments" isLast={true}>
           <div className="grid grid-cols-2 gap-4">
             {/* Documents */}
             <div>
-              <label className="block mb-2 text-sm" style={{ fontWeight: 500, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+              <label className="form-label">
                 <i className="fa-solid fa-file-lines mr-2 text-xs" style={{ color: '#8E8E93' }}></i>
                 Documents
               </label>
-              <div className="rounded-lg p-3" style={{ backgroundColor: 'white', border: '1px solid rgba(199, 199, 204, 0.4)' }}>
+              <div>
                 <input
                   type="text"
                   value={documentSearchQuery}
                   onChange={(e) => setDocumentSearchQuery(e.target.value)}
-                  className="w-full px-3 py-2 mb-2 rounded-lg focus:outline-none transition text-sm"
-                  style={{ backgroundColor: '#F9F9FB', border: '1px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
+                  className="form-input mb-2 text-sm"
                   placeholder="Search..."
                 />
                 {documents.length > 0 ? (
@@ -813,7 +742,7 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
                       .map((doc) => (
                         <label
                           key={doc.id}
-                          className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-50 cursor-pointer"
+                          className="checkbox-row"
                         >
                           <input
                             type="checkbox"
@@ -842,29 +771,27 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
                 <button
                   type="button"
                   onClick={openNewDocumentModal}
-                  className="mt-2 w-full px-2 py-1.5 rounded-lg hover:bg-gray-50 transition text-xs flex items-center justify-center gap-1"
-                  style={{ fontWeight: 500, color: '#8E8E93', border: '1px dashed rgba(199, 199, 204, 0.5)' }}
+                  className="btn-add-dashed mt-2"
                 >
-                  <i className="fa-solid fa-plus"></i>
-                  New
+                  <i className="fa-solid fa-plus" style={{ fontSize: '0.6rem' }}></i>
+                  Add document
                 </button>
               </div>
             </div>
 
             {/* Lists */}
             <div>
-              <label className="block mb-2 text-sm" style={{ fontWeight: 500, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+              <label className="form-label">
                 <i className="fa-solid fa-list-check mr-2 text-xs" style={{ color: '#8E8E93' }}></i>
                 Lists
                 <span className="ml-1 text-xs font-normal" style={{ color: '#8E8E93' }}>(daily reset)</span>
               </label>
-              <div className="rounded-lg p-3" style={{ backgroundColor: 'white', border: '1px solid rgba(199, 199, 204, 0.4)' }}>
+              <div>
                 <input
                   type="text"
                   value={listSearchQuery}
                   onChange={(e) => setListSearchQuery(e.target.value)}
-                  className="w-full px-3 py-2 mb-2 rounded-lg focus:outline-none transition text-sm"
-                  style={{ backgroundColor: '#F9F9FB', border: '1px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
+                  className="form-input mb-2 text-sm"
                   placeholder="Search..."
                 />
                 {availableLists.length > 0 ? (
@@ -878,7 +805,7 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
                       .map((list) => (
                         <label
                           key={list.id}
-                          className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-50 cursor-pointer"
+                          className="checkbox-row"
                         >
                           <input
                             type="checkbox"
@@ -920,18 +847,17 @@ const HabitFormModal = ({ categoryColor, useHabitsPage = false }) => {
                 <button
                   type="button"
                   onClick={openNewListModal}
-                  className="mt-2 w-full px-2 py-1.5 rounded-lg hover:bg-gray-50 transition text-xs flex items-center justify-center gap-1"
-                  style={{ fontWeight: 500, color: '#8E8E93', border: '1px dashed rgba(199, 199, 204, 0.5)' }}
+                  className="btn-add-dashed mt-2"
                 >
-                  <i className="fa-solid fa-plus"></i>
-                  New
+                  <i className="fa-solid fa-plus" style={{ fontSize: '0.6rem' }}></i>
+                  Add list
                 </button>
               </div>
             </div>
           </div>
         </Section>
       </form>
-    </BaseModal>
+    </SlideOverPanel>
   );
 };
 

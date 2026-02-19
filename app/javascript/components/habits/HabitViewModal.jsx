@@ -1,6 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import BaseModal from '../shared/BaseModal';
+import SlideOverPanel from '../shared/SlideOverPanel';
 import { categoriesApi } from '../../utils/api';
 import useHabitsStore from '../../stores/habitsStore';
 import HabitItem from './HabitItem';
@@ -84,15 +84,7 @@ const HabitViewModal = () => {
         <div className="mt-6 pt-6 border-t" style={{ borderColor: 'rgba(199, 199, 204, 0.3)' }}>
           <a
             href={`/categories/${category.id}`}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg hover:opacity-70 transition"
-            style={{
-              background: 'linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%)',
-              border: '0.5px solid rgba(255, 255, 255, 0.3)',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)',
-              color: '#1D1D1F',
-              fontFamily: "'Inter', sans-serif",
-              fontWeight: 600,
-            }}
+            className="btn-liquid inline-flex items-center gap-2"
           >
             <i className="fa-solid fa-arrow-right"></i>
             View in Category
@@ -102,14 +94,26 @@ const HabitViewModal = () => {
     );
   };
 
+  const footer = (
+    <>
+      <button
+        onClick={closeViewModal}
+        className="btn-liquid"
+      >
+        Close
+      </button>
+    </>
+  );
+
   return (
-    <BaseModal
+    <SlideOverPanel
       isOpen={isOpen}
       onClose={closeViewModal}
       title={habitData?.habit.name || 'Habit'}
+      footer={footer}
     >
       {renderContent()}
-    </BaseModal>
+    </SlideOverPanel>
   );
 };
 

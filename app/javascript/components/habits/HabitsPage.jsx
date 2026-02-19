@@ -323,8 +323,8 @@ const HabitsPage = () => {
 
         {/* Habits List */}
         {!isLoading && !error && habitsData && habitsData.habits.length > 0 && (
-          <div className="space-y-4">
-            {groupedHabits.map((group, index) => (
+          <div className={viewMode !== 'none' ? '-mt-6' : ''}>
+            {groupedHabits.map((group) => (
               <HabitGroup
                 key={group.id}
                 groupId={group.id}
@@ -335,7 +335,6 @@ const HabitsPage = () => {
                 habits={group.habits}
                 viewMode={viewMode}
                 selectedDate={selectedDate}
-                isFirst={index === 0}
                 hideHeader={group.hideHeader}
               />
             ))}
