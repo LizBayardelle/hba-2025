@@ -13,7 +13,7 @@ class DashboardController < ApplicationController
     end
 
     # === Today's Habits ===
-    all_habits = current_user.habits.active.includes(:category, :habit_completions, :importance_level, :time_block)
+    all_habits = current_user.habits.active.includes(:category, :habit_completions, :importance_level, :time_block, :documents, list_attachments: { list: :category })
     @habits = all_habits.select { |h| h.due_on?(@today) }
 
     @today_completions = HabitCompletion.where(
@@ -35,7 +35,7 @@ class DashboardController < ApplicationController
     @time_blocks = current_user.time_blocks.order(:rank)
 
     # === Today's Tasks ===
-    @tasks = current_user.tasks.active.includes(:category, :importance_level)
+    @tasks = current_user.tasks.active.includes(:category, :importance_level, list_attachments: { list: :category })
     @tasks_due_today = @tasks.where(due_date: @today)
     @tasks_overdue = @tasks.where('due_date < ?', @today)
     @tasks_no_date = @tasks.where(due_date: nil)

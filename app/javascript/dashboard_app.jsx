@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import DocumentViewModal from './components/documents/DocumentViewModal';
 import DocumentFormModal from './components/documents/DocumentFormModal';
+import ListShowModal from './components/lists/ListShowModal';
 
 // Create a query client
 const queryClient = new QueryClient({
@@ -26,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <QueryClientProvider client={queryClient}>
         <DocumentViewModal />
         <DocumentFormModal />
+        <ListShowModal />
       </QueryClientProvider>
     );
   }

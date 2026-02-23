@@ -21,6 +21,7 @@ class CategoriesController < ApplicationController
               ).merge(
                 today_count: habit.completions_for_date(Date.today),
                 current_streak: habit.current_streak,
+                health: habit.health,
                 is_due_today: habit.due_today?,
                 schedule_description: habit.schedule_description
               )
@@ -86,6 +87,7 @@ class CategoriesController < ApplicationController
               }
             ).merge(
               today_count: completion ? completion.count : 0,
+              health: habit.health,
               documents: habit.documents.map { |content|
                 { id: content.id, title: content.title, content_type: content.content_type }
               },

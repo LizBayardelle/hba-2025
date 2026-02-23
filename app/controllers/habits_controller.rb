@@ -113,6 +113,7 @@ class HabitsController < ApplicationController
               tags: habit.tags.map { |t| { id: t.id, name: t.name } },
               documents: habit.documents.map { |c| { id: c.id, title: c.title, content_type: c.content_type } },
               habit_contents: habit.documents.map { |c| { id: c.id, title: c.title } },
+              health: habit.health,
               is_due_today: habit.due_on?(@selected_date),
               schedule_description: habit.schedule_description,
               checklist_items: habit.checklist_items.ordered.map { |item|

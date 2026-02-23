@@ -1,10 +1,16 @@
 // Import the documentsStore
 import useDocumentsStore from './stores/documentsStore';
+import useListsStore from './stores/listsStore';
 
 // Expose the store globally for dashboard usage
 window.openDocumentViewModal = (documentId) => {
   const { openViewModal } = useDocumentsStore.getState();
   openViewModal(documentId);
+};
+
+window.openListShowModal = (listId) => {
+  const { openShowModal } = useListsStore.getState();
+  openShowModal(listId);
 };
 
 // Handle habit content modal display

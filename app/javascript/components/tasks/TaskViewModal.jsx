@@ -2,6 +2,7 @@ import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import SlideOverPanel from '../shared/SlideOverPanel';
 import { tasksApi } from '../../utils/api';
+import { parseLocalDate, getToday } from '../../utils/dateUtils';
 import useTasksStore from '../../stores/tasksStore';
 
 const TaskViewModal = () => {
@@ -60,13 +61,11 @@ const TaskViewModal = () => {
   const getDueDateStatus = (dueDate) => {
     if (!dueDate) return null;
 
-    const due = new Date(dueDate);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    due.setHours(0, 0, 0, 0);
+    const due = parseLocalDate(dueDate);
+    const today = getToday();
 
     const diffTime = due - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays < 0) {
       return { text: 'Overdue', color: '#FB7185' };

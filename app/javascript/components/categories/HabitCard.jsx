@@ -42,6 +42,7 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, viewMode, useHabit
 
   const [count, setCount] = useState(habit.today_count || 0);
   const [streak, setStreak] = useState(habit.current_streak || 0);
+  const [health, setHealth] = useState(habit.health ?? 100);
   const [celebrateKey, setCelebrateKey] = useState(0);
 
   // Auto-clear celebration after animation finishes
@@ -73,6 +74,7 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, viewMode, useHabit
     onSuccess: (data) => {
       setCount(data.count);
       setStreak(data.streak);
+      if (data.health !== undefined) setHealth(data.health);
     },
     onError: () => {
       // Revert on error
@@ -100,6 +102,7 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, viewMode, useHabit
     onSuccess: (data) => {
       setCount(data.count);
       setStreak(data.streak);
+      if (data.health !== undefined) setHealth(data.health);
     },
     onError: () => {
       // Revert on error
@@ -338,20 +341,44 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, viewMode, useHabit
           </div>
         </div>
 
-        {/* Streak Badge */}
-        {streak > 0 && (
-          <div className="flex-shrink-0">
-            <div className="flex flex-col items-center">
-              <div
-                className="text-2xl font-bold display-font"
-                style={{ color: categoryColor }}
-              >
-                {streak}
+        {/* Streak & Health */}
+        <div className="flex-shrink-0 w-20">
+          <div className="flex flex-col items-center gap-1">
+            {/* Streak */}
+            {streak > 0 && (
+              <div className="flex items-center gap-1">
+                <i className="fa-solid fa-fire text-sm" style={{ color: categoryColor }}></i>
+                <span className="text-lg font-bold display-font" style={{ color: categoryColor }}>
+                  {streak}
+                </span>
               </div>
-              <div className="text-xs text-gray-500 font-semibold">day streak</div>
+            )}
+
+            {/* Health bar */}
+            <div className="w-full relative">
+              <div
+                className="w-full h-5 rounded-full overflow-hidden"
+                style={{ backgroundColor: `${categoryColor}20` }}
+              >
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{
+                    width: `${health}%`,
+                    backgroundColor: categoryColor,
+                  }}
+                />
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span
+                  className="text-[10px] font-bold leading-none text-white"
+                  style={{ textShadow: '0 0 3px rgba(0,0,0,0.7), 0 0 1px rgba(0,0,0,0.9)' }}
+                >
+                  {health}%
+                </span>
+              </div>
             </div>
           </div>
-        )}
+        </div>
         </div>
       </div>
 

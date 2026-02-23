@@ -4,6 +4,23 @@ import SlideOverPanel from '../shared/SlideOverPanel';
 import useListsStore from '../../stores/listsStore';
 import { categoriesApi, checklistItemsApi, listsApi } from '../../utils/api';
 
+// Section with fieldset-legend style label on border
+const Section = ({ title, children, isLast = false }) => (
+  <div className={!isLast ? 'mb-6' : ''}>
+    <fieldset
+      className="rounded-2xl px-6 pb-6 pt-5"
+      style={{ border: '1px solid rgba(142, 142, 147, 0.3)' }}
+    >
+      <legend className="px-3 mx-auto">
+        <span className="uppercase tracking-wider" style={{ fontSize: '1.15rem', color: '#A1A1A6', fontWeight: 500, fontFamily: "'Big Shoulders Inline Display', sans-serif", letterSpacing: '0.1em' }}>
+          {title}
+        </span>
+      </legend>
+      {children}
+    </fieldset>
+  </div>
+);
+
 const ListFormModal = () => {
   const queryClient = useQueryClient();
   const { formModal, closeFormModal } = useListsStore();
@@ -21,7 +38,7 @@ const ListFormModal = () => {
   const [dragOverIndex, setDragOverIndex] = useState(null);
 
   // Save status tracking (for edit mode only)
-  const [saveStatus, setSaveStatus] = useState(null); // 'saving', 'saved', 'error'
+  const [saveStatus, setSaveStatus] = useState(null);
   const saveTimeoutRef = useRef(null);
   const debounceTimeoutRef = useRef(null);
 
@@ -87,7 +104,6 @@ const ListFormModal = () => {
   // Create mutation (for new mode - button click)
   const createMutation = useMutation({
     mutationFn: async (data) => {
-      // Create the list first
       const listResponse = await listsApi.create({
         name: data.name,
         category_id: data.category_id || null,
@@ -95,7 +111,6 @@ const ListFormModal = () => {
 
       const listId = listResponse.list.id;
 
-      // Create checklist items
       for (let i = 0; i < data.checklistItems.length; i++) {
         const item = data.checklistItems[i];
         await checklistItemsApi.createForList(listId, {
@@ -136,7 +151,6 @@ const ListFormModal = () => {
       return checklistItemsApi.createForList(itemId, { name, position });
     },
     onSuccess: (response, variables) => {
-      // Update local state with the real item
       setChecklistItems(prev => prev.map(item =>
         item.id === variables.tempId
           ? { ...response.checklist_item, isExisting: true }
@@ -147,7 +161,6 @@ const ListFormModal = () => {
       showSavedStatus();
     },
     onError: (error, variables) => {
-      // Remove the temp item on error
       setChecklistItems(prev => prev.filter(item => item.id !== variables.tempId));
       setSaveStatus('error');
     },
@@ -240,7 +253,6 @@ const ListFormModal = () => {
     if (!newItemName.trim()) return;
 
     if (mode === 'edit') {
-      // Edit mode: save immediately
       const tempId = `temp-${Date.now()}`;
       const newItem = {
         id: tempId,
@@ -256,7 +268,6 @@ const ListFormModal = () => {
         tempId,
       });
     } else {
-      // New mode: just add to local state
       setChecklistItems([...checklistItems, {
         id: `new-${Date.now()}`,
         name: newItemName.trim(),
@@ -324,7 +335,6 @@ const ListFormModal = () => {
     setDraggedIndex(null);
     setDragOverIndex(null);
 
-    // In edit mode, save the new order immediately
     if (mode === 'edit' && newItems.every(item => item.isExisting)) {
       const orderedIds = newItems.map(item => item.id);
       setSaveStatus('saving');
@@ -383,47 +393,33 @@ const ListFormModal = () => {
     );
   };
 
-  const footer = mode === 'edit' ? (
-    // Edit mode: Delete button, status, and Done
+  // Header actions for edit mode: grey trash + save status
+  const headerActions = mode === 'edit' ? (
     <>
       <button
         type="button"
         onClick={handleDelete}
-        className="mr-auto w-10 h-10 rounded-lg transition hover:bg-red-50 flex items-center justify-center"
+        className="w-8 h-8 rounded-lg transition hover:bg-gray-100 flex items-center justify-center"
         disabled={deleteMutation.isPending}
         title="Delete list"
       >
         {deleteMutation.isPending ? (
-          <i className="fa-solid fa-spinner fa-spin" style={{ color: '#DC2626' }}></i>
+          <i className="fa-solid fa-spinner fa-spin text-sm" style={{ color: '#8E8E93' }}></i>
         ) : (
-          <i className="fa-solid fa-trash text-lg" style={{ color: '#DC2626' }}></i>
+          <i className="fa-solid fa-trash text-sm" style={{ color: '#8E8E93' }}></i>
         )}
       </button>
       <StatusIndicator />
-      <button
-        type="button"
-        onClick={handleClose}
-        className="px-6 py-3 rounded-lg transition cursor-pointer hover:opacity-90"
-        style={{
-          background: 'linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%)',
-          border: '0.5px solid rgba(255, 255, 255, 0.3)',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)',
-          color: '#1D1D1F',
-          fontWeight: 600,
-          fontFamily: "'Inter', sans-serif",
-        }}
-      >
-        Done
-      </button>
     </>
-  ) : (
-    // New mode: Cancel and Create buttons
+  ) : null;
+
+  // Footer only for new mode
+  const footer = mode === 'new' ? (
     <>
       <button
         type="button"
         onClick={handleClose}
-        className="px-6 py-3 rounded-lg transition hover:bg-gray-100"
-        style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F', border: '0.5px solid rgba(199, 199, 204, 0.3)', backgroundColor: 'white' }}
+        className="btn-liquid-outline-light"
         disabled={createMutation.isPending}
       >
         Cancel
@@ -431,51 +427,33 @@ const ListFormModal = () => {
       <button
         type="submit"
         form="list-form"
-        className="px-6 py-3 rounded-lg transition cursor-pointer disabled:opacity-50 hover:opacity-90"
-        style={{
-          background: 'linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%)',
-          border: '0.5px solid rgba(255, 255, 255, 0.3)',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)',
-          color: '#1D1D1F',
-          fontWeight: 600,
-          fontFamily: "'Inter', sans-serif",
-        }}
+        className="btn-liquid"
         disabled={createMutation.isPending || !formData.name.trim() || checklistItems.length === 0}
       >
         {createMutation.isPending ? 'Creating...' : 'Create List'}
       </button>
     </>
-  );
+  ) : null;
 
-  return (
-    <SlideOverPanel
-      isOpen={isOpen}
-      onClose={handleClose}
-      title={mode === 'edit' ? 'Edit List' : 'Create a New List'}
-      footer={footer}
-    >
-      <form id="list-form" onSubmit={handleSubmit}>
-        {/* List Name */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <label
-              className="block"
-              style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}
-            >
-              List Name
-            </label>
+  const formContent = (
+    <>
+      {/* ==================== BASICS SECTION ==================== */}
+      <Section title="Basics">
+        {/* List Name with Pin Toggle */}
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-1">
+            <div />
             <button
               type="button"
               onClick={handlePinToggle}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition hover:opacity-80"
-              style={{
-                background: formData.pinned ? 'linear-gradient(135deg, #2D2D2F, #1D1D1F)' : 'rgba(142, 142, 147, 0.1)',
-                color: formData.pinned ? 'white' : '#8E8E93',
-              }}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition hover:opacity-80 ${formData.pinned ? 'liquid-surface-subtle' : ''}`}
+              style={formData.pinned ? { '--surface-color': '#2C2C2E' } : { background: 'rgba(142, 142, 147, 0.1)', color: '#8E8E93' }}
               title={formData.pinned ? 'Unpin list' : 'Pin list'}
             >
-              <i className={`fa-solid fa-thumbtack text-sm ${formData.pinned ? '' : 'opacity-60'}`}></i>
-              <span className="text-xs font-semibold" style={{ fontFamily: "'Inter', sans-serif" }}>
+              <i className={`fa-solid fa-thumbtack text-sm ${formData.pinned ? '' : 'opacity-60'}`}
+                style={{ color: formData.pinned ? 'white' : '#8E8E93' }}
+              ></i>
+              <span className="text-xs font-semibold" style={{ fontFamily: "'Inter', sans-serif", color: formData.pinned ? 'white' : '#8E8E93' }}>
                 {formData.pinned ? 'Pinned' : 'Pin'}
               </span>
             </button>
@@ -484,207 +462,161 @@ const ListFormModal = () => {
             type="text"
             value={formData.name}
             onChange={handleNameChange}
-            required
-            className="w-full px-4 py-3 rounded-lg focus:outline-none transition"
-            style={{
-              border: '0.5px solid rgba(199, 199, 204, 0.3)',
-              fontFamily: "'Inter', sans-serif",
-              fontWeight: 200,
-            }}
-            placeholder="e.g., Shopping List"
+            required={mode === 'new'}
+            className="form-input-hero"
+            placeholder="List name..."
             autoFocus={mode === 'new'}
           />
         </div>
 
-        {/* Category (optional) */}
-        <div className="mb-6">
-          <label
-            className="block mb-2"
-            style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}
-          >
-            Category (optional)
+        {/* Category */}
+        <div>
+          <label className="form-label">
+            Category
           </label>
-          <div className="flex flex-wrap gap-2">
+          <div className="button-bar flex-wrap">
             <button
               type="button"
               onClick={() => handleCategoryChange('')}
-              className={`flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-full transition hover:scale-105 ${
-                formData.category_id === '' ? 'ring-2 ring-offset-2' : ''
-              }`}
-              style={{
-                backgroundColor: formData.category_id === '' ? '#1D1D1F' : 'white',
-                border: '1px solid ' + (formData.category_id === '' ? '#1D1D1F' : 'rgba(199, 199, 204, 0.4)'),
-                '--tw-ring-color': '#000000',
-              }}
+              className={`flex items-center gap-2 px-4 py-2.5 ${formData.category_id === '' ? 'liquid-surface-subtle' : ''}`}
+              style={formData.category_id === '' ? { '--surface-color': '#1D1D1F' } : {}}
             >
-              <div
-                className="w-6 h-6 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: formData.category_id === '' ? 'rgba(255,255,255,0.25)' : '#1D1D1F' }}
-              >
-                <i className="fa-solid fa-inbox text-white text-xs"></i>
-              </div>
-              <span
-                style={{
-                  fontWeight: 500,
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: '0.8125rem',
-                  color: formData.category_id === '' ? 'white' : '#1D1D1F',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                No Category
+              <i
+                className="fa-solid fa-inbox text-sm"
+                style={{ color: formData.category_id === '' ? 'white' : '#8E8E93' }}
+              ></i>
+              <span className="bar-item-text" style={{ color: formData.category_id === '' ? 'white' : '#1D1D1F' }}>
+                None
               </span>
             </button>
+            {categories?.map((category) => {
+              const isActive = formData.category_id === category.id;
+              return (
+                <button
+                  key={category.id}
+                  type="button"
+                  onClick={() => handleCategoryChange(category.id)}
+                  className={`flex items-center gap-2 px-4 py-2.5 ${isActive ? 'liquid-surface-subtle' : ''}`}
+                  style={isActive ? { '--surface-color': category.color } : {}}
+                >
+                  <i
+                    className={`fa-solid ${category.icon} text-sm`}
+                    style={{ color: isActive ? 'white' : category.color }}
+                  ></i>
+                  <span className="bar-item-text" style={{ color: isActive ? 'white' : '#1D1D1F' }}>
+                    {category.name}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </Section>
 
-            {categories?.map((category) => (
-              <button
-                key={category.id}
-                type="button"
-                onClick={() => handleCategoryChange(category.id)}
-                className={`flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-full transition hover:scale-105 ${
-                  formData.category_id === category.id ? 'ring-2 ring-offset-2' : ''
+      {/* ==================== ITEMS SECTION ==================== */}
+      <Section title="Items" isLast={true}>
+        {checklistItems.length > 0 && (
+          <div className="space-y-2 mb-3">
+            {checklistItems.map((item, index) => (
+              <div
+                key={item.id}
+                draggable
+                onDragStart={(e) => handleDragStart(e, index)}
+                onDragEnd={handleDragEnd}
+                onDragOver={(e) => handleDragOver(e, index)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, index)}
+                className={`flex items-center gap-2 p-2 rounded-lg transition-all ${
+                  dragOverIndex === index && draggedIndex !== index ? 'ring-2 ring-gray-400' : ''
                 }`}
                 style={{
-                  backgroundColor: formData.category_id === category.id ? category.color : 'white',
-                  border:
-                    '1px solid ' +
-                    (formData.category_id === category.id ? category.color : 'rgba(199, 199, 204, 0.4)'),
-                  '--tw-ring-color': category.color,
+                  backgroundColor: draggedIndex === index ? '#E5E5E7' : '#F5F5F7',
+                  cursor: 'grab',
                 }}
               >
                 <div
-                  className="w-6 h-6 rounded-full flex items-center justify-center"
-                  style={{
-                    backgroundColor:
-                      formData.category_id === category.id ? 'rgba(255,255,255,0.25)' : category.color,
-                  }}
+                  className="flex items-center justify-center w-6 h-6 cursor-grab active:cursor-grabbing"
+                  title="Drag to reorder"
                 >
-                  <i className={`fa-solid ${category.icon} text-white text-xs`}></i>
+                  <i className="fa-solid fa-grip-vertical text-sm" style={{ color: '#8E8E93' }}></i>
                 </div>
                 <span
-                  style={{
-                    fontWeight: 500,
-                    fontFamily: "'Inter', sans-serif",
-                    fontSize: '0.8125rem',
-                    color: formData.category_id === category.id ? 'white' : '#1D1D1F',
-                    whiteSpace: 'nowrap',
-                  }}
+                  className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold"
+                  style={{ backgroundColor: '#E5E5E7', color: '#1D1D1F' }}
                 >
-                  {category.name}
+                  {index + 1}
                 </span>
-              </button>
+                <span
+                  className={`flex-1 text-sm ${item.completed ? 'line-through opacity-60' : ''}`}
+                  style={{ color: '#1D1D1F' }}
+                >
+                  {item.name}
+                </span>
+                {!item.isExisting && mode === 'edit' && (
+                  <i className="fa-solid fa-spinner fa-spin text-xs" style={{ color: '#8E8E93' }}></i>
+                )}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveItem(item)}
+                  className="w-6 h-6 rounded hover:bg-gray-200 flex items-center justify-center transition"
+                >
+                  <i className="fa-solid fa-times text-xs text-gray-400"></i>
+                </button>
+              </div>
             ))}
           </div>
-        </div>
+        )}
 
-        {/* Checklist Items */}
-        <div className="mb-6">
-          <label
-            className="block mb-2"
-            style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}
+        <div className="flex gap-2 items-end">
+          <textarea
+            value={newItemName}
+            onChange={(e) => setNewItemName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleAddItem(e);
+              }
+            }}
+            className="form-input flex-1 resize-none"
+            style={{ minHeight: '80px' }}
+            placeholder="Add an item... (Shift+Enter for new line)"
+            rows={3}
+          />
+          <button
+            type="button"
+            onClick={handleAddItem}
+            disabled={!newItemName.trim()}
+            className="px-4 py-3 rounded-lg transition disabled:opacity-50 liquid-surface-subtle"
+            style={{ '--surface-color': '#1D1D1F' }}
           >
-            Checklist Items
-          </label>
-
-          {checklistItems.length > 0 && (
-            <div className="space-y-2 mb-3">
-              {checklistItems.map((item, index) => (
-                <div
-                  key={item.id}
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, index)}
-                  onDragEnd={handleDragEnd}
-                  onDragOver={(e) => handleDragOver(e, index)}
-                  onDragLeave={handleDragLeave}
-                  onDrop={(e) => handleDrop(e, index)}
-                  className={`flex items-center gap-2 p-2 rounded-lg transition-all ${
-                    dragOverIndex === index && draggedIndex !== index ? 'ring-2 ring-gray-400' : ''
-                  }`}
-                  style={{
-                    backgroundColor: draggedIndex === index ? '#E5E5E7' : '#F5F5F7',
-                    cursor: 'grab',
-                  }}
-                >
-                  {/* Drag handle */}
-                  <div
-                    className="flex items-center justify-center w-6 h-6 cursor-grab active:cursor-grabbing"
-                    title="Drag to reorder"
-                  >
-                    <i className="fa-solid fa-grip-vertical text-sm" style={{ color: '#8E8E93' }}></i>
-                  </div>
-                  <span
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold"
-                    style={{ backgroundColor: '#E5E5E7', color: '#1D1D1F' }}
-                  >
-                    {index + 1}
-                  </span>
-                  <span
-                    className={`flex-1 ${item.completed ? 'line-through opacity-60' : ''}`}
-                    style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#1D1D1F' }}
-                  >
-                    {item.name}
-                  </span>
-                  {!item.isExisting && mode === 'edit' && (
-                    <i className="fa-solid fa-spinner fa-spin text-xs" style={{ color: '#8E8E93' }}></i>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveItem(item)}
-                    className="w-6 h-6 rounded hover:bg-gray-200 flex items-center justify-center transition"
-                  >
-                    <i className="fa-solid fa-times text-xs text-gray-400"></i>
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="flex gap-2 items-end">
-            <textarea
-              value={newItemName}
-              onChange={(e) => setNewItemName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleAddItem(e);
-                }
-              }}
-              className="flex-1 px-4 py-2 rounded-lg focus:outline-none transition resize-none"
-              style={{
-                border: '0.5px solid rgba(199, 199, 204, 0.3)',
-                fontFamily: "'Inter', sans-serif",
-                fontWeight: 200,
-                minHeight: '80px',
-              }}
-              placeholder="Add an item... (Shift+Enter for new line)"
-              rows={3}
-            />
-            <button
-              type="button"
-              onClick={handleAddItem}
-              disabled={!newItemName.trim()}
-              className="px-4 py-3 rounded-lg transition disabled:opacity-50"
-              style={{
-                background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)',
-                color: 'white',
-                fontWeight: 600,
-                fontFamily: "'Inter', sans-serif",
-              }}
-            >
-              <i className="fa-solid fa-plus"></i>
-            </button>
-          </div>
-
-          {checklistItems.length === 0 && (
-            <p
-              className="text-xs mt-2"
-              style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#8E8E93' }}
-            >
-              Add at least one item to create a list
-            </p>
-          )}
+            <i className="fa-solid fa-plus text-white"></i>
+          </button>
         </div>
-      </form>
+
+        {checklistItems.length === 0 && (
+          <p className="text-xs mt-2" style={{ color: '#8E8E93' }}>
+            Add at least one item to create a list
+          </p>
+        )}
+      </Section>
+    </>
+  );
+
+  return (
+    <SlideOverPanel
+      isOpen={isOpen}
+      onClose={handleClose}
+      title={mode === 'edit' ? 'Edit List' : 'New List'}
+      headerActions={headerActions}
+      footer={footer}
+    >
+      {mode === 'new' ? (
+        <form id="list-form" onSubmit={handleSubmit}>
+          {formContent}
+        </form>
+      ) : (
+        formContent
+      )}
     </SlideOverPanel>
   );
 };

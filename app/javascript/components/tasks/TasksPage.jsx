@@ -1,6 +1,7 @@
 import React, { useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { tasksApi, categoriesApi, tagsApi, documentsApi } from '../../utils/api';
+import { parseLocalDate, getToday } from '../../utils/dateUtils';
 import useTasksStore from '../../stores/tasksStore';
 import TaskItem from './TaskItem';
 import TaskFormModal from './TaskFormModal';
@@ -174,7 +175,7 @@ const TasksPage = () => {
           groups.thisWeek.tasks.push(task);
         } else if (createdDay.getTime() >= monthStart.getTime()) {
           groups.thisMonth.tasks.push(task);
-        } else if (createdDate < festeringDate) {
+        } else {
           groups.festering.tasks.push(task);
         }
       });
@@ -223,20 +224,18 @@ const TasksPage = () => {
         noDueDate: { title: 'No Due Date', tasks: [], color: metallicGrey, icon: 'fa-infinity' },
       };
 
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const today = getToday();
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
       const weekEnd = new Date(today);
       weekEnd.setDate(weekEnd.getDate() + 7);
-      const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0); // Last day of current month
+      const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
       tasks.forEach(task => {
         if (!task.due_date) {
           groups.noDueDate.tasks.push(task);
         } else {
-          const dueDate = new Date(task.due_date);
-          const dueDay = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+          const dueDay = parseLocalDate(task.due_date);
 
           if (dueDay < today) {
             groups.overdue.tasks.push(task);
@@ -304,12 +303,10 @@ const TasksPage = () => {
     const total = tasks.length;
     const completed = tasks.filter(t => t.completed).length;
     const onHold = tasks.filter(t => t.on_hold).length;
+    const today = getToday();
     const overdue = tasks.filter(t => {
       if (!t.due_date || t.completed) return false;
-      const dueDate = new Date(t.due_date);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      return dueDate < today;
+      return parseLocalDate(t.due_date) < today;
     }).length;
 
     return { total, completed, onHold, overdue };
@@ -330,33 +327,43 @@ const TasksPage = () => {
     const groupColor = group.color || '#8E8E93';
     const groupIcon = group.icon || 'fa-list';
 
+    // No grouping — flat list
+    if (group.hideHeader) {
+      return (
+        <div key={group.title} className="mt-6 space-y-2">
+          {group.tasks.map(task => (
+            <TaskItem key={task.id} task={task} groupBy={groupBy} />
+          ))}
+        </div>
+      );
+    }
+
+    // Grouped — full-width shiny header + tinted background section
     return (
-      <div key={group.title} className={`mb-6 ${index !== 0 ? 'mt-8' : (group.hideHeader ? 'mt-6' : '')}`}>
-        {/* Full-width colored stripe header */}
-        {!group.hideHeader && (
-          <div
-            className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3"
-            style={{
-              background: `linear-gradient(to bottom, color-mix(in srgb, ${groupColor} 85%, white) 0%, ${groupColor} 100%)`,
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
-            }}
+      <div
+        key={group.title}
+        className="-mx-8 px-8 pb-8"
+        style={{ backgroundColor: `color-mix(in srgb, ${groupColor} 18%, white)` }}
+      >
+        <div
+          className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3 liquid-surface-subtle"
+          style={{ '--surface-color': groupColor }}
+        >
+          <i className={`fa-solid ${groupIcon} text-white text-lg`}></i>
+          <h3 className="text-3xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
+            {group.title} ({group.tasks.length})
+          </h3>
+          <button
+            onClick={() => handleNewTaskForGroup(group)}
+            className="w-8 h-8 rounded-md flex items-center justify-center transition btn-glass"
+            title="New task"
           >
-            <i className={`fa-solid ${groupIcon} text-white text-lg`}></i>
-            <h3 className="text-3xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
-              {group.title} ({group.tasks.length})
-            </h3>
-            <button
-              onClick={() => handleNewTaskForGroup(group)}
-              className="w-8 h-8 rounded-md flex items-center justify-center transition btn-glass"
-              title="New task"
-            >
-              <i className="fa-solid fa-plus text-white"></i>
-            </button>
-          </div>
-        )}
+            <i className="fa-solid fa-plus text-white"></i>
+          </button>
+        </div>
         <div className="space-y-2">
           {group.tasks.map(task => (
-            <TaskItem key={task.id} task={task} />
+            <TaskItem key={task.id} task={task} groupBy={groupBy} />
           ))}
         </div>
       </div>
@@ -479,7 +486,11 @@ const TasksPage = () => {
           </div>
         )}
 
-        {!isLoading && !error && tasks.length > 0 && groupedTasks.map((group, index) => renderGroup(group, index))}
+        {!isLoading && !error && tasks.length > 0 && (
+          <div>
+            {groupedTasks.map((group, index) => renderGroup(group, index))}
+          </div>
+        )}
       </div>
 
       {/* Modals */}

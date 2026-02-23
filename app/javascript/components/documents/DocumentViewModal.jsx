@@ -150,14 +150,14 @@ const DocumentViewModal = () => {
               <a
                 key={tag.id}
                 href={`/tags?tag_id=${tag.id}`}
-                className="text-xs px-3 py-1.5 rounded-full hover:opacity-70 transition cursor-pointer"
+                className="text-xs px-3 py-1.5 rounded-[10px] hover:opacity-70 transition cursor-pointer liquid-surface-subtle flex items-center gap-1"
                 style={{
-                  background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)',
-                  color: '#FFFFFF',
+                  '--surface-color': '#2C2C2E',
                   fontFamily: "'Inter', sans-serif",
                   fontWeight: 600,
                 }}
               >
+                <i className="fa-solid fa-tag text-[10px]"></i>
                 {tag.name}
               </a>
             ))}
@@ -214,8 +214,7 @@ const DocumentViewModal = () => {
               href={document.metadata?.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition"
-              style={{ background: 'linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%)', border: '0.5px solid rgba(255, 255, 255, 0.3)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)', color: '#1D1D1F', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
+              className="btn-liquid inline-flex items-center gap-2"
             >
               <i className="fa-solid fa-external-link-alt"></i>
               Open Link

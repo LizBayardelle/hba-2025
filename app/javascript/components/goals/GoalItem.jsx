@@ -5,7 +5,7 @@ import useGoalsStore from '../../stores/goalsStore';
 import useListsStore from '../../stores/listsStore';
 import ProgressThermometer from './ProgressThermometer';
 
-const GoalItem = ({ goal }) => {
+const GoalItem = ({ goal, groupBy }) => {
   const queryClient = useQueryClient();
   const { openViewModal, openEditModal } = useGoalsStore();
   const { openShowModal: openListShowModal } = useListsStore();
@@ -147,33 +147,31 @@ const GoalItem = ({ goal }) => {
             {goal.goal_type === 'counted' ? (goal.unit_name ? `# of ${goal.unit_name}` : 'Counted') : 'Steps'}
           </div>
 
-          {/* Category */}
-          {goal.category && (
+          {/* Category — hidden when grouped by category */}
+          {goal.category && groupBy !== 'category' && (
             <div
               className="flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium"
-              style={{ backgroundColor: themeColor, color: 'white' }}
+              style={{ backgroundColor: goal.category.color, color: 'white' }}
             >
               <i className={`fa-solid ${goal.category.icon} text-[10px]`}></i>
               <span>{goal.category.name}</span>
             </div>
           )}
 
-          {/* Importance Level */}
-          {goal.importance_level && (
-            <div
-              className="flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium"
-              style={{ backgroundColor: themeColor, color: 'white' }}
-            >
-              <i className={`${goal.importance_level.icon} text-[10px]`}></i>
-              <span>{goal.importance_level.name}</span>
-            </div>
+          {/* Importance Level icon — hidden when grouped by importance */}
+          {goal.importance_level && groupBy !== 'importance' && (
+            <i
+              className={`${goal.importance_level.icon} text-sm flex-shrink-0`}
+              style={{ color: goal.importance_level.color }}
+              title={goal.importance_level.name}
+            ></i>
           )}
 
           {/* Time Block */}
           {goal.time_block && goal.time_block.name.toLowerCase() !== 'anytime' && (
             <div
               className="flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium"
-              style={{ backgroundColor: themeColor, color: 'white' }}
+              style={{ backgroundColor: goal.time_block.color, color: 'white' }}
             >
               <i className={`${goal.time_block.icon} text-[10px]`}></i>
               <span>{goal.time_block.name}</span>
@@ -201,10 +199,10 @@ const GoalItem = ({ goal }) => {
                 openListShowModal(attachment.list_id);
               }}
               className="px-2 py-0.5 rounded-md text-xs font-medium hover:opacity-70 transition flex items-center gap-1"
-              style={{ backgroundColor: themeColor, color: 'white' }}
+              style={{ backgroundColor: attachment.list_category?.color || categoryColor, color: 'white' }}
               title={`Open ${attachment.list_name}`}
             >
-              <i className="fa-solid fa-list-check text-[10px]"></i>
+              <i className={`fa-solid ${attachment.list_category?.icon || 'fa-list-check'} text-[10px]`}></i>
               {attachment.list_name}
             </button>
           ))}

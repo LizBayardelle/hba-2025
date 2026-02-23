@@ -25,12 +25,14 @@ const HabitItem = ({ habit, categoryColor, categoryDarkColor, isFirst, onComplet
 
   const [count, setCount] = useState(habit.today_count || 0);
   const [streak, setStreak] = useState(habit.current_streak || 0);
+  const [health, setHealth] = useState(habit.health ?? 100);
 
   // Update local state when habit data changes (e.g., when navigating to different dates)
   useEffect(() => {
     setCount(habit.today_count || 0);
     setStreak(habit.current_streak || 0);
-  }, [habit.today_count, habit.current_streak]);
+    setHealth(habit.health ?? 100);
+  }, [habit.today_count, habit.current_streak, habit.health]);
 
   // Increment mutation
   const incrementMutation = useMutation({
@@ -58,6 +60,7 @@ const HabitItem = ({ habit, categoryColor, categoryDarkColor, isFirst, onComplet
     onSuccess: (data) => {
       setCount(data.count);
       setStreak(data.streak);
+      if (data.health !== undefined) setHealth(data.health);
     },
     onError: () => {
       setCount(habit.today_count || 0);
@@ -90,6 +93,7 @@ const HabitItem = ({ habit, categoryColor, categoryDarkColor, isFirst, onComplet
     onSuccess: (data) => {
       setCount(data.count);
       setStreak(data.streak);
+      if (data.health !== undefined) setHealth(data.health);
     },
     onError: () => {
       setCount(habit.today_count || 0);
@@ -305,30 +309,48 @@ const HabitItem = ({ habit, categoryColor, categoryDarkColor, isFirst, onComplet
           )}
         </div>
 
-        {/* Streak Badge */}
-        {streak > 0 && (
-          <div className="flex-shrink-0">
-            <div className="flex flex-col items-center">
-              {/* Show semi-transparent if not completed, full opacity if completed */}
+        {/* Streak & Health */}
+        <div className="flex-shrink-0 w-20">
+          <div className="flex flex-col items-center gap-1">
+            {/* Streak */}
+            {streak > 0 && (
               <div
-                className={`text-2xl font-bold display-font transition-opacity ${
+                className={`flex items-center gap-1 transition-opacity ${
                   count >= habit.target_count ? 'opacity-100' : 'opacity-30'
                 }`}
-                style={{ color: categoryColor }}
               >
-                {streak}
+                <i className="fa-solid fa-fire text-sm" style={{ color: categoryColor }}></i>
+                <span className="text-lg font-bold display-font" style={{ color: categoryColor }}>
+                  {streak}
+                </span>
               </div>
+            )}
+
+            {/* Health bar */}
+            <div className="w-full relative">
               <div
-                className={`text-xs font-semibold transition-opacity ${
-                  count >= habit.target_count ? 'opacity-100' : 'opacity-40'
-                }`}
-                style={{ color: '#657b84' }}
+                className="w-full h-5 rounded-full overflow-hidden"
+                style={{ backgroundColor: `${categoryColor}20` }}
               >
-                day streak
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{
+                    width: `${health}%`,
+                    backgroundColor: categoryColor,
+                  }}
+                />
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span
+                  className="text-[10px] font-bold leading-none text-white"
+                  style={{ textShadow: '0 0 3px rgba(0,0,0,0.7), 0 0 1px rgba(0,0,0,0.9)' }}
+                >
+                  {health}%
+                </span>
               </div>
             </div>
           </div>
-        )}
+        </div>
 
         </div>
       </div>

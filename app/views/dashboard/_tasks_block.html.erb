@@ -90,7 +90,17 @@
             <i class="fa-regular fa-circle text-xs" style="color: <%= color %>;"></i>
           <% end %>
         </button>
-        <span class="flex-1 text-sm <%= task.completed ? 'line-through opacity-60' : '' %>" style="color: <%= color %>;"><%= task.name %></span>
+        <div class="flex-1 flex items-center gap-2">
+          <span class="text-sm <%= task.completed ? 'line-through opacity-60' : '' %>" style="color: <%= color %>;"><%= task.name %></span>
+          <% task.list_attachments.each do |la| %>
+            <button onclick="event.stopPropagation(); window.openListShowModal(<%= la.list_id %>)"
+                    class="flex-shrink-0 text-xs hover:opacity-70 transition cursor-pointer"
+                    style="color: <%= la.list.category&.color || color %>;"
+                    title="<%= la.list.name %>">
+              <i class="fa-solid fa-list-check"></i>
+            </button>
+          <% end %>
+        </div>
         <% if task.due_date %>
           <span class="text-xs" style="color: <%= color %>;"><%= task.due_date.strftime('%b %d') %></span>
         <% end %>

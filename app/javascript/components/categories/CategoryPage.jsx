@@ -14,13 +14,14 @@ import TaskViewModal from '../tasks/TaskViewModal';
 import ListFormModal from '../lists/ListFormModal';
 import ListShowModal from '../lists/ListShowModal';
 import { tagsApi, tasksApi } from '../../utils/api';
+import { parseLocalDate, getToday } from '../../utils/dateUtils';
 import { getColorVariants } from '../../utils/colorUtils';
 
 const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
   const queryClient = useQueryClient();
   const [groupBy, setGroupBy] = useState(initialSort);
   const [activeSection, setActiveSection] = useState('habits');
-  const [taskFilter, setTaskFilter] = useState('today'); // 'today' or 'all'
+  const [taskFilter, setTaskFilter] = useState('today');
   const [togglingTaskId, setTogglingTaskId] = useState(null);
   const { openNewHabitModal, openCategoryEditModal } = useCategoryStore();
   const { openNewModal: openNewTaskModal, openViewModal: openTaskViewModal, openEditModal: openTaskEditModal } = useTasksStore();
@@ -148,20 +149,17 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
     return [{ title: 'All Habits', habits, color: '#9CA3A8', icon: 'fa-list' }];
   }, [categoryData, groupBy, importanceLevels, timeBlocks]);
 
-  // Calculate today's task count (overdue, today, or no due date)
-  // Must be before early returns to satisfy React hooks rules
+  // Calculate today's task count (due today, overdue, or no due date)
   const todayTaskCount = useMemo(() => {
     const tasks = categoryData?.tasks;
     if (!tasks) return 0;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = getToday();
 
     return tasks.filter(task => {
-      if (!task.due_date) return true; // No due date - counts as today
-      const dueDate = new Date(task.due_date);
-      dueDate.setHours(0, 0, 0, 0);
-      const diffDays = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
-      return diffDays <= 0; // Today or overdue
+      if (!task.due_date) return true;
+      const dueDate = parseLocalDate(task.due_date);
+      const diffDays = Math.round((dueDate - today) / (1000 * 60 * 60 * 24));
+      return diffDays <= 0;
     }).length;
   }, [categoryData?.tasks]);
 
@@ -191,6 +189,9 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
   const categoryColor = category.color;
   const colors = getColorVariants(categoryColor);
 
+  // Map groupBy to viewMode for HabitCard conditional badge hiding
+  const viewMode = groupBy === 'priority' ? 'priority' : groupBy === 'time' ? 'time' : 'category';
+
   // Format habits for DocumentFormModal
   const formattedHabits = habits?.map(habit => ({
     ...habit,
@@ -206,106 +207,107 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
     { id: 'lists', label: 'Lists', icon: 'fa-clipboard-list', count: lists?.length || 0 },
   ];
 
-  // Render a habit group with colored stripe header
-  const renderHabitGroup = (group, index) => {
+  // Render a habit group with liquid-surface-subtle header + tinted background
+  const renderHabitGroup = (group) => {
     const groupColor = group.color || '#8E8E93';
     const groupIcon = group.icon || 'fa-list';
 
     return (
-      <div key={group.title} className={`mb-6 ${index !== 0 ? 'mt-8' : ''}`}>
+      <div key={group.title}>
         <div
-          className="-mx-6 px-6 py-3 mb-4 flex items-center gap-3"
-          style={{
-            background: `linear-gradient(to bottom, color-mix(in srgb, ${groupColor} 85%, white) 0%, ${groupColor} 100%)`,
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
-          }}
+          className="-mx-6 px-6 pb-6"
+          style={{ backgroundColor: `color-mix(in srgb, ${groupColor} 18%, white)` }}
         >
-          <i className={`fa-solid ${groupIcon} text-white text-lg`}></i>
-          <h3 className="text-2xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
-            {group.title} ({group.habits.length})
-          </h3>
+          <div
+            className="-mx-6 px-6 py-3 mb-4 flex items-center gap-3 liquid-surface-subtle"
+            style={{ '--surface-color': groupColor }}
+          >
+            <i className={`fa-solid ${groupIcon} text-white text-lg`}></i>
+            <h3 className="text-2xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
+              {group.title} ({group.habits.length})
+            </h3>
+          </div>
+          {group.habits.length > 0 ? (
+            <div className="space-y-3">
+              {[...group.habits]
+                .sort((a, b) => {
+                  const aOptional = a.importance_level?.name === 'Optional';
+                  const bOptional = b.importance_level?.name === 'Optional';
+                  if (aOptional && !bOptional) return 1;
+                  if (!aOptional && bOptional) return -1;
+                  return 0;
+                })
+                .map(habit => (
+                  <HabitCard
+                    key={habit.id}
+                    habit={habit}
+                    categoryColor={categoryColor}
+                    categoryDarkColor={colors.dark}
+                    viewMode={viewMode}
+                    isOptional={habit.importance_level?.name === 'Optional'}
+                  />
+                ))}
+            </div>
+          ) : (
+            <div className="py-4 text-center">
+              <p className="text-sm italic" style={{ color: '#8E8E93' }}>
+                No habits in this group
+              </p>
+            </div>
+          )}
         </div>
-        {group.habits.length > 0 ? (
-          <div className="space-y-3">
-            {[...group.habits]
-              .sort((a, b) => {
-                const aOptional = a.importance_level?.name === 'Optional';
-                const bOptional = b.importance_level?.name === 'Optional';
-                if (aOptional && !bOptional) return 1;
-                if (!aOptional && bOptional) return -1;
-                return 0;
-              })
-              .map(habit => (
-                <HabitCard
-                  key={habit.id}
-                  habit={habit}
-                  categoryColor={categoryColor}
-                  categoryDarkColor={colors.dark}
-                  isOptional={habit.importance_level?.name === 'Optional'}
-                />
-              ))}
-          </div>
-        ) : (
-          <div className="py-4 text-center">
-            <p className="text-sm italic" style={{ color: '#8E8E93', fontFamily: "'Inter', sans-serif" }}>
-              No habits in this group
-            </p>
-          </div>
-        )}
       </div>
     );
   };
 
   // Render habits section
   const renderHabitsSection = () => (
-    <div className="rounded-xl p-6" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)' }}>
+    <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-display" style={{ color: '#1D1D1F' }}>Habits</h2>
-        <div className="flex items-center gap-3">
-          {/* Group By Filter */}
-          <div className="inline-flex rounded-lg overflow-hidden" style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}>
-            {[
-              { value: 'priority', label: 'Priority' },
-              { value: 'time', label: 'Time' },
-            ].map(({ value, label }) => (
-              <button
-                key={value}
-                onClick={() => setGroupBy(value)}
-                className="px-3 py-1.5 text-xs transition"
-                style={{
-                  background: groupBy === value ? categoryColor : '#F5F5F7',
-                  color: groupBy === value ? '#FFFFFF' : '#1D1D1F',
-                  fontWeight: 500,
-                  fontFamily: "'Inter', sans-serif",
-                }}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-          <button
-            onClick={() => openNewHabitModal(categoryId)}
-            className="w-8 h-8 rounded-lg text-white transition transform hover:scale-105 flex items-center justify-center"
-            style={{ backgroundColor: categoryColor }}
-            title="New Habit"
-          >
-            <i className="fa-solid fa-plus text-sm"></i>
-          </button>
+        <div className="flex items-center gap-1">
+          {[
+            { value: 'priority', label: 'Priority', icon: 'fa-arrow-up-wide-short' },
+            { value: 'time', label: 'Time', icon: 'fa-clock' },
+          ].map(({ value, label, icon }) => (
+            <button
+              key={value}
+              onClick={() => setGroupBy(value)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition"
+              style={{
+                backgroundColor: groupBy === value ? `${categoryColor}15` : 'transparent',
+                color: groupBy === value ? categoryColor : '#8E8E93',
+                fontWeight: groupBy === value ? 600 : 400,
+              }}
+            >
+              <i className={`fa-solid ${icon} text-xs`}></i>
+              {label}
+            </button>
+          ))}
         </div>
+        <button
+          onClick={() => openNewHabitModal(categoryId)}
+          className="w-8 h-8 rounded-lg text-white transition transform hover:scale-105 flex items-center justify-center"
+          style={{ backgroundColor: categoryColor }}
+          title="New Habit"
+        >
+          <i className="fa-solid fa-plus text-sm"></i>
+        </button>
       </div>
 
       {habits && habits.length > 0 ? (
-        groupedHabits.map((group, index) => renderHabitGroup(group, index))
+        <div className="space-y-0">
+          {groupedHabits.map((group) => renderHabitGroup(group))}
+        </div>
       ) : (
-        <div className="py-8 text-center">
+        <div className="py-8 text-center rounded-xl" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
           <i className="fa-solid fa-list-check text-4xl mb-2" style={{ color: '#E5E5E7' }}></i>
-          <p className="text-sm mb-4" style={{ color: '#8E8E93', fontWeight: 200, fontFamily: "'Inter', sans-serif" }}>
+          <p className="text-sm mb-4" style={{ color: '#8E8E93' }}>
             No habits yet
           </p>
           <button
             onClick={() => openNewHabitModal(categoryId)}
             className="px-4 py-2 rounded-lg text-white transition hover:opacity-90"
-            style={{ backgroundColor: categoryColor, fontWeight: 500, fontFamily: "'Inter', sans-serif" }}
+            style={{ backgroundColor: categoryColor }}
           >
             <i className="fa-solid fa-plus mr-2"></i>Add Habit
           </button>
@@ -318,19 +320,16 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
   const renderTasksSection = () => {
     const getDueDateStatus = (task) => {
       if (!task.due_date) return null;
-      const dueDate = new Date(task.due_date);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      dueDate.setHours(0, 0, 0, 0);
-      const diffDays = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+      const dueDate = parseLocalDate(task.due_date);
+      const today = getToday();
+      const diffDays = Math.round((dueDate - today) / (1000 * 60 * 60 * 24));
 
       if (diffDays < 0) return { text: 'Overdue', color: '#FB7185', isToday: false, isOverdue: true };
       if (diffDays === 0) return { text: 'Today', color: '#E5C730', isToday: true, isOverdue: false };
       if (diffDays <= 7) return { text: `${diffDays}d`, color: '#22D3EE', isToday: false, isOverdue: false };
-      return { text: new Date(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), color: '#8E8E93', isToday: false, isOverdue: false };
+      return { text: parseLocalDate(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), color: '#8E8E93', isToday: false, isOverdue: false };
     };
 
-    // Get repeat frequency description
     const getRepeatDescription = (task) => {
       if (!task.repeat_frequency) return null;
       const interval = task.repeat_interval || 1;
@@ -346,9 +345,8 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
     // Filter tasks based on taskFilter
     const filteredTasks = tasks?.filter(task => {
       if (taskFilter === 'all') return true;
-      // For 'today' filter: show overdue, due today, or no due date
       const status = getDueDateStatus(task);
-      if (!task.due_date) return true; // No due date - always show
+      if (!task.due_date) return true;
       if (!status) return true;
       return status.isToday || status.isOverdue;
     }) || [];
@@ -357,15 +355,10 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
     const sortedTasks = [...filteredTasks].sort((a, b) => {
       const aStatus = getDueDateStatus(a);
       const bStatus = getDueDateStatus(b);
-
-      // Overdue first
       if (aStatus?.isOverdue && !bStatus?.isOverdue) return -1;
       if (!aStatus?.isOverdue && bStatus?.isOverdue) return 1;
-
-      // Then today
       if (aStatus?.isToday && !bStatus?.isToday) return -1;
       if (!aStatus?.isToday && bStatus?.isToday) return 1;
-
       return 0;
     });
 
@@ -377,40 +370,36 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
     }).length || 0;
 
     return (
-      <div className="rounded-xl p-6" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)' }}>
+      <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-display" style={{ color: '#1D1D1F' }}>Tasks</h2>
-          <div className="flex items-center gap-3">
-            {/* Today/All Toggle */}
-            <div className="inline-flex rounded-lg overflow-hidden" style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}>
-              {[
-                { value: 'today', label: `Today (${todayCount})` },
-                { value: 'all', label: `All (${tasks?.length || 0})` },
-              ].map(({ value, label }) => (
-                <button
-                  key={value}
-                  onClick={() => setTaskFilter(value)}
-                  className="px-3 py-1.5 text-xs transition"
-                  style={{
-                    background: taskFilter === value ? categoryColor : '#F5F5F7',
-                    color: taskFilter === value ? '#FFFFFF' : '#1D1D1F',
-                    fontWeight: 500,
-                    fontFamily: "'Inter', sans-serif",
-                  }}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={() => openNewTaskModal({ categoryId })}
-              className="w-8 h-8 rounded-lg text-white transition transform hover:scale-105 flex items-center justify-center"
-              style={{ backgroundColor: categoryColor }}
-              title="New Task"
-            >
-              <i className="fa-solid fa-plus text-sm"></i>
-            </button>
+          <div className="flex items-center gap-1">
+            {[
+              { value: 'today', label: `Today (${todayCount})`, icon: 'fa-calendar-day' },
+              { value: 'all', label: `All (${tasks?.length || 0})`, icon: 'fa-list' },
+            ].map(({ value, label, icon }) => (
+              <button
+                key={value}
+                onClick={() => setTaskFilter(value)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition"
+                style={{
+                  backgroundColor: taskFilter === value ? `${categoryColor}15` : 'transparent',
+                  color: taskFilter === value ? categoryColor : '#8E8E93',
+                  fontWeight: taskFilter === value ? 600 : 400,
+                }}
+              >
+                <i className={`fa-solid ${icon} text-xs`}></i>
+                {label}
+              </button>
+            ))}
           </div>
+          <button
+            onClick={() => openNewTaskModal({ categoryId })}
+            className="w-8 h-8 rounded-lg text-white transition transform hover:scale-105 flex items-center justify-center"
+            style={{ backgroundColor: categoryColor }}
+            title="New Task"
+          >
+            <i className="fa-solid fa-plus text-sm"></i>
+          </button>
         </div>
 
         {sortedTasks.length > 0 ? (
@@ -418,16 +407,12 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
             {sortedTasks.map(task => {
               const dueDateStatus = getDueDateStatus(task);
               const repeatDesc = getRepeatDescription(task);
-              const isRepeating = !!task.repeat_frequency;
 
               return (
                 <div
                   key={task.id}
-                  className="flex items-center gap-3 p-3 rounded-lg hover:shadow-sm transition cursor-pointer"
-                  style={{
-                    border: '0.5px solid rgba(199, 199, 204, 0.3)',
-                    backgroundColor: isRepeating ? 'rgba(99, 102, 241, 0.03)' : 'transparent',
-                  }}
+                  className="flex items-center gap-3 p-3 bg-white rounded-lg border shadow-md hover:shadow-lg transition cursor-pointer"
+                  style={{ borderColor: '#E8EEF1', opacity: task.completed ? 0.6 : 1 }}
                   onClick={() => openTaskViewModal(task.id)}
                 >
                   <button
@@ -443,18 +428,15 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
                       backgroundColor: task.completed ? categoryColor : 'transparent',
                     }}
                   >
-                    {togglingTaskId === task.id ? (
-                      <i className="fa-solid fa-spinner fa-spin text-xs" style={{ color: task.completed ? 'white' : categoryColor }}></i>
-                    ) : task.completed ? (
+                    {task.completed ? (
                       <i className="fa-solid fa-check text-white text-xs"></i>
                     ) : null}
                   </button>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className={`font-medium ${task.completed ? 'line-through opacity-60' : ''}`} style={{ color: '#1D1D1F' }}>
+                      <span className={`font-semibold ${task.completed ? 'line-through' : ''}`} style={{ color: '#1D1D1F' }}>
                         {task.name}
                       </span>
-                      {/* Repeat badge - grey pill like habit schedule badge */}
                       {repeatDesc && (
                         <span
                           className="text-xs px-1.5 py-0.5 rounded-full"
@@ -462,7 +444,6 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
                             backgroundColor: 'rgba(142, 142, 147, 0.15)',
                             color: '#8E8E93',
                             fontWeight: 500,
-                            fontFamily: "'Inter', sans-serif",
                             fontSize: '0.65rem',
                           }}
                         >
@@ -470,23 +451,66 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
                         </span>
                       )}
                     </div>
-                    <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                    <div className="flex flex-wrap items-center gap-2 mt-1">
+                      {/* Importance Level — icon only */}
                       {task.importance_level && (
-                        <span className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: task.importance_level.color, color: 'white' }}>
-                          {task.importance_level.name}
-                        </span>
+                        <i
+                          className={`${task.importance_level.icon} text-sm flex-shrink-0`}
+                          style={{ color: task.importance_level.color }}
+                          title={task.importance_level.name}
+                        ></i>
                       )}
+                      {/* Time Block */}
+                      {task.time_block && task.time_block.name?.toLowerCase() !== 'anytime' && (
+                        <div
+                          className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-xs font-medium"
+                          style={{ backgroundColor: task.time_block.color, color: 'white' }}
+                        >
+                          <i className={`${task.time_block.icon} text-[10px]`}></i>
+                          <span>{task.time_block.name}</span>
+                        </div>
+                      )}
+                      {/* Due Date */}
                       {dueDateStatus && (
-                        <span className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: `${dueDateStatus.color}20`, color: dueDateStatus.color }}>
+                        <div
+                          className="px-2 py-0.5 rounded-lg text-xs font-medium"
+                          style={{ backgroundColor: '#1D1D1F', color: 'white' }}
+                        >
+                          <i className="fa-solid fa-calendar-day mr-1"></i>
                           {dueDateStatus.text}
-                        </span>
+                        </div>
                       )}
+                      {/* Repeat badge */}
+                      {task.repeat_frequency && (
+                        <div
+                          className="px-2 py-0.5 rounded-lg text-xs font-medium"
+                          style={{ backgroundColor: '#7C3AED', color: 'white' }}
+                        >
+                          <i className="fa-solid fa-repeat mr-1"></i>
+                          {task.repeat_frequency.charAt(0).toUpperCase() + task.repeat_frequency.slice(1)}
+                        </div>
+                      )}
+                      {/* Checklist */}
                       {task.checklist_items && task.checklist_items.length > 0 && (
-                        <span className="text-xs" style={{ color: '#8E8E93' }}>
+                        <div
+                          className="px-2 py-0.5 rounded-lg text-xs font-medium"
+                          style={{ backgroundColor: '#1D1D1F', color: 'white' }}
+                        >
                           <i className="fa-solid fa-list-check mr-1"></i>
                           {task.checklist_items.filter(i => i.completed).length}/{task.checklist_items.length}
-                        </span>
+                        </div>
                       )}
+                      {/* Tags */}
+                      {task.tags?.map(tag => (
+                        <div
+                          key={tag.id}
+                          className="px-2 py-0.5 rounded-lg text-xs font-medium"
+                          style={{ backgroundColor: '#1D1D1F', color: 'white' }}
+                        >
+                          <i className="fa-solid fa-tag mr-1"></i>
+                          {tag.name}
+                        </div>
+                      ))}
                     </div>
                   </div>
                   <button
@@ -503,15 +527,15 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
             })}
           </div>
         ) : (
-          <div className="py-8 text-center">
+          <div className="py-8 text-center rounded-xl" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
             <i className="fa-solid fa-square-check text-4xl mb-2" style={{ color: '#E5E5E7' }}></i>
-            <p className="text-sm mb-4" style={{ color: '#8E8E93', fontWeight: 200, fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-sm mb-4" style={{ color: '#8E8E93' }}>
               {taskFilter === 'today' ? 'No tasks due today' : 'No tasks yet'}
             </p>
             <button
               onClick={() => openNewTaskModal({ categoryId })}
               className="px-4 py-2 rounded-lg text-white transition hover:opacity-90"
-              style={{ backgroundColor: categoryColor, fontWeight: 500, fontFamily: "'Inter', sans-serif" }}
+              style={{ backgroundColor: categoryColor }}
             >
               <i className="fa-solid fa-plus mr-2"></i>Add Task
             </button>
@@ -523,9 +547,8 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
 
   // Render documents section
   const renderDocumentsSection = () => (
-    <div className="rounded-xl p-6" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)' }}>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-display" style={{ color: '#1D1D1F' }}>Documents</h2>
+    <div>
+      <div className="flex items-center justify-end mb-4">
         <button
           onClick={openNewDocumentModal}
           className="w-8 h-8 rounded-lg text-white transition transform hover:scale-105 flex items-center justify-center"
@@ -551,8 +574,8 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
               <button
                 key={doc.id}
                 onClick={() => openDocumentViewModal(doc.id)}
-                className="flex items-center gap-3 p-4 rounded-lg hover:shadow-md transition text-left"
-                style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
+                className="flex items-center gap-3 p-4 bg-white rounded-lg border shadow-md hover:shadow-lg transition text-left"
+                style={{ borderColor: '#E8EEF1' }}
               >
                 <div
                   className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -561,7 +584,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
                   <i className={`fa-solid ${icon} text-white`}></i>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate" style={{ color: '#1D1D1F' }}>{doc.title}</div>
+                  <div className="font-semibold truncate" style={{ color: '#1D1D1F' }}>{doc.title}</div>
                   <div className="text-xs capitalize" style={{ color: '#8E8E93' }}>{doc.content_type}</div>
                 </div>
               </button>
@@ -569,15 +592,15 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
           })}
         </div>
       ) : (
-        <div className="py-8 text-center">
+        <div className="py-8 text-center rounded-xl" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
           <i className="fa-solid fa-file-lines text-4xl mb-2" style={{ color: '#E5E5E7' }}></i>
-          <p className="text-sm mb-4" style={{ color: '#8E8E93', fontWeight: 200, fontFamily: "'Inter', sans-serif" }}>
+          <p className="text-sm mb-4" style={{ color: '#8E8E93' }}>
             No documents yet
           </p>
           <button
             onClick={openNewDocumentModal}
             className="px-4 py-2 rounded-lg text-white transition hover:opacity-90"
-            style={{ backgroundColor: categoryColor, fontWeight: 500, fontFamily: "'Inter', sans-serif" }}
+            style={{ backgroundColor: categoryColor }}
           >
             <i className="fa-solid fa-plus mr-2"></i>Add Document
           </button>
@@ -588,9 +611,8 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
 
   // Render lists section
   const renderListsSection = () => (
-    <div className="rounded-xl p-6" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)' }}>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-display" style={{ color: '#1D1D1F' }}>Lists</h2>
+    <div>
+      <div className="flex items-center justify-end mb-4">
         <button
           onClick={() => openNewListModal(categoryId)}
           className="w-8 h-8 rounded-lg text-white transition transform hover:scale-105 flex items-center justify-center"
@@ -610,8 +632,8 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
               <button
                 key={list.id}
                 onClick={() => openListShowModal(list.id)}
-                className="flex flex-col p-4 rounded-lg hover:shadow-md transition text-left"
-                style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
+                className="flex flex-col p-4 bg-white rounded-lg border shadow-md hover:shadow-lg transition text-left"
+                style={{ borderColor: '#E8EEF1' }}
               >
                 <div className="flex items-center gap-3 mb-2">
                   <div
@@ -621,7 +643,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
                     <i className="fa-solid fa-clipboard-list text-white"></i>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate" style={{ color: '#1D1D1F' }}>{list.name}</div>
+                    <div className="font-semibold truncate" style={{ color: '#1D1D1F' }}>{list.name}</div>
                     <div className="text-xs" style={{ color: '#8E8E93' }}>
                       {list.completed_count}/{list.total_count} items
                     </div>
@@ -640,15 +662,15 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
           })}
         </div>
       ) : (
-        <div className="py-8 text-center">
+        <div className="py-8 text-center rounded-xl" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
           <i className="fa-solid fa-clipboard-list text-4xl mb-2" style={{ color: '#E5E5E7' }}></i>
-          <p className="text-sm mb-4" style={{ color: '#8E8E93', fontWeight: 200, fontFamily: "'Inter', sans-serif" }}>
+          <p className="text-sm mb-4" style={{ color: '#8E8E93' }}>
             No lists yet
           </p>
           <button
             onClick={() => openNewListModal(categoryId)}
             className="px-4 py-2 rounded-lg text-white transition hover:opacity-90"
-            style={{ backgroundColor: categoryColor, fontWeight: 500, fontFamily: "'Inter', sans-serif" }}
+            style={{ backgroundColor: categoryColor }}
           >
             <i className="fa-solid fa-plus mr-2"></i>Add List
           </button>
@@ -660,9 +682,9 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
   return (
     <>
       {/* Header Section */}
-      <div style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
-        <div className="p-8">
-          <div className="flex items-start justify-between mb-6">
+      <div style={{ background: '#FFFFFF' }}>
+        <div className="px-8 pt-8 pb-4">
+          <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
               <div
                 className="w-14 h-14 rounded-xl flex items-center justify-center"
@@ -675,7 +697,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
                   {category.name}
                 </h1>
                 {category.description && (
-                  <p className="text-sm" style={{ color: '#8E8E93', fontWeight: 400, fontFamily: "'Inter', sans-serif" }}>
+                  <p className="text-sm" style={{ color: '#8E8E93' }}>
                     {category.description}
                   </p>
                 )}
@@ -696,40 +718,50 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
               Edit Category
             </button>
           </div>
+        </div>
 
-          {/* Section Tabs */}
-          <div className="flex gap-2">
-            {sections.map(section => (
+        {/* Tab bar */}
+        <div className="px-8 flex items-center gap-1" style={{ borderBottom: '1px solid rgba(199, 199, 204, 0.3)' }}>
+          {sections.map(section => {
+            const isActive = activeSection === section.id;
+            return (
               <button
                 key={section.id}
                 onClick={() => setActiveSection(section.id)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg transition"
+                className="flex items-center gap-2 px-4 py-3 -mb-px transition-colors"
                 style={{
-                  backgroundColor: activeSection === section.id ? categoryColor : 'transparent',
-                  color: activeSection === section.id ? 'white' : '#8E8E93',
-                  fontWeight: 500,
-                  fontFamily: "'Inter', sans-serif",
+                  borderBottom: isActive ? `2px solid ${categoryColor}` : '2px solid transparent',
                 }}
               >
-                <i className={`fa-solid ${section.icon} text-sm`}></i>
-                <span>{section.label}</span>
+                <i className={`fa-solid ${section.icon} text-sm`} style={{ color: isActive ? categoryColor : '#8E8E93' }}></i>
+                <span
+                  className="text-sm"
+                  style={{
+                    color: isActive ? categoryColor : '#8E8E93',
+                    fontFamily: "'Inter', sans-serif",
+                    fontWeight: isActive ? 600 : 400,
+                  }}
+                >
+                  {section.label}
+                </span>
                 <span
                   className="px-1.5 py-0.5 rounded text-xs"
                   style={{
-                    backgroundColor: activeSection === section.id ? 'rgba(255,255,255,0.2)' : 'rgba(142, 142, 147, 0.15)',
-                    color: activeSection === section.id ? 'white' : '#8E8E93',
+                    backgroundColor: isActive ? `${categoryColor}15` : 'rgba(142, 142, 147, 0.12)',
+                    color: isActive ? categoryColor : '#8E8E93',
+                    fontWeight: 600,
                   }}
                 >
                   {section.count}
                 </span>
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
       </div>
 
       {/* Content Area */}
-      <div className="p-8">
+      <div className="p-6">
         {activeSection === 'habits' && renderHabitsSection()}
         {activeSection === 'tasks' && renderTasksSection()}
         {activeSection === 'documents' && renderDocumentsSection()}

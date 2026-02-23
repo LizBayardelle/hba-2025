@@ -166,34 +166,43 @@ const GoalsPage = () => {
     const groupIcon = group.icon || 'fa-list';
 
     return (
-      <div key={group.title} className={`mb-6 ${index !== 0 ? 'mt-8' : (group.hideHeader ? 'mt-6' : '')}`}>
-        {/* Full-width colored stripe header */}
-        {!group.hideHeader && (
+      <div key={group.title}>
+        {!group.hideHeader ? (
           <div
-            className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3"
-            style={{
-              background: `linear-gradient(to bottom, color-mix(in srgb, ${groupColor} 85%, white) 0%, ${groupColor} 100%)`,
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
-            }}
+            className="-mx-8 px-8 pb-8"
+            style={{ backgroundColor: `color-mix(in srgb, ${groupColor} 18%, white)` }}
           >
-            <i className={`fa-solid ${groupIcon} text-white text-lg`}></i>
-            <h3 className="text-3xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
-              {group.title} ({group.goals.length})
-            </h3>
-            <button
-              onClick={() => handleNewGoalForGroup(group)}
-              className="w-8 h-8 rounded-md flex items-center justify-center transition btn-glass"
-              title="New goal"
+            <div
+              className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3 liquid-surface-subtle"
+              style={{ '--surface-color': groupColor }}
             >
-              <i className="fa-solid fa-plus text-white"></i>
-            </button>
+              <i className={`fa-solid ${groupIcon} text-white text-lg`}></i>
+              <h3 className="text-3xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
+                {group.title} ({group.goals.length})
+              </h3>
+              <button
+                onClick={() => handleNewGoalForGroup(group)}
+                className="w-8 h-8 rounded-md flex items-center justify-center transition btn-glass"
+                title="New goal"
+              >
+                <i className="fa-solid fa-plus text-white"></i>
+              </button>
+            </div>
+            <div className="space-y-2">
+              {group.goals.map(goal => (
+                <GoalItem key={goal.id} goal={goal} groupBy={groupBy} />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="mt-6">
+            <div className="space-y-2">
+              {group.goals.map(goal => (
+                <GoalItem key={goal.id} goal={goal} groupBy={groupBy} />
+              ))}
+            </div>
           </div>
         )}
-        <div className="space-y-2">
-          {group.goals.map(goal => (
-            <GoalItem key={goal.id} goal={goal} />
-          ))}
-        </div>
       </div>
     );
   };

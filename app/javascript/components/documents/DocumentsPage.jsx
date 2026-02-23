@@ -252,6 +252,7 @@ const DocumentsPage = ({ habits }) => {
   // Render a document card
   const renderDocumentCard = (content) => {
     const iconData = getIconData(content.content_type);
+    const categoryColor = content.categories?.[0]?.color;
     return (
       <div key={content.id} className="flex items-start gap-3 min-w-0">
         <div
@@ -294,8 +295,8 @@ const DocumentsPage = ({ habits }) => {
             {/* Content Info */}
             <div className="flex-1 min-w-0 overflow-hidden">
               <h3
-                className="text-lg truncate"
-                style={{ color: '#1D1D1F', fontWeight: 700, fontFamily: "'Inter', sans-serif" }}
+                className="text-lg truncate font-display"
+                style={{ color: categoryColor || '#1D1D1F', fontWeight: 500 }}
               >
                 {content.title}
               </h3>
@@ -528,7 +529,7 @@ const DocumentsPage = ({ habits }) => {
         )}
 
         {!isLoading && !error && documents.length > 0 && (
-          groupedDocuments.map((group, index) => renderGroup(group, index))
+          groupedDocuments.filter(g => g.documents.length > 0).map((group, index) => renderGroup(group, index))
         )}
       </div>
 

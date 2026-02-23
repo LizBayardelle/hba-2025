@@ -12,6 +12,23 @@ const formatFileSize = (bytes) => {
 };
 import useDocumentsStore from '../../stores/documentsStore';
 
+// Section with fieldset-legend style label on border
+const Section = ({ title, children, isLast = false }) => (
+  <div className={!isLast ? 'mb-6' : ''}>
+    <fieldset
+      className="rounded-2xl px-6 pb-6 pt-5"
+      style={{ border: '1px solid rgba(142, 142, 147, 0.3)' }}
+    >
+      <legend className="px-3 mx-auto">
+        <span className="uppercase tracking-wider" style={{ fontSize: '1.15rem', color: '#A1A1A6', fontWeight: 500, fontFamily: "'Big Shoulders Inline Display', sans-serif", letterSpacing: '0.1em' }}>
+          {title}
+        </span>
+      </legend>
+      {children}
+    </fieldset>
+  </div>
+);
+
 // Helper function to detect content type from URL
 const detectContentType = (url) => {
   if (!url || !url.trim()) {
@@ -62,7 +79,7 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
 
   // Save status tracking (for edit mode only)
-  const [saveStatus, setSaveStatus] = useState(null); // 'saving', 'saved', 'error'
+  const [saveStatus, setSaveStatus] = useState(null);
   const saveTimeoutRef = useRef(null);
   const debounceTimeoutRef = useRef(null);
   const closeAfterSaveRef = useRef(false);
@@ -266,7 +283,7 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
 
   // File upload state
   const [isUploadingFiles, setIsUploadingFiles] = useState(false);
-  const [pendingFiles, setPendingFiles] = useState([]); // Local files for new mode
+  const [pendingFiles, setPendingFiles] = useState([]);
   const fileInputRef = useRef(null);
 
   // Add files mutation (edit mode only)
@@ -304,17 +321,14 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
       setIsUploadingFiles(true);
       addFilesMutation.mutate(files);
     } else {
-      // New mode: collect files locally
       setPendingFiles(prev => [...prev, ...files]);
     }
-    // Reset input so the same file can be re-selected
     e.target.value = '';
   };
 
   // Handle file removal
   const handleRemoveFile = (fileId, isPending = false) => {
     if (isPending) {
-      // Remove from local pending files by index
       setPendingFiles(prev => prev.filter((_, i) => i !== fileId));
     } else {
       removeFileMutation.mutate(fileId);
@@ -571,20 +585,20 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
     );
   };
 
-  // Header actions for edit mode: delete button + save status
+  // Header actions for edit mode: grey trash + save status
   const headerActions = mode === 'edit' ? (
     <>
       <button
         type="button"
         onClick={handleDelete}
-        className="w-8 h-8 rounded-lg transition hover:bg-red-50 flex items-center justify-center"
+        className="w-8 h-8 rounded-lg transition hover:bg-gray-100 flex items-center justify-center"
         disabled={deleteMutation.isPending}
         title="Delete document"
       >
         {deleteMutation.isPending ? (
-          <i className="fa-solid fa-spinner fa-spin text-sm" style={{ color: '#DC2626' }}></i>
+          <i className="fa-solid fa-spinner fa-spin text-sm" style={{ color: '#8E8E93' }}></i>
         ) : (
-          <i className="fa-solid fa-trash text-sm" style={{ color: '#DC2626' }}></i>
+          <i className="fa-solid fa-trash text-sm" style={{ color: '#8E8E93' }}></i>
         )}
       </button>
       <StatusIndicator />
@@ -597,8 +611,7 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
       <button
         type="button"
         onClick={handleClose}
-        className="px-6 py-3 rounded-lg transition hover:bg-gray-100"
-        style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F', border: '0.5px solid rgba(199, 199, 204, 0.3)', backgroundColor: 'white' }}
+        className="btn-liquid-outline-light"
         disabled={createMutation.isPending}
       >
         Cancel
@@ -606,15 +619,7 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
       <button
         type="submit"
         form="document-form"
-        className="px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition cursor-pointer disabled:opacity-50 hover:opacity-90"
-        style={{
-          background: 'linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%)',
-          border: '0.5px solid rgba(255, 255, 255, 0.3)',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)',
-          color: '#1D1D1F',
-          fontWeight: 600,
-          fontFamily: "'Inter', sans-serif",
-        }}
+        className="btn-liquid"
         disabled={createMutation.isPending || !formData.title.trim()}
       >
         {createMutation.isPending ? 'Creating...' : 'Add Document'}
@@ -622,38 +627,34 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
     </>
   ) : null;
 
-  return (
-    <SlideOverPanel
-      isOpen={isOpen}
-      onClose={handleClose}
-      title={mode === 'edit' ? (formData.title.trim() || 'Edit Document') : 'Add New Document'}
-      footer={footer}
-      headerActions={headerActions}
-    >
-      <form id="document-form" onSubmit={handleSubmit}>
-        {createMutation.isError && (
-          <div className="mb-4 p-4 rounded-lg" style={{ backgroundColor: '#FEE2E2', color: '#DC2626' }}>
-            <i className="fa-solid fa-exclamation-circle mr-2"></i>
+  const formContent = (
+    <>
+      {mode === 'new' && createMutation.isError && (
+        <div className="form-error">
+          <i className="fa-solid fa-circle-exclamation form-error-icon"></i>
+          <span className="form-error-text">
             {createMutation.error?.message || 'An error occurred'}
-          </div>
-        )}
+          </span>
+        </div>
+      )}
 
-        {/* Title and Pin Toggle */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <label className="block text-sm font-semibold" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>Title</label>
+      {/* ==================== BASICS SECTION ==================== */}
+      <Section title="Basics">
+        {/* Title with Pin Toggle */}
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-1">
+            <div />
             <button
               type="button"
               onClick={handlePinToggle}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition hover:opacity-80"
-              style={{
-                background: formData.pinned ? 'linear-gradient(135deg, #2D2D2F, #1D1D1F)' : 'rgba(142, 142, 147, 0.1)',
-                color: formData.pinned ? 'white' : '#8E8E93',
-              }}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition hover:opacity-80 ${formData.pinned ? 'liquid-surface-subtle' : ''}`}
+              style={formData.pinned ? { '--surface-color': '#2C2C2E' } : { background: 'rgba(142, 142, 147, 0.1)', color: '#8E8E93' }}
               title={formData.pinned ? 'Unpin document' : 'Pin document'}
             >
-              <i className={`fa-solid fa-thumbtack text-sm ${formData.pinned ? '' : 'opacity-60'}`}></i>
-              <span className="text-xs font-semibold" style={{ fontFamily: "'Inter', sans-serif" }}>
+              <i className={`fa-solid fa-thumbtack text-sm ${formData.pinned ? '' : 'opacity-60'}`}
+                style={{ color: formData.pinned ? 'white' : '#8E8E93' }}
+              ></i>
+              <span className="text-xs font-semibold" style={{ fontFamily: "'Inter', sans-serif", color: formData.pinned ? 'white' : '#8E8E93' }}>
                 {formData.pinned ? 'Pinned' : 'Pin'}
               </span>
             </button>
@@ -662,45 +663,72 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
             type="text"
             value={formData.title}
             onChange={handleTitleChange}
-            required
-            className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light"
-            style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
-            placeholder="e.g., Daily Affirmations, World Domination Plans"
+            required={mode === 'new'}
+            className="form-input-hero"
+            placeholder="Document title..."
             autoFocus={mode === 'new'}
           />
         </div>
 
-        {/* Document Body */}
-        <div className="mb-6">
-          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
-            Content <span className="font-normal" style={{ color: '#8E8E93' }}>(optional)</span>
+        {/* Categories */}
+        <div className="mb-4">
+          <label className="form-label">
+            Categories
           </label>
-          <input type="hidden" name="body" id="document-form-body-hidden" />
-          <trix-editor ref={trixEditorRef} input="document-form-body-hidden" className="trix-content"></trix-editor>
+          <div className="button-bar flex-wrap">
+            {categories.map((category) => {
+              const isSelected = formData.category_ids.includes(category.id.toString());
+              return (
+                <button
+                  key={category.id}
+                  type="button"
+                  onClick={() => handleCategoryToggle(category.id)}
+                  className={`flex items-center gap-2 px-4 py-2.5 ${isSelected ? 'liquid-surface-subtle' : ''}`}
+                  style={isSelected ? { '--surface-color': category.color } : {}}
+                >
+                  <i
+                    className={`fa-solid ${category.icon} text-sm`}
+                    style={{ color: isSelected ? 'white' : category.color }}
+                  ></i>
+                  <span className="bar-item-text" style={{ color: isSelected ? 'white' : '#1D1D1F' }}>
+                    {category.name}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* URL Field */}
-        <div className="mb-6">
-          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
-            URL <span className="font-normal" style={{ color: '#8E8E93' }}>(optional)</span>
+        {/* URL */}
+        <div>
+          <label className="form-label">
+            URL
           </label>
           <input
             type="url"
             value={formData.url}
             onChange={handleUrlChange}
-            className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light"
-            style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
+            className="form-input"
             placeholder="https://youtube.com/watch?v=... or any link"
           />
-          <p className="text-xs font-light mt-2" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#8E8E93' }}>
-            Add a URL to embed YouTube, Vimeo, or link to external content
+          <p className="text-xs mt-1" style={{ color: '#8E8E93' }}>
+            YouTube, Vimeo, or external link
           </p>
+        </div>
+      </Section>
+
+      {/* ==================== CONTENT SECTION ==================== */}
+      <Section title="Content">
+        {/* Document Body */}
+        <div className="mb-4">
+          <input type="hidden" name="body" id="document-form-body-hidden" />
+          <trix-editor ref={trixEditorRef} input="document-form-body-hidden" className="trix-content"></trix-editor>
         </div>
 
         {/* File Attachments */}
-        <div className="mb-6">
-          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
-            Attachments <span className="font-normal" style={{ color: '#8E8E93' }}>(optional)</span>
+        <div>
+          <label className="form-label">
+            File Attachments
           </label>
 
           {/* Existing server files (edit mode) */}
@@ -714,7 +742,7 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     <i className={`fa-solid ${file.content_type?.startsWith('image/') ? 'fa-image' : file.content_type === 'application/pdf' ? 'fa-file-pdf' : 'fa-file'} text-sm`} style={{ color: '#8E8E93' }}></i>
-                    <span className="text-sm truncate" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, color: '#1D1D1F' }}>
+                    <span className="text-sm truncate" style={{ color: '#1D1D1F' }}>
                       {file.filename}
                     </span>
                     <span className="text-xs flex-shrink-0" style={{ color: '#8E8E93' }}>
@@ -746,7 +774,7 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     <i className={`fa-solid ${file.type?.startsWith('image/') ? 'fa-image' : file.type === 'application/pdf' ? 'fa-file-pdf' : 'fa-file'} text-sm`} style={{ color: '#8E8E93' }}></i>
-                    <span className="text-sm truncate" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, color: '#1D1D1F' }}>
+                    <span className="text-sm truncate" style={{ color: '#1D1D1F' }}>
                       {file.name}
                     </span>
                     <span className="text-xs flex-shrink-0" style={{ color: '#8E8E93' }}>
@@ -779,125 +807,76 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploadingFiles}
-            className="w-full px-4 py-3 rounded-lg transition hover:opacity-80 flex items-center justify-center gap-2"
-            style={{
-              border: '1.5px dashed rgba(142, 142, 147, 0.4)',
-              backgroundColor: 'rgba(142, 142, 147, 0.04)',
-              color: '#8E8E93',
-              fontFamily: "'Inter', sans-serif",
-              fontWeight: 500,
-              fontSize: '0.875rem',
-            }}
+            className="btn-add-dashed"
           >
             {isUploadingFiles ? (
               <>
-                <i className="fa-solid fa-spinner fa-spin text-sm"></i>
-                <span>Uploading...</span>
+                <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '0.6rem' }}></i>
+                Uploading...
               </>
             ) : (
               <>
-                <i className="fa-solid fa-paperclip text-sm"></i>
-                <span>Attach Files</span>
+                <i className="fa-solid fa-paperclip" style={{ fontSize: '0.6rem' }}></i>
+                Attach Files
               </>
             )}
           </button>
-          <p className="text-xs font-light mt-2" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#8E8E93' }}>
-            PDFs, images, documents, spreadsheets
-          </p>
         </div>
+      </Section>
 
-        {/* Categories */}
-        <div className="mb-6">
-          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
-            Categories <span className="font-normal" style={{ color: '#8E8E93' }}>(optional)</span>
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {categories.map((category) => {
-              const isSelected = formData.category_ids.includes(category.id.toString());
-              return (
-                <button
-                  key={category.id}
-                  type="button"
-                  onClick={() => handleCategoryToggle(category.id)}
-                  className="flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-full transition hover:scale-105"
-                  style={{
-                    backgroundColor: isSelected ? category.color : 'white',
-                    border: '1px solid ' + (isSelected ? category.color : 'rgba(199, 199, 204, 0.4)'),
-                  }}
-                >
-                  <i
-                    className={`fa-solid ${category.icon} text-sm`}
-                    style={{ color: isSelected ? 'white' : category.color }}
-                  ></i>
-                  <span style={{
-                    fontWeight: 500,
-                    fontFamily: "'Inter', sans-serif",
-                    fontSize: '0.8125rem',
-                    color: isSelected ? 'white' : '#1D1D1F',
-                  }}>
-                    {category.name}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Attach to Habits and Tasks - Side by Side */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
+      {/* ==================== CONNECTIONS SECTION ==================== */}
+      <Section title="Connections">
+        <div className="grid grid-cols-2 gap-4">
           {/* Attach to Habits */}
           <div>
-            <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
-              Attach to Habits
+            <label className="form-label">
+              <i className="fa-solid fa-repeat mr-2 text-xs" style={{ color: '#8E8E93' }}></i>
+              Habits
             </label>
             <div className="relative">
               <button
                 type="button"
-                onClick={() => setShowHabitDropdown(!showHabitDropdown)}
-                className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light text-left flex items-center justify-between"
-                style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
+                onClick={() => { setShowHabitDropdown(!showHabitDropdown); setShowTaskDropdown(false); }}
+                className="form-input text-left flex items-center justify-between cursor-pointer"
               >
-                <span style={{ color: '#657b84' }}>
+                <span style={{ color: formData.habit_ids.length === 0 ? '#8E8E93' : '#1D1D1F' }}>
                   {formData.habit_ids.length === 0
                     ? 'None'
                     : `${formData.habit_ids.length} selected`}
                 </span>
-                <i className="fa-solid fa-chevron-down text-sm" style={{ color: '#657b84' }}></i>
+                <i className="fa-solid fa-chevron-down text-xs" style={{ color: '#8E8E93' }}></i>
               </button>
 
               {showHabitDropdown && (
-                <div
-                  className="absolute z-10 w-full mt-2 bg-white rounded-lg shadow-lg max-h-60 overflow-y-auto"
-                  style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
-                >
+                <div className="form-dropdown" style={{ maxHeight: '15rem', overflowY: 'auto' }}>
                   {/* Filter input */}
-                  <div className="p-2 border-b sticky top-0 bg-white" style={{ borderColor: '#E8EEF1' }}>
+                  <div className="p-2 sticky top-0 bg-white" style={{ borderBottom: '1px solid rgba(199, 199, 204, 0.3)' }}>
                     <input
                       type="text"
                       value={habitFilter}
                       onChange={(e) => setHabitFilter(e.target.value)}
-                      className="w-full px-3 py-2 rounded border text-sm font-light"
-                      style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
+                      className="form-input text-sm"
                       placeholder="Filter habits..."
                       onClick={(e) => e.stopPropagation()}
                     />
                   </div>
 
                   {Object.entries(filteredGroupedHabits).map(([category, categoryHabits]) => (
-                    <div key={category} className="p-2 border-b" style={{ borderColor: '#E8EEF1' }}>
-                      <div className="text-xs font-semibold uppercase tracking-wide px-2 py-1" style={{ color: '#657b84' }}>
+                    <div key={category}>
+                      <div className="text-xs font-semibold uppercase tracking-wide px-4 py-1.5" style={{ color: '#8E8E93' }}>
                         {category}
                       </div>
                       {categoryHabits.map((habit) => (
-                        <label key={habit.id} className="flex items-center gap-2 px-2 py-2 hover:bg-gray-50 rounded cursor-pointer">
+                        <label key={habit.id} className="checkbox-row">
                           <input
                             type="checkbox"
                             value={habit.id}
                             checked={formData.habit_ids.includes(habit.id.toString())}
                             onChange={(e) => handleHabitToggle(e.target.value, e.target.checked)}
-                            className="rounded border-gray-300"
+                            className="w-4 h-4 rounded cursor-pointer"
+                            style={{ accentColor: '#2C2C2E' }}
                           />
-                          <span className="text-sm font-light" style={{ color: '#1D1D1F' }}>
+                          <span className="text-sm flex-1 truncate" style={{ color: '#1D1D1F' }}>
                             {habit.name}
                           </span>
                         </label>
@@ -905,7 +884,7 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
                     </div>
                   ))}
                   {Object.keys(filteredGroupedHabits).length === 0 && (
-                    <div className="p-4 text-center text-sm font-light" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#8E8E93' }}>
+                    <div className="p-4 text-center text-xs" style={{ color: '#8E8E93' }}>
                       {habitFilter ? 'No matching habits' : 'No habits available'}
                     </div>
                   )}
@@ -916,148 +895,146 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
 
           {/* Attach to Tasks */}
           <div>
-            <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
-              Attach to Tasks
+            <label className="form-label">
+              <i className="fa-solid fa-check-square mr-2 text-xs" style={{ color: '#8E8E93' }}></i>
+              Tasks
             </label>
             <div className="relative">
               <button
                 type="button"
-                onClick={() => setShowTaskDropdown(!showTaskDropdown)}
-                className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light text-left flex items-center justify-between"
-                style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
+                onClick={() => { setShowTaskDropdown(!showTaskDropdown); setShowHabitDropdown(false); }}
+                className="form-input text-left flex items-center justify-between cursor-pointer"
               >
-                <span style={{ color: '#657b84' }}>
+                <span style={{ color: formData.task_ids.length === 0 ? '#8E8E93' : '#1D1D1F' }}>
                   {formData.task_ids.length === 0
                     ? 'None'
                     : `${formData.task_ids.length} selected`}
                 </span>
-                <i className="fa-solid fa-chevron-down text-sm" style={{ color: '#657b84' }}></i>
+                <i className="fa-solid fa-chevron-down text-xs" style={{ color: '#8E8E93' }}></i>
               </button>
 
               {showTaskDropdown && (
-                <div
-                  className="absolute z-10 w-full mt-2 bg-white rounded-lg shadow-lg max-h-60 overflow-y-auto"
-                  style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
-                >
+                <div className="form-dropdown" style={{ maxHeight: '15rem', overflowY: 'auto' }}>
                   {/* Filter input */}
-                  <div className="p-2 border-b sticky top-0 bg-white" style={{ borderColor: '#E8EEF1' }}>
+                  <div className="p-2 sticky top-0 bg-white" style={{ borderBottom: '1px solid rgba(199, 199, 204, 0.3)' }}>
                     <input
                       type="text"
                       value={taskFilter}
                       onChange={(e) => setTaskFilter(e.target.value)}
-                      className="w-full px-3 py-2 rounded border text-sm font-light"
-                      style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
+                      className="form-input text-sm"
                       placeholder="Filter tasks..."
                       onClick={(e) => e.stopPropagation()}
                     />
                   </div>
 
-                  <div className="p-2">
-                    {filteredTasks.map((task) => (
-                      <label key={task.id} className="flex items-center gap-2 px-2 py-2 hover:bg-gray-50 rounded cursor-pointer">
-                        <input
-                          type="checkbox"
-                          value={task.id}
-                          checked={formData.task_ids.includes(task.id.toString())}
-                          onChange={(e) => handleTaskToggle(e.target.value, e.target.checked)}
-                          className="rounded border-gray-300"
-                        />
-                        <span className="text-sm font-light" style={{ color: '#1D1D1F' }}>
-                          {task.name}
-                        </span>
-                      </label>
-                    ))}
-                    {filteredTasks.length === 0 && (
-                      <div className="p-4 text-center text-sm font-light" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#8E8E93' }}>
-                        {taskFilter ? 'No matching tasks' : 'No tasks available'}
-                      </div>
-                    )}
-                  </div>
+                  {filteredTasks.map((task) => (
+                    <label key={task.id} className="checkbox-row">
+                      <input
+                        type="checkbox"
+                        value={task.id}
+                        checked={formData.task_ids.includes(task.id.toString())}
+                        onChange={(e) => handleTaskToggle(e.target.value, e.target.checked)}
+                        className="w-4 h-4 rounded cursor-pointer"
+                        style={{ accentColor: '#2C2C2E' }}
+                      />
+                      <span className="text-sm flex-1 truncate" style={{ color: '#1D1D1F' }}>
+                        {task.name}
+                      </span>
+                    </label>
+                  ))}
+                  {filteredTasks.length === 0 && (
+                    <div className="p-4 text-center text-xs" style={{ color: '#8E8E93' }}>
+                      {taskFilter ? 'No matching tasks' : 'No tasks available'}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           </div>
         </div>
+      </Section>
 
-        {/* Tags */}
-        <div className="mb-6">
-          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
-            Tags (optional)
-          </label>
-          <div className="relative">
-            <input
-              type="text"
-              value={tagInput}
-              onChange={(e) => {
-                setTagInput(e.target.value);
-                setShowTagSuggestions(e.target.value.length > 0);
-              }}
-              onKeyDown={handleTagInputKeyDown}
-              onFocus={() => tagInput.length > 0 && setShowTagSuggestions(true)}
-              onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
-              className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light"
-              style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
-              placeholder="Type to search or add new tag"
-            />
+      {/* ==================== TAGS SECTION ==================== */}
+      <Section title="Tags" isLast={true}>
+        <div className="relative">
+          <input
+            type="text"
+            value={tagInput}
+            onChange={(e) => {
+              setTagInput(e.target.value);
+              setShowTagSuggestions(e.target.value.length > 0);
+            }}
+            onKeyDown={handleTagInputKeyDown}
+            onFocus={() => tagInput.length > 0 && setShowTagSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
+            className="form-input"
+            placeholder="Type to add tags..."
+          />
 
-            {/* Tag suggestions dropdown */}
-            {showTagSuggestions && (filteredSuggestions.length > 0 || tagInput.trim()) && (
-              <div
-                className="absolute z-10 w-full mt-2 bg-white rounded-lg shadow-lg max-h-48 overflow-y-auto"
-                style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
-              >
-                {filteredSuggestions.map((tag) => (
-                  <button
-                    key={tag.id}
-                    type="button"
-                    onClick={() => handleAddTag(tag.name)}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-50 transition font-light"
-                    style={{ color: '#1D1D1F' }}
-                  >
-                    {tag.name}
-                  </button>
-                ))}
-                {tagInput.trim() && !filteredSuggestions.find(t => t.name.toLowerCase() === tagInput.toLowerCase()) && (
-                  <button
-                    type="button"
-                    onClick={() => handleAddTag(tagInput)}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-50 transition font-light border-t"
-                    style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', color: '#1D1D1F' }}
-                  >
-                    <i className="fa-solid fa-plus mr-2" style={{ color: '#1D1D1F' }}></i>
-                    Create "<strong>{tagInput.trim()}</strong>"
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-
-          <p className="text-xs font-light mt-2" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#8E8E93' }}>
-            Type to search existing tags or create a new one. Press Enter or click to add.
-          </p>
-
-          {selectedTags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-3">
-              {selectedTags.map((tag) => (
-                <span
-                  key={tag}
-                  className="text-xs px-3 py-1.5 rounded-full font-semibold flex items-center gap-2"
-                  style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', color: '#FFFFFF', fontFamily: "'Inter', sans-serif", fontWeight: 600 }}
+          {showTagSuggestions && (filteredSuggestions.length > 0 || tagInput.trim()) && (
+            <div className="form-dropdown">
+              {filteredSuggestions.map((tag) => (
+                <button
+                  key={tag.id}
+                  type="button"
+                  onClick={() => handleAddTag(tag.name)}
                 >
-                  {tag}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveTag(tag)}
-                    className="hover:opacity-70"
-                  >
-                    <i className="fa-solid fa-times text-xs"></i>
-                  </button>
-                </span>
+                  {tag.name}
+                </button>
               ))}
+              {tagInput.trim() && !filteredSuggestions.find(t => t.name.toLowerCase() === tagInput.toLowerCase()) && (
+                <button
+                  type="button"
+                  onClick={() => handleAddTag(tagInput)}
+                  style={{ borderTop: '1px solid rgba(199, 199, 204, 0.3)' }}
+                >
+                  <i className="fa-solid fa-plus mr-2 text-gray-400"></i>
+                  Create "{tagInput.trim()}"
+                </button>
+              )}
             </div>
           )}
         </div>
-      </form>
+
+        {selectedTags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-2">
+            {selectedTags.map((tag) => (
+              <span
+                key={tag}
+                className="text-xs px-3 py-1.5 rounded-[10px] flex items-center gap-2 liquid-surface-subtle"
+                style={{
+                  '--surface-color': '#2C2C2E',
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 600,
+                }}
+              >
+                {tag}
+                <button type="button" onClick={() => handleRemoveTag(tag)} className="hover:opacity-70">
+                  <i className="fa-solid fa-times text-xs"></i>
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+      </Section>
+    </>
+  );
+
+  return (
+    <SlideOverPanel
+      isOpen={isOpen}
+      onClose={handleClose}
+      title={mode === 'edit' ? 'Edit Document' : 'New Document'}
+      footer={footer}
+      headerActions={headerActions}
+    >
+      {mode === 'new' ? (
+        <form id="document-form" onSubmit={handleSubmit}>
+          {formContent}
+        </form>
+      ) : (
+        formContent
+      )}
     </SlideOverPanel>
   );
 };

@@ -107,16 +107,23 @@ class Task < ApplicationRecord
 
     base_date = due_date
     interval = repeat_interval || 1
+    today = Date.current
 
-    next_date = case repeat_frequency
-    when 'daily'
-      base_date + interval.days
-    when 'weekly'
-      calculate_next_weekly_date(base_date, interval)
-    when 'monthly'
-      calculate_next_monthly_date(base_date, interval)
-    when 'yearly'
-      base_date + interval.years
+    # Keep advancing until the next date is today or in the future
+    next_date = base_date
+    loop do
+      next_date = case repeat_frequency
+      when 'daily'
+        next_date + interval.days
+      when 'weekly'
+        calculate_next_weekly_date(next_date, interval)
+      when 'monthly'
+        calculate_next_monthly_date(next_date, interval)
+      when 'yearly'
+        next_date + interval.years
+      end
+
+      break if next_date >= today
     end
 
     # Check if next date exceeds end date

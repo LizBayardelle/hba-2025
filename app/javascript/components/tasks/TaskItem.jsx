@@ -1,16 +1,27 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { tasksApi } from '../../utils/api';
+import { parseLocalDate, getToday } from '../../utils/dateUtils';
 import useTasksStore from '../../stores/tasksStore';
 import useDocumentsStore from '../../stores/documentsStore';
 import useListsStore from '../../stores/listsStore';
 import ChecklistSection from '../shared/ChecklistSection';
 
-const TaskItem = ({ task }) => {
+const TaskItem = ({ task, groupBy }) => {
   const queryClient = useQueryClient();
   const { openViewModal, openEditModal } = useTasksStore();
   const { openViewModal: openDocumentModal } = useDocumentsStore();
   const { openShowModal: openListShowModal } = useListsStore();
+
+  const [celebrateKey, setCelebrateKey] = useState(0);
+
+  // Auto-clear celebration after animation finishes
+  useEffect(() => {
+    if (celebrateKey > 0) {
+      const timer = setTimeout(() => setCelebrateKey(0), 600);
+      return () => clearTimeout(timer);
+    }
+  }, [celebrateKey]);
 
   // Toggle completion mutation
   const toggleCompleteMutation = useMutation({
@@ -22,6 +33,9 @@ const TaskItem = ({ task }) => {
 
   const handleCheckboxChange = (e) => {
     e.stopPropagation();
+    if (!task.completed) {
+      setCelebrateKey((k) => k + 1);
+    }
     toggleCompleteMutation.mutate(!task.completed);
   };
 
@@ -38,13 +52,11 @@ const TaskItem = ({ task }) => {
   const getDueDateStatus = () => {
     if (!task.due_date) return null;
 
-    const dueDate = new Date(task.due_date);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    dueDate.setHours(0, 0, 0, 0);
+    const dueDate = parseLocalDate(task.due_date);
+    const today = getToday();
 
     const diffTime = dueDate - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays < 0) {
       return { text: 'Overdue', color: '#FB7185', bgColor: '#FFE4E6' };
@@ -53,7 +65,7 @@ const TaskItem = ({ task }) => {
     } else if (diffDays <= 7) {
       return { text: `Due in ${diffDays}d`, color: '#22D3EE', bgColor: '#CFFAFE' };
     } else {
-      return { text: new Date(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), color: '#6B8A99', bgColor: '#E8EEF1' };
+      return { text: parseLocalDate(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), color: '#6B8A99', bgColor: '#E8EEF1' };
     }
   };
 
@@ -66,22 +78,35 @@ const TaskItem = ({ task }) => {
   return (
     <div className="flex items-start gap-3">
       {/* Checkbox - outside card on left */}
-      <div className="flex-shrink-0 mt-0.5">
-        <button
-          onClick={handleCheckboxChange}
-          disabled={toggleCompleteMutation.isPending}
-          className="w-6 h-6 rounded-md border-2 flex items-center justify-center transition hover:scale-110 cursor-pointer"
-          style={{
-            borderColor: task.category?.color || '#1D1D1F',
-            backgroundColor: task.completed ? (task.category?.color || '#1D1D1F') : 'white',
-          }}
+      <div className="flex-shrink-0 mt-0.5 relative" style={{ overflow: 'visible' }}>
+        <div
+          key={`bounce-${celebrateKey}`}
+          style={celebrateKey > 0 ? { animation: 'celebrate-bounce 0.5s ease-out' } : undefined}
         >
-          {toggleCompleteMutation.isPending ? (
-            <i className="fa-solid fa-spinner fa-spin text-xs" style={{ color: task.completed ? 'white' : (task.category?.color || '#1D1D1F') }}></i>
-          ) : task.completed ? (
-            <i className="fa-solid fa-check text-white text-xs"></i>
-          ) : null}
-        </button>
+          <button
+            onClick={handleCheckboxChange}
+            disabled={toggleCompleteMutation.isPending}
+            className="w-6 h-6 rounded-md border-2 flex items-center justify-center transition hover:scale-110 cursor-pointer"
+            style={{
+              borderColor: task.category?.color || '#1D1D1F',
+              backgroundColor: task.completed ? (task.category?.color || '#1D1D1F') : 'white',
+            }}
+          >
+            {task.completed ? (
+              <i className="fa-solid fa-check text-white text-xs"></i>
+            ) : null}
+          </button>
+        </div>
+        {celebrateKey > 0 && (
+          <div
+            key={`glow-${celebrateKey}`}
+            className="absolute inset-0 rounded-md pointer-events-none"
+            style={{
+              backgroundColor: task.category?.color || '#1D1D1F',
+              animation: 'celebrate-glow 0.55s ease-out forwards',
+            }}
+          />
+        )}
       </div>
 
       <div
@@ -105,22 +130,17 @@ const TaskItem = ({ task }) => {
 
           {/* Metadata row */}
           <div className="flex flex-wrap items-center gap-2">
-            {/* Importance Level */}
-            {task.importance_level && (
-              <div
-                className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium"
-                style={{
-                  backgroundColor: task.importance_level.color,
-                  color: 'white',
-                }}
-              >
-                <i className={`${task.importance_level.icon} text-[10px]`}></i>
-                <span>{task.importance_level.name}</span>
-              </div>
+            {/* Importance Level icon — hidden when grouped by importance */}
+            {task.importance_level && groupBy !== 'importance' && (
+              <i
+                className={`${task.importance_level.icon} text-sm flex-shrink-0`}
+                style={{ color: task.importance_level.color }}
+                title={task.importance_level.name}
+              ></i>
             )}
 
-            {/* Category */}
-            {task.category && (
+            {/* Category — hidden when grouped by category */}
+            {task.category && groupBy !== 'category' && (
               <div
                 className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium"
                 style={{

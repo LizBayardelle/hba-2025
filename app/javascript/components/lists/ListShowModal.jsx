@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import SlideOverPanel from '../shared/SlideOverPanel';
 import useListsStore from '../../stores/listsStore';
@@ -11,6 +11,8 @@ const ListShowModal = () => {
   const [copiedId, setCopiedId] = useState(null);
   const [recentlyChecked, setRecentlyChecked] = useState(new Set());
   const [togglingItemId, setTogglingItemId] = useState(null);
+  const [newItemName, setNewItemName] = useState('');
+  const newItemInputRef = useRef(null);
 
   // Fetch the list data
   const { data: list, isLoading } = useQuery({
@@ -23,6 +25,7 @@ const ListShowModal = () => {
   useEffect(() => {
     if (!isOpen) {
       setRecentlyChecked(new Set());
+      setNewItemName('');
     }
   }, [isOpen]);
 
@@ -41,6 +44,41 @@ const ListShowModal = () => {
       setTogglingItemId(null);
     },
   });
+
+  // Create item mutation
+  const createMutation = useMutation({
+    mutationFn: async (name) => {
+      return checklistItemsApi.createForList(listId, { name });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['list', listId] });
+      queryClient.invalidateQueries({ queryKey: ['lists'] });
+      setNewItemName('');
+      // Re-focus the input for quick sequential adds
+      setTimeout(() => newItemInputRef.current?.focus(), 50);
+    },
+  });
+
+  // Delete item mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (itemId) => {
+      return checklistItemsApi.deleteForList(listId, itemId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['list', listId] });
+      queryClient.invalidateQueries({ queryKey: ['lists'] });
+    },
+  });
+
+  const handleDelete = (item) => {
+    deleteMutation.mutate(item.id);
+  };
+
+  const handleAddItem = () => {
+    const trimmed = newItemName.trim();
+    if (!trimmed || createMutation.isPending) return;
+    createMutation.mutate(trimmed);
+  };
 
   const handleToggle = (item) => {
     const newCompleted = !item.completed;
@@ -101,15 +139,7 @@ const ListShowModal = () => {
     <button
       type="button"
       onClick={closeShowModal}
-      className="px-6 py-3 rounded-lg transition cursor-pointer hover:opacity-90"
-      style={{
-        background: 'linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%)',
-        border: '0.5px solid rgba(255, 255, 255, 0.3)',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3)',
-        color: '#1D1D1F',
-        fontWeight: 600,
-        fontFamily: "'Inter', sans-serif",
-      }}
+      className="btn-liquid"
     >
       Done
     </button>
@@ -128,30 +158,15 @@ const ListShowModal = () => {
         </div>
       ) : (
         <div>
-          {/* Header info */}
-          <div className="flex items-center gap-3 mb-4">
-            <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center"
-              style={{ backgroundColor: color }}
+          {/* Category badge */}
+          <div className="mb-4">
+            <span
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
+              style={{ backgroundColor: `${color}15`, color }}
             >
-              {list?.category ? (
-                <i className={`fa-solid ${list.category.icon} text-white text-lg`}></i>
-              ) : (
-                <i className="fa-solid fa-list-check text-white text-lg"></i>
-              )}
-            </div>
-            <div className="flex-1">
-              {list?.category && (
-                <span className="text-xs" style={{ color: '#8E8E93' }}>
-                  {list.category.name}
-                </span>
-              )}
-              {!list?.category && (
-                <span className="text-xs" style={{ color: '#8E8E93' }}>
-                  No category
-                </span>
-              )}
-            </div>
+              <i className={`fa-solid ${list?.category?.icon || 'fa-list-check'} text-[10px]`}></i>
+              {list?.category?.name || 'No category'}
+            </span>
           </div>
 
           {/* Progress */}
@@ -227,8 +242,56 @@ const ListShowModal = () => {
                     style={{ color: copiedId === item.id ? '#22C55E' : '#8E8E93' }}
                   ></i>
                 </button>
+
+                {/* Delete button */}
+                <button
+                  onClick={() => handleDelete(item)}
+                  className="w-6 h-6 flex items-center justify-center rounded transition opacity-0 group-hover:opacity-100 hover:bg-red-50"
+                  title="Delete item"
+                >
+                  <i className="fa-solid fa-trash-can text-xs" style={{ color: '#C7C7CC' }}></i>
+                </button>
               </div>
             ))}
+          </div>
+
+          {/* Add item input */}
+          <div
+            className="flex items-center gap-3 p-3 rounded-lg mt-2"
+            style={{ border: '0.5px dashed rgba(199, 199, 204, 0.5)' }}
+          >
+            <div
+              className="w-6 h-6 rounded-md border-2 flex-shrink-0 flex items-center justify-center"
+              style={{ borderColor: `${color}40` }}
+            >
+              <i className="fa-solid fa-plus text-[10px]" style={{ color: `${color}60` }}></i>
+            </div>
+            <input
+              ref={newItemInputRef}
+              type="text"
+              value={newItemName}
+              onChange={(e) => setNewItemName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleAddItem();
+              }}
+              placeholder="Add an item..."
+              className="flex-1 text-sm bg-transparent outline-none"
+              style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif" }}
+            />
+            {newItemName.trim() && (
+              <button
+                onClick={handleAddItem}
+                disabled={createMutation.isPending}
+                className="w-6 h-6 flex items-center justify-center rounded-full transition hover:scale-110"
+                style={{ backgroundColor: color }}
+              >
+                {createMutation.isPending ? (
+                  <i className="fa-solid fa-spinner fa-spin text-white text-[10px]"></i>
+                ) : (
+                  <i className="fa-solid fa-arrow-up text-white text-[10px]"></i>
+                )}
+              </button>
+            )}
           </div>
 
           {checklistItems.length === 0 && (
