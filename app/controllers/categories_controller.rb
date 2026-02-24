@@ -70,6 +70,9 @@ class CategoriesController < ApplicationController
     # Fetch lists for this category
     @lists = @category.lists.active.includes(:checklist_items).order(:name)
 
+    # Fetch notes for this category
+    @notes = @category.notes.where(user: current_user, archived_at: nil).includes(:tags).order(pinned: :desc, created_at: :desc)
+
     respond_to do |format|
       format.html
       format.json {
@@ -141,6 +144,18 @@ class CategoriesController < ApplicationController
               completed_count: list.checklist_items.where(completed: true).count,
               total_count: list.checklist_items.count
             )
+          },
+          notes: @notes.map { |note|
+            {
+              id: note.id,
+              title: note.title,
+              body: note.body.to_s.truncate(200),
+              pinned: note.pinned,
+              category_id: note.category_id,
+              tags: note.tags.map { |t| { id: t.id, name: t.name } },
+              created_at: note.created_at,
+              updated_at: note.updated_at
+            }
           }
         }
       }

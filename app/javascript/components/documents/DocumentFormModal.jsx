@@ -824,8 +824,72 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
         </div>
       </Section>
 
+      {/* ==================== TAGS SECTION ==================== */}
+      <Section title="Tags">
+        <div className="relative">
+          <input
+            type="text"
+            value={tagInput}
+            onChange={(e) => {
+              setTagInput(e.target.value);
+              setShowTagSuggestions(e.target.value.length > 0);
+            }}
+            onKeyDown={handleTagInputKeyDown}
+            onFocus={() => tagInput.length > 0 && setShowTagSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
+            className="form-input"
+            placeholder="Type to add tags..."
+          />
+
+          {showTagSuggestions && (filteredSuggestions.length > 0 || tagInput.trim()) && (
+            <div className="form-dropdown">
+              {filteredSuggestions.map((tag) => (
+                <button
+                  key={tag.id}
+                  type="button"
+                  onClick={() => handleAddTag(tag.name)}
+                >
+                  {tag.name}
+                </button>
+              ))}
+              {tagInput.trim() && !filteredSuggestions.find(t => t.name.toLowerCase() === tagInput.toLowerCase()) && (
+                <button
+                  type="button"
+                  onClick={() => handleAddTag(tagInput)}
+                  style={{ borderTop: '1px solid rgba(199, 199, 204, 0.3)' }}
+                >
+                  <i className="fa-solid fa-plus mr-2 text-gray-400"></i>
+                  Create "{tagInput.trim()}"
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {selectedTags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-2">
+            {selectedTags.map((tag) => (
+              <span
+                key={tag}
+                className="text-xs px-3 py-1.5 rounded-[10px] flex items-center gap-2 liquid-surface-subtle"
+                style={{
+                  '--surface-color': '#2C2C2E',
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 600,
+                }}
+              >
+                {tag}
+                <button type="button" onClick={() => handleRemoveTag(tag)} className="hover:opacity-70">
+                  <i className="fa-solid fa-times text-xs"></i>
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+      </Section>
+
       {/* ==================== CONNECTIONS SECTION ==================== */}
-      <Section title="Connections">
+      <Section title="Connections" isLast={true}>
         <div className="grid grid-cols-2 gap-4">
           {/* Attach to Habits */}
           <div>
@@ -952,70 +1016,6 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
             </div>
           </div>
         </div>
-      </Section>
-
-      {/* ==================== TAGS SECTION ==================== */}
-      <Section title="Tags" isLast={true}>
-        <div className="relative">
-          <input
-            type="text"
-            value={tagInput}
-            onChange={(e) => {
-              setTagInput(e.target.value);
-              setShowTagSuggestions(e.target.value.length > 0);
-            }}
-            onKeyDown={handleTagInputKeyDown}
-            onFocus={() => tagInput.length > 0 && setShowTagSuggestions(true)}
-            onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
-            className="form-input"
-            placeholder="Type to add tags..."
-          />
-
-          {showTagSuggestions && (filteredSuggestions.length > 0 || tagInput.trim()) && (
-            <div className="form-dropdown">
-              {filteredSuggestions.map((tag) => (
-                <button
-                  key={tag.id}
-                  type="button"
-                  onClick={() => handleAddTag(tag.name)}
-                >
-                  {tag.name}
-                </button>
-              ))}
-              {tagInput.trim() && !filteredSuggestions.find(t => t.name.toLowerCase() === tagInput.toLowerCase()) && (
-                <button
-                  type="button"
-                  onClick={() => handleAddTag(tagInput)}
-                  style={{ borderTop: '1px solid rgba(199, 199, 204, 0.3)' }}
-                >
-                  <i className="fa-solid fa-plus mr-2 text-gray-400"></i>
-                  Create "{tagInput.trim()}"
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-
-        {selectedTags.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-2">
-            {selectedTags.map((tag) => (
-              <span
-                key={tag}
-                className="text-xs px-3 py-1.5 rounded-[10px] flex items-center gap-2 liquid-surface-subtle"
-                style={{
-                  '--surface-color': '#2C2C2E',
-                  fontFamily: "'Inter', sans-serif",
-                  fontWeight: 600,
-                }}
-              >
-                {tag}
-                <button type="button" onClick={() => handleRemoveTag(tag)} className="hover:opacity-70">
-                  <i className="fa-solid fa-times text-xs"></i>
-                </button>
-              </span>
-            ))}
-          </div>
-        )}
       </Section>
     </>
   );

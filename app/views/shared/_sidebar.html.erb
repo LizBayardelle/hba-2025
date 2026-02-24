@@ -52,16 +52,30 @@
       </script>
     <% end %>
 
+    <!-- Quick Note Button -->
+    <div class="mb-4">
+      <button
+        onclick="if(window.location.pathname === '/notes') { window.dispatchEvent(new Event('open-new-note')); } else { window.location.href = '/notes?new=true'; }"
+        class="flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm hover:bg-white/10 w-full"
+        style="border: 1px dashed rgba(199, 199, 204, 0.3);"
+        title="Quick note">
+        <span class="w-5 text-center relative inline-flex items-center justify-center">
+          <i class="fa-solid fa-note-sticky" style="color: #C7C7CC;"></i>
+          <i class="fa-solid fa-plus absolute" style="color: #C7C7CC; font-size: 0.45rem; top: -1px; right: -3px;"></i>
+        </span>
+        <span style="font-weight: 200; letter-spacing: 0.03em; color: #C7C7CC; opacity: 0.7;">Quick Note</span>
+      </button>
+    </div>
+
     <!-- Navigation Items -->
     <nav class="space-y-0">
       <%= link_to dashboard_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(dashboard_path) ? "background-color: rgba(255, 255, 255, 0.08);" : "" do %>
         <i class="fa-solid fa-gauge w-5 text-center" style="color: <%= current_page?(dashboard_path) ? '#FFFFFF' : '#C7C7CC' %>;"></i>
         <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(dashboard_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(dashboard_path) ? '1' : '0.7' %>;">Dashboard</span>
       <% end %>
-      <% prep_active = current_page?(daily_prep_path) || current_page?(daily_prep_manage_path) || current_page?(daily_prep_answers_path) %>
-      <%= link_to daily_prep_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: prep_active ? "background-color: rgba(255, 255, 255, 0.08);" : "" do %>
-        <i class="fa-solid fa-clipboard-check w-5 text-center" style="color: <%= prep_active ? '#FFFFFF' : '#C7C7CC' %>;"></i>
-        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= prep_active ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= prep_active ? '1' : '0.7' %>;">Daily Prep</span>
+      <%= link_to notes_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(notes_path) ? "background-color: rgba(255, 255, 255, 0.08);" : "" do %>
+        <i class="fa-solid fa-note-sticky w-5 text-center" style="color: <%= current_page?(notes_path) ? '#FFFFFF' : '#C7C7CC' %>;"></i>
+        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(notes_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(notes_path) ? '1' : '0.7' %>;">Notes</span>
       <% end %>
       <%= link_to journal_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(journal_path) ? "background-color: rgba(255, 255, 255, 0.08);" : "" do %>
         <i class="fa-solid fa-book w-5 text-center" style="color: <%= current_page?(journal_path) ? '#FFFFFF' : '#C7C7CC' %>;"></i>
@@ -325,6 +339,11 @@
         <h3 class="text-sm" style="color: #C7C7CC; letter-spacing: 0.03em; font-weight: 200; opacity: 0.7;">Organization</h3>
       </div>
       <div class="space-y-0">
+        <% prep_active = current_page?(daily_prep_path) || current_page?(daily_prep_manage_path) || current_page?(daily_prep_answers_path) %>
+        <%= link_to daily_prep_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: prep_active ? "background-color: rgba(255, 255, 255, 0.08);" : "" do %>
+          <i class="fa-solid fa-clipboard-check w-5 text-center" style="color: <%= prep_active ? '#FFFFFF' : '#C7C7CC' %>;"></i>
+          <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= prep_active ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= prep_active ? '1' : '0.7' %>;">Daily Prep</span>
+        <% end %>
         <%= link_to tags_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(tags_path) ? "background-color: rgba(255, 255, 255, 0.08);" : "" do %>
           <i class="fa-solid fa-tags w-5 text-center" style="color: <%= current_page?(tags_path) ? '#FFFFFF' : '#C7C7CC' %>;"></i>
           <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(tags_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(tags_path) ? '1' : '0.7' %>;">Tags</span>

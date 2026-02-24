@@ -22,6 +22,7 @@ class User < ApplicationRecord
   has_many :importance_levels, dependent: :destroy
   has_many :time_blocks, dependent: :destroy
   has_many :checklist_items, dependent: :destroy
+  has_many :notes, dependent: :destroy
   has_many :lists, dependent: :destroy
   has_many :list_attachments, dependent: :destroy
   has_many :prep_questions, dependent: :destroy

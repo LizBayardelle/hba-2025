@@ -324,7 +324,7 @@ const DocumentsPage = ({ habits }) => {
                       onClick={(e) => e.stopPropagation()}
                       className="text-xs px-2 py-1 rounded-lg hover:opacity-70 transition cursor-pointer flex items-center gap-1"
                       style={{
-                        background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)',
+                        backgroundColor: categoryColor || '#1D1D1F',
                         color: 'white',
                         fontWeight: 600,
                         fontFamily: "'Inter', sans-serif"

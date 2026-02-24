@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_02_12_200000) do
+ActiveRecord::Schema[7.2].define(version: 2026_02_23_213151) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -246,6 +246,19 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_12_200000) do
     t.index ["user_id"], name: "index_lists_on_user_id"
   end
 
+  create_table "notes", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "category_id"
+    t.string "title"
+    t.text "body"
+    t.boolean "pinned", default: false, null: false
+    t.datetime "archived_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category_id"], name: "index_notes_on_category_id"
+    t.index ["user_id"], name: "index_notes_on_user_id"
+  end
+
   create_table "prep_questions", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.integer "question_type", default: 0, null: false
@@ -394,6 +407,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_12_200000) do
   add_foreign_key "list_attachments", "users"
   add_foreign_key "lists", "categories"
   add_foreign_key "lists", "users"
+  add_foreign_key "notes", "categories"
+  add_foreign_key "notes", "users"
   add_foreign_key "prep_questions", "users"
   add_foreign_key "prep_responses", "prep_questions"
   add_foreign_key "prep_responses", "users"

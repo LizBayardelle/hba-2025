@@ -16,6 +16,7 @@ class TagsController < ApplicationController
             habits_count: tag.habits.count,
             documents_count: tag.documents.count,
             tasks_count: tag.tasks.count,
+            notes_count: tag.notes.count,
             total_count: tag.taggings.count
           }
         }
@@ -66,6 +67,16 @@ class TagsController < ApplicationController
               category_id: t.category_id,
               category_name: t.category&.name,
               category_color: t.category&.color
+            }
+          },
+          notes: @tag.notes.order(created_at: :desc).map { |n|
+            {
+              id: n.id,
+              type: 'note',
+              title: n.title,
+              body: n.body.to_s.truncate(200),
+              category_name: n.category&.name,
+              category_color: n.category&.color
             }
           }
         }

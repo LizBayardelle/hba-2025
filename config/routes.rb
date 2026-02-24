@@ -25,6 +25,7 @@ Rails.application.routes.draw do
   get 'journal', to: 'journals#index'
   get 'goals', to: 'goals#index'
   get 'tasks', to: 'tasks#index'
+  get 'notes', to: 'notes#index'
   get 'tags', to: 'tags#index'
   get 'settings', to: 'settings#index'
   patch 'settings', to: 'settings#update'
@@ -72,6 +73,7 @@ Rails.application.routes.draw do
       end
     end
   end
+  resources :notes, only: [:index, :show, :create, :update, :destroy]
   resources :tags, only: [:index, :show, :update, :destroy]
 
   resources :categories, only: [:index, :create, :update, :destroy, :show] do

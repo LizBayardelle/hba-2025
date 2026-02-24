@@ -203,6 +203,26 @@ export const goalsApi = {
   }),
 };
 
+// Notes API methods
+export const notesApi = {
+  fetchAll: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return apiRequest(`/notes.json${query ? `?${query}` : ''}`);
+  },
+  fetchOne: (id) => apiRequest(`/notes/${id}.json`),
+  create: (data) => apiRequest('/notes', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  update: (id, data) => apiRequest(`/notes/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  }),
+  delete: (id) => apiRequest(`/notes/${id}`, {
+    method: 'DELETE',
+  }),
+};
+
 // Categories API methods
 export const categoriesApi = {
   fetchAll: () => apiRequest('/categories.json'),

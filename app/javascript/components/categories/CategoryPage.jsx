@@ -13,6 +13,8 @@ import TaskFormModal from '../tasks/TaskFormModal';
 import TaskViewModal from '../tasks/TaskViewModal';
 import ListFormModal from '../lists/ListFormModal';
 import ListShowModal from '../lists/ListShowModal';
+import NoteFormModal from '../notes/NoteFormModal';
+import useNotesStore from '../../stores/notesStore';
 import { tagsApi, tasksApi } from '../../utils/api';
 import { parseLocalDate, getToday } from '../../utils/dateUtils';
 import { getColorVariants } from '../../utils/colorUtils';
@@ -27,6 +29,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
   const { openNewModal: openNewTaskModal, openViewModal: openTaskViewModal, openEditModal: openTaskEditModal } = useTasksStore();
   const { openFormModal: openNewListModal, openShowModal: openListShowModal } = useListsStore();
   const { openViewModal: openDocumentViewModal, openNewModal: openNewDocumentModal } = useDocumentsStore();
+  const { openNewModal: openNewNoteModal, openEditModal: openEditNoteModal } = useNotesStore();
 
   // Fetch category data
   const { data: categoryData, isLoading, error } = useQuery({
@@ -185,7 +188,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
     );
   }
 
-  const { category, habits, tasks = [], documents = [], lists = [] } = categoryData;
+  const { category, habits, tasks = [], documents = [], lists = [], notes = [] } = categoryData;
   const categoryColor = category.color;
   const colors = getColorVariants(categoryColor);
 
@@ -204,6 +207,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
     { id: 'habits', label: 'Habits', icon: 'fa-list-check', count: habits?.length || 0 },
     { id: 'tasks', label: 'Tasks', icon: 'fa-square-check', count: todayTaskCount },
     { id: 'documents', label: 'Documents', icon: 'fa-file-lines', count: documents?.length || 0 },
+    { id: 'notes', label: 'Notes', icon: 'fa-note-sticky', count: notes?.length || 0 },
     { id: 'lists', label: 'Lists', icon: 'fa-clipboard-list', count: lists?.length || 0 },
   ];
 
@@ -609,6 +613,94 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
     </div>
   );
 
+  // Render notes section
+  const renderNotesSection = () => (
+    <div>
+      <div className="flex items-center justify-end mb-4">
+        <button
+          onClick={() => openNewNoteModal(category.id)}
+          className="w-8 h-8 rounded-lg text-white transition transform hover:scale-105 flex items-center justify-center"
+          style={{ backgroundColor: categoryColor }}
+          title="New Note"
+        >
+          <i className="fa-solid fa-plus text-sm"></i>
+        </button>
+      </div>
+
+      {notes && notes.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {notes.map(note => (
+            <button
+              key={note.id}
+              onClick={() => openEditNoteModal(note.id)}
+              className="text-left w-full rounded-sm p-4 pb-6 transition-all duration-200 hover:-translate-y-0.5 relative"
+              style={{
+                backgroundColor: '#FFFFFF',
+                boxShadow: `4px 6px 16px ${categoryColor}35, 0 2px 6px ${categoryColor}20`,
+              }}
+            >
+              {note.pinned && (
+                <i
+                  className="fa-solid fa-thumbtack text-xs absolute top-3 right-3"
+                  style={{ color: categoryColor, transform: 'rotate(30deg)' }}
+                ></i>
+              )}
+              {note.title && (
+                <h4
+                  className="font-display text-base mb-1 line-clamp-1 pr-4"
+                  style={{ color: '#1D1D1F', fontWeight: 500 }}
+                >
+                  {note.title}
+                </h4>
+              )}
+              {note.body && (
+                <p
+                  className="text-sm line-clamp-3 mb-2"
+                  style={{ color: '#4A4A4E', fontFamily: "'Inter', sans-serif", fontWeight: 300, lineHeight: 1.5 }}
+                >
+                  {note.body}
+                </p>
+              )}
+              {note.tags && note.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {note.tags.map(tag => (
+                    <span
+                      key={tag.id}
+                      className="text-xs px-2 py-0.5 rounded-md"
+                      style={{ backgroundColor: 'rgba(0,0,0,0.06)', color: '#6B6B6F', fontFamily: "'Inter', sans-serif", fontWeight: 500 }}
+                    >
+                      {tag.name}
+                    </span>
+                  ))}
+                </div>
+              )}
+              <div
+                className="absolute bottom-2 right-2 w-6 h-6 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: categoryColor }}
+              >
+                <i className="fa-solid fa-pencil" style={{ color: 'white', fontSize: '0.5rem' }}></i>
+              </div>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="py-8 text-center rounded-xl" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
+          <i className="fa-solid fa-note-sticky text-4xl mb-2" style={{ color: '#E5E5E7' }}></i>
+          <p className="text-sm mb-4" style={{ color: '#8E8E93' }}>
+            No notes yet
+          </p>
+          <button
+            onClick={() => openNewNoteModal(category.id)}
+            className="px-4 py-2 rounded-lg text-white transition hover:opacity-90"
+            style={{ backgroundColor: categoryColor }}
+          >
+            <i className="fa-solid fa-plus mr-2"></i>Add Note
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
   // Render lists section
   const renderListsSection = () => (
     <div>
@@ -765,6 +857,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
         {activeSection === 'habits' && renderHabitsSection()}
         {activeSection === 'tasks' && renderTasksSection()}
         {activeSection === 'documents' && renderDocumentsSection()}
+        {activeSection === 'notes' && renderNotesSection()}
         {activeSection === 'lists' && renderListsSection()}
       </div>
 
@@ -777,6 +870,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
       <TaskViewModal />
       <ListFormModal />
       <ListShowModal />
+      <NoteFormModal allTags={allTags} categories={[category]} />
     </>
   );
 };
