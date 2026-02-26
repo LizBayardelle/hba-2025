@@ -1,4 +1,32 @@
-<div class="flex h-screen relative" style="background: #F5F5F7;">
+<div class="flex h-screen relative" style="background-color: #adadb3;">
+  <!-- Grain texture -->
+  <style>
+    .grain-bg {
+      background-blend-mode: overlay;
+      background-repeat: repeat;
+      background-size: 200px 200px;
+    }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 200;
+      canvas.height = 200;
+      const ctx = canvas.getContext('2d');
+      const imageData = ctx.createImageData(200, 200);
+      for (let i = 0; i < imageData.data.length; i += 4) {
+        const v = Math.random() * 255;
+        imageData.data[i] = v;
+        imageData.data[i+1] = v;
+        imageData.data[i+2] = v;
+        imageData.data[i+3] = 40;
+      }
+      ctx.putImageData(imageData, 0, 0);
+      const el = document.querySelector('.grain-bg');
+      if (el) el.style.backgroundImage = 'url(' + canvas.toDataURL() + ')';
+    });
+  </script>
+
   <%= render 'shared/sidebar' %>
 
   <!-- Mobile overlay -->
@@ -40,13 +68,16 @@
     <%= render 'shared/navbar' %>
 
     <!-- Scrollable Content -->
-    <main class="flex-1 overflow-y-auto p-8" style="background: #F5F5F7;">
-      <div class="max-w-3xl mx-auto">
-        <!-- Header -->
-        <div class="mb-8">
+    <main class="flex-1 overflow-y-auto grain-bg" style="background-color: #adadb3;">
+      <!-- White Header -->
+      <div class="sticky top-0 z-10 shadow-deep" style="background: #FFFFFF;">
+        <div class="p-8 max-w-3xl mx-auto">
           <h1 class="text-5xl font-display" style="color: #1D1D1F;">Settings</h1>
           <p class="text-sm mt-1" style="color: #8E8E93; font-weight: 300; font-family: 'Inter', sans-serif;">Customize your habit tracking experience</p>
         </div>
+      </div>
+
+      <div class="max-w-3xl mx-auto p-8">
 
         <% if notice %>
           <div class="mb-6 p-4 rounded-lg border-2" style="background-color: #D1FAF0; border-color: #6EE7B7;">
@@ -61,7 +92,7 @@
 
         <%= form_with model: current_user, url: settings_path, method: :patch, local: false, id: "settings-form" do |f| %>
           <!-- General Settings Card -->
-          <div class="bg-white rounded-2xl p-6 mb-6" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
+          <div class="bg-white rounded-2xl p-6 mb-6 shadow-deep">
             <h2 class="text-2xl font-display mb-4" style="color: #1D1D1F;">
               <i class="fa-solid fa-sliders mr-2"></i>General Settings
             </h2>
@@ -123,7 +154,7 @@
 
         <%= form_with model: current_user, url: settings_path, method: :patch, local: false, id: "settings-form-continued" do |f| %>
           <!-- Display Preferences Card -->
-          <div class="bg-white rounded-2xl p-6 mb-6" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
+          <div class="bg-white rounded-2xl p-6 mb-6 shadow-deep">
             <h2 class="text-2xl font-display mb-4" style="color: #1D1D1F;">
               <i class="fa-solid fa-palette mr-2"></i>Display Preferences
             </h2>
@@ -204,12 +235,12 @@
         <% end %>
 
         <!-- Importance Levels Card -->
-        <div class="bg-white rounded-2xl p-8 mb-6" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
+        <div class="bg-white rounded-2xl p-8 mb-6 shadow-deep">
           <div class="flex items-center justify-between mb-6">
             <h2 class="text-2xl font-display" style="color: #1D1D1F;">
               <i class="fa-solid fa-star mr-2"></i>Importance Levels
             </h2>
-            <button id="add-importance-level-btn" class="px-4 py-2 rounded-lg text-sm transition transform hover:scale-105" style="background: linear-gradient(135deg, #2C2C2E, #1D1D1F); color: white; font-weight: 600; font-family: 'Inter', sans-serif; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);">
+            <button id="add-importance-level-btn" class="btn-onyx px-4 py-2 rounded-lg text-sm text-white transition transform hover:scale-105" style="font-weight: 600; font-family: 'Inter', sans-serif;">
               <i class="fa-solid fa-plus mr-2"></i>Add Level
             </button>
           </div>
@@ -225,12 +256,12 @@
         </div>
 
         <!-- Time Blocks Card -->
-        <div class="bg-white rounded-2xl p-8 mb-6" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
+        <div class="bg-white rounded-2xl p-8 mb-6 shadow-deep">
           <div class="flex items-center justify-between mb-6">
             <h2 class="text-2xl font-display" style="color: #1D1D1F;">
               <i class="fa-solid fa-clock mr-2"></i>Time Blocks
             </h2>
-            <button id="add-time-block-btn" class="px-4 py-2 rounded-lg text-sm transition transform hover:scale-105" style="background: linear-gradient(135deg, #2C2C2E, #1D1D1F); color: white; font-weight: 600; font-family: 'Inter', sans-serif; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);">
+            <button id="add-time-block-btn" class="btn-onyx px-4 py-2 rounded-lg text-sm text-white transition transform hover:scale-105" style="font-weight: 600; font-family: 'Inter', sans-serif;">
               <i class="fa-solid fa-plus mr-2"></i>Add Time Block
             </button>
           </div>
@@ -246,7 +277,7 @@
         </div>
 
         <!-- Google Calendar Integration Card -->
-        <div class="bg-white rounded-2xl p-8 mb-6" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
+        <div class="bg-white rounded-2xl p-8 mb-6 shadow-deep">
           <h2 class="text-2xl font-display mb-6" style="color: #1D1D1F;">
             <i class="fa-brands fa-google mr-2"></i>Google Calendar Integration
           </h2>
@@ -288,7 +319,7 @@
               <p class="text-sm font-light mb-6" style="color: #8E8E93;">
                 View your calendar events directly on your dashboard for better planning
               </p>
-              <%= link_to google_calendar_connect_path, class: "inline-block px-6 py-3 rounded-lg text-sm transition transform hover:scale-105", style: "background: linear-gradient(135deg, #2C2C2E, #1D1D1F); color: white; font-weight: 600; font-family: 'Inter', sans-serif; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);" do %>
+              <%= link_to google_calendar_connect_path, class: "btn-onyx inline-block px-6 py-3 rounded-lg text-sm text-white transition transform hover:scale-105", style: "font-weight: 600; font-family: 'Inter', sans-serif;" do %>
                 <i class="fa-brands fa-google mr-2"></i>Connect Google Calendar
               <% end %>
               <p class="text-xs font-light mt-4" style="color: #8E8E93;">
@@ -299,7 +330,7 @@
         </div>
 
         <!-- Dashboard Layout Card -->
-        <div class="bg-white rounded-2xl p-6 mb-6" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
+        <div class="bg-white rounded-2xl p-6 mb-6 shadow-deep">
           <h2 class="text-2xl font-display mb-4" style="color: #1D1D1F;">
             <i class="fa-solid fa-grip mr-2"></i>Dashboard Layout
           </h2>
@@ -763,7 +794,7 @@
                 <button type="button" id="cancel-time-block-modal-btn" class="flex-1 px-4 py-3 rounded-lg border-2 font-semibold transition hover:bg-gray-50" style="border-color: #E8EEF1; color: #1D1D1F;">
                   Cancel
                 </button>
-                <button type="submit" class="flex-1 px-4 py-3 rounded-lg font-semibold transition hover:opacity-80" style="background: linear-gradient(135deg, #2C2C2E, #1D1D1F); color: white;">
+                <button type="submit" class="btn-onyx flex-1 px-4 py-3 rounded-lg font-semibold text-white transition hover:opacity-80">
                   Save
                 </button>
               </div>
@@ -1000,7 +1031,7 @@
                 <button type="button" id="cancel-modal-btn" class="flex-1 px-4 py-3 rounded-lg border-2 font-semibold transition hover:bg-gray-50" style="border-color: #E8EEF1; color: #1D1D1F;">
                   Cancel
                 </button>
-                <button type="submit" class="flex-1 px-4 py-3 rounded-lg font-semibold transition hover:opacity-80" style="background: linear-gradient(135deg, #2C2C2E, #1D1D1F); color: white;">
+                <button type="submit" class="btn-onyx flex-1 px-4 py-3 rounded-lg font-semibold text-white transition hover:opacity-80">
                   Save
                 </button>
               </div>

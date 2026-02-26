@@ -2,7 +2,35 @@
   <%= javascript_include_tag "goals_app", type: "module" %>
 <% end %>
 
-<div class="flex h-screen relative" style="background-color: #F5F5F7;">
+<div class="flex h-screen relative" style="background-color: #adadb3;">
+  <!-- Grain texture -->
+  <style>
+    .grain-bg {
+      background-blend-mode: overlay;
+      background-repeat: repeat;
+      background-size: 200px 200px;
+    }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 200;
+      canvas.height = 200;
+      const ctx = canvas.getContext('2d');
+      const imageData = ctx.createImageData(200, 200);
+      for (let i = 0; i < imageData.data.length; i += 4) {
+        const v = Math.random() * 255;
+        imageData.data[i] = v;
+        imageData.data[i+1] = v;
+        imageData.data[i+2] = v;
+        imageData.data[i+3] = 40;
+      }
+      ctx.putImageData(imageData, 0, 0);
+      const el = document.querySelector('.grain-bg');
+      if (el) el.style.backgroundImage = 'url(' + canvas.toDataURL() + ')';
+    });
+  </script>
+
   <%= render 'shared/sidebar' %>
 
   <!-- Mobile overlay -->
@@ -40,7 +68,7 @@
   </script>
 
   <!-- Main Content Area - React will mount here -->
-  <main class="flex-1 overflow-y-auto" style="background-color: #F5F5F7;">
-    <div id="goals-react-root"></div>
+  <main class="flex-1 overflow-y-auto">
+    <div id="goals-react-root" class="grain-bg" style="background-color: #adadb3; min-height: 100%;"></div>
   </main>
 </div>

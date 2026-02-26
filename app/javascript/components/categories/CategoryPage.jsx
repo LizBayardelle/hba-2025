@@ -180,7 +180,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
   if (error) {
     return (
       <div className="p-8">
-        <div className="rounded-xl p-12 text-center" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)' }}>
+        <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
           <i className="fa-solid fa-exclamation-circle text-6xl mb-4" style={{ color: '#DC2626' }}></i>
           <p style={{ color: '#DC2626', fontFamily: "'Inter', sans-serif", fontWeight: 400 }}>Error loading category: {error.message}</p>
         </div>
@@ -211,7 +211,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
     { id: 'lists', label: 'Lists', icon: 'fa-clipboard-list', count: lists?.length || 0 },
   ];
 
-  // Render a habit group with liquid-surface-subtle header + tinted background
+  // Render a habit group with bar-colored header + light gradient background
   const renderHabitGroup = (group) => {
     const groupColor = group.color || '#8E8E93';
     const groupIcon = group.icon || 'fa-list';
@@ -220,11 +220,13 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
       <div key={group.title}>
         <div
           className="-mx-6 px-6 pb-6"
-          style={{ backgroundColor: `color-mix(in srgb, ${groupColor} 18%, white)` }}
+          style={{
+            background: `linear-gradient(180deg, color-mix(in srgb, ${groupColor} 12%, white) 0%, color-mix(in srgb, ${groupColor} 6%, white) 100%)`,
+          }}
         >
           <div
-            className="-mx-6 px-6 py-3 mb-4 flex items-center gap-3 liquid-surface-subtle"
-            style={{ '--surface-color': groupColor }}
+            className="-mx-6 px-6 py-3 mb-4 flex items-center gap-3 bar-colored"
+            style={{ '--bar-color': groupColor }}
           >
             <i className={`fa-solid ${groupIcon} text-white text-lg`}></i>
             <h3 className="text-2xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
@@ -303,7 +305,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
           {groupedHabits.map((group) => renderHabitGroup(group))}
         </div>
       ) : (
-        <div className="py-8 text-center rounded-xl" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
+        <div className="py-8 text-center rounded-xl shadow-medium" style={{ background: '#FFFFFF' }}>
           <i className="fa-solid fa-list-check text-4xl mb-2" style={{ color: '#E5E5E7' }}></i>
           <p className="text-sm mb-4" style={{ color: '#8E8E93' }}>
             No habits yet
@@ -415,8 +417,8 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
               return (
                 <div
                   key={task.id}
-                  className="flex items-center gap-3 p-3 bg-white rounded-lg border shadow-md hover:shadow-lg transition cursor-pointer"
-                  style={{ borderColor: '#E8EEF1', opacity: task.completed ? 0.6 : 1 }}
+                  className="flex items-center gap-3 p-3 bg-white rounded-xl transition cursor-pointer shadow-medium"
+                  style={{ opacity: task.completed ? 0.6 : 1 }}
                   onClick={() => openTaskViewModal(task.id)}
                 >
                   <button
@@ -531,7 +533,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
             })}
           </div>
         ) : (
-          <div className="py-8 text-center rounded-xl" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
+          <div className="py-8 text-center rounded-xl shadow-medium" style={{ background: '#FFFFFF' }}>
             <i className="fa-solid fa-square-check text-4xl mb-2" style={{ color: '#E5E5E7' }}></i>
             <p className="text-sm mb-4" style={{ color: '#8E8E93' }}>
               {taskFilter === 'today' ? 'No tasks due today' : 'No tasks yet'}
@@ -578,8 +580,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
               <button
                 key={doc.id}
                 onClick={() => openDocumentViewModal(doc.id)}
-                className="flex items-center gap-3 p-4 bg-white rounded-lg border shadow-md hover:shadow-lg transition text-left"
-                style={{ borderColor: '#E8EEF1' }}
+                className="flex items-center gap-3 p-4 bg-white rounded-xl transition text-left shadow-medium"
               >
                 <div
                   className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -596,7 +597,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
           })}
         </div>
       ) : (
-        <div className="py-8 text-center rounded-xl" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
+        <div className="py-8 text-center rounded-xl shadow-medium" style={{ background: '#FFFFFF' }}>
           <i className="fa-solid fa-file-lines text-4xl mb-2" style={{ color: '#E5E5E7' }}></i>
           <p className="text-sm mb-4" style={{ color: '#8E8E93' }}>
             No documents yet
@@ -633,10 +634,9 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
             <button
               key={note.id}
               onClick={() => openEditNoteModal(note.id)}
-              className="text-left w-full rounded-sm p-4 pb-6 transition-all duration-200 hover:-translate-y-0.5 relative"
+              className="text-left w-full rounded-xl p-4 pb-6 transition-all duration-200 hover:-translate-y-0.5 relative shadow-medium"
               style={{
                 backgroundColor: '#FFFFFF',
-                boxShadow: `4px 6px 16px ${categoryColor}35, 0 2px 6px ${categoryColor}20`,
               }}
             >
               {note.pinned && (
@@ -684,7 +684,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
           ))}
         </div>
       ) : (
-        <div className="py-8 text-center rounded-xl" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
+        <div className="py-8 text-center rounded-xl shadow-medium" style={{ background: '#FFFFFF' }}>
           <i className="fa-solid fa-note-sticky text-4xl mb-2" style={{ color: '#E5E5E7' }}></i>
           <p className="text-sm mb-4" style={{ color: '#8E8E93' }}>
             No notes yet
@@ -724,8 +724,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
               <button
                 key={list.id}
                 onClick={() => openListShowModal(list.id)}
-                className="flex flex-col p-4 bg-white rounded-lg border shadow-md hover:shadow-lg transition text-left"
-                style={{ borderColor: '#E8EEF1' }}
+                className="flex flex-col p-4 bg-white rounded-xl transition text-left shadow-medium"
               >
                 <div className="flex items-center gap-3 mb-2">
                   <div
@@ -754,7 +753,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
           })}
         </div>
       ) : (
-        <div className="py-8 text-center rounded-xl" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
+        <div className="py-8 text-center rounded-xl shadow-medium" style={{ background: '#FFFFFF' }}>
           <i className="fa-solid fa-clipboard-list text-4xl mb-2" style={{ color: '#E5E5E7' }}></i>
           <p className="text-sm mb-4" style={{ color: '#8E8E93' }}>
             No lists yet
@@ -774,7 +773,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
   return (
     <>
       {/* Header Section */}
-      <div style={{ background: '#FFFFFF' }}>
+      <div className="sticky top-0 z-10 shadow-deep" style={{ background: '#FFFFFF' }}>
         <div className="px-8 pt-8 pb-4">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">

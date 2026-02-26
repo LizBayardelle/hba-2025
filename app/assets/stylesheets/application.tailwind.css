@@ -17,6 +17,186 @@
 }
 
 /* ═══════════════════════════════════════════
+   Default Category Bar
+   Usage: class="bar-default" or use --bar-default-color in JS
+   Dark metallic header bar for uncategorized / non-color groups.
+   Contrasts with both white cards and grey backgrounds.
+   ═══════════════════════════════════════════ */
+
+:root {
+  --bar-default-color: #202020;
+}
+
+.bar-default {
+  position: relative;
+  overflow: hidden;
+  background:
+    /* Subtle specular pinpoints — visible on inspection, not on first glance */
+    radial-gradient(ellipse 4% 45% at 10% 20%, rgba(255,255,255,0.10) 0%, transparent 70%),
+    radial-gradient(ellipse 3% 35% at 28% 40%, rgba(255,255,255,0.07) 0%, transparent 70%),
+    radial-gradient(ellipse 5% 50% at 45% 15%, rgba(255,255,255,0.09) 0%, transparent 70%),
+    radial-gradient(ellipse 3% 40% at 62% 45%, rgba(255,255,255,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 4% 50% at 78% 22%, rgba(255,255,255,0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 3% 35% at 92% 38%, rgba(255,255,255,0.07) 0%, transparent 70%),
+    /* Soft diagonal specular */
+    linear-gradient(
+      115deg,
+      transparent 25%,
+      rgba(255,255,255,0.0) 42%,
+      rgba(255,255,255,0.06) 48%,
+      rgba(255,255,255,0.10) 50%,
+      rgba(255,255,255,0.06) 52%,
+      rgba(255,255,255,0.0) 58%,
+      transparent 75%
+    ),
+    /* Top chrome edge */
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,0.15) 0%,
+      rgba(255,255,255,0.05) 6%,
+      rgba(255,255,255,0.01) 18%,
+      transparent 30%
+    ),
+    /* Base */
+    linear-gradient(
+      180deg,
+      #222 0%, #111 20%, #080808 60%, #0e0e0e 90%, #1a1a1a 100%
+    );
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.2) inset,
+    0 -1px 0 rgba(255,255,255,0.03) inset,
+    0 4px 16px rgba(0,0,0,0.5);
+  color: rgba(255,255,255,0.95);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+
+/* Bottom edge reflection */
+.bar-default::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(255,255,255,0.04) 50%,
+    rgba(255,255,255,0.07) 100%
+  );
+}
+
+/* ═══════════════════════════════════════════
+   Onyx Button (simplified for small elements)
+   Usage: class="btn-onyx"
+   Clean dark button — chrome edge + base gradient, no pinpoints.
+   ═══════════════════════════════════════════ */
+
+.btn-onyx {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,0.12) 0%,
+      rgba(255,255,255,0.03) 8%,
+      transparent 30%
+    ),
+    linear-gradient(
+      180deg,
+      #252525 0%, #141414 40%, #0a0a0a 70%, #111 100%
+    );
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.15) inset,
+    0 -1px 0 rgba(255,255,255,0.03) inset,
+    0 2px 8px rgba(0,0,0,0.3);
+  color: rgba(255,255,255,0.95);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+/* ═══════════════════════════════════════════
+   Colored Bar (Polished Onyx treatment on any color)
+   Usage: class="bar-colored" style="--bar-color: #EF5350"
+   Same specular catchlights as bar-default, over a user color.
+   ═══════════════════════════════════════════ */
+
+.bar-colored {
+  --bar-color: #8E8E93;
+  position: relative;
+  overflow: hidden;
+  background:
+    /* Subtle specular pinpoints */
+    radial-gradient(ellipse 4% 45% at 10% 20%, rgba(255,255,255,0.10) 0%, transparent 70%),
+    radial-gradient(ellipse 3% 35% at 28% 40%, rgba(255,255,255,0.07) 0%, transparent 70%),
+    radial-gradient(ellipse 5% 50% at 45% 15%, rgba(255,255,255,0.09) 0%, transparent 70%),
+    radial-gradient(ellipse 3% 40% at 62% 45%, rgba(255,255,255,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 4% 50% at 78% 22%, rgba(255,255,255,0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 3% 35% at 92% 38%, rgba(255,255,255,0.07) 0%, transparent 70%),
+    /* Soft diagonal specular */
+    linear-gradient(
+      115deg,
+      transparent 25%,
+      rgba(255,255,255,0.0) 42%,
+      rgba(255,255,255,0.06) 48%,
+      rgba(255,255,255,0.10) 50%,
+      rgba(255,255,255,0.06) 52%,
+      rgba(255,255,255,0.0) 58%,
+      transparent 75%
+    ),
+    /* Top chrome edge */
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,0.15) 0%,
+      rgba(255,255,255,0.05) 6%,
+      rgba(255,255,255,0.01) 18%,
+      transparent 30%
+    ),
+    /* Base — user color with depth curve */
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--bar-color), white 12%) 0%,
+      color-mix(in srgb, var(--bar-color), black 10%) 20%,
+      color-mix(in srgb, var(--bar-color), black 25%) 60%,
+      color-mix(in srgb, var(--bar-color), black 18%) 90%,
+      color-mix(in srgb, var(--bar-color), black 5%) 100%
+    );
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.3) inset,
+    0 -1px 0 rgba(255,255,255,0.05) inset,
+    0 4px 16px rgba(0,0,0,0.5);
+  color: rgba(255,255,255,0.95);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+
+/* Bottom edge reflection */
+.bar-colored::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(255,255,255,0.06) 50%,
+    rgba(255,255,255,0.1) 100%
+  );
+}
+
+/* ═══════════════════════════════════════════
+   Deep Shadow
+   Usage: class="shadow-deep"
+   Matches sidebar shadow — use on cards, panels, etc.
+   ═══════════════════════════════════════════ */
+
+.shadow-deep {
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+}
+
+.shadow-medium {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12), 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+/* ═══════════════════════════════════════════
    Liquid Metallic Surface
    Usage: class="liquid-surface" style="--surface-color: #EF5350"
    Works on badges, pills, cards, tags — anything.

@@ -1,6 +1,34 @@
-<div class="flex h-screen relative" style="background-color: #F5F5F7;"
+<div class="flex h-screen relative" style="background-color: #adadb3;"
      data-default-habits-grouping="<%= current_user.default_habits_grouping %>"
      data-default-tasks-grouping="<%= current_user.default_tasks_grouping %>">
+  <style>
+    .grain-bg {
+      background-blend-mode: overlay;
+      background-repeat: repeat;
+      background-size: 200px 200px;
+    }
+  </style>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 200;
+      canvas.height = 200;
+      const ctx = canvas.getContext('2d');
+      const imageData = ctx.createImageData(200, 200);
+      for (let i = 0; i < imageData.data.length; i += 4) {
+        const v = Math.random() * 255;
+        imageData.data[i] = v;
+        imageData.data[i+1] = v;
+        imageData.data[i+2] = v;
+        imageData.data[i+3] = 40;
+      }
+      ctx.putImageData(imageData, 0, 0);
+      const el = document.querySelector('.grain-bg');
+      if (el) el.style.backgroundImage = 'url(' + canvas.toDataURL() + ')';
+    });
+  </script>
+
   <%= render 'shared/sidebar' %>
 
   <!-- Mobile overlay -->
@@ -103,9 +131,9 @@
   </script>
 
   <!-- Main Content Area -->
-  <main class="flex-1 overflow-y-auto" style="background-color: #F5F5F7;">
+  <main class="flex-1 overflow-y-auto">
     <!-- White Header Section with Shadow -->
-    <div class="sticky top-0 z-10" style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);">
+    <div class="sticky top-0 z-10" style="background: #FFFFFF; box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);">
       <div class="p-8">
         <div class="flex items-start justify-between mb-6">
           <div class="flex-1">
@@ -152,7 +180,7 @@
     </div>
 
     <!-- Grey Background Content -->
-    <div class="p-8 pt-6 space-y-6">
+    <div class="p-8 pt-6 space-y-6 grain-bg" style="background-color: #adadb3;">
       <%
         # Get layout and sort by position
         layout = current_user.dashboard_layout.presence || User::DEFAULT_DASHBOARD_LAYOUT
@@ -501,18 +529,20 @@ function switchFocusView(view) {
     if (!groups[groupName] || groups[groupName].length === 0) return;
 
     // Get color based on view
-    let groupColor = '#8E8E93'; // Default metallic grey for time
+    let groupColor = '#202020'; // Default dark metallic
+    let useBarDefault = true;
     let groupIconClass = groupIcons[groupName] || 'fa-clock';
     let groupTitle = groupName.charAt(0).toUpperCase() + groupName.slice(1);
 
     if (view === 'category' && groups[groupName].length > 0) {
       groupColor = groups[groupName][0].dataset.categoryColor;
       groupTitle = groups[groupName][0].dataset.categoryName;
+      useBarDefault = false;
     } else if (view === 'priority' && groups[groupName].length > 0) {
       groupColor = groups[groupName][0].dataset.priorityColor;
       groupTitle = groups[groupName][0].dataset.priorityName;
+      useBarDefault = false;
     } else if (view === 'time' && groups[groupName].length > 0) {
-      groupColor = '#8E8E93'; // Metallic grey for time blocks
       groupTitle = groups[groupName][0].dataset.timeBlockName;
     }
 
@@ -522,9 +552,12 @@ function switchFocusView(view) {
 
     // Create full-width stripe header
     const headerDiv = document.createElement('div');
-    headerDiv.className = '-mx-6 px-6 py-2 mb-3 flex items-center gap-2';
-    headerDiv.style.background = `linear-gradient(to bottom, color-mix(in srgb, ${groupColor} 85%, white) 0%, ${groupColor} 100%)`;
-    headerDiv.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.1)';
+    if (useBarDefault) {
+      headerDiv.className = '-mx-6 px-6 py-2 mb-3 flex items-center gap-2 bar-default';
+    } else {
+      headerDiv.className = '-mx-6 px-6 py-2 mb-3 flex items-center gap-2 bar-colored';
+      headerDiv.style.setProperty('--bar-color', groupColor);
+    }
 
     // Add icon
     const icon = document.createElement('i');
@@ -916,18 +949,20 @@ function switchTasksView(view) {
     if (!groups[groupName] || groups[groupName].length === 0) return;
 
     // Get color and icon based on view
-    let groupColor = '#8E8E93'; // Default metallic grey
+    let groupColor = '#202020'; // Default dark metallic
+    let useBarDefault = true;
     let groupIconClass = 'fa-list';
     let groupTitle = groupLabels[groupName] || groupName;
 
     if (view === 'date') {
-      groupColor = '#8E8E93'; // Metallic grey for date groups
       groupIconClass = dateIcons[groupName] || 'fa-calendar';
     } else if (view === 'category' && groups[groupName].length > 0) {
-      groupColor = groupColors[groupName] || '#8E8E93';
+      groupColor = groupColors[groupName] || '#202020';
+      useBarDefault = !groupColors[groupName];
       groupIconClass = groups[groupName][0].dataset.categoryIcon || 'fa-folder';
     } else if (view === 'priority' && groups[groupName].length > 0) {
-      groupColor = groupColors[groupName] || '#8E8E93';
+      groupColor = groupColors[groupName] || '#202020';
+      useBarDefault = !groupColors[groupName];
       groupIconClass = groups[groupName][0].dataset.priorityIcon || 'fa-star';
     }
 
@@ -937,9 +972,12 @@ function switchTasksView(view) {
 
     // Create full-width stripe header
     const headerDiv = document.createElement('div');
-    headerDiv.className = '-mx-6 px-6 py-2 mb-3 flex items-center gap-2';
-    headerDiv.style.background = `linear-gradient(to bottom, color-mix(in srgb, ${groupColor} 85%, white) 0%, ${groupColor} 100%)`;
-    headerDiv.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.1)';
+    if (useBarDefault) {
+      headerDiv.className = '-mx-6 px-6 py-2 mb-3 flex items-center gap-2 bar-default';
+    } else {
+      headerDiv.className = '-mx-6 px-6 py-2 mb-3 flex items-center gap-2 bar-colored';
+      headerDiv.style.setProperty('--bar-color', groupColor);
+    }
 
     // Add icon
     const icon = document.createElement('i');

@@ -1,11 +1,39 @@
-<div class="flex h-screen relative" style="background-color: #F5F5F7;">
+<div class="flex h-screen relative" style="background-color: #adadb3;">
+  <!-- Grain texture -->
+  <style>
+    .grain-bg {
+      background-blend-mode: overlay;
+      background-repeat: repeat;
+      background-size: 200px 200px;
+    }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 200;
+      canvas.height = 200;
+      const ctx = canvas.getContext('2d');
+      const imageData = ctx.createImageData(200, 200);
+      for (let i = 0; i < imageData.data.length; i += 4) {
+        const v = Math.random() * 255;
+        imageData.data[i] = v;
+        imageData.data[i+1] = v;
+        imageData.data[i+2] = v;
+        imageData.data[i+3] = 40;
+      }
+      ctx.putImageData(imageData, 0, 0);
+      const el = document.querySelector('.grain-bg');
+      if (el) el.style.backgroundImage = 'url(' + canvas.toDataURL() + ')';
+    });
+  </script>
+
   <%= render 'shared/sidebar' %>
 
   <!-- Mobile overlay -->
   <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 md:hidden hidden"></div>
 
   <!-- Menu flag button -->
-  <button id="menu-button" class="fixed left-0 z-20 md:hidden rounded-r-lg shadow-lg flex items-center justify-center py-1.5 px-3 cursor-move"
+  <button id="menu-button" class="fixed left-0 z-20 md:hidden rounded-r-lg shadow-lg flex items-center justify-center py-1.5 px-3 transition-all"
     style="top: 200px; background: linear-gradient(135deg, #424245, #2C2C2E); writing-mode: vertical-rl;">
     <span class="text-white font-bold text-sm tracking-wider">MENU</span>
   </button>
@@ -101,9 +129,9 @@
   </script>
 
   <!-- Main Content Area -->
-  <main class="flex-1 overflow-y-auto" style="background-color: #F5F5F5;">
+  <main class="flex-1 overflow-y-auto grain-bg" style="background-color: #adadb3;">
     <!-- White Header Section with Shadow -->
-    <div style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);">
+    <div class="sticky top-0 z-10 shadow-deep" style="background: #FFFFFF;">
       <div class="p-8">
         <h1 class="text-5xl font-display" style="color: #1D1D1F;">Analytics</h1>
         <p class="text-sm mt-1" style="color: #8E8E93; font-family: 'Inter', sans-serif; font-weight: 300;">
@@ -115,7 +143,7 @@
     <!-- Grey Background Content -->
     <div class="p-8 pt-6 space-y-6">
       <!-- Calendar Heatmap -->
-      <div class="bg-white rounded-xl p-6" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
+      <div class="bg-white rounded-xl p-6 shadow-deep">
         <h2 class="text-2xl font-display mb-4" style="color: #1D1D1F;">Activity</h2>
 
         <!-- Overall Heatmap -->
@@ -314,7 +342,7 @@
       </div>
 
       <!-- Controls Bar -->
-      <div class="py-2 mb-0 flex gap-2 items-center justify-between">
+      <div class="bg-white rounded-xl p-6 shadow-deep flex gap-2 items-center justify-between">
         <div>
           <h2 class="text-2xl font-display" style="color: #1D1D1F;">Habit Health Overview</h2>
           <p class="text-xs mt-0.5" style="color: #8E8E93; font-family: 'Inter', sans-serif; font-weight: 300;">
@@ -324,8 +352,8 @@
 
         <!-- View Toggle -->
         <div>
-          <span class="block text-xs uppercase tracking-wide mb-2" style="color: #8E8E93; font-weight: 600;">Group By</span>
-          <div class="flex rounded-lg overflow-hidden" style="border: 0.5px solid rgba(199, 199, 204, 0.3);">
+          <span class="block text-xs uppercase tracking-wide mb-2" style="color: #8E8E93; font-weight: 600; font-family: 'Inter', sans-serif;">Group By</span>
+          <div class="inline-flex rounded-lg overflow-hidden" style="border: 0.5px solid rgba(199, 199, 204, 0.3);">
             <%= link_to analytics_path(view: 'category'), class: "px-4 py-2 text-sm transition", style: @view_mode == 'category' ? "background: linear-gradient(to bottom, #A8A8AD 0%, #8E8E93 100%); color: #FFFFFF; font-weight: 500; font-family: 'Inter', sans-serif;" : "background: #F5F5F7; color: #1D1D1F; font-weight: 500; font-family: 'Inter', sans-serif;" do %>
               Category
             <% end %>
@@ -352,7 +380,7 @@
               <!-- Category Header -->
               <div data-section-id="category-<%= category.id %>">
                 <!-- Full-width stripe header -->
-                <button onclick="toggleSection('category-<%= category.id %>')" class="w-full -mx-8 px-8 py-4 flex items-center gap-3 hover:opacity-95 transition" style="background: linear-gradient(to bottom, color-mix(in srgb, <%= category.color %> 85%, white) 0%, <%= category.color %> 100%); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); width: calc(100% + 4rem);">
+                <button onclick="toggleSection('category-<%= category.id %>')" class="w-full -mx-8 px-8 py-4 flex items-center gap-3 hover:opacity-95 transition bar-colored" style="--bar-color: <%= category.color %>; width: calc(100% + 4rem);">
                   <i class="fa-solid <%= category.icon %> text-white text-lg"></i>
                   <h2 class="text-3xl flex-1 text-left text-white font-display" style="font-weight: 500;">
                     <%= category.name %>
@@ -376,7 +404,7 @@
                 <!-- Habits List -->
                 <div class="section-content space-y-3 py-4">
                   <% habits.each do |habit| %>
-                    <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 bg-white rounded-xl p-4" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
+                    <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 bg-white rounded-xl p-4 shadow-medium">
                       <!-- Habit Name and Info -->
                       <div class="flex-1">
                         <div class="font-semibold text-base mb-0.5" style="color: #1D1D1F;">
@@ -426,7 +454,7 @@
               %>
               <div data-section-id="<%= section_id %>">
                 <!-- Full-width stripe header -->
-                <button onclick="toggleSection('<%= section_id %>')" class="w-full -mx-8 px-8 py-4 flex items-center gap-3 hover:opacity-95 transition" style="background: linear-gradient(to bottom, color-mix(in srgb, <%= block_color %> 85%, white) 0%, <%= block_color %> 100%); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); width: calc(100% + 4rem);">
+                <button onclick="toggleSection('<%= section_id %>')" class="w-full -mx-8 px-8 py-4 flex items-center gap-3 hover:opacity-95 transition bar-colored" style="--bar-color: <%= block_color %>; width: calc(100% + 4rem);">
                   <i class="<%= block_icon %> text-white text-lg"></i>
                   <h2 class="text-3xl flex-1 text-left text-white font-display" style="font-weight: 500;">
                     <%= block_name %>
@@ -451,7 +479,7 @@
                 <div class="section-content space-y-3 py-4">
                   <% habits.each do |habit| %>
                     <% habit_dark_color = generate_dark_color(habit.category.color) %>
-                    <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 bg-white rounded-xl p-4" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
+                    <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 bg-white rounded-xl p-4 shadow-medium">
                       <!-- Habit Name and Info -->
                       <div class="flex-1">
                         <div class="font-semibold text-base mb-0.5" style="color: #1D1D1F;">
@@ -501,7 +529,7 @@
               %>
               <div data-section-id="<%= section_id %>">
                 <!-- Full-width stripe header -->
-                <button onclick="toggleSection('<%= section_id %>')" class="w-full -mx-8 px-8 py-4 flex items-center gap-3 hover:opacity-95 transition" style="background: linear-gradient(to bottom, color-mix(in srgb, <%= level_color %> 85%, white) 0%, <%= level_color %> 100%); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); width: calc(100% + 4rem);">
+                <button onclick="toggleSection('<%= section_id %>')" class="w-full -mx-8 px-8 py-4 flex items-center gap-3 hover:opacity-95 transition bar-colored" style="--bar-color: <%= level_color %>; width: calc(100% + 4rem);">
                   <i class="<%= level_icon %> text-white text-lg"></i>
                   <h2 class="text-3xl flex-1 text-left text-white font-display" style="font-weight: 500;">
                     <%= level_name %>
@@ -526,7 +554,7 @@
                 <div class="section-content space-y-3 py-4">
                   <% habits.each do |habit| %>
                     <% habit_dark_color = generate_dark_color(habit.category.color) %>
-                    <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 bg-white rounded-xl p-4" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
+                    <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 bg-white rounded-xl p-4 shadow-medium">
                       <!-- Habit Name and Info -->
                       <div class="flex-1">
                         <div class="font-semibold text-base mb-0.5" style="color: #1D1D1F;">
@@ -568,11 +596,11 @@
           <% end %>
         </div>
       <% else %>
-        <div class="bg-white rounded-xl p-12 text-center" style="box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
+        <div class="bg-white rounded-xl p-12 text-center shadow-deep">
           <i class="fa-solid fa-clipboard-list text-6xl mb-4" style="color: #E5E5E7;"></i>
           <h3 class="text-xl mb-2" style="color: #1D1D1F; font-family: 'Inter', sans-serif; font-weight: 700;">No Habits Yet</h3>
           <p class="mb-4" style="color: #8E8E93; font-weight: 300; font-family: 'Inter', sans-serif;">Start building better habits by creating your first one!</p>
-          <%= link_to "Browse Categories", root_path, class: "inline-block px-6 py-3 rounded-lg text-white transition transform hover:scale-105", style: "background: linear-gradient(135deg, #2C2C2E, #1D1D1F); font-weight: 600; font-family: 'Inter', sans-serif; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);" %>
+          <%= link_to "Browse Categories", root_path, class: "btn-onyx inline-block px-6 py-3 rounded-lg text-white transition transform hover:scale-105", style: "font-weight: 600; font-family: 'Inter', sans-serif;" %>
         </div>
       <% end %>
     </div>

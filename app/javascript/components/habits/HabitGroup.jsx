@@ -61,16 +61,18 @@ const HabitGroup = ({ groupId, title, icon, color, darkColor, habits, viewMode, 
     );
   }
 
-  // Grouped — full-width shiny header + tinted background section
+  // Grouped — full-width bar header + light gradient background
   return (
     <div
       className="-mx-8 px-8 pb-8"
-      style={{ backgroundColor: `color-mix(in srgb, ${color} 18%, white)` }}
+      style={{
+        background: `linear-gradient(180deg, color-mix(in srgb, ${color} 12%, white) 0%, color-mix(in srgb, ${color} 6%, white) 100%)`,
+      }}
     >
-      {/* Header — liquid-surface-subtle shiny overlay, breaks out of padding */}
+      {/* Header — bar-colored onyx treatment */}
       <div
-        className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3 liquid-surface-subtle"
-        style={{ '--surface-color': color }}
+        className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3 bar-colored"
+        style={{ '--bar-color': color }}
       >
         <i className={`fa-solid ${icon} text-white text-lg`}></i>
         <h2 className="text-3xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
@@ -78,10 +80,11 @@ const HabitGroup = ({ groupId, title, icon, color, darkColor, habits, viewMode, 
         </h2>
         <button
           onClick={handleNewHabit}
-          className="w-8 h-8 rounded-md flex items-center justify-center transition btn-glass"
+          className="w-8 h-8 rounded-md flex items-center justify-center transition hover:opacity-80"
+          style={{ backgroundColor: 'rgba(255,255,255,0.95)' }}
           title="New habit"
         >
-          <i className="fa-solid fa-plus text-white"></i>
+          <i className="fa-solid fa-plus" style={{ color: '#333' }}></i>
         </button>
       </div>
 

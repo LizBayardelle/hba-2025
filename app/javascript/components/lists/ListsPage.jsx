@@ -147,7 +147,7 @@ const ListsPage = () => {
   return (
     <>
       {/* Header Section */}
-      <div style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
+      <div className="sticky top-0 z-10 shadow-deep" style={{ background: '#FFFFFF' }}>
         <div className="p-8">
           <div className="flex items-start justify-between mb-6">
             <div className="flex-1">
@@ -161,8 +161,7 @@ const ListsPage = () => {
 
             <button
               onClick={openFormModal}
-              className="w-12 h-12 rounded-xl text-white transition transform hover:scale-105 flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
+              className="w-12 h-12 rounded-xl text-white transition transform hover:scale-105 flex items-center justify-center btn-onyx"
               title="New List"
             >
               <i className="fa-solid fa-plus text-lg"></i>
@@ -170,64 +169,58 @@ const ListsPage = () => {
           </div>
 
           {/* Filters Row */}
-          <div className="flex flex-col md:flex-row md:items-end gap-4 md:gap-6">
-            {/* Group By */}
-            <div>
-              <span className="block text-xs uppercase tracking-wide mb-2" style={{ color: '#8E8E93', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
-                Group By
-              </span>
-              <div className="inline-flex rounded-lg overflow-hidden" style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}>
-                {[
-                  { value: 'none', label: 'None' },
-                  { value: 'type', label: 'Type' },
-                  { value: 'category', label: 'Category' },
-                ].map(({ value, label }) => (
-                  <button
-                    key={value}
-                    onClick={() => setGroupBy(value)}
-                    className="px-4 py-2 text-sm transition"
-                    style={{
-                      background: groupBy === value ? 'linear-gradient(to bottom, #A8A8AD 0%, #8E8E93 100%)' : '#F5F5F7',
-                      color: groupBy === value ? '#FFFFFF' : '#1D1D1F',
-                      fontWeight: 500,
-                      fontFamily: "'Inter', sans-serif",
-                    }}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Search */}
-            <div className="flex-1">
-              <span className="block text-xs uppercase tracking-wide mb-2" style={{ color: '#8E8E93', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
-                Search
-              </span>
-              <div className="relative">
-                <i className="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#8E8E93' }}></i>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search lists..."
-                  className="w-full pl-9 pr-4 py-2 rounded-lg text-sm focus:outline-none"
+          <div className="mb-4">
+            <span className="block text-xs uppercase tracking-wide mb-2" style={{ color: '#8E8E93', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
+              Group By
+            </span>
+            <div className="inline-flex rounded-lg overflow-hidden" style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}>
+              {[
+                { value: 'none', label: 'None' },
+                { value: 'type', label: 'Type' },
+                { value: 'category', label: 'Category' },
+              ].map(({ value, label }) => (
+                <button
+                  key={value}
+                  onClick={() => setGroupBy(value)}
+                  className="px-4 py-2 text-sm transition"
                   style={{
-                    border: '1px solid rgba(199, 199, 204, 0.4)',
+                    background: groupBy === value ? 'linear-gradient(to bottom, #A8A8AD 0%, #8E8E93 100%)' : '#F5F5F7',
+                    color: groupBy === value ? '#FFFFFF' : '#1D1D1F',
+                    fontWeight: 500,
                     fontFamily: "'Inter', sans-serif",
-                    fontWeight: 400,
-                    background: '#F9F9FB',
-                    boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.08)'
                   }}
-                />
-              </div>
+                >
+                  {label}
+                </button>
+              ))}
             </div>
+          </div>
+
+          {/* Search Row */}
+          <div className="relative">
+            <i className="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#8E8E93' }}></i>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search lists..."
+              className="w-full pl-9 pr-4 py-2.5 rounded-lg text-sm focus:outline-none transition-shadow duration-200"
+              style={{
+                border: '1px solid #8E8E93',
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 400,
+                background: '#FFFFFF',
+                boxShadow: 'inset 0 3px 6px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(255, 255, 255, 0.8)',
+                letterSpacing: '0.01em',
+                fontSize: '0.9rem',
+              }}
+            />
           </div>
         </div>
       </div>
 
       {/* Content Area */}
-      <div className="px-8 pb-8">
+      <div className={`px-8 pb-8 ${groupBy !== 'none' ? 'pb-0 pt-0' : 'pt-6'}`}>
         {isLoading && (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#2C2C2E' }}></div>
@@ -235,7 +228,7 @@ const ListsPage = () => {
         )}
 
         {error && (
-          <div className="rounded-xl p-12 text-center" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)' }}>
+          <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
             <i className="fa-solid fa-exclamation-circle text-6xl mb-4" style={{ color: '#DC2626' }}></i>
             <p style={{ color: '#DC2626', fontFamily: "'Inter', sans-serif", fontWeight: 400 }}>Error loading lists: {error.message}</p>
           </div>
@@ -243,16 +236,37 @@ const ListsPage = () => {
 
         {!isLoading && !error && (
           <div>
-            {groupedLists.map((group, index) => (
-              <div key={group.key} className={index !== 0 ? 'mt-8' : (group.hideHeader ? 'mt-6' : '')}>
-                {/* Full-width stripe header */}
-                {!group.hideHeader && (
+            {groupedLists.map((group) => {
+              const groupColor = group.color || '#8E8E93';
+
+              if (group.hideHeader) {
+                return (
+                  <div key={group.key}>
+                    <div className="space-y-4">
+                      {group.lists.map((list) => (
+                        <ListCard
+                          key={list.id}
+                          list={list}
+                          onEdit={openEditModal}
+                          onTogglePin={() => togglePinMutation.mutate(list.id)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <div
+                  key={group.key}
+                  className="-mx-8 px-8 pb-8"
+                  style={{
+                    background: `linear-gradient(180deg, color-mix(in srgb, ${groupColor} 12%, white) 0%, color-mix(in srgb, ${groupColor} 6%, white) 100%)`,
+                  }}
+                >
                   <div
-                    className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3"
-                    style={{
-                      background: `linear-gradient(to bottom, color-mix(in srgb, ${group.color} 85%, white) 0%, ${group.color} 100%)`,
-                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                    }}
+                    className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3 bar-colored"
+                    style={{ '--bar-color': groupColor }}
                   >
                     <i className={`fa-solid ${group.icon} text-white text-lg`}></i>
                     <h3 className="text-3xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
@@ -260,31 +274,32 @@ const ListsPage = () => {
                     </h3>
                     <button
                       onClick={openFormModal}
-                      className="w-8 h-8 rounded-md flex items-center justify-center transition btn-glass"
+                      className="w-8 h-8 rounded-md flex items-center justify-center transition hover:opacity-80"
+                      style={{ backgroundColor: 'rgba(255,255,255,0.95)' }}
                       title="New list"
                     >
-                      <i className="fa-solid fa-plus text-white"></i>
+                      <i className="fa-solid fa-plus" style={{ color: '#333' }}></i>
                     </button>
                   </div>
-                )}
-                {group.lists.length > 0 ? (
-                  <div className="space-y-4">
-                    {group.lists.map((list) => (
-                      <ListCard
-                        key={list.id}
-                        list={list}
-                        onEdit={openEditModal}
-                        onTogglePin={() => togglePinMutation.mutate(list.id)}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <p className="py-3 text-sm" style={{ color: '#8E8E93', fontFamily: "'Inter', sans-serif", fontWeight: 300 }}>
-                    No current lists
-                  </p>
-                )}
-              </div>
-            ))}
+                  {group.lists.length > 0 ? (
+                    <div className="space-y-4">
+                      {group.lists.map((list) => (
+                        <ListCard
+                          key={list.id}
+                          list={list}
+                          onEdit={openEditModal}
+                          onTogglePin={() => togglePinMutation.mutate(list.id)}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="py-3 text-sm" style={{ color: '#8E8E93', fontFamily: "'Inter', sans-serif", fontWeight: 300 }}>
+                      No current lists
+                    </p>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -302,13 +317,9 @@ const ListCard = ({ list, onEdit, onTogglePin }) => {
 
   return (
     <div
-      className="rounded-xl p-5 transition relative"
+      className="rounded-xl p-5 transition relative shadow-medium"
       style={{
         background: '#FFFFFF',
-        border: list.pinned ? '1px solid rgba(45, 45, 47, 0.3)' : '0.5px solid rgba(199, 199, 204, 0.2)',
-        boxShadow: list.pinned
-          ? '0 1px 3px rgba(45, 45, 47, 0.15), 0 0 0 0.5px rgba(45, 45, 47, 0.2)'
-          : '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)',
       }}
     >
       {/* Pin toggle button - top right */}

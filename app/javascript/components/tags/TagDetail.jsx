@@ -33,9 +33,9 @@ const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
 
   if (error) {
     return (
-      <div className="text-center py-12">
-        <i className="fa-solid fa-exclamation-circle text-5xl mb-4 block" style={{ color: '#DC2626' }}></i>
-        <p style={{ color: '#DC2626', fontFamily: "'Inter', sans-serif" }}>Error loading tag: {error.message}</p>
+      <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
+        <i className="fa-solid fa-exclamation-circle text-6xl mb-4" style={{ color: '#DC2626' }}></i>
+        <p style={{ color: '#DC2626', fontFamily: "'Inter', sans-serif", fontWeight: 400 }}>Error loading tag: {error.message}</p>
       </div>
     );
   }
@@ -58,11 +58,13 @@ const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
       <div>
         <div
           className="-mx-6 px-6 pb-6"
-          style={{ backgroundColor: `color-mix(in srgb, ${color} 12%, white)` }}
+          style={{
+            background: `linear-gradient(180deg, color-mix(in srgb, ${color} 12%, white) 0%, color-mix(in srgb, ${color} 6%, white) 100%)`,
+          }}
         >
           <div
-            className="-mx-6 px-6 py-3 mb-4 flex items-center gap-3 liquid-surface-subtle"
-            style={{ '--surface-color': color }}
+            className="-mx-6 px-6 py-3 mb-4 flex items-center gap-3 bar-colored"
+            style={{ '--bar-color': color }}
           >
             <i className={`fa-solid ${icon} text-white text-lg`}></i>
             <h3 className="text-xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
@@ -83,8 +85,8 @@ const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center liquid-surface-subtle"
-            style={{ '--surface-color': '#2C2C2E' }}
+            className="w-10 h-10 rounded-xl flex items-center justify-center"
+            style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)' }}
           >
             <i className="fa-solid fa-tag text-white"></i>
           </div>
@@ -122,8 +124,7 @@ const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
           <button
             key={journal.id}
             onClick={() => openJournalViewModal(journal.id)}
-            className="w-full text-left p-3 bg-white rounded-lg border shadow-sm hover:shadow-md transition"
-            style={{ borderColor: '#E8EEF1' }}
+            className="w-full text-left p-3 bg-white rounded-xl shadow-medium hover:shadow-md transition"
           >
             <div className="flex items-center gap-3">
               <div className="flex-1 min-w-0">
@@ -145,8 +146,7 @@ const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
           <button
             key={habit.id}
             onClick={() => openHabitViewModal(habit.id)}
-            className="w-full text-left p-3 bg-white rounded-lg border shadow-sm hover:shadow-md transition"
-            style={{ borderColor: '#E8EEF1' }}
+            className="w-full text-left p-3 bg-white rounded-xl shadow-medium hover:shadow-md transition"
           >
             <div className="flex items-center gap-3">
               <div
@@ -172,8 +172,7 @@ const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
             <button
               key={doc.id}
               onClick={() => openDocumentViewModal(doc.id)}
-              className="w-full text-left p-3 bg-white rounded-lg border shadow-sm hover:shadow-md transition"
-              style={{ borderColor: '#E8EEF1' }}
+              className="w-full text-left p-3 bg-white rounded-xl shadow-medium hover:shadow-md transition"
             >
               <div className="flex items-center gap-3">
                 <div
@@ -206,8 +205,8 @@ const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
           <button
             key={task.id}
             onClick={() => openTaskViewModal(task.id)}
-            className="w-full text-left p-3 bg-white rounded-lg border shadow-sm hover:shadow-md transition"
-            style={{ borderColor: '#E8EEF1', opacity: task.completed ? 0.6 : 1 }}
+            className="w-full text-left p-3 bg-white rounded-xl shadow-medium hover:shadow-md transition"
+            style={{ opacity: task.completed ? 0.6 : 1 }}
           >
             <div className="flex items-center gap-3">
               <div
@@ -236,7 +235,7 @@ const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
         ))}
 
         {totalItems === 0 && (
-          <div className="text-center py-12">
+          <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
             <i className="fa-solid fa-inbox text-5xl mb-4 block" style={{ color: '#E5E5E7' }}></i>
             <h3 className="text-lg mb-1" style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>
               No Items Yet

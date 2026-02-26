@@ -20,10 +20,9 @@ const QuestionCard = ({ question, index }) => {
 
   return (
     <div
-      className="rounded-xl p-5 transition hover:shadow-md"
+      className="rounded-xl p-5 shadow-medium transition hover:shadow-md"
       style={{
         background: '#FFFFFF',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)',
       }}
     >
       <div className="flex items-start gap-4">

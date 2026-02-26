@@ -91,9 +91,8 @@ const GoalItem = ({ goal, groupBy }) => {
   return (
     <div
       onClick={handleClick}
-      className="bg-white rounded-xl border shadow-md hover:shadow-lg transition-shadow cursor-pointer flex overflow-hidden"
+      className="bg-white rounded-xl transition-shadow cursor-pointer flex overflow-hidden shadow-deep"
       style={{
-        borderColor: '#E8EEF1',
         opacity: goal.completed ? 0.65 : 1,
         minHeight: 140,
       }}

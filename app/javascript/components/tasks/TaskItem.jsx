@@ -111,9 +111,8 @@ const TaskItem = ({ task, groupBy }) => {
 
       <div
         onClick={handleClick}
-        className="bg-white rounded-lg p-4 border shadow-md hover:shadow-lg transition cursor-pointer flex-1"
+        className="bg-white rounded-xl p-4 transition cursor-pointer flex-1 shadow-medium"
         style={{
-          borderColor: task.completed ? '#E8EEF1' : '#E8EEF1',
           opacity: task.completed ? 0.6 : 1,
         }}
       >

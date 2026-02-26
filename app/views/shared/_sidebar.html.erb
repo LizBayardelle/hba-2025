@@ -2,15 +2,15 @@
 <aside
   id="sidebar"
   class="w-64 flex flex-col transition-transform duration-300 ease-in-out fixed left-0 top-0 z-50 -translate-x-full md:translate-x-0 md:relative"
-  style="background: #1D1D1F; height: 100vh; box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4); border-right: 0.5px solid rgba(199, 199, 204, 0.2); font-family: 'Inter', sans-serif;">
+  style="background: #e5e7e9; height: 100vh; box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5); border-right: 0.5px solid rgba(0, 0, 0, 0.1); font-family: 'Inter', sans-serif;">
 
-  <div class="px-5 py-6 text-white flex-1 overflow-y-auto">
+  <div class="px-5 py-6 flex-1 overflow-y-auto">
     <!-- Close button for mobile -->
     <div class="md:hidden flex justify-end mb-4">
       <button
         id="sidebar-close"
-        class="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center transition">
-        <i class="fa-solid fa-xmark text-xl"></i>
+        class="w-8 h-8 rounded-lg hover:bg-black/10 flex items-center justify-center transition">
+        <i class="fa-solid fa-xmark text-xl" style="color: #000000;"></i>
       </button>
     </div>
 
@@ -18,13 +18,13 @@
     <%= link_to root_path, class: "flex items-center gap-3 mb-8 hover:opacity-80 transition-opacity duration-200" do %>
       <%= image_tag "HabitBeaver Logo.png", class: "w-10 h-10", alt: "Habit Beaver Logo" %>
       <div>
-        <h1 class="text-4xl font-display" style="color: #FFFFFF;">Habit Beaver</h1>
+        <h1 class="text-4xl font-display" style="color: #000000;">Habit Beaver</h1>
         <% if user_signed_in? %>
-          <p class="text-xs tabular-nums" id="selected-date" style="color: #8E8E93; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 200; font-variant-numeric: tabular-nums;">
+          <p class="text-xs tabular-nums" id="selected-date" style="color: #000000; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 200; font-variant-numeric: tabular-nums;">
             <%= Time.zone.today.strftime("%b %d").upcase %> <span style="opacity: 0.5;">&middot;</span> <span id="current-time" data-timezone="<%= ActiveSupport::TimeZone::MAPPING[current_user.timezone] %>" data-tz-abbr="<%= Time.zone.now.strftime("%Z") %>"><%= Time.zone.now.strftime("%I:%M %p %Z") %></span>
           </p>
         <% else %>
-          <p class="text-xs" style="color: #8E8E93; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 200;">Build better habits</p>
+          <p class="text-xs" style="color: #000000; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 200;">Build better habits</p>
         <% end %>
       </div>
     <% end %>
@@ -56,62 +56,62 @@
     <div class="mb-4">
       <button
         onclick="if(window.location.pathname === '/notes') { window.dispatchEvent(new Event('open-new-note')); } else { window.location.href = '/notes?new=true'; }"
-        class="flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm hover:bg-white/10 w-full"
-        style="border: 1px dashed rgba(199, 199, 204, 0.3);"
+        class="flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm hover:bg-black/10 w-full"
+        style="border: 1px dashed rgba(0, 0, 0, 0.2);"
         title="Quick note">
         <span class="w-5 text-center relative inline-flex items-center justify-center">
-          <i class="fa-solid fa-note-sticky" style="color: #C7C7CC;"></i>
-          <i class="fa-solid fa-plus absolute" style="color: #C7C7CC; font-size: 0.45rem; top: -1px; right: -3px;"></i>
+          <i class="fa-solid fa-note-sticky" style="color: #000000;"></i>
+          <i class="fa-solid fa-plus absolute" style="color: #000000; font-size: 0.45rem; top: -1px; right: -3px;"></i>
         </span>
-        <span style="font-weight: 200; letter-spacing: 0.03em; color: #C7C7CC; opacity: 0.7;">Quick Note</span>
+        <span style="font-weight: 200; letter-spacing: 0.03em; color: #000000; opacity: 0.7;">Quick Note</span>
       </button>
     </div>
 
     <!-- Navigation Items -->
     <nav class="space-y-0">
-      <%= link_to dashboard_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(dashboard_path) ? "background-color: rgba(255, 255, 255, 0.08);" : "" do %>
-        <i class="fa-solid fa-gauge w-5 text-center" style="color: <%= current_page?(dashboard_path) ? '#FFFFFF' : '#C7C7CC' %>;"></i>
-        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(dashboard_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(dashboard_path) ? '1' : '0.7' %>;">Dashboard</span>
+      <%= link_to dashboard_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(dashboard_path) ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
+        <i class="fa-solid fa-gauge w-5 text-center" style="color: <%= current_page?(dashboard_path) ? '#000000' : '#000000' %>;"></i>
+        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(dashboard_path) ? '#000000' : '#000000' %>; opacity: <%= current_page?(dashboard_path) ? '1' : '0.7' %>;">Dashboard</span>
       <% end %>
-      <%= link_to notes_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(notes_path) ? "background-color: rgba(255, 255, 255, 0.08);" : "" do %>
-        <i class="fa-solid fa-note-sticky w-5 text-center" style="color: <%= current_page?(notes_path) ? '#FFFFFF' : '#C7C7CC' %>;"></i>
-        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(notes_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(notes_path) ? '1' : '0.7' %>;">Notes</span>
+      <%= link_to notes_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(notes_path) ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
+        <i class="fa-solid fa-note-sticky w-5 text-center" style="color: <%= current_page?(notes_path) ? '#000000' : '#000000' %>;"></i>
+        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(notes_path) ? '#000000' : '#000000' %>; opacity: <%= current_page?(notes_path) ? '1' : '0.7' %>;">Notes</span>
       <% end %>
-      <%= link_to journal_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(journal_path) ? "background-color: rgba(255, 255, 255, 0.08);" : "" do %>
-        <i class="fa-solid fa-book w-5 text-center" style="color: <%= current_page?(journal_path) ? '#FFFFFF' : '#C7C7CC' %>;"></i>
-        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(journal_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(journal_path) ? '1' : '0.7' %>;">Journal</span>
+      <%= link_to journal_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(journal_path) ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
+        <i class="fa-solid fa-book w-5 text-center" style="color: <%= current_page?(journal_path) ? '#000000' : '#000000' %>;"></i>
+        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(journal_path) ? '#000000' : '#000000' %>; opacity: <%= current_page?(journal_path) ? '1' : '0.7' %>;">Journal</span>
       <% end %>
       <% habits_url = user_signed_in? && current_user.default_habits_grouping != 'category' ? habits_path(view: current_user.default_habits_grouping) : habits_path %>
-      <%= link_to habits_url, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(habits_path) ? "background-color: rgba(255, 255, 255, 0.08);" : "" do %>
-        <i class="fa-solid fa-chart-line w-5 text-center" style="color: <%= current_page?(habits_path) ? '#FFFFFF' : '#C7C7CC' %>;"></i>
-        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(habits_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(habits_path) ? '1' : '0.7' %>;">Habits</span>
+      <%= link_to habits_url, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(habits_path) ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
+        <i class="fa-solid fa-chart-line w-5 text-center" style="color: <%= current_page?(habits_path) ? '#000000' : '#000000' %>;"></i>
+        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(habits_path) ? '#000000' : '#000000' %>; opacity: <%= current_page?(habits_path) ? '1' : '0.7' %>;">Habits</span>
       <% end %>
       <% tasks_url = user_signed_in? && current_user.default_tasks_grouping != 'status' ? tasks_path(groupBy: current_user.default_tasks_grouping) : tasks_path %>
-      <%= link_to tasks_url, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(tasks_path) ? "background-color: rgba(255, 255, 255, 0.08);" : "" do %>
-        <i class="fa-solid fa-check w-5 text-center" style="color: <%= current_page?(tasks_path) ? '#FFFFFF' : '#C7C7CC' %>;"></i>
-        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(tasks_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(tasks_path) ? '1' : '0.7' %>;">Tasks</span>
+      <%= link_to tasks_url, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(tasks_path) ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
+        <i class="fa-solid fa-check w-5 text-center" style="color: <%= current_page?(tasks_path) ? '#000000' : '#000000' %>;"></i>
+        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(tasks_path) ? '#000000' : '#000000' %>; opacity: <%= current_page?(tasks_path) ? '1' : '0.7' %>;">Tasks</span>
       <% end %>
-      <%= link_to goals_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(goals_path) ? "background-color: rgba(255, 255, 255, 0.08);" : "" do %>
-        <i class="fa-solid fa-bullseye w-5 text-center" style="color: <%= current_page?(goals_path) ? '#FFFFFF' : '#C7C7CC' %>;"></i>
-        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(goals_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(goals_path) ? '1' : '0.7' %>;">Goals</span>
+      <%= link_to goals_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(goals_path) ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
+        <i class="fa-solid fa-bullseye w-5 text-center" style="color: <%= current_page?(goals_path) ? '#000000' : '#000000' %>;"></i>
+        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(goals_path) ? '#000000' : '#000000' %>; opacity: <%= current_page?(goals_path) ? '1' : '0.7' %>;">Goals</span>
       <% end %>
     </nav>
 
     <!-- Attachments Section -->
     <div class="mt-5">
-      <div class="flex items-center justify-between mb-2 pb-1 border-b" style="border-bottom-color: rgba(199, 199, 204, 0.2);">
-        <h3 class="text-sm" style="color: #C7C7CC; letter-spacing: 0.03em; font-weight: 200; opacity: 0.7;">Attachments</h3>
+      <div class="flex items-center justify-between mb-2 pb-1 border-b" style="border-bottom-color: rgba(0, 0, 0, 0.12);">
+        <h3 class="text-sm" style="color: #000000; letter-spacing: 0.03em; font-weight: 200; opacity: 0.7;">Attachments</h3>
       </div>
       <div class="space-y-0">
         <% documents_url = user_signed_in? && current_user.default_documents_grouping != 'type' ? documents_path(groupBy: current_user.default_documents_grouping) : documents_path %>
-        <%= link_to documents_url, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(documents_path) ? "background-color: rgba(255, 255, 255, 0.08);" : "" do %>
-          <i class="fa-solid fa-file-alt w-5 text-center" style="color: <%= current_page?(documents_path) ? '#FFFFFF' : '#C7C7CC' %>;"></i>
-          <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(documents_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(documents_path) ? '1' : '0.7' %>;">Documents</span>
+        <%= link_to documents_url, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(documents_path) ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
+          <i class="fa-solid fa-file-alt w-5 text-center" style="color: <%= current_page?(documents_path) ? '#000000' : '#000000' %>;"></i>
+          <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(documents_path) ? '#000000' : '#000000' %>; opacity: <%= current_page?(documents_path) ? '1' : '0.7' %>;">Documents</span>
         <% end %>
         <% lists_url = user_signed_in? && current_user.default_lists_grouping != 'type' ? lists_path(groupBy: current_user.default_lists_grouping) : lists_path %>
-        <%= link_to lists_url, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(lists_path) ? "background-color: rgba(255, 255, 255, 0.08);" : "" do %>
-          <i class="fa-solid fa-list-check w-5 text-center" style="color: <%= current_page?(lists_path) ? '#FFFFFF' : '#C7C7CC' %>;"></i>
-          <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(lists_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(lists_path) ? '1' : '0.7' %>;">Lists</span>
+        <%= link_to lists_url, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(lists_path) ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
+          <i class="fa-solid fa-list-check w-5 text-center" style="color: <%= current_page?(lists_path) ? '#000000' : '#000000' %>;"></i>
+          <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(lists_path) ? '#000000' : '#000000' %>; opacity: <%= current_page?(lists_path) ? '1' : '0.7' %>;">Lists</span>
         <% end %>
       </div>
     </div>
@@ -154,9 +154,9 @@
         return this.rgbToHex(newRgb.r,newRgb.g,newRgb.b);
       }
     }">
-      <div class="flex items-center justify-between mb-2 pb-1 border-b" style="border-bottom-color: rgba(199, 199, 204, 0.2);">
-        <h3 class="text-sm" style="color: #C7C7CC; letter-spacing: 0.03em; font-weight: 200; opacity: 0.7;">Categories</h3>
-        <button @click="showModal = true" class="w-6 h-6 flex items-center justify-center hover:bg-white/10 transition-colors duration-150" style="color: #C7C7CC; opacity: 0.7;">
+      <div class="flex items-center justify-between mb-2 pb-1 border-b" style="border-bottom-color: rgba(0, 0, 0, 0.12);">
+        <h3 class="text-sm" style="color: #000000; letter-spacing: 0.03em; font-weight: 200; opacity: 0.7;">Categories</h3>
+        <button @click="showModal = true" class="w-6 h-6 flex items-center justify-center hover:bg-black/10 transition-colors duration-150" style="color: #000000; opacity: 0.7;">
           <i class="fa-solid fa-plus text-xs"></i>
         </button>
       </div>
@@ -164,13 +164,13 @@
         <% if user_signed_in? && current_user.categories.active.ordered.any? %>
           <% current_user.categories.active.ordered.each do |category| %>
             <% is_active = @category && @category.id == category.id %>
-            <%= link_to category_path(category), class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: is_active ? "background-color: rgba(255, 255, 255, 0.08);" : "" do %>
+            <%= link_to category_path(category), class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: is_active ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
               <i class="fa-solid <%= category.icon %> w-5 text-center" style="color: <%= category.color %>;"></i>
-              <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= is_active ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= is_active ? '1' : '0.7' %>;"><%= category.name %></span>
+              <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= is_active ? '#000000' : '#000000' %>; opacity: <%= is_active ? '1' : '0.7' %>;"><%= category.name %></span>
             <% end %>
           <% end %>
         <% else %>
-          <p class="text-xs px-4 py-1" style="color: #8E8E93; font-weight: 100;">No categories yet</p>
+          <p class="text-xs px-4 py-1" style="color: #000000; font-weight: 100;">No categories yet</p>
         <% end %>
       </div>
 
@@ -335,44 +335,44 @@
 
     <!-- Organization Section -->
     <div class="mt-5">
-      <div class="flex items-center justify-between mb-2 pb-1 border-b" style="border-bottom-color: rgba(199, 199, 204, 0.2);">
-        <h3 class="text-sm" style="color: #C7C7CC; letter-spacing: 0.03em; font-weight: 200; opacity: 0.7;">Organization</h3>
+      <div class="flex items-center justify-between mb-2 pb-1 border-b" style="border-bottom-color: rgba(0, 0, 0, 0.12);">
+        <h3 class="text-sm" style="color: #000000; letter-spacing: 0.03em; font-weight: 200; opacity: 0.7;">Organization</h3>
       </div>
       <div class="space-y-0">
         <% prep_active = current_page?(daily_prep_path) || current_page?(daily_prep_manage_path) || current_page?(daily_prep_answers_path) %>
-        <%= link_to daily_prep_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: prep_active ? "background-color: rgba(255, 255, 255, 0.08);" : "" do %>
-          <i class="fa-solid fa-clipboard-check w-5 text-center" style="color: <%= prep_active ? '#FFFFFF' : '#C7C7CC' %>;"></i>
-          <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= prep_active ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= prep_active ? '1' : '0.7' %>;">Daily Prep</span>
+        <%= link_to daily_prep_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: prep_active ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
+          <i class="fa-solid fa-clipboard-check w-5 text-center" style="color: <%= prep_active ? '#000000' : '#000000' %>;"></i>
+          <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= prep_active ? '#000000' : '#000000' %>; opacity: <%= prep_active ? '1' : '0.7' %>;">Daily Prep</span>
         <% end %>
-        <%= link_to tags_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(tags_path) ? "background-color: rgba(255, 255, 255, 0.08);" : "" do %>
-          <i class="fa-solid fa-tags w-5 text-center" style="color: <%= current_page?(tags_path) ? '#FFFFFF' : '#C7C7CC' %>;"></i>
-          <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(tags_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(tags_path) ? '1' : '0.7' %>;">Tags</span>
+        <%= link_to tags_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(tags_path) ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
+          <i class="fa-solid fa-tags w-5 text-center" style="color: <%= current_page?(tags_path) ? '#000000' : '#000000' %>;"></i>
+          <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(tags_path) ? '#000000' : '#000000' %>; opacity: <%= current_page?(tags_path) ? '1' : '0.7' %>;">Tags</span>
         <% end %>
       </div>
     </div>
 
     <!-- Admin Section -->
     <div class="mt-5">
-      <div class="flex items-center justify-between mb-2 pb-1 border-b" style="border-bottom-color: rgba(199, 199, 204, 0.2);">
-        <h3 class="text-sm" style="color: #C7C7CC; letter-spacing: 0.03em; font-weight: 200; opacity: 0.7;">Admin</h3>
+      <div class="flex items-center justify-between mb-2 pb-1 border-b" style="border-bottom-color: rgba(0, 0, 0, 0.12);">
+        <h3 class="text-sm" style="color: #000000; letter-spacing: 0.03em; font-weight: 200; opacity: 0.7;">Admin</h3>
       </div>
       <div class="space-y-0">
-        <%= link_to analytics_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(analytics_path) ? "background-color: rgba(255, 255, 255, 0.08);" : "" do %>
-          <i class="fa-solid fa-chart-column w-5 text-center" style="color: <%= current_page?(analytics_path) ? '#FFFFFF' : '#C7C7CC' %>;"></i>
-          <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(analytics_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(analytics_path) ? '1' : '0.7' %>;">Analytics</span>
+        <%= link_to analytics_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(analytics_path) ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
+          <i class="fa-solid fa-chart-column w-5 text-center" style="color: <%= current_page?(analytics_path) ? '#000000' : '#000000' %>;"></i>
+          <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(analytics_path) ? '#000000' : '#000000' %>; opacity: <%= current_page?(analytics_path) ? '1' : '0.7' %>;">Analytics</span>
         <% end %>
-        <%= link_to settings_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(settings_path) ? "background-color: rgba(255, 255, 255, 0.08);" : "" do %>
-          <i class="fa-solid fa-gear w-5 text-center" style="color: <%= current_page?(settings_path) ? '#FFFFFF' : '#C7C7CC' %>;"></i>
-          <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(settings_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(settings_path) ? '1' : '0.7' %>;">Settings</span>
+        <%= link_to settings_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(settings_path) ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
+          <i class="fa-solid fa-gear w-5 text-center" style="color: <%= current_page?(settings_path) ? '#000000' : '#000000' %>;"></i>
+          <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(settings_path) ? '#000000' : '#000000' %>; opacity: <%= current_page?(settings_path) ? '1' : '0.7' %>;">Settings</span>
         <% end %>
         <% if user_signed_in? %>
-          <%= link_to edit_user_registration_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(edit_user_registration_path) ? "background-color: rgba(255, 255, 255, 0.08);" : "" do %>
-            <i class="fa-solid fa-user w-5 text-center" style="color: <%= current_page?(edit_user_registration_path) ? '#FFFFFF' : '#C7C7CC' %>;"></i>
-            <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(edit_user_registration_path) ? '#FFFFFF' : '#C7C7CC' %>; opacity: <%= current_page?(edit_user_registration_path) ? '1' : '0.7' %>;">My Account</span>
+          <%= link_to edit_user_registration_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(edit_user_registration_path) ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
+            <i class="fa-solid fa-user w-5 text-center" style="color: <%= current_page?(edit_user_registration_path) ? '#000000' : '#000000' %>;"></i>
+            <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(edit_user_registration_path) ? '#000000' : '#000000' %>; opacity: <%= current_page?(edit_user_registration_path) ? '1' : '0.7' %>;">My Account</span>
           <% end %>
           <%= button_to destroy_user_session_path, method: :delete, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm w-full text-left", style: "" do %>
-            <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center" style="color: #C7C7CC;"></i>
-            <span style="font-weight: 200; letter-spacing: 0.03em; color: #C7C7CC; opacity: 0.7;">Sign Out</span>
+            <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center" style="color: #000000;"></i>
+            <span style="font-weight: 200; letter-spacing: 0.03em; color: #000000; opacity: 0.7;">Sign Out</span>
           <% end %>
         <% end %>
       </div>
@@ -381,15 +381,15 @@
 
   <% unless user_signed_in? %>
     <!-- Sign In/Sign Up for logged out users -->
-    <div class="p-4 border-t text-white" style="border-color: rgba(199, 199, 204, 0.2);">
+    <div class="p-4 border-t" style="border-color: rgba(0, 0, 0, 0.12);">
       <div class="space-y-1">
-        <%= link_to new_user_session_path, class: "flex items-center gap-3 pl-4 pr-0 py-1.5 rounded-lg hover:bg-white/10 transition text-sm" do %>
-          <i class="fa-solid fa-arrow-right-to-bracket w-5 text-center" style="color: #C7C7CC;"></i>
-          <span style="font-weight: 200; letter-spacing: 0.03em; color: #C7C7CC; opacity: 0.7;">Sign In</span>
+        <%= link_to new_user_session_path, class: "flex items-center gap-3 pl-4 pr-0 py-1.5 rounded-lg hover:bg-black/10 transition text-sm" do %>
+          <i class="fa-solid fa-arrow-right-to-bracket w-5 text-center" style="color: #000000;"></i>
+          <span style="font-weight: 200; letter-spacing: 0.03em; color: #000000; opacity: 0.7;">Sign In</span>
         <% end %>
-        <%= link_to new_user_registration_path, class: "flex items-center gap-3 pl-4 pr-0 py-1.5 rounded-lg hover:bg-white/10 transition text-sm" do %>
-          <i class="fa-solid fa-user-plus w-5 text-center" style="color: #C7C7CC;"></i>
-          <span style="font-weight: 200; letter-spacing: 0.03em; color: #C7C7CC; opacity: 0.7;">Create Account</span>
+        <%= link_to new_user_registration_path, class: "flex items-center gap-3 pl-4 pr-0 py-1.5 rounded-lg hover:bg-black/10 transition text-sm" do %>
+          <i class="fa-solid fa-user-plus w-5 text-center" style="color: #000000;"></i>
+          <span style="font-weight: 200; letter-spacing: 0.03em; color: #000000; opacity: 0.7;">Create Account</span>
         <% end %>
       </div>
     </div>

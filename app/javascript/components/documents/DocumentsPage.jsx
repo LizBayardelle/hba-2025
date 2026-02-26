@@ -257,13 +257,9 @@ const DocumentsPage = ({ habits }) => {
       <div key={content.id} className="flex items-start gap-3 min-w-0">
         <div
           onClick={() => openViewModal(content.id)}
-          className="rounded-lg p-4 transition cursor-pointer flex-1 min-w-0 overflow-hidden relative"
+          className="rounded-xl p-4 transition cursor-pointer flex-1 min-w-0 overflow-hidden relative shadow-medium"
           style={{
             background: '#FFFFFF',
-            border: content.pinned ? '1px solid rgba(45, 45, 47, 0.3)' : '0.5px solid rgba(199, 199, 204, 0.3)',
-            boxShadow: content.pinned
-              ? '0 1px 3px rgba(45, 45, 47, 0.15), 0 0 0 0.5px rgba(45, 45, 47, 0.2)'
-              : '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)'
           }}
         >
           {/* Top-right icons */}
@@ -376,28 +372,38 @@ const DocumentsPage = ({ habits }) => {
     );
   };
 
-  // Render a group with colored stripe header
+  // Render a group with bar-colored header
   const renderGroup = (group, index) => {
     const groupColor = group.color || '#8E8E93';
     const groupIcon = group.icon || 'fa-file';
 
-    return (
-      <div key={group.id || group.title} className={`mb-6 ${index !== 0 && !group.hideHeader ? 'mt-8' : ''} ${group.hideHeader ? 'mt-4' : ''}`}>
-        {/* Full-width colored stripe header */}
-        {!group.hideHeader && (
-          <div
-            className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3"
-            style={{
-              background: `linear-gradient(to bottom, color-mix(in srgb, ${groupColor} 85%, white) 0%, ${groupColor} 100%)`,
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
-            }}
-          >
-            <i className={`${groupIcon.includes('fa-brands') ? groupIcon : `fa-solid ${groupIcon}`} text-white text-lg`}></i>
-            <h3 className="text-3xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
-              {group.title} ({group.documents.length})
-            </h3>
+    if (group.hideHeader) {
+      return (
+        <div key={group.id || group.title} className="pt-6">
+          <div className="space-y-3">
+            {group.documents.map(doc => renderDocumentCard(doc))}
           </div>
-        )}
+        </div>
+      );
+    }
+
+    return (
+      <div
+        key={group.id || group.title}
+        className="-mx-8 px-8 pb-8"
+        style={{
+          background: `linear-gradient(180deg, color-mix(in srgb, ${groupColor} 12%, white) 0%, color-mix(in srgb, ${groupColor} 6%, white) 100%)`,
+        }}
+      >
+        <div
+          className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3 bar-colored"
+          style={{ '--bar-color': groupColor }}
+        >
+          <i className={`${groupIcon.includes('fa-brands') ? groupIcon : `fa-solid ${groupIcon}`} text-white text-lg`}></i>
+          <h3 className="text-3xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
+            {group.title} ({group.documents.length})
+          </h3>
+        </div>
         {group.documents.length > 0 ? (
           <div className="space-y-3">
             {group.documents.map(doc => renderDocumentCard(doc))}
@@ -416,7 +422,7 @@ const DocumentsPage = ({ habits }) => {
   return (
     <>
       {/* Header Section */}
-      <div style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
+      <div className="sticky top-0 z-10 shadow-deep" style={{ background: '#FFFFFF' }}>
         <div className="p-8">
           <div className="flex items-start justify-between mb-6">
             <div className="flex-1">
@@ -427,8 +433,7 @@ const DocumentsPage = ({ habits }) => {
 
             <button
               onClick={openNewModal}
-              className="w-12 h-12 rounded-xl text-white transition transform hover:scale-105 flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
+              className="w-12 h-12 rounded-xl text-white transition transform hover:scale-105 flex items-center justify-center btn-onyx"
               title="New Document"
             >
               <i className="fa-solid fa-plus text-lg"></i>
@@ -436,7 +441,7 @@ const DocumentsPage = ({ habits }) => {
           </div>
 
           {/* Filters Row */}
-          <div className="flex flex-col md:flex-row md:items-end gap-4 md:gap-6">
+          <div className="flex flex-col md:flex-row md:items-end gap-4 md:gap-6 mb-4">
             {/* Group By Filter */}
             <div>
               <span className="block text-xs uppercase tracking-wide mb-2" style={{ color: '#8E8E93', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
@@ -465,36 +470,33 @@ const DocumentsPage = ({ habits }) => {
                 ))}
               </div>
             </div>
+          </div>
 
-            {/* Search */}
-            <div className="flex-1">
-              <span className="block text-xs uppercase tracking-wide mb-2" style={{ color: '#8E8E93', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
-                Search
-              </span>
-              <div className="relative">
-                <i className="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#8E8E93' }}></i>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search title, tags, or content..."
-                  className="w-full pl-9 pr-4 py-2 rounded-lg text-sm focus:outline-none"
-                  style={{
-                    border: '1px solid rgba(199, 199, 204, 0.4)',
-                    fontFamily: "'Inter', sans-serif",
-                    fontWeight: 400,
-                    background: '#F9F9FB',
-                    boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.08)'
-                  }}
-                />
-              </div>
-            </div>
+          {/* Search Row */}
+          <div className="relative">
+            <i className="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#8E8E93' }}></i>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search title, tags, or content..."
+              className="w-full pl-9 pr-4 py-2.5 rounded-lg text-sm focus:outline-none transition-shadow duration-200"
+              style={{
+                border: '1px solid #8E8E93',
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 400,
+                background: '#FFFFFF',
+                boxShadow: 'inset 0 3px 6px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(255, 255, 255, 0.8)',
+                letterSpacing: '0.01em',
+                fontSize: '0.9rem',
+              }}
+            />
           </div>
         </div>
       </div>
 
       {/* Content Area */}
-      <div className="px-8 pb-8">
+      <div className={`px-8 pb-8 ${groupBy !== 'none' ? 'pb-0 pt-0' : 'pt-6'}`}>
         {isLoading && (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#2C2C2E' }}></div>
@@ -502,14 +504,14 @@ const DocumentsPage = ({ habits }) => {
         )}
 
         {error && (
-          <div className="rounded-xl p-12 text-center mt-6" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)' }}>
+          <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
             <i className="fa-solid fa-exclamation-circle text-6xl mb-4" style={{ color: '#DC2626' }}></i>
             <p style={{ color: '#DC2626', fontFamily: "'Inter', sans-serif", fontWeight: 400 }}>Error loading documents: {error.message}</p>
           </div>
         )}
 
         {!isLoading && !error && documents.length === 0 && (
-          <div className="rounded-xl p-12 text-center mt-6" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)' }}>
+          <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
             <i className="fa-solid fa-file-circle-plus text-6xl mb-4" style={{ color: '#E5E5E7' }}></i>
             <h3 className="text-xl mb-2" style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif", fontWeight: 700 }}>
               No Documents Yet
@@ -519,8 +521,8 @@ const DocumentsPage = ({ habits }) => {
             </p>
             <button
               onClick={openNewModal}
-              className="inline-block px-6 py-3 rounded-lg text-white transition transform hover:scale-105"
-              style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', fontWeight: 600, fontFamily: "'Inter', sans-serif", boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
+              className="inline-block px-6 py-3 rounded-lg text-white transition transform hover:scale-105 btn-onyx"
+              style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
             >
               <i className="fa-solid fa-plus mr-2"></i>
               Add First Document

@@ -170,11 +170,13 @@ const GoalsPage = () => {
         {!group.hideHeader ? (
           <div
             className="-mx-8 px-8 pb-8"
-            style={{ backgroundColor: `color-mix(in srgb, ${groupColor} 18%, white)` }}
+            style={{
+              background: `linear-gradient(180deg, color-mix(in srgb, ${groupColor} 12%, white) 0%, color-mix(in srgb, ${groupColor} 6%, white) 100%)`,
+            }}
           >
             <div
-              className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3 liquid-surface-subtle"
-              style={{ '--surface-color': groupColor }}
+              className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3 bar-colored"
+              style={{ '--bar-color': groupColor }}
             >
               <i className={`fa-solid ${groupIcon} text-white text-lg`}></i>
               <h3 className="text-3xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
@@ -182,10 +184,11 @@ const GoalsPage = () => {
               </h3>
               <button
                 onClick={() => handleNewGoalForGroup(group)}
-                className="w-8 h-8 rounded-md flex items-center justify-center transition btn-glass"
+                className="w-8 h-8 rounded-md flex items-center justify-center transition hover:opacity-80"
+                style={{ backgroundColor: 'rgba(255,255,255,0.95)' }}
                 title="New goal"
               >
-                <i className="fa-solid fa-plus text-white"></i>
+                <i className="fa-solid fa-plus" style={{ color: '#333' }}></i>
               </button>
             </div>
             <div className="space-y-2">
@@ -195,7 +198,7 @@ const GoalsPage = () => {
             </div>
           </div>
         ) : (
-          <div className="mt-6">
+          <div className="pt-6">
             <div className="space-y-2">
               {group.goals.map(goal => (
                 <GoalItem key={goal.id} goal={goal} groupBy={groupBy} />
@@ -210,7 +213,7 @@ const GoalsPage = () => {
   return (
     <>
       {/* Header Section */}
-      <div style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
+      <div className="sticky top-0 z-10 shadow-deep" style={{ background: '#FFFFFF' }}>
         <div className="p-8">
           <div className="flex items-start justify-between mb-6">
             <div className="flex-1">
@@ -221,8 +224,7 @@ const GoalsPage = () => {
 
             <button
               onClick={() => openNewModal({})}
-              className="w-12 h-12 rounded-xl text-white transition transform hover:scale-105 flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
+              className="w-12 h-12 rounded-xl text-white transition transform hover:scale-105 flex items-center justify-center btn-onyx"
               title="New Goal"
             >
               <i className="fa-solid fa-plus text-lg"></i>
@@ -283,13 +285,15 @@ const GoalsPage = () => {
               placeholder="Search goals..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 rounded-lg text-sm focus:outline-none"
+              className="w-full pl-9 pr-4 py-2.5 rounded-lg text-sm focus:outline-none transition-shadow duration-200"
               style={{
-                border: '1px solid rgba(199, 199, 204, 0.4)',
+                border: '1px solid #8E8E93',
                 fontFamily: "'Inter', sans-serif",
                 fontWeight: 400,
-                background: '#F9F9FB',
-                boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.08)'
+                background: '#FFFFFF',
+                boxShadow: 'inset 0 3px 6px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(255, 255, 255, 0.8)',
+                letterSpacing: '0.01em',
+                fontSize: '0.9rem',
               }}
             />
           </div>
@@ -297,7 +301,7 @@ const GoalsPage = () => {
       </div>
 
       {/* Goals List */}
-      <div className="px-8 pb-8">
+      <div className={`px-8 pb-8 ${groupBy !== 'none' ? 'pb-0 pt-0' : 'pt-6'}`}>
         {isLoading && (
           <div className="text-center py-12">
             <i className="fa-solid fa-spinner fa-spin text-4xl" style={{ color: '#2C2C2E' }}></i>
@@ -305,13 +309,14 @@ const GoalsPage = () => {
         )}
 
         {error && (
-          <div className="text-center py-12">
+          <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
+            <i className="fa-solid fa-exclamation-circle text-6xl mb-4" style={{ color: '#DC2626' }}></i>
             <p style={{ color: '#DC2626', fontFamily: "'Inter', sans-serif", fontWeight: 400 }}>Error loading goals: {error.message}</p>
           </div>
         )}
 
         {!isLoading && !error && goals.length === 0 && (
-          <div className="text-center py-12">
+          <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
             <i className="fa-solid fa-bullseye text-6xl mb-4" style={{ color: '#E5E5E7' }}></i>
             <p className="text-lg mb-2" style={{ color: '#1D1D1F', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
               No goals yet

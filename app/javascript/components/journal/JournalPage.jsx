@@ -59,17 +59,11 @@ const JournalPage = () => {
   const renderGroup = (title, journals, icon, isFirst = false) => {
     if (journals.length === 0) return null;
 
-    const metallicGrey = '#8E8E93';
-
     return (
       <div key={title} className={`mb-6 ${!isFirst ? 'mt-8' : ''}`}>
         {/* Full-width colored stripe header */}
         <div
-          className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3"
-          style={{
-            background: `linear-gradient(to bottom, color-mix(in srgb, ${metallicGrey} 85%, white) 0%, ${metallicGrey} 100%)`,
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
-          }}
+          className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3 bar-default"
         >
           <i className={`fa-solid ${icon} text-white text-lg`}></i>
           <h3 className="text-3xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
@@ -77,10 +71,11 @@ const JournalPage = () => {
           </h3>
           <button
             onClick={openNewModal}
-            className="w-8 h-8 rounded-md flex items-center justify-center transition btn-glass"
+            className="w-8 h-8 rounded-md flex items-center justify-center transition hover:opacity-80"
+            style={{ background: 'rgba(255,255,255,0.95)' }}
             title="New entry"
           >
-            <i className="fa-solid fa-plus text-white"></i>
+            <i className="fa-solid fa-plus" style={{ color: '#333' }}></i>
           </button>
         </div>
         <div className="space-y-4">
@@ -95,7 +90,7 @@ const JournalPage = () => {
   return (
     <>
       {/* Header Section */}
-      <div style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
+      <div className="shadow-deep" style={{ background: '#FFFFFF' }}>
         <div className="p-8">
           <div className="flex items-start justify-between mb-6">
             <div className="flex-1">
@@ -106,11 +101,10 @@ const JournalPage = () => {
 
             <button
               onClick={openNewModal}
-              className="w-12 h-12 rounded-xl text-white transition transform hover:scale-105 flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
+              className="w-12 h-12 rounded-xl text-white transition transform hover:scale-105 flex items-center justify-center btn-onyx"
               title="New Entry"
             >
-              <i className="fa-solid fa-plus text-lg"></i>
+              <i className="fa-solid fa-plus text-lg" style={{ position: 'relative', zIndex: 2 }}></i>
             </button>
           </div>
 
@@ -122,13 +116,14 @@ const JournalPage = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search journal entries..."
-              className="w-full pl-9 pr-4 py-2 rounded-lg text-sm focus:outline-none"
+              className="w-full pl-9 pr-4 py-2.5 rounded-lg text-sm focus:outline-none transition-shadow duration-200"
               style={{
-                border: '1px solid rgba(199, 199, 204, 0.4)',
+                border: '1px solid #8E8E93',
                 fontFamily: "'Inter', sans-serif",
                 fontWeight: 400,
-                background: '#F9F9FB',
-                boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.08)'
+                background: '#FFFFFF',
+                boxShadow: 'inset 0 3px 6px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(255, 255, 255, 0.8)',
+                letterSpacing: '0.01em'
               }}
             />
           </div>
@@ -147,7 +142,7 @@ const JournalPage = () => {
         )}
 
         {error && (
-          <div className="rounded-xl p-12 text-center" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)' }}>
+          <div className="rounded-xl p-12 text-center" style={{ background: '#FFFFFF', boxShadow: '4px 0 24px rgba(0, 0, 0, 0.5)' }}>
             <i
               className="fa-solid fa-exclamation-circle text-6xl mb-4"
               style={{ color: '#DC2626' }}
@@ -157,7 +152,7 @@ const JournalPage = () => {
         )}
 
         {!isLoading && !error && journals.length === 0 && (
-          <div className="rounded-xl p-12 text-center mt-8" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)' }}>
+          <div className="rounded-xl p-12 text-center mt-8" style={{ background: '#FFFFFF', boxShadow: '4px 0 24px rgba(0, 0, 0, 0.5)' }}>
             <i
               className="fa-solid fa-book-open text-6xl mb-4"
               style={{ color: '#E5E5E7' }}

@@ -121,11 +121,9 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, viewMode, useHabit
   return (
     <div className="flex items-start gap-3">
       <div
-        className="rounded-lg p-4 border hover:shadow-lg transition flex-1"
+        className="rounded-xl p-4 transition flex-1 shadow-medium"
         style={{
           backgroundColor: isOptional ? '#F0F0F2' : (!isDueToday ? '#FCFCFC' : 'white'),
-          borderColor: isOptional ? '#E0E0E2' : '#E8EEF1',
-          boxShadow: isOptional || !isDueToday ? '0 1px 2px rgba(0, 0, 0, 0.05)' : '0 1px 3px rgba(0, 0, 0, 0.1)',
           opacity: isDueToday ? 1 : 0.6,
         }}
       >

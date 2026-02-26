@@ -44,7 +44,7 @@ const JournalCard = ({ journal }) => {
     <div className="flex items-center gap-3">
       <div
         onClick={() => openViewModal(journal.id)}
-        className="bg-white rounded-lg p-4 border shadow-md hover:shadow-lg transition cursor-pointer flex-1"
+        className="bg-white rounded-lg p-4 border shadow-deep transition cursor-pointer flex-1"
         style={{ borderColor: '#E8EEF1' }}
       >
         <div className="flex items-center justify-between">

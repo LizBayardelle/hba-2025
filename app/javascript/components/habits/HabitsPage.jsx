@@ -178,7 +178,7 @@ const HabitsPage = () => {
   return (
     <>
       {/* Header Section */}
-      <div style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
+      <div className="sticky top-0 z-10 shadow-deep" style={{ background: '#FFFFFF' }}>
         <div className="p-8">
           <div className="flex items-start justify-between mb-6">
             <div className="flex-1">
@@ -189,8 +189,7 @@ const HabitsPage = () => {
 
             <button
               onClick={() => openNewModal({})}
-              className="w-12 h-12 rounded-xl text-white transition transform hover:scale-105 flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
+              className="w-12 h-12 rounded-xl text-white transition transform hover:scale-105 flex items-center justify-center btn-onyx"
               title="New Habit"
             >
               <i className="fa-solid fa-plus text-lg"></i>
@@ -268,13 +267,15 @@ const HabitsPage = () => {
               placeholder="Search habits..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 rounded-lg text-sm focus:outline-none"
+              className="w-full pl-9 pr-4 py-2.5 rounded-lg text-sm focus:outline-none transition-shadow duration-200"
               style={{
-                border: '1px solid rgba(199, 199, 204, 0.4)',
+                border: '1px solid #8E8E93',
                 fontFamily: "'Inter', sans-serif",
                 fontWeight: 400,
-                background: '#F9F9FB',
-                boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.08)'
+                background: '#FFFFFF',
+                boxShadow: 'inset 0 3px 6px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(255, 255, 255, 0.8)',
+                letterSpacing: '0.01em',
+                fontSize: '0.9rem',
               }}
             />
           </div>
@@ -282,7 +283,7 @@ const HabitsPage = () => {
       </div>
 
       {/* Content Area */}
-      <div className="p-8 pt-6">
+      <div className={`p-8 pt-6 ${viewMode !== 'none' ? 'pb-0' : ''}`}>
         {/* Loading State */}
         {isLoading && (
           <div className="flex items-center justify-center py-12">
@@ -295,7 +296,7 @@ const HabitsPage = () => {
 
         {/* Error State */}
         {error && (
-          <div className="rounded-xl p-12 text-center" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)' }}>
+          <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
             <i className="fa-solid fa-exclamation-circle text-6xl mb-4" style={{ color: '#DC2626' }}></i>
             <p style={{ color: '#DC2626', fontFamily: "'Inter', sans-serif", fontWeight: 400 }}>Error loading habits: {error.message}</p>
           </div>
@@ -303,7 +304,7 @@ const HabitsPage = () => {
 
         {/* Empty State */}
         {!isLoading && !error && (!habitsData || habitsData.habits.length === 0) && (
-          <div className="rounded-xl p-12 text-center" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)' }}>
+          <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
             <i className="fa-solid fa-clipboard-list text-6xl mb-4" style={{ color: '#E5E5E7' }}></i>
             <h3 className="text-xl mb-2" style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif", fontWeight: 700 }}>
               No Habits Yet
@@ -313,8 +314,8 @@ const HabitsPage = () => {
             </p>
             <a
               href="/"
-              className="inline-block px-6 py-3 rounded-lg text-white transition"
-              style={{ background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)', fontWeight: 600, fontFamily: "'Inter', sans-serif", boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)' }}
+              className="inline-block px-6 py-3 rounded-lg text-white transition btn-onyx"
+              style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
             >
               Browse Categories
             </a>

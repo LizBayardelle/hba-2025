@@ -76,7 +76,7 @@ const TagsPage = () => {
   return (
     <>
       {/* Header */}
-      <div style={{ background: '#FFFFFF', borderBottom: '1px solid rgba(199, 199, 204, 0.3)' }}>
+      <div className="sticky top-0 z-10 shadow-deep" style={{ background: '#FFFFFF' }}>
         <div className="px-8 pt-8 pb-5">
           <div className="flex items-start justify-between mb-4">
             <h1 className="text-5xl font-display" style={{ color: '#1D1D1F' }}>Tags</h1>
@@ -92,18 +92,24 @@ const TagsPage = () => {
 
           {/* Search */}
           {tags.length > 0 && (
-            <div className="relative max-w-sm">
+            <div className="relative">
+              <i className="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#8E8E93' }}></i>
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search tags..."
-                className="form-input pr-10"
+                className="w-full pl-9 pr-4 py-2.5 rounded-lg text-sm focus:outline-none transition-shadow duration-200"
+                style={{
+                  border: '1px solid #8E8E93',
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: 400,
+                  background: '#FFFFFF',
+                  boxShadow: 'inset 0 3px 6px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(255, 255, 255, 0.8)',
+                  letterSpacing: '0.01em',
+                  fontSize: '0.9rem',
+                }}
               />
-              <i
-                className="fa-solid fa-magnifying-glass absolute right-3.5 top-1/2 -translate-y-1/2 text-sm"
-                style={{ color: '#8E8E93' }}
-              ></i>
             </div>
           )}
         </div>
@@ -117,9 +123,9 @@ const TagsPage = () => {
                 <button
                   key={tag.id}
                   onClick={() => setSelectedTagId(tag.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-all ${isSelected ? 'liquid-surface-subtle' : 'hover:bg-gray-100'}`}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-all ${isSelected ? '' : 'hover:bg-gray-100'}`}
                   style={isSelected
-                    ? { '--surface-color': '#2C2C2E' }
+                    ? { background: 'linear-gradient(135deg, #2C2C2E, #1D1D1F)' }
                     : { backgroundColor: '#F5F5F7' }
                   }
                 >
@@ -169,16 +175,16 @@ const TagsPage = () => {
         )}
 
         {error && (
-          <div className="text-center py-12">
-            <i className="fa-solid fa-exclamation-circle text-5xl mb-4 block" style={{ color: '#DC2626' }}></i>
-            <p style={{ color: '#DC2626', fontFamily: "'Inter', sans-serif" }}>
+          <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
+            <i className="fa-solid fa-exclamation-circle text-6xl mb-4" style={{ color: '#DC2626' }}></i>
+            <p style={{ color: '#DC2626', fontFamily: "'Inter', sans-serif", fontWeight: 400 }}>
               Error loading tags: {error.message}
             </p>
           </div>
         )}
 
         {!isLoading && !error && tags.length === 0 && (
-          <div className="text-center py-16">
+          <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
             <i className="fa-solid fa-tags text-6xl mb-4 block" style={{ color: '#E5E5E7' }}></i>
             <h3 className="text-xl mb-2" style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif", fontWeight: 700 }}>
               No Tags Yet
@@ -199,7 +205,7 @@ const TagsPage = () => {
         )}
 
         {!isLoading && !error && tags.length > 0 && !selectedTagId && (
-          <div className="text-center py-16">
+          <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
             <i className="fa-solid fa-hand-pointer text-5xl mb-4 block" style={{ color: '#E5E5E7' }}></i>
             <h3 className="text-lg mb-1" style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>
               Select a Tag

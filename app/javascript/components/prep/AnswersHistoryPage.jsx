@@ -113,7 +113,7 @@ const AnswersHistoryPage = () => {
   return (
     <>
       {/* Header */}
-      <div style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
+      <div className="sticky top-0 z-10 shadow-deep" style={{ background: '#FFFFFF' }}>
         <div className="p-8">
           <div className="flex items-start justify-between mb-6">
             <div className="flex items-center gap-3">
@@ -128,7 +128,7 @@ const AnswersHistoryPage = () => {
                 <h1 className="text-5xl font-display" style={{ color: '#1D1D1F' }}>
                   Answer History
                 </h1>
-                <p className="text-sm mt-1" style={{ color: '#8E8E93', fontWeight: 300 }}>
+                <p className="text-sm mt-1" style={{ color: '#8E8E93', fontFamily: "'Inter', sans-serif", fontWeight: 300 }}>
                   View your past responses
                 </p>
               </div>
@@ -176,8 +176,9 @@ const AnswersHistoryPage = () => {
                   onClick={() => setSortOrder('newest')}
                   className="px-4 py-2.5 text-sm font-medium transition"
                   style={{
-                    background: sortOrder === 'newest' ? '#1D1D1F' : '#F9F9FB',
+                    background: sortOrder === 'newest' ? 'linear-gradient(to bottom, #A8A8AD 0%, #8E8E93 100%)' : '#F5F5F7',
                     color: sortOrder === 'newest' ? '#FFFFFF' : '#1D1D1F',
+                    fontFamily: "'Inter', sans-serif",
                   }}
                 >
                   Newest First
@@ -186,8 +187,9 @@ const AnswersHistoryPage = () => {
                   onClick={() => setSortOrder('oldest')}
                   className="px-4 py-2.5 text-sm font-medium transition"
                   style={{
-                    background: sortOrder === 'oldest' ? '#1D1D1F' : '#F9F9FB',
+                    background: sortOrder === 'oldest' ? 'linear-gradient(to bottom, #A8A8AD 0%, #8E8E93 100%)' : '#F5F5F7',
                     color: sortOrder === 'oldest' ? '#FFFFFF' : '#1D1D1F',
+                    fontFamily: "'Inter', sans-serif",
                   }}
                 >
                   Oldest First
@@ -210,16 +212,16 @@ const AnswersHistoryPage = () => {
         )}
 
         {error && (
-          <div className="rounded-xl p-12 text-center" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
+          <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
             <i className="fa-solid fa-exclamation-circle text-6xl mb-4" style={{ color: '#DC2626' }}></i>
-            <p style={{ color: '#DC2626' }}>Error loading answers: {error.message}</p>
+            <p style={{ color: '#DC2626', fontFamily: "'Inter', sans-serif", fontWeight: 400 }}>Error loading answers: {error.message}</p>
           </div>
         )}
 
         {!isLoading && !error && responses.length === 0 && (
-          <div className="rounded-xl p-12 text-center" style={{ background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)' }}>
+          <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
             <i className="fa-solid fa-inbox text-6xl mb-4" style={{ color: '#E5E5E7' }}></i>
-            <p style={{ color: '#8E8E93', fontWeight: 300 }}>
+            <p style={{ color: '#8E8E93', fontFamily: "'Inter', sans-serif", fontWeight: 300 }}>
               {selectedQuestion === 'all'
                 ? 'No answers recorded yet. Complete your daily prep to see history here!'
                 : 'No answers for this question yet.'}
@@ -233,11 +235,7 @@ const AnswersHistoryPage = () => {
               <div key={date}>
                 {/* Date Header */}
                 <div
-                  className="-mx-8 px-8 py-3 mb-4 flex items-center gap-3"
-                  style={{
-                    background: 'linear-gradient(to bottom, #9E9E9E 0%, #8E8E93 100%)',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
-                  }}
+                  className="-mx-8 px-8 py-3 mb-4 flex items-center gap-3 bar-default"
                 >
                   <i className="fa-solid fa-calendar-day text-white"></i>
                   <h3 className="text-xl text-white font-display" style={{ fontWeight: 500 }}>
@@ -256,10 +254,9 @@ const AnswersHistoryPage = () => {
                   {dateResponses.map((response) => (
                     <div
                       key={response.id}
-                      className="rounded-xl p-5"
+                      className="rounded-xl p-5 shadow-medium"
                       style={{
                         background: '#FFFFFF',
-                        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2)'
                       }}
                     >
                       <h4 className="text-sm font-medium mb-3" style={{ color: '#8E8E93' }}>
