@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import SlideOverPanel from '../shared/SlideOverPanel';
+import useNoteTakingMode from '../../hooks/useNoteTakingMode';
 import { notesApi } from '../../utils/api';
 import useNotesStore from '../../stores/notesStore';
 
@@ -25,6 +26,7 @@ const NoteFormModal = ({ allTags, categories }) => {
   const { formModal, closeFormModal } = useNotesStore();
   const { isOpen, mode, noteId, defaultCategoryId } = formModal;
   const queryClient = useQueryClient();
+  const { isNoteTakingMode, toggleNoteTakingMode, exitNoteTakingMode, viewportHeight } = useNoteTakingMode();
 
   const [formData, setFormData] = useState({
     title: '',
@@ -81,16 +83,17 @@ const NoteFormModal = ({ allTags, categories }) => {
       dataLoadedRef.current = false;
       closeAfterSaveRef.current = false;
       setSaveStatus(null);
+      exitNoteTakingMode();
     }
   }, [isOpen]);
 
-  // Auto-expand textarea
+  // Auto-expand textarea (skip in note-taking mode — CSS handles sizing)
   useEffect(() => {
-    if (textareaRef.current) {
+    if (textareaRef.current && !isNoteTakingMode) {
       textareaRef.current.style.height = 'auto';
       textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
     }
-  }, [formData.body]);
+  }, [formData.body, isNoteTakingMode]);
 
   // Cleanup timeouts on unmount
   useEffect(() => {
@@ -303,9 +306,22 @@ const NoteFormModal = ({ allTags, categories }) => {
     );
   };
 
+  // Toggle button for note-taking mode
+  const noteTakingToggle = (
+    <button
+      type="button"
+      onClick={toggleNoteTakingMode}
+      className="w-8 h-8 rounded-lg transition hover:bg-gray-100 flex items-center justify-center"
+      title={isNoteTakingMode ? 'Exit writing mode' : 'Writing mode'}
+    >
+      <i className={`fa-solid ${isNoteTakingMode ? 'fa-compress' : 'fa-expand'} text-sm`} style={{ color: '#8E8E93' }}></i>
+    </button>
+  );
+
   // Header actions for edit mode
   const headerActions = mode === 'edit' ? (
     <>
+      {noteTakingToggle}
       <button
         type="button"
         onClick={handleDelete}
@@ -321,7 +337,9 @@ const NoteFormModal = ({ allTags, categories }) => {
       </button>
       <StatusIndicator />
     </>
-  ) : null;
+  ) : (
+    noteTakingToggle
+  );
 
   // Footer only for new mode
   const footer = mode === 'new' ? (
@@ -348,7 +366,7 @@ const NoteFormModal = ({ allTags, categories }) => {
   const formContent = (
     <>
       {mode === 'new' && createMutation.isError && (
-        <div className="form-error">
+        <div className="form-error note-taking-hidden">
           <i className="fa-solid fa-circle-exclamation form-error-icon"></i>
           <span className="form-error-text">
             {createMutation.error?.message || 'An error occurred'}
@@ -357,9 +375,10 @@ const NoteFormModal = ({ allTags, categories }) => {
       )}
 
       {/* ==================== CONTENT SECTION ==================== */}
+      <div className="note-taking-editor-wrapper">
       <Section title="Content">
         {/* Title */}
-        <div className="mb-4">
+        <div className="mb-4 note-taking-hide-in-mode">
           <input
             type="text"
             name="title"
@@ -371,7 +390,7 @@ const NoteFormModal = ({ allTags, categories }) => {
         </div>
 
         {/* Body */}
-        <div>
+        <div className="note-taking-editor-inner">
           <textarea
             ref={textareaRef}
             name="body"
@@ -384,8 +403,10 @@ const NoteFormModal = ({ allTags, categories }) => {
           />
         </div>
       </Section>
+      </div>
 
       {/* ==================== ORGANIZE SECTION ==================== */}
+      <div className="note-taking-hidden">
       <Section title="Organize" isLast={true}>
         {/* Category */}
         <div className="mb-4">
@@ -515,6 +536,7 @@ const NoteFormModal = ({ allTags, categories }) => {
           )}
         </div>
       </Section>
+      </div>
     </>
   );
 
@@ -525,6 +547,8 @@ const NoteFormModal = ({ allTags, categories }) => {
       title={mode === 'edit' ? 'Edit Note' : 'New Note'}
       headerActions={headerActions}
       footer={footer}
+      noteTakingMode={isNoteTakingMode}
+      viewportHeight={viewportHeight}
     >
       {mode === 'new' ? (
         <form id="note-form" onSubmit={handleSubmit}>

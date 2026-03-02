@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import SlideOverPanel from '../shared/SlideOverPanel';
+import useNoteTakingMode, { useTrixExpandButton } from '../../hooks/useNoteTakingMode';
 import { documentsApi, tasksApi, categoriesApi, tagsApi } from '../../utils/api';
 
 const ACCEPTED_FILE_TYPES = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.png,.jpg,.jpeg,.gif,.webp,.svg';
@@ -61,6 +62,8 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
   const queryClient = useQueryClient();
   const trixEditorRef = useRef(null);
   const trixLoadedRef = useRef(false);
+  const { isNoteTakingMode, toggleNoteTakingMode, exitNoteTakingMode, viewportHeight } = useNoteTakingMode();
+  useTrixExpandButton(trixEditorRef, isNoteTakingMode, toggleNoteTakingMode);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -168,6 +171,7 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
       setSaveStatus(null);
       setPendingFiles([]);
       trixLoadedRef.current = false;
+      exitNoteTakingMode();
       if (trixEditorRef.current?.editor) {
         trixEditorRef.current.editor.loadHTML('');
       }
@@ -175,6 +179,7 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
     if (isOpen && mode === 'edit') {
       trixLoadedRef.current = false;
       closeAfterSaveRef.current = false;
+      exitNoteTakingMode();
     }
   }, [isOpen, mode]);
 
@@ -585,9 +590,22 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
     );
   };
 
+  // Toggle button for note-taking mode
+  const noteTakingToggle = (
+    <button
+      type="button"
+      onClick={toggleNoteTakingMode}
+      className="w-8 h-8 rounded-lg transition hover:bg-gray-100 flex items-center justify-center"
+      title={isNoteTakingMode ? 'Exit writing mode' : 'Writing mode'}
+    >
+      <i className={`fa-solid ${isNoteTakingMode ? 'fa-compress' : 'fa-expand'} text-sm`} style={{ color: '#8E8E93' }}></i>
+    </button>
+  );
+
   // Header actions for edit mode: grey trash + save status
   const headerActions = mode === 'edit' ? (
     <>
+      {noteTakingToggle}
       <button
         type="button"
         onClick={handleDelete}
@@ -603,7 +621,9 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
       </button>
       <StatusIndicator />
     </>
-  ) : null;
+  ) : (
+    noteTakingToggle
+  );
 
   // Footer only for new mode
   const footer = mode === 'new' ? (
@@ -630,7 +650,7 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
   const formContent = (
     <>
       {mode === 'new' && createMutation.isError && (
-        <div className="form-error">
+        <div className="form-error note-taking-hidden">
           <i className="fa-solid fa-circle-exclamation form-error-icon"></i>
           <span className="form-error-text">
             {createMutation.error?.message || 'An error occurred'}
@@ -638,27 +658,14 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
         </div>
       )}
 
-      {/* ==================== BASICS SECTION ==================== */}
-      <Section title="Basics">
-        {/* Title with Pin Toggle */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-1">
-            <div />
-            <button
-              type="button"
-              onClick={handlePinToggle}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition hover:opacity-80 ${formData.pinned ? 'liquid-surface-subtle' : ''}`}
-              style={formData.pinned ? { '--surface-color': '#2C2C2E' } : { background: 'rgba(142, 142, 147, 0.1)', color: '#8E8E93' }}
-              title={formData.pinned ? 'Unpin document' : 'Pin document'}
-            >
-              <i className={`fa-solid fa-thumbtack text-sm ${formData.pinned ? '' : 'opacity-60'}`}
-                style={{ color: formData.pinned ? 'white' : '#8E8E93' }}
-              ></i>
-              <span className="text-xs font-semibold" style={{ fontFamily: "'Inter', sans-serif", color: formData.pinned ? 'white' : '#8E8E93' }}>
-                {formData.pinned ? 'Pinned' : 'Pin'}
-              </span>
-            </button>
-          </div>
+      {/* ==================== CONTENT SECTION ==================== */}
+      <div className="note-taking-editor-wrapper">
+      <Section title="Content">
+        {/* Title */}
+        <div className="mb-4 note-taking-hide-in-mode">
+          <label className="form-label">
+            Title
+          </label>
           <input
             type="text"
             value={formData.title}
@@ -668,6 +675,35 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
             placeholder="Document title..."
             autoFocus={mode === 'new'}
           />
+        </div>
+
+        {/* Document Body */}
+        <div className="note-taking-editor-inner">
+          <input type="hidden" name="body" id="document-form-body-hidden" />
+          <trix-editor ref={trixEditorRef} input="document-form-body-hidden" className="trix-content"></trix-editor>
+        </div>
+      </Section>
+      </div>
+
+      {/* ==================== BASICS SECTION ==================== */}
+      <div className="note-taking-hidden">
+      <Section title="Basics">
+        {/* Pin Toggle */}
+        <div className="mb-4 flex justify-end">
+          <button
+            type="button"
+            onClick={handlePinToggle}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition hover:opacity-80 ${formData.pinned ? 'liquid-surface-subtle' : ''}`}
+            style={formData.pinned ? { '--surface-color': '#2C2C2E' } : { background: 'rgba(142, 142, 147, 0.1)', color: '#8E8E93' }}
+            title={formData.pinned ? 'Unpin document' : 'Pin document'}
+          >
+            <i className={`fa-solid fa-thumbtack text-sm ${formData.pinned ? '' : 'opacity-60'}`}
+              style={{ color: formData.pinned ? 'white' : '#8E8E93' }}
+            ></i>
+            <span className="text-xs font-semibold" style={{ fontFamily: "'Inter', sans-serif", color: formData.pinned ? 'white' : '#8E8E93' }}>
+              {formData.pinned ? 'Pinned' : 'Pin'}
+            </span>
+          </button>
         </div>
 
         {/* Categories */}
@@ -700,7 +736,7 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
         </div>
 
         {/* URL */}
-        <div>
+        <div className="mb-4">
           <label className="form-label">
             URL
           </label>
@@ -715,14 +751,72 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
             YouTube, Vimeo, or external link
           </p>
         </div>
-      </Section>
 
-      {/* ==================== CONTENT SECTION ==================== */}
-      <Section title="Content">
-        {/* Document Body */}
+        {/* Tags */}
         <div className="mb-4">
-          <input type="hidden" name="body" id="document-form-body-hidden" />
-          <trix-editor ref={trixEditorRef} input="document-form-body-hidden" className="trix-content"></trix-editor>
+          <label className="form-label">
+            Tags
+          </label>
+          <div className="relative">
+            <input
+              type="text"
+              value={tagInput}
+              onChange={(e) => {
+                setTagInput(e.target.value);
+                setShowTagSuggestions(e.target.value.length > 0);
+              }}
+              onKeyDown={handleTagInputKeyDown}
+              onFocus={() => tagInput.length > 0 && setShowTagSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
+              className="form-input"
+              placeholder="Type to add tags..."
+            />
+
+            {showTagSuggestions && (filteredSuggestions.length > 0 || tagInput.trim()) && (
+              <div className="form-dropdown">
+                {filteredSuggestions.map((tag) => (
+                  <button
+                    key={tag.id}
+                    type="button"
+                    onClick={() => handleAddTag(tag.name)}
+                  >
+                    {tag.name}
+                  </button>
+                ))}
+                {tagInput.trim() && !filteredSuggestions.find(t => t.name.toLowerCase() === tagInput.toLowerCase()) && (
+                  <button
+                    type="button"
+                    onClick={() => handleAddTag(tagInput)}
+                    style={{ borderTop: '1px solid rgba(199, 199, 204, 0.3)' }}
+                  >
+                    <i className="fa-solid fa-plus mr-2 text-gray-400"></i>
+                    Create "{tagInput.trim()}"
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {selectedTags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {selectedTags.map((tag) => (
+                <span
+                  key={tag}
+                  className="text-xs px-3 py-1.5 rounded-[10px] flex items-center gap-2 liquid-surface-subtle"
+                  style={{
+                    '--surface-color': '#2C2C2E',
+                    fontFamily: "'Inter', sans-serif",
+                    fontWeight: 600,
+                  }}
+                >
+                  {tag}
+                  <button type="button" onClick={() => handleRemoveTag(tag)} className="hover:opacity-70">
+                    <i className="fa-solid fa-times text-xs"></i>
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* File Attachments */}
@@ -823,72 +917,10 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
           </button>
         </div>
       </Section>
-
-      {/* ==================== TAGS SECTION ==================== */}
-      <Section title="Tags">
-        <div className="relative">
-          <input
-            type="text"
-            value={tagInput}
-            onChange={(e) => {
-              setTagInput(e.target.value);
-              setShowTagSuggestions(e.target.value.length > 0);
-            }}
-            onKeyDown={handleTagInputKeyDown}
-            onFocus={() => tagInput.length > 0 && setShowTagSuggestions(true)}
-            onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
-            className="form-input"
-            placeholder="Type to add tags..."
-          />
-
-          {showTagSuggestions && (filteredSuggestions.length > 0 || tagInput.trim()) && (
-            <div className="form-dropdown">
-              {filteredSuggestions.map((tag) => (
-                <button
-                  key={tag.id}
-                  type="button"
-                  onClick={() => handleAddTag(tag.name)}
-                >
-                  {tag.name}
-                </button>
-              ))}
-              {tagInput.trim() && !filteredSuggestions.find(t => t.name.toLowerCase() === tagInput.toLowerCase()) && (
-                <button
-                  type="button"
-                  onClick={() => handleAddTag(tagInput)}
-                  style={{ borderTop: '1px solid rgba(199, 199, 204, 0.3)' }}
-                >
-                  <i className="fa-solid fa-plus mr-2 text-gray-400"></i>
-                  Create "{tagInput.trim()}"
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-
-        {selectedTags.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-2">
-            {selectedTags.map((tag) => (
-              <span
-                key={tag}
-                className="text-xs px-3 py-1.5 rounded-[10px] flex items-center gap-2 liquid-surface-subtle"
-                style={{
-                  '--surface-color': '#2C2C2E',
-                  fontFamily: "'Inter', sans-serif",
-                  fontWeight: 600,
-                }}
-              >
-                {tag}
-                <button type="button" onClick={() => handleRemoveTag(tag)} className="hover:opacity-70">
-                  <i className="fa-solid fa-times text-xs"></i>
-                </button>
-              </span>
-            ))}
-          </div>
-        )}
-      </Section>
+      </div>
 
       {/* ==================== CONNECTIONS SECTION ==================== */}
+      <div className="note-taking-hidden">
       <Section title="Connections" isLast={true}>
         <div className="grid grid-cols-2 gap-4">
           {/* Attach to Habits */}
@@ -1017,6 +1049,7 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
           </div>
         </div>
       </Section>
+      </div>
     </>
   );
 
@@ -1027,6 +1060,8 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
       title={mode === 'edit' ? 'Edit Document' : 'New Document'}
       footer={footer}
       headerActions={headerActions}
+      noteTakingMode={isNoteTakingMode}
+      viewportHeight={viewportHeight}
     >
       {mode === 'new' ? (
         <form id="document-form" onSubmit={handleSubmit}>

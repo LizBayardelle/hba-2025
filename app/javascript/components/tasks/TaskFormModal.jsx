@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import SlideOverPanel from '../shared/SlideOverPanel';
 import ChecklistSection from '../shared/ChecklistSection';
 import ListShowModal from '../lists/ListShowModal';
+import useNoteTakingMode, { useTrixExpandButton } from '../../hooks/useNoteTakingMode';
 import { tasksApi, documentsApi, listsApi } from '../../utils/api';
 import useTasksStore from '../../stores/tasksStore';
 import useDocumentsStore from '../../stores/documentsStore';
@@ -30,6 +31,8 @@ const TaskFormModal = ({ allTags, categories }) => {
   const { isOpen, mode, taskId, categoryId: initialCategoryId, importanceLevelId: initialImportanceLevelId, timeBlockId: initialTimeBlockId } = formModal;
   const queryClient = useQueryClient();
   const trixEditorRef = useRef(null);
+  const { isNoteTakingMode, toggleNoteTakingMode, exitNoteTakingMode, viewportHeight } = useNoteTakingMode();
+  useTrixExpandButton(trixEditorRef, isNoteTakingMode, toggleNoteTakingMode);
 
   const { openNewModal: openNewDocumentModal } = useDocumentsStore();
   const { openFormModal: openNewListModal, openShowModal: openListShowModal } = useListsStore();
@@ -182,6 +185,7 @@ const TaskFormModal = ({ allTags, categories }) => {
       dataLoadedRef.current = false;
       closeAfterSaveRef.current = false;
       setSaveStatus(null);
+      exitNoteTakingMode();
     }
   }, [isOpen]);
 
@@ -417,9 +421,22 @@ const TaskFormModal = ({ allTags, categories }) => {
     );
   };
 
+  // Toggle button for note-taking mode
+  const noteTakingToggle = (
+    <button
+      type="button"
+      onClick={toggleNoteTakingMode}
+      className="w-8 h-8 rounded-lg transition hover:bg-gray-100 flex items-center justify-center"
+      title={isNoteTakingMode ? 'Exit writing mode' : 'Writing mode'}
+    >
+      <i className={`fa-solid ${isNoteTakingMode ? 'fa-compress' : 'fa-expand'} text-sm`} style={{ color: '#8E8E93' }}></i>
+    </button>
+  );
+
   // Header actions for edit mode: grey trash + save status
   const headerActions = mode === 'edit' ? (
     <>
+      {noteTakingToggle}
       <button
         type="button"
         onClick={handleDelete}
@@ -435,7 +452,9 @@ const TaskFormModal = ({ allTags, categories }) => {
       </button>
       <StatusIndicator />
     </>
-  ) : null;
+  ) : (
+    noteTakingToggle
+  );
 
   // Footer only for new mode
   const footer = mode === 'new' ? (
@@ -486,7 +505,7 @@ const TaskFormModal = ({ allTags, categories }) => {
   const formContent = (
     <>
       {mode === 'new' && createMutation.isError && (
-        <div className="form-error">
+        <div className="form-error note-taking-hidden">
           <i className="fa-solid fa-circle-exclamation form-error-icon"></i>
           <span className="form-error-text">
             {createMutation.error?.message || 'An error occurred'}
@@ -495,6 +514,7 @@ const TaskFormModal = ({ allTags, categories }) => {
       )}
 
       {/* ==================== BASICS SECTION ==================== */}
+      <div className="note-taking-hidden">
       <Section title="Basics">
         {/* Task Name */}
         <div className="mb-4">
@@ -979,11 +999,13 @@ const TaskFormModal = ({ allTags, categories }) => {
           </div>
         </div>
       </Section>
+      </div>
 
       {/* ==================== DETAILS SECTION ==================== */}
+      <div className="note-taking-editor-wrapper">
       <Section title="Details">
         {/* Location */}
-        <div className="mb-4">
+        <div className="mb-4 note-taking-hide-in-mode">
           <label className="form-label">
             Location / Address
           </label>
@@ -998,7 +1020,7 @@ const TaskFormModal = ({ allTags, categories }) => {
         </div>
 
         {/* URL */}
-        <div className="mb-4">
+        <div className="mb-4 note-taking-hide-in-mode">
           <label className="form-label">
             URL
           </label>
@@ -1013,8 +1035,8 @@ const TaskFormModal = ({ allTags, categories }) => {
         </div>
 
         {/* Notes */}
-        <div className="mb-4">
-          <label className="form-label">
+        <div className="mb-4 note-taking-editor-inner">
+          <label className="form-label note-taking-hide-in-mode">
             Notes
           </label>
           <input id="task-notes-input" type="hidden" />
@@ -1027,7 +1049,7 @@ const TaskFormModal = ({ allTags, categories }) => {
 
         {/* Checklist (only in edit mode) */}
         {mode === 'edit' && taskId && (
-          <div>
+          <div className="note-taking-hide-in-mode">
             <label className="form-label">
               Checklist
             </label>
@@ -1041,9 +1063,10 @@ const TaskFormModal = ({ allTags, categories }) => {
           </div>
         )}
       </Section>
+      </div>
 
       {/* On Hold Checkbox */}
-      <div className="flex items-center gap-2 mt-4">
+      <div className="flex items-center gap-2 mt-4 note-taking-hidden">
         <input
           type="checkbox"
           name="on_hold"
@@ -1067,6 +1090,8 @@ const TaskFormModal = ({ allTags, categories }) => {
         title={mode === 'edit' ? 'Edit Task' : 'New Task'}
         headerActions={headerActions}
         footer={footer}
+        noteTakingMode={isNoteTakingMode}
+        viewportHeight={viewportHeight}
       >
         {mode === 'new' ? (
           <form id="task-form" onSubmit={handleSubmit}>

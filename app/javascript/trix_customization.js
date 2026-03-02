@@ -204,5 +204,61 @@ document.addEventListener('trix-initialize', function(event) {
 
     // Insert the dropdown at the beginning of block tools
     blockTools.insertBefore(dropdownContainer, blockTools.firstChild);
+
+    // Split block-tools after the code (<>) button into a separate group
+    // so the toolbar can naturally wrap into two rows on narrow screens.
+    const codeButton = blockTools.querySelector('[data-trix-attribute="code"]');
+    if (codeButton) {
+      const listGroup = document.createElement('span');
+      listGroup.className = 'trix-button-group trix-button-group--list-tools';
+      listGroup.setAttribute('data-trix-button-group', 'list-tools');
+
+      // Move every sibling after the code button into the new group
+      let next = codeButton.nextElementSibling;
+      while (next) {
+        const moving = next;
+        next = next.nextElementSibling;
+        listGroup.appendChild(moving);
+      }
+
+      // Insert the new group right after block-tools in the button row
+      blockTools.parentNode.insertBefore(listGroup, blockTools.nextSibling);
+
+      // Move the attach button from file-tools into block-tools, after code
+      const fileTools = toolbar.querySelector('.trix-button-group--file-tools');
+      if (fileTools) {
+        const attachButton = fileTools.querySelector('[data-trix-action="attachFiles"]');
+        if (attachButton) {
+          codeButton.after(attachButton);
+          if (fileTools.children.length === 0) {
+            fileTools.remove();
+          }
+        }
+      }
+    }
+
+    // Add expand/collapse button for writing mode (after undo/redo)
+    const buttonRow = toolbar.querySelector('.trix-button-row');
+    if (buttonRow) {
+      const expandGroup = document.createElement('span');
+      expandGroup.className = 'trix-button-group trix-button-group--expand-tools';
+      expandGroup.setAttribute('data-trix-button-group', 'expand-tools');
+
+      const expandBtn = document.createElement('button');
+      expandBtn.type = 'button';
+      expandBtn.className = 'trix-button trix-button--icon-expand';
+      expandBtn.title = 'Writing mode';
+      expandBtn.innerHTML = '<i class="fa-solid fa-expand" style="font-size: 12px; color: #8E8E93;"></i>';
+      expandBtn.style.cssText = 'display: flex; align-items: center; justify-content: center;';
+
+      expandBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        editor.dispatchEvent(new CustomEvent('trix-toggle-writing-mode', { bubbles: true }));
+      });
+
+      expandGroup.appendChild(expandBtn);
+      buttonRow.appendChild(expandGroup);
+    }
   }
 });

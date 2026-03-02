@@ -830,16 +830,7 @@ textarea:focus {
 
 /* Prevent iOS auto-zoom on input focus - requires 16px minimum font size */
 @media screen and (max-width: 768px) {
-  input[type="text"],
-  input[type="email"],
-  input[type="password"],
-  input[type="number"],
-  input[type="tel"],
-  input[type="url"],
-  input[type="search"],
-  input[type="date"],
-  input[type="time"],
-  input[type="datetime-local"],
+  input,
   textarea,
   select,
   trix-editor {
@@ -1147,6 +1138,109 @@ trix-toolbar + trix-editor {
   border: 0;
   border-top: 2px solid #E8EEF1;
   margin: 2em 0;
+}
+
+/* ── Note-Taking Mode ── */
+
+.note-taking-mode .note-taking-hidden {
+  display: none !important;
+}
+
+.note-taking-mode .note-taking-hide-in-mode {
+  display: none !important;
+}
+
+/* Form inside note-taking mode must also flex-fill */
+.note-taking-mode form {
+  flex: 1 1 0%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Editor wrapper fills available space */
+.note-taking-mode .note-taking-editor-wrapper {
+  flex: 1 1 0%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  margin: 0 !important;
+  overflow: hidden;
+}
+
+/* Section component renders <div><fieldset>…</fieldset></div> —
+   both layers must participate in the flex chain */
+.note-taking-mode .note-taking-editor-wrapper > div {
+  flex: 1 1 0%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  margin: 0 !important;
+}
+
+/* Strip fieldset chrome inside editor wrapper */
+.note-taking-mode .note-taking-editor-wrapper fieldset {
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  flex: 1 1 0%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+.note-taking-mode .note-taking-editor-wrapper fieldset legend {
+  display: none !important;
+}
+
+/* Inner editor div fills remaining space */
+.note-taking-mode .note-taking-editor-inner {
+  flex: 1 1 0%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+/* Override trix fixed height + wrap toolbar buttons */
+.note-taking-mode trix-toolbar {
+  flex-shrink: 0;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.note-taking-mode trix-toolbar .trix-button-row {
+  flex-wrap: wrap !important;
+  overflow-x: hidden !important;
+  gap: 2px;
+}
+
+/* Hide spacer so groups pack tightly when wrapping */
+.note-taking-mode .trix-button-group-spacer {
+  display: none;
+}
+
+.note-taking-mode trix-editor {
+  height: auto !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  flex: 1;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+/* Textarea variant (NoteFormModal) */
+.note-taking-mode textarea {
+  flex: 1;
+  min-height: 0 !important;
+  height: auto !important;
+  resize: none !important;
+  overflow-y: auto;
+  min-width: 0;
 }
 
 @theme {

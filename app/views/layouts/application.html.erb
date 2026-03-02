@@ -62,6 +62,13 @@
         z-index: 100;
       }
 
+      /* Let toolbar buttons wrap instead of causing x-scroll */
+      trix-toolbar .trix-button-row {
+        flex-wrap: wrap !important;
+        overflow-x: hidden !important;
+        gap: 2px;
+      }
+
       .trix-heading-dropdown {
         position: static !important;
       }

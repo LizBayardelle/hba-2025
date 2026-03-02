@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import SlideOverPanel from '../shared/SlideOverPanel';
+import useNoteTakingMode, { useTrixExpandButton } from '../../hooks/useNoteTakingMode';
 import { journalsApi } from '../../utils/api';
 import useJournalStore from '../../stores/journalStore';
 
@@ -9,6 +10,8 @@ const JournalFormModal = ({ allTags }) => {
   const { isOpen, mode, journalId } = formModal;
   const queryClient = useQueryClient();
   const trixEditorRef = useRef(null);
+  const { isNoteTakingMode, toggleNoteTakingMode, exitNoteTakingMode, viewportHeight } = useNoteTakingMode();
+  useTrixExpandButton(trixEditorRef, isNoteTakingMode, toggleNoteTakingMode);
 
   const [tagInput, setTagInput] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
@@ -42,6 +45,9 @@ const JournalFormModal = ({ allTags }) => {
 
   // Reset form when modal opens for new journal
   useEffect(() => {
+    if (isOpen) {
+      exitNoteTakingMode();
+    }
     if (isOpen && mode === 'new') {
       setSelectedTags([]);
       setTagInput('');
@@ -185,16 +191,31 @@ const JournalFormModal = ({ allTags }) => {
     </>
   );
 
+  // Toggle button for note-taking mode
+  const noteTakingToggle = (
+    <button
+      type="button"
+      onClick={toggleNoteTakingMode}
+      className="w-8 h-8 rounded-lg transition hover:bg-gray-100 flex items-center justify-center"
+      title={isNoteTakingMode ? 'Exit writing mode' : 'Writing mode'}
+    >
+      <i className={`fa-solid ${isNoteTakingMode ? 'fa-compress' : 'fa-expand'} text-sm`} style={{ color: '#8E8E93' }}></i>
+    </button>
+  );
+
   return (
     <SlideOverPanel
       isOpen={isOpen}
       onClose={closeFormModal}
       title={mode === 'edit' ? 'Edit Journal Entry' : 'New Journal Entry'}
       footer={footer}
+      headerActions={noteTakingToggle}
+      noteTakingMode={isNoteTakingMode}
+      viewportHeight={viewportHeight}
     >
       <form id="journal-form" onSubmit={handleSubmit}>
         {currentMutation.isError && (
-          <div className="form-error">
+          <div className="form-error note-taking-hidden">
             <i className="fa-solid fa-circle-exclamation form-error-icon"></i>
             <span className="form-error-text">
               {currentMutation.error?.message || 'An error occurred'}
@@ -203,16 +224,18 @@ const JournalFormModal = ({ allTags }) => {
         )}
 
         {/* Entry Content */}
-        <div className="mb-6">
-          <label className="form-label">
-            Entry
-          </label>
-          <input type="hidden" name="content" id="journal-form-content-hidden" />
-          <trix-editor ref={trixEditorRef} input="journal-form-content-hidden" className="trix-content"></trix-editor>
+        <div className="mb-6 note-taking-editor-wrapper">
+          <div className="note-taking-editor-inner">
+            <label className="form-label note-taking-hide-in-mode">
+              Entry
+            </label>
+            <input type="hidden" name="content" id="journal-form-content-hidden" />
+            <trix-editor ref={trixEditorRef} input="journal-form-content-hidden" className="trix-content"></trix-editor>
+          </div>
         </div>
 
         {/* Private Toggle */}
-        <div className="mb-6">
+        <div className="mb-6 note-taking-hidden">
           <label className="checkbox-row cursor-pointer select-none" style={{ gap: '0.75rem' }}>
             <div
               onClick={() => setIsPrivate(!isPrivate)}
@@ -236,7 +259,7 @@ const JournalFormModal = ({ allTags }) => {
         </div>
 
         {/* Tags */}
-        <div className="mb-6">
+        <div className="mb-6 note-taking-hidden">
           <label className="form-label">
             Tags (optional)
           </label>
