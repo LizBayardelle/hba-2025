@@ -1,397 +1,578 @@
-<!-- Left Sidebar Navigation -->
-<aside
-  id="sidebar"
-  class="w-64 flex flex-col transition-transform duration-300 ease-in-out fixed left-0 top-0 z-50 -translate-x-full md:translate-x-0 md:relative"
-  style="background: #e5e7e9; height: 100vh; box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5); border-right: 0.5px solid rgba(0, 0, 0, 0.1); font-family: 'Inter', sans-serif;">
+<%#
+  v2 Sidebar — Habit Beaver
+  Uses v2 design system classes + CSS custom properties for theming.
+  Alpine.js for: category modal, categories collapse, mobile toggle.
+%>
 
+<%
+  # Helper to build sidebar link classes
+  def sidebar_link_classes(active)
+    base = "flex items-center gap-2.5 py-1.5 px-2.5 rounded-lg text-sm transition-all duration-150"
+    active ? "#{base} v2-sidebar-link active" : "#{base} v2-sidebar-link"
+  end
+%>
+
+<style>
+  /* v2 Sidebar layout */
+  .v2-sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: 224px;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    z-index: 50;
+    overflow-y: auto;
+    overflow-x: hidden;
+    font-family: var(--font-body);
+    transition: transform 0.3s ease;
+  }
+
+  .v2-sidebar::-webkit-scrollbar { width: 4px; }
+  .v2-sidebar::-webkit-scrollbar-track { background: transparent; }
+  .v2-sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .v2-sidebar-link {
+    color: var(--ink-secondary);
+    font-weight: 400;
+    font-family: var(--font-body);
+  }
+
+  .v2-sidebar-link:hover {
+    background: var(--hover-tint);
+    color: var(--ink);
+  }
+
+  .v2-sidebar-link.active {
+    background: var(--hover-tint-strong);
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .v2-sidebar-link.active::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 16px;
+    background: var(--ink);
+    border-radius: 0 2px 2px 0;
+  }
+
+  .v2-sidebar-link i {
+    width: 16px;
+    text-align: center;
+    font-size: 0.8rem;
+    opacity: 0.45;
+    color: var(--ink);
+  }
+
+  .v2-sidebar-link.active i { opacity: 0.7; }
+
+  .v2-sidebar-link .v2-count-badge {
+    margin-left: auto;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--ink-tertiary);
+    background: var(--hover-tint-strong);
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Category items */
+  .v2-category-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .v2-categories-list {
+    max-height: 200px;
+    overflow-y: auto;
+    transition: max-height 0.25s ease, opacity 0.2s ease;
+  }
+
+  .v2-categories-list.collapsed {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+  }
+
+  /* Footer */
+  .v2-sidebar-footer {
+    margin-top: auto;
+    padding: 12px 16px 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .v2-sidebar-user {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 6px 4px;
+    border-radius: 8px;
+    transition: background 0.12s ease;
+    cursor: default;
+  }
+
+  .v2-sidebar-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--ink-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--bg);
+    flex-shrink: 0;
+    font-family: var(--font-body);
+  }
+
+  /* Mobile */
+  .v2-sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 40;
+  }
+
+  .v2-mobile-menu-btn {
+    display: none;
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 30;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--ink-secondary);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  @media (max-width: 768px) {
+    .v2-sidebar {
+      transform: translateX(-100%);
+    }
+    .v2-sidebar.open {
+      transform: translateX(0);
+    }
+    .v2-sidebar.open + .v2-sidebar-overlay {
+      display: block;
+    }
+    .v2-mobile-menu-btn {
+      display: flex;
+    }
+  }
+</style>
+
+<!-- Mobile menu button -->
+<button class="v2-mobile-menu-btn" id="v2-menu-btn" aria-label="Open menu">
+  <i class="fa-solid fa-bars" style="font-size: 14px;"></i>
+</button>
+
+<!-- Sidebar -->
+<aside class="v2-sidebar" id="v2-sidebar">
   <div class="px-5 py-6 flex-1 overflow-y-auto">
-    <!-- Close button for mobile -->
-    <div class="md:hidden flex justify-end mb-4">
-      <button
-        id="sidebar-close"
-        class="w-8 h-8 rounded-lg hover:bg-black/10 flex items-center justify-center transition">
-        <i class="fa-solid fa-xmark text-xl" style="color: #000000;"></i>
+    <!-- Close button (mobile) -->
+    <div class="md:hidden flex justify-end mb-3">
+      <button id="v2-sidebar-close" class="v2-btn-icon-sm">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
 
-    <!-- Logo Area -->
-    <%= link_to root_path, class: "flex items-center gap-3 mb-8 hover:opacity-80 transition-opacity duration-200" do %>
-      <%= image_tag "HabitBeaver Logo.png", class: "w-10 h-10", alt: "Habit Beaver Logo" %>
-      <div>
-        <h1 class="text-4xl font-display" style="color: #000000;">Habit Beaver</h1>
-        <% if user_signed_in? %>
-          <p class="text-xs tabular-nums" id="selected-date" style="color: #000000; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 200; font-variant-numeric: tabular-nums;">
-            <%= Time.zone.today.strftime("%b %d").upcase %> <span style="opacity: 0.5;">&middot;</span> <span id="current-time" data-timezone="<%= ActiveSupport::TimeZone::MAPPING[current_user.timezone] %>" data-tz-abbr="<%= Time.zone.now.strftime("%Z") %>"><%= Time.zone.now.strftime("%I:%M %p %Z") %></span>
-          </p>
-        <% else %>
-          <p class="text-xs" style="color: #000000; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 200;">Build better habits</p>
-        <% end %>
+    <!-- Logo -->
+    <%= link_to root_path, class: "flex items-center gap-2.5 mb-6 hover:opacity-80 transition-opacity duration-200", style: "text-decoration: none;" do %>
+      <div style="width: 26px; height: 26px; background: var(--ink); border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <rect x="2" y="3" width="4" height="8" rx="1" fill="var(--bg)"/>
+          <rect x="8" y="3" width="4" height="5" rx="1" fill="var(--bg)" opacity="0.5"/>
+        </svg>
       </div>
+      <span style="font-family: var(--font-body); font-size: 0.933rem; font-weight: 600; color: var(--ink); letter-spacing: -0.02em;">Habit Beaver</span>
     <% end %>
 
     <% if user_signed_in? %>
-      <script>
-        (function() {
-          const timeElement = document.getElementById('current-time');
-          if (timeElement) {
-            const tzAbbr = timeElement.dataset.tzAbbr;
-            function updateTime() {
-              const now = new Date();
-              const timezone = timeElement.dataset.timezone;
-              const options = {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: true,
-                timeZone: timezone
-              };
-              timeElement.textContent = now.toLocaleTimeString('en-US', options) + ' ' + tzAbbr;
-            }
-            setInterval(updateTime, 1000);
-          }
-        })();
-      </script>
-    <% end %>
-
-    <!-- Quick Note Button -->
-    <div class="mb-4">
-      <button
-        onclick="if(window.location.pathname === '/notes') { window.dispatchEvent(new Event('open-new-note')); } else { window.location.href = '/notes?new=true'; }"
-        class="flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm hover:bg-black/10 w-full"
-        style="border: 1px dashed rgba(0, 0, 0, 0.2);"
-        title="Quick note">
-        <span class="w-5 text-center relative inline-flex items-center justify-center">
-          <i class="fa-solid fa-note-sticky" style="color: #000000;"></i>
-          <i class="fa-solid fa-plus absolute" style="color: #000000; font-size: 0.45rem; top: -1px; right: -3px;"></i>
-        </span>
-        <span style="font-weight: 200; letter-spacing: 0.03em; color: #000000; opacity: 0.7;">Quick Note</span>
-      </button>
-    </div>
-
-    <!-- Navigation Items -->
-    <nav class="space-y-0">
-      <%= link_to dashboard_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(dashboard_path) ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
-        <i class="fa-solid fa-gauge w-5 text-center" style="color: <%= current_page?(dashboard_path) ? '#000000' : '#000000' %>;"></i>
-        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(dashboard_path) ? '#000000' : '#000000' %>; opacity: <%= current_page?(dashboard_path) ? '1' : '0.7' %>;">Dashboard</span>
-      <% end %>
-      <%= link_to notes_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(notes_path) ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
-        <i class="fa-solid fa-note-sticky w-5 text-center" style="color: <%= current_page?(notes_path) ? '#000000' : '#000000' %>;"></i>
-        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(notes_path) ? '#000000' : '#000000' %>; opacity: <%= current_page?(notes_path) ? '1' : '0.7' %>;">Notes</span>
-      <% end %>
-      <%= link_to journal_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(journal_path) ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
-        <i class="fa-solid fa-book w-5 text-center" style="color: <%= current_page?(journal_path) ? '#000000' : '#000000' %>;"></i>
-        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(journal_path) ? '#000000' : '#000000' %>; opacity: <%= current_page?(journal_path) ? '1' : '0.7' %>;">Journal</span>
-      <% end %>
-      <% habits_url = user_signed_in? && current_user.default_habits_grouping != 'category' ? habits_path(view: current_user.default_habits_grouping) : habits_path %>
-      <%= link_to habits_url, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(habits_path) ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
-        <i class="fa-solid fa-chart-line w-5 text-center" style="color: <%= current_page?(habits_path) ? '#000000' : '#000000' %>;"></i>
-        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(habits_path) ? '#000000' : '#000000' %>; opacity: <%= current_page?(habits_path) ? '1' : '0.7' %>;">Habits</span>
-      <% end %>
-      <% tasks_url = user_signed_in? && current_user.default_tasks_grouping != 'status' ? tasks_path(groupBy: current_user.default_tasks_grouping) : tasks_path %>
-      <%= link_to tasks_url, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(tasks_path) ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
-        <i class="fa-solid fa-check w-5 text-center" style="color: <%= current_page?(tasks_path) ? '#000000' : '#000000' %>;"></i>
-        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(tasks_path) ? '#000000' : '#000000' %>; opacity: <%= current_page?(tasks_path) ? '1' : '0.7' %>;">Tasks</span>
-      <% end %>
-      <%= link_to goals_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(goals_path) ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
-        <i class="fa-solid fa-bullseye w-5 text-center" style="color: <%= current_page?(goals_path) ? '#000000' : '#000000' %>;"></i>
-        <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(goals_path) ? '#000000' : '#000000' %>; opacity: <%= current_page?(goals_path) ? '1' : '0.7' %>;">Goals</span>
-      <% end %>
-    </nav>
-
-    <!-- Attachments Section -->
-    <div class="mt-5">
-      <div class="flex items-center justify-between mb-2 pb-1 border-b" style="border-bottom-color: rgba(0, 0, 0, 0.12);">
-        <h3 class="text-sm" style="color: #000000; letter-spacing: 0.03em; font-weight: 200; opacity: 0.7;">Attachments</h3>
-      </div>
-      <div class="space-y-0">
-        <% documents_url = user_signed_in? && current_user.default_documents_grouping != 'type' ? documents_path(groupBy: current_user.default_documents_grouping) : documents_path %>
-        <%= link_to documents_url, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(documents_path) ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
-          <i class="fa-solid fa-file-alt w-5 text-center" style="color: <%= current_page?(documents_path) ? '#000000' : '#000000' %>;"></i>
-          <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(documents_path) ? '#000000' : '#000000' %>; opacity: <%= current_page?(documents_path) ? '1' : '0.7' %>;">Documents</span>
-        <% end %>
-        <% lists_url = user_signed_in? && current_user.default_lists_grouping != 'type' ? lists_path(groupBy: current_user.default_lists_grouping) : lists_path %>
-        <%= link_to lists_url, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(lists_path) ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
-          <i class="fa-solid fa-list-check w-5 text-center" style="color: <%= current_page?(lists_path) ? '#000000' : '#000000' %>;"></i>
-          <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(lists_path) ? '#000000' : '#000000' %>; opacity: <%= current_page?(lists_path) ? '1' : '0.7' %>;">Lists</span>
-        <% end %>
-      </div>
-    </div>
-
-    <!-- Categories Section -->
-    <div class="mt-5" x-data="{
-      showModal: false,
-      selectedColor: '#6B8A99',
-      selectedIcon: 'fa-check',
-      categoryName: '',
-      hexToRgb(hex) {
-        const clean = hex.replace('#', '');
-        return { r: parseInt(clean.substr(0,2),16), g: parseInt(clean.substr(2,2),16), b: parseInt(clean.substr(4,2),16) };
-      },
-      rgbToHex(r,g,b) {
-        return '#' + [r,g,b].map(c => Math.round(Math.max(0,Math.min(255,c))).toString(16).padStart(2,'0')).join('').toUpperCase();
-      },
-      rgbToHsl(r,g,b) {
-        r/=255; g/=255; b/=255;
-        const max=Math.max(r,g,b), min=Math.min(r,g,b), l=(max+min)/2;
-        let h=0, s=0;
-        if(max!==min) { const d=max-min; s=l>0.5?d/(2-max-min):d/(max+min); h=max===r?((g-b)/d+(g<b?6:0))/6:max===g?((b-r)/d+2)/6:((r-g)/d+4)/6; }
-        return {h:Math.round(h*360),s:Math.round(s*100),l:Math.round(l*100)};
-      },
-      hslToRgb(h,s,l) {
-        h/=360; s/=100; l/=100;
-        if(s===0) return {r:Math.round(l*255),g:Math.round(l*255),b:Math.round(l*255)};
-        const hue2rgb=(p,q,t)=>{if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;};
-        const q=l<0.5?l*(1+s):l+s-l*s, p=2*l-q;
-        return {r:Math.round(hue2rgb(p,q,h+1/3)*255),g:Math.round(hue2rgb(p,q,h)*255),b:Math.round(hue2rgb(p,q,h-1/3)*255)};
-      },
-      getLightColor(hex) {
-        const rgb=this.hexToRgb(hex), hsl=this.rgbToHsl(rgb.r,rgb.g,rgb.b);
-        const newRgb=this.hslToRgb(hsl.h,Math.max(hsl.s*0.4,10),92);
-        return this.rgbToHex(newRgb.r,newRgb.g,newRgb.b);
-      },
-      getDarkColor(hex) {
-        const rgb=this.hexToRgb(hex), hsl=this.rgbToHsl(rgb.r,rgb.g,rgb.b);
-        const newRgb=this.hslToRgb(hsl.h,Math.min(hsl.s*1.2,80),28);
-        return this.rgbToHex(newRgb.r,newRgb.g,newRgb.b);
-      }
-    }">
-      <div class="flex items-center justify-between mb-2 pb-1 border-b" style="border-bottom-color: rgba(0, 0, 0, 0.12);">
-        <h3 class="text-sm" style="color: #000000; letter-spacing: 0.03em; font-weight: 200; opacity: 0.7;">Categories</h3>
-        <button @click="showModal = true" class="w-6 h-6 flex items-center justify-center hover:bg-black/10 transition-colors duration-150" style="color: #000000; opacity: 0.7;">
-          <i class="fa-solid fa-plus text-xs"></i>
+      <!-- Quick Note -->
+      <div class="mb-3">
+        <button
+          onclick="if(window.location.pathname === '/notes') { window.dispatchEvent(new Event('open-new-note')); } else { window.location.href = '/notes?new=true'; }"
+          class="flex items-center gap-2.5 py-1.5 px-2.5 rounded-lg text-sm w-full transition-all duration-150"
+          style="border: 1px dashed var(--border-hover); color: var(--ink-tertiary); font-family: var(--font-body);"
+          title="Quick note">
+          <i class="fa-solid fa-note-sticky" style="font-size: 0.8rem; width: 16px; text-align: center; opacity: 0.5;"></i>
+          <span style="font-weight: 400;">Quick Note</span>
         </button>
       </div>
-      <div class="space-y-0">
-        <% if user_signed_in? && current_user.categories.active.ordered.any? %>
-          <% current_user.categories.active.ordered.each do |category| %>
-            <% is_active = @category && @category.id == category.id %>
-            <%= link_to category_path(category), class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: is_active ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
-              <i class="fa-solid <%= category.icon %> w-5 text-center" style="color: <%= category.color %>;"></i>
-              <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= is_active ? '#000000' : '#000000' %>; opacity: <%= is_active ? '1' : '0.7' %>;"><%= category.name %></span>
+
+      <!-- Primary Nav -->
+      <nav class="space-y-0.5">
+        <%= link_to dashboard_path, class: sidebar_link_classes(current_page?(dashboard_path)), style: "position: relative;" do %>
+          <i class="fa-solid fa-gauge"></i>
+          <span>Dashboard</span>
+        <% end %>
+
+        <% habits_url = current_user.default_habits_grouping != 'category' ? habits_path(view: current_user.default_habits_grouping) : habits_path %>
+        <%= link_to habits_url, class: sidebar_link_classes(current_page?(habits_path)), style: "position: relative;" do %>
+          <i class="fa-solid fa-chart-line"></i>
+          <span>Habits</span>
+        <% end %>
+
+        <% tasks_url = current_user.default_tasks_grouping != 'status' ? tasks_path(groupBy: current_user.default_tasks_grouping) : tasks_path %>
+        <%= link_to tasks_url, class: sidebar_link_classes(current_page?(tasks_path)), style: "position: relative;" do %>
+          <i class="fa-solid fa-check"></i>
+          <span>Tasks</span>
+        <% end %>
+
+        <%= link_to goals_path, class: sidebar_link_classes(current_page?(goals_path)), style: "position: relative;" do %>
+          <i class="fa-solid fa-bullseye"></i>
+          <span>Goals</span>
+        <% end %>
+      </nav>
+
+      <!-- Library -->
+      <div class="mt-4">
+        <div class="v2-section-label px-2.5 py-1.5">Library</div>
+        <div class="space-y-0.5">
+          <%= link_to journal_path, class: sidebar_link_classes(current_page?(journal_path)), style: "position: relative;" do %>
+            <i class="fa-solid fa-book"></i>
+            <span>Journal</span>
+          <% end %>
+
+          <%= link_to notes_path, class: sidebar_link_classes(current_page?(notes_path)), style: "position: relative;" do %>
+            <i class="fa-solid fa-note-sticky"></i>
+            <span>Notes</span>
+          <% end %>
+
+          <% lists_url = current_user.default_lists_grouping != 'type' ? lists_path(groupBy: current_user.default_lists_grouping) : lists_path %>
+          <%= link_to lists_url, class: sidebar_link_classes(current_page?(lists_path)), style: "position: relative;" do %>
+            <i class="fa-solid fa-list-check"></i>
+            <span>Lists</span>
+          <% end %>
+
+          <% documents_url = current_user.default_documents_grouping != 'type' ? documents_path(groupBy: current_user.default_documents_grouping) : documents_path %>
+          <%= link_to documents_url, class: sidebar_link_classes(current_page?(documents_path)), style: "position: relative;" do %>
+            <i class="fa-solid fa-file-alt"></i>
+            <span>Documents</span>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Categories (collapsible) -->
+      <div class="mt-4" x-data="{ open: true, showModal: false, selectedColor: '#6B8A99', selectedIcon: 'fa-check', categoryName: '',
+        hexToRgb(hex) { const c = hex.replace('#',''); return {r:parseInt(c.substr(0,2),16),g:parseInt(c.substr(2,2),16),b:parseInt(c.substr(4,2),16)}; },
+        rgbToHex(r,g,b) { return '#'+[r,g,b].map(c=>Math.round(Math.max(0,Math.min(255,c))).toString(16).padStart(2,'0')).join('').toUpperCase(); },
+        rgbToHsl(r,g,b) { r/=255;g/=255;b/=255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2;let h=0,s=0;if(mx!==mn){const d=mx-mn;s=l>0.5?d/(2-mx-mn):d/(mx+mn);h=mx===r?((g-b)/d+(g<b?6:0))/6:mx===g?((b-r)/d+2)/6:((r-g)/d+4)/6;}return{h:Math.round(h*360),s:Math.round(s*100),l:Math.round(l*100)}; },
+        hslToRgb(h,s,l) { h/=360;s/=100;l/=100;if(s===0)return{r:Math.round(l*255),g:Math.round(l*255),b:Math.round(l*255)};const hue2rgb=(p,q,t)=>{if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;};const q=l<0.5?l*(1+s):l+s-l*s,p=2*l-q;return{r:Math.round(hue2rgb(p,q,h+1/3)*255),g:Math.round(hue2rgb(p,q,h)*255),b:Math.round(hue2rgb(p,q,h-1/3)*255)}; },
+        getLightColor(hex) { const rgb=this.hexToRgb(hex),hsl=this.rgbToHsl(rgb.r,rgb.g,rgb.b),nr=this.hslToRgb(hsl.h,Math.max(hsl.s*0.4,10),92);return this.rgbToHex(nr.r,nr.g,nr.b); },
+        getDarkColor(hex) { const rgb=this.hexToRgb(hex),hsl=this.rgbToHsl(rgb.r,rgb.g,rgb.b),nr=this.hslToRgb(hsl.h,Math.min(hsl.s*1.2,80),28);return this.rgbToHex(nr.r,nr.g,nr.b); }
+      }">
+        <button @click="open = !open" class="flex items-center justify-between w-full px-2.5 py-1.5 v2-section-label" style="cursor: pointer;">
+          <span>Categories</span>
+          <svg :class="open && 'rotate-180'" class="transition-transform duration-200" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+
+        <div class="v2-categories-list space-y-0.5" :class="!open && 'collapsed'">
+          <% if current_user.categories.active.ordered.any? %>
+            <% current_user.categories.active.ordered.each do |category| %>
+              <% cat_active = @category && @category.id == category.id %>
+              <%= link_to category_path(category), class: "flex items-center gap-2.5 py-1.5 px-2.5 rounded-lg text-sm transition-all duration-150 v2-sidebar-link #{cat_active ? 'active' : ''}", style: "position: relative;" do %>
+                <span class="v2-category-dot" style="background: <%= category.color %>;"></span>
+                <span><%= category.name %></span>
+              <% end %>
             <% end %>
           <% end %>
-        <% else %>
-          <p class="text-xs px-4 py-1" style="color: #000000; font-weight: 100;">No categories yet</p>
-        <% end %>
-      </div>
 
-      <!-- New Category Modal -->
-      <template x-teleport="body">
-        <div x-show="showModal" @click.self="showModal = false" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" style="display: none;">
-        <div @click.stop class="bg-white rounded-2xl shadow-2xl p-6 md:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-          <h2 class="text-2xl font-bold mb-6 display-font" style="color: #1D1D1F;">New Category</h2>
+          <button @click="showModal = true" class="flex items-center gap-2.5 py-1.5 px-2.5 rounded-lg text-sm transition-all duration-150 w-full" style="color: var(--ink-faint);">
+            <i class="fa-solid fa-plus" style="font-size: 0.65rem; width: 8px; text-align: center;"></i>
+            <span>New Category</span>
+          </button>
+        </div>
 
-          <%= form_with model: Category.new, url: categories_path, method: :post, local: true do |f| %>
-            <!-- Preview Box -->
-            <div class="mb-6">
-              <p class="text-xs font-semibold mb-2" style="color: #566e78;">PREVIEW</p>
-              <div class="p-4 rounded-lg border-2" :style="'background-color: ' + getLightColor(selectedColor) + '; border-color: ' + selectedColor">
-                <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm" :style="'background-color: ' + selectedColor">
-                    <i :class="'fa-solid ' + selectedIcon" class="text-white"></i>
+        <!-- New Category Modal (teleported to body) -->
+        <template x-teleport="body">
+          <div x-show="showModal" @click.self="showModal = false" class="fixed inset-0 flex items-center justify-center z-50 p-4" style="background: rgba(0,0,0,0.4); display: none;">
+            <div @click.stop class="v2-card" style="padding: 24px; width: 100%; max-width: 32rem; max-height: 90vh; overflow-y: auto;">
+              <h2 class="v2-h2" style="margin-bottom: 20px;">New Category</h2>
+
+              <%= form_with model: Category.new, url: categories_path, method: :post, local: true do |f| %>
+                <!-- Preview -->
+                <div style="margin-bottom: 16px; padding: 12px; border-radius: 8px; border: 1px solid var(--border);" :style="'background:' + getLightColor(selectedColor)">
+                  <div class="flex items-center gap-3">
+                    <div class="w-7 h-7 rounded-lg flex items-center justify-center" :style="'background:' + selectedColor">
+                      <i :class="'fa-solid ' + selectedIcon" class="text-white text-xs"></i>
+                    </div>
+                    <span class="v2-h3" :style="'color:' + getDarkColor(selectedColor)" x-text="categoryName || 'My Category'"></span>
                   </div>
-                  <span class="font-bold display-font" :style="'color: ' + getDarkColor(selectedColor)" x-text="categoryName || 'My Category'"></span>
                 </div>
-              </div>
-            </div>
 
-            <!-- Category Name -->
-            <div class="mb-5">
-              <%= f.label :name, "Category Name", class: "block text-sm font-semibold mb-2", style: "color: #1D1D1F;" %>
-              <%= f.text_field :name, "x-model": "categoryName", placeholder: "e.g., Health & Fitness", class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light", style: "border-color: #E8EEF1; color: #1D1D1F;" %>
-            </div>
+                <!-- Name -->
+                <div style="margin-bottom: 12px;">
+                  <label class="v2-caption" style="display: block; margin-bottom: 4px;">Name</label>
+                  <%= f.text_field :name, "x-model": "categoryName", placeholder: "e.g., Health & Fitness", class: "form-input", style: "font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border);" %>
+                </div>
 
-            <!-- Description -->
-            <div class="mb-5">
-              <%= f.label :description, "Description (Optional)", class: "block text-sm font-semibold mb-2", style: "color: #1D1D1F;" %>
-              <%= f.text_area :description, rows: 2, placeholder: "e.g., Daily exercise and nutrition habits", class: "w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition font-light resize-none", style: "border-color: #E8EEF1; color: #1D1D1F;" %>
-            </div>
+                <!-- Description -->
+                <div style="margin-bottom: 12px;">
+                  <label class="v2-caption" style="display: block; margin-bottom: 4px;">Description (optional)</label>
+                  <%= f.text_area :description, rows: 2, placeholder: "e.g., Daily exercise and nutrition", class: "form-input", style: "font-family: var(--font-body); resize: none; background: var(--surface); color: var(--ink); border-color: var(--border);" %>
+                </div>
 
-            <!-- Hidden fields for color and icon -->
-            <%= f.hidden_field :color, "x-model": "selectedColor" %>
-            <%= f.hidden_field :icon, "x-model": "selectedIcon" %>
+                <%= f.hidden_field :color, "x-model": "selectedColor" %>
+                <%= f.hidden_field :icon, "x-model": "selectedIcon" %>
 
-            <!-- Icon Selector -->
-            <div class="mb-5">
-              <label class="block text-sm font-semibold mb-2" style="color: #1D1D1F;">Icon</label>
-              <div class="grid grid-cols-8 md:grid-cols-12 gap-2 max-h-48 overflow-y-auto p-2 border rounded-lg" style="border-color: #E8EEF1;">
-                <button type="button" @click="selectedIcon = 'fa-check'" :class="selectedIcon === 'fa-check' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-check text-sm" style="color: #1D1D1F;"></i>
-                </button>
-                <button type="button" @click="selectedIcon = 'fa-dumbbell'" :class="selectedIcon === 'fa-dumbbell' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-dumbbell text-sm" style="color: #1D1D1F;"></i>
-                </button>
-                <button type="button" @click="selectedIcon = 'fa-book'" :class="selectedIcon === 'fa-book' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-book text-sm" style="color: #1D1D1F;"></i>
-                </button>
-                <button type="button" @click="selectedIcon = 'fa-heart'" :class="selectedIcon === 'fa-heart' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-heart text-sm" style="color: #1D1D1F;"></i>
-                </button>
-                <button type="button" @click="selectedIcon = 'fa-briefcase'" :class="selectedIcon === 'fa-briefcase' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-briefcase text-sm" style="color: #1D1D1F;"></i>
-                </button>
-                <button type="button" @click="selectedIcon = 'fa-utensils'" :class="selectedIcon === 'fa-utensils' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-utensils text-sm" style="color: #1D1D1F;"></i>
-                </button>
-                <button type="button" @click="selectedIcon = 'fa-bed'" :class="selectedIcon === 'fa-bed' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-bed text-sm" style="color: #1D1D1F;"></i>
-                </button>
-                <button type="button" @click="selectedIcon = 'fa-apple-whole'" :class="selectedIcon === 'fa-apple-whole' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-apple-whole text-sm" style="color: #1D1D1F;"></i>
-                </button>
-                <button type="button" @click="selectedIcon = 'fa-mug-hot'" :class="selectedIcon === 'fa-mug-hot' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-mug-hot text-sm" style="color: #1D1D1F;"></i>
-                </button>
-                <button type="button" @click="selectedIcon = 'fa-person-running'" :class="selectedIcon === 'fa-person-running' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-person-running text-sm" style="color: #1D1D1F;"></i>
-                </button>
-                <button type="button" @click="selectedIcon = 'fa-pills'" :class="selectedIcon === 'fa-pills' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-pills text-sm" style="color: #1D1D1F;"></i>
-                </button>
-                <button type="button" @click="selectedIcon = 'fa-brain'" :class="selectedIcon === 'fa-brain' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-brain text-sm" style="color: #1D1D1F;"></i>
-                </button>
-                <button type="button" @click="selectedIcon = 'fa-music'" :class="selectedIcon === 'fa-music' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-music text-sm" style="color: #1D1D1F;"></i>
-                </button>
-                <button type="button" @click="selectedIcon = 'fa-paintbrush'" :class="selectedIcon === 'fa-paintbrush' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-paintbrush text-sm" style="color: #1D1D1F;"></i>
-                </button>
-                <button type="button" @click="selectedIcon = 'fa-droplet'" :class="selectedIcon === 'fa-droplet' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-droplet text-sm" style="color: #1D1D1F;"></i>
-                </button>
-                <button type="button" @click="selectedIcon = 'fa-users'" :class="selectedIcon === 'fa-users' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-users text-sm" style="color: #1D1D1F;"></i>
-                </button>
-                <button type="button" @click="selectedIcon = 'fa-star'" :class="selectedIcon === 'fa-star' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-star text-sm" style="color: #1D1D1F;"></i>
-                </button>
-                <button type="button" @click="selectedIcon = 'fa-pen'" :class="selectedIcon === 'fa-pen' ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'" class="w-8 h-8 rounded-lg border-2 hover:border-theme-blue flex items-center justify-center transition">
-                  <i class="fa-solid fa-pen text-sm" style="color: #1D1D1F;"></i>
-                </button>
-              </div>
-            </div>
+                <!-- Icon Selector -->
+                <div style="margin-bottom: 12px;">
+                  <label class="v2-caption" style="display: block; margin-bottom: 4px;">Icon</label>
+                  <div class="grid grid-cols-9 gap-1.5 p-2" style="border: 1px solid var(--border); border-radius: 8px;">
+                    <% %w[fa-check fa-dumbbell fa-book fa-heart fa-briefcase fa-utensils fa-bed fa-apple-whole fa-mug-hot fa-person-running fa-pills fa-brain fa-music fa-paintbrush fa-droplet fa-users fa-star fa-pen].each do |icon| %>
+                      <button type="button" @click="selectedIcon = '<%= icon %>'"
+                        class="w-7 h-7 rounded-md flex items-center justify-center transition"
+                        :style="selectedIcon === '<%= icon %>' ? 'background: var(--ink); color: var(--bg);' : 'color: var(--ink-secondary);'"
+                        style="border: 1px solid var(--border);">
+                        <i class="fa-solid <%= icon %>" style="font-size: 0.7rem;"></i>
+                      </button>
+                    <% end %>
+                  </div>
+                </div>
 
-            <!-- Color Selector -->
-            <div class="mb-6">
-              <label class="block text-sm font-semibold mb-2" style="color: #1D1D1F;">Color</label>
-              <div class="flex gap-2 p-2 border rounded-lg overflow-x-auto" style="border-color: #E8EEF1;">
-                <button type="button" @click="selectedColor = '#6B8A99'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition relative flex items-center justify-center" :class="selectedColor === '#6B8A99' ? 'border-gray-800' : 'border-white'" style="background-color: #6B8A99;">
-                  <i x-show="selectedColor === '#6B8A99'" class="fa-solid fa-check text-white text-sm font-black"></i>
-                </button>
-                <button type="button" @click="selectedColor = '#9C8B7E'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition flex items-center justify-center" :class="selectedColor === '#9C8B7E' ? 'border-gray-800' : 'border-white'" style="background-color: #9C8B7E;">
-                  <i x-show="selectedColor === '#9C8B7E'" class="fa-solid fa-check text-white text-sm font-black"></i>
-                </button>
-                <button type="button" @click="selectedColor = '#F8796D'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition flex items-center justify-center" :class="selectedColor === '#F8796D' ? 'border-gray-800' : 'border-white'" style="background-color: #F8796D;">
-                  <i x-show="selectedColor === '#F8796D'" class="fa-solid fa-check text-white text-sm font-black"></i>
-                </button>
-                <button type="button" @click="selectedColor = '#FFA07A'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition flex items-center justify-center" :class="selectedColor === '#FFA07A' ? 'border-gray-800' : 'border-white'" style="background-color: #FFA07A;">
-                  <i x-show="selectedColor === '#FFA07A'" class="fa-solid fa-check text-white text-sm font-black"></i>
-                </button>
-                <button type="button" @click="selectedColor = '#E5C730'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition flex items-center justify-center" :class="selectedColor === '#E5C730' ? 'border-gray-800' : 'border-white'" style="background-color: #E5C730;">
-                  <i x-show="selectedColor === '#E5C730'" class="fa-solid fa-check text-white text-sm font-black"></i>
-                </button>
-                <button type="button" @click="selectedColor = '#A8A356'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition flex items-center justify-center" :class="selectedColor === '#A8A356' ? 'border-gray-800' : 'border-white'" style="background-color: #A8A356;">
-                  <i x-show="selectedColor === '#A8A356'" class="fa-solid fa-check text-white text-sm font-black"></i>
-                </button>
-                <button type="button" @click="selectedColor = '#7CB342'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition flex items-center justify-center" :class="selectedColor === '#7CB342' ? 'border-gray-800' : 'border-white'" style="background-color: #7CB342;">
-                  <i x-show="selectedColor === '#7CB342'" class="fa-solid fa-check text-white text-sm font-black"></i>
-                </button>
-                <button type="button" @click="selectedColor = '#6EE7B7'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition flex items-center justify-center" :class="selectedColor === '#6EE7B7' ? 'border-gray-800' : 'border-white'" style="background-color: #6EE7B7;">
-                  <i x-show="selectedColor === '#6EE7B7'" class="fa-solid fa-check text-white text-sm font-black"></i>
-                </button>
-                <button type="button" @click="selectedColor = '#22D3EE'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition flex items-center justify-center" :class="selectedColor === '#22D3EE' ? 'border-gray-800' : 'border-white'" style="background-color: #22D3EE;">
-                  <i x-show="selectedColor === '#22D3EE'" class="fa-solid fa-check text-white text-sm font-black"></i>
-                </button>
-                <button type="button" @click="selectedColor = '#6366F1'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition flex items-center justify-center" :class="selectedColor === '#6366F1' ? 'border-gray-800' : 'border-white'" style="background-color: #6366F1;">
-                  <i x-show="selectedColor === '#6366F1'" class="fa-solid fa-check text-white text-sm font-black"></i>
-                </button>
-                <button type="button" @click="selectedColor = '#A78BFA'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition flex items-center justify-center" :class="selectedColor === '#A78BFA' ? 'border-gray-800' : 'border-white'" style="background-color: #A78BFA;">
-                  <i x-show="selectedColor === '#A78BFA'" class="fa-solid fa-check text-white text-sm font-black"></i>
-                </button>
-                <button type="button" @click="selectedColor = '#E879F9'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition flex items-center justify-center" :class="selectedColor === '#E879F9' ? 'border-gray-800' : 'border-white'" style="background-color: #E879F9;">
-                  <i x-show="selectedColor === '#E879F9'" class="fa-solid fa-check text-white text-sm font-black"></i>
-                </button>
-                <button type="button" @click="selectedColor = '#FB7185'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition flex items-center justify-center" :class="selectedColor === '#FB7185' ? 'border-gray-800' : 'border-white'" style="background-color: #FB7185;">
-                  <i x-show="selectedColor === '#FB7185'" class="fa-solid fa-check text-white text-sm font-black"></i>
-                </button>
-                <button type="button" @click="selectedColor = '#9CA3A8'" class="w-8 h-8 rounded-full border-2 shadow-md hover:scale-110 transition flex items-center justify-center" :class="selectedColor === '#9CA3A8' ? 'border-gray-800' : 'border-white'" style="background-color: #9CA3A8;">
-                  <i x-show="selectedColor === '#9CA3A8'" class="fa-solid fa-check text-white text-sm font-black"></i>
-                </button>
-              </div>
-            </div>
+                <!-- Color Selector -->
+                <div style="margin-bottom: 20px;">
+                  <label class="v2-caption" style="display: block; margin-bottom: 4px;">Color</label>
+                  <div class="flex flex-wrap gap-1.5 p-2" style="border: 1px solid var(--border); border-radius: 8px;">
+                    <% %w[#6B8A99 #9C8B7E #F8796D #FFA07A #E5C730 #A8A356 #7CB342 #6EE7B7 #22D3EE #6366F1 #A78BFA #E879F9 #FB7185 #9CA3A8].each do |color| %>
+                      <button type="button" @click="selectedColor = '<%= color %>'"
+                        class="w-7 h-7 rounded-full transition-transform"
+                        :class="selectedColor === '<%= color %>' && 'scale-110'"
+                        :style="selectedColor === '<%= color %>' ? 'background: <%= color %>; box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px <%= color %>;' : 'background: <%= color %>;'">
+                      </button>
+                    <% end %>
+                  </div>
+                </div>
 
-            <!-- Buttons -->
-            <div class="flex gap-3">
-              <button type="button" @click="showModal = false" class="flex-1 py-3 px-4 rounded-lg font-semibold border-2 transition" style="color: #1D1D1F; border-color: #E8EEF1;">
-                Cancel
-              </button>
-              <%= f.submit "Create Category", class: "flex-1 py-3 px-4 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition transform hover:scale-[1.02]", style: "background: linear-gradient(135deg, #1D1D1F, #45606b);" %>
+                <!-- Buttons -->
+                <div class="flex gap-2 justify-end">
+                  <button type="button" @click="showModal = false" class="v2-btn v2-btn-secondary">Cancel</button>
+                  <%= f.submit "Create Category", class: "v2-btn v2-btn-primary" %>
+                </div>
+              <% end %>
             </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Projects (collapsible) -->
+      <div class="mt-4" x-data="{ open: true, showModal: false, selectedColor: '#6B8A99', selectedIcon: 'fa-briefcase', projectName: '',
+        hexToRgb(hex) { const c = hex.replace('#',''); return {r:parseInt(c.substr(0,2),16),g:parseInt(c.substr(2,2),16),b:parseInt(c.substr(4,2),16)}; },
+        rgbToHex(r,g,b) { return '#'+[r,g,b].map(c=>Math.round(Math.max(0,Math.min(255,c))).toString(16).padStart(2,'0')).join('').toUpperCase(); },
+        rgbToHsl(r,g,b) { r/=255;g/=255;b/=255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2;let h=0,s=0;if(mx!==mn){const d=mx-mn;s=l>0.5?d/(2-mx-mn):d/(mx+mn);h=mx===r?((g-b)/d+(g<b?6:0))/6:mx===g?((b-r)/d+2)/6:((r-g)/d+4)/6;}return{h:Math.round(h*360),s:Math.round(s*100),l:Math.round(l*100)}; },
+        hslToRgb(h,s,l) { h/=360;s/=100;l/=100;if(s===0)return{r:Math.round(l*255),g:Math.round(l*255),b:Math.round(l*255)};const hue2rgb=(p,q,t)=>{if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;};const q=l<0.5?l*(1+s):l+s-l*s,p=2*l-q;return{r:Math.round(hue2rgb(p,q,h+1/3)*255),g:Math.round(hue2rgb(p,q,h)*255),b:Math.round(hue2rgb(p,q,h-1/3)*255)}; },
+        getLightColor(hex) { const rgb=this.hexToRgb(hex),hsl=this.rgbToHsl(rgb.r,rgb.g,rgb.b),nr=this.hslToRgb(hsl.h,Math.max(hsl.s*0.4,10),92);return this.rgbToHex(nr.r,nr.g,nr.b); },
+        getDarkColor(hex) { const rgb=this.hexToRgb(hex),hsl=this.rgbToHsl(rgb.r,rgb.g,rgb.b),nr=this.hslToRgb(hsl.h,Math.min(hsl.s*1.2,80),28);return this.rgbToHex(nr.r,nr.g,nr.b); }
+      }">
+        <button @click="open = !open" class="flex items-center justify-between w-full px-2.5 py-1.5 v2-section-label" style="cursor: pointer;">
+          <span>Projects</span>
+          <svg :class="open && 'rotate-180'" class="transition-transform duration-200" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+
+        <div class="v2-categories-list space-y-0.5" :class="!open && 'collapsed'">
+          <% if current_user.projects.active.ordered.any? %>
+            <% current_user.projects.active.ordered.each do |project| %>
+              <% proj_active = @project && @project.id == project.id %>
+              <%= link_to project_path(project), class: "flex items-center gap-2.5 py-1.5 px-2.5 rounded-lg text-sm transition-all duration-150 v2-sidebar-link #{proj_active ? 'active' : ''}", style: "position: relative;" do %>
+                <span class="v2-category-dot" style="background: <%= project.color %>;"></span>
+                <span><%= project.name %></span>
+              <% end %>
+            <% end %>
+          <% end %>
+
+          <button @click="showModal = true" class="flex items-center gap-2.5 py-1.5 px-2.5 rounded-lg text-sm transition-all duration-150 w-full" style="color: var(--ink-faint);">
+            <i class="fa-solid fa-plus" style="font-size: 0.65rem; width: 8px; text-align: center;"></i>
+            <span>New Project</span>
+          </button>
+        </div>
+
+        <!-- New Project Modal (teleported to body) -->
+        <template x-teleport="body">
+          <div x-show="showModal" @click.self="showModal = false" class="fixed inset-0 flex items-center justify-center z-50 p-4" style="background: rgba(0,0,0,0.4); display: none;">
+            <div @click.stop class="v2-card" style="padding: 24px; width: 100%; max-width: 32rem; max-height: 90vh; overflow-y: auto;">
+              <h2 class="v2-h2" style="margin-bottom: 20px;">New Project</h2>
+
+              <%= form_with model: Project.new, url: projects_path, method: :post, local: true do |f| %>
+                <!-- Preview -->
+                <div style="margin-bottom: 16px; padding: 12px; border-radius: 8px; border: 1px solid var(--border);" :style="'background:' + getLightColor(selectedColor)">
+                  <div class="flex items-center gap-3">
+                    <div class="w-7 h-7 rounded-lg flex items-center justify-center" :style="'background:' + selectedColor">
+                      <i :class="'fa-solid ' + selectedIcon" class="text-white text-xs"></i>
+                    </div>
+                    <span class="v2-h3" :style="'color:' + getDarkColor(selectedColor)" x-text="projectName || 'My Project'"></span>
+                  </div>
+                </div>
+
+                <!-- Name -->
+                <div style="margin-bottom: 12px;">
+                  <label class="v2-caption" style="display: block; margin-bottom: 4px;">Name</label>
+                  <%= f.text_field :name, "x-model": "projectName", placeholder: "e.g., Q2 Marketing Campaign", class: "form-input", style: "font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border);" %>
+                </div>
+
+                <!-- Description -->
+                <div style="margin-bottom: 12px;">
+                  <label class="v2-caption" style="display: block; margin-bottom: 4px;">Description (optional)</label>
+                  <%= f.text_area :description, rows: 2, placeholder: "e.g., All tasks for the Q2 launch", class: "form-input", style: "font-family: var(--font-body); resize: none; background: var(--surface); color: var(--ink); border-color: var(--border);" %>
+                </div>
+
+                <%= f.hidden_field :color, "x-model": "selectedColor" %>
+                <%= f.hidden_field :icon, "x-model": "selectedIcon" %>
+
+                <!-- Icon Selector -->
+                <div style="margin-bottom: 12px;">
+                  <label class="v2-caption" style="display: block; margin-bottom: 4px;">Icon</label>
+                  <div class="grid grid-cols-9 gap-1.5 p-2" style="border: 1px solid var(--border); border-radius: 8px;">
+                    <% %w[fa-briefcase fa-diagram-project fa-rocket fa-bullseye fa-laptop-code fa-building fa-lightbulb fa-users fa-chart-line fa-pen-ruler fa-code fa-star fa-graduation-cap fa-house fa-heart fa-globe fa-palette fa-wrench].each do |icon| %>
+                      <button type="button" @click="selectedIcon = '<%= icon %>'"
+                        class="w-7 h-7 rounded-md flex items-center justify-center transition"
+                        :style="selectedIcon === '<%= icon %>' ? 'background: var(--ink); color: var(--bg);' : 'color: var(--ink-secondary);'"
+                        style="border: 1px solid var(--border);">
+                        <i class="fa-solid <%= icon %>" style="font-size: 0.7rem;"></i>
+                      </button>
+                    <% end %>
+                  </div>
+                </div>
+
+                <!-- Color Selector -->
+                <div style="margin-bottom: 20px;">
+                  <label class="v2-caption" style="display: block; margin-bottom: 4px;">Color</label>
+                  <div class="flex flex-wrap gap-1.5 p-2" style="border: 1px solid var(--border); border-radius: 8px;">
+                    <% %w[#6B8A99 #9C8B7E #F8796D #FFA07A #E5C730 #A8A356 #7CB342 #6EE7B7 #22D3EE #6366F1 #A78BFA #E879F9 #FB7185 #9CA3A8].each do |color| %>
+                      <button type="button" @click="selectedColor = '<%= color %>'"
+                        class="w-7 h-7 rounded-full transition-transform"
+                        :class="selectedColor === '<%= color %>' && 'scale-110'"
+                        :style="selectedColor === '<%= color %>' ? 'background: <%= color %>; box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px <%= color %>;' : 'background: <%= color %>;'">
+                      </button>
+                    <% end %>
+                  </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex gap-2 justify-end">
+                  <button type="button" @click="showModal = false" class="v2-btn v2-btn-secondary">Cancel</button>
+                  <%= f.submit "Create Project", class: "v2-btn v2-btn-primary" %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Utility -->
+      <div class="mt-4">
+        <div class="v2-section-label px-2.5 py-1.5">Utility</div>
+        <div class="space-y-0.5">
+          <% prep_active = current_page?(daily_prep_path) || current_page?(daily_prep_manage_path) || current_page?(daily_prep_answers_path) %>
+          <%= link_to daily_prep_path, class: sidebar_link_classes(prep_active), style: "position: relative;" do %>
+            <i class="fa-solid fa-clipboard-check"></i>
+            <span>Daily Prep</span>
+          <% end %>
+
+          <%= link_to analytics_path, class: sidebar_link_classes(current_page?(analytics_path)), style: "position: relative;" do %>
+            <i class="fa-solid fa-chart-column"></i>
+            <span>Analytics</span>
+          <% end %>
+
+          <%= link_to settings_path, class: sidebar_link_classes(current_page?(settings_path)), style: "position: relative;" do %>
+            <i class="fa-solid fa-gear"></i>
+            <span>Settings</span>
           <% end %>
         </div>
-        </div>
-      </template>
-    </div>
-
-    <!-- Organization Section -->
-    <div class="mt-5">
-      <div class="flex items-center justify-between mb-2 pb-1 border-b" style="border-bottom-color: rgba(0, 0, 0, 0.12);">
-        <h3 class="text-sm" style="color: #000000; letter-spacing: 0.03em; font-weight: 200; opacity: 0.7;">Organization</h3>
       </div>
-      <div class="space-y-0">
-        <% prep_active = current_page?(daily_prep_path) || current_page?(daily_prep_manage_path) || current_page?(daily_prep_answers_path) %>
-        <%= link_to daily_prep_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: prep_active ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
-          <i class="fa-solid fa-clipboard-check w-5 text-center" style="color: <%= prep_active ? '#000000' : '#000000' %>;"></i>
-          <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= prep_active ? '#000000' : '#000000' %>; opacity: <%= prep_active ? '1' : '0.7' %>;">Daily Prep</span>
-        <% end %>
-        <%= link_to tags_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(tags_path) ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
-          <i class="fa-solid fa-tags w-5 text-center" style="color: <%= current_page?(tags_path) ? '#000000' : '#000000' %>;"></i>
-          <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(tags_path) ? '#000000' : '#000000' %>; opacity: <%= current_page?(tags_path) ? '1' : '0.7' %>;">Tags</span>
-        <% end %>
-      </div>
-    </div>
-
-    <!-- Admin Section -->
-    <div class="mt-5">
-      <div class="flex items-center justify-between mb-2 pb-1 border-b" style="border-bottom-color: rgba(0, 0, 0, 0.12);">
-        <h3 class="text-sm" style="color: #000000; letter-spacing: 0.03em; font-weight: 200; opacity: 0.7;">Admin</h3>
-      </div>
-      <div class="space-y-0">
-        <%= link_to analytics_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(analytics_path) ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
-          <i class="fa-solid fa-chart-column w-5 text-center" style="color: <%= current_page?(analytics_path) ? '#000000' : '#000000' %>;"></i>
-          <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(analytics_path) ? '#000000' : '#000000' %>; opacity: <%= current_page?(analytics_path) ? '1' : '0.7' %>;">Analytics</span>
-        <% end %>
-        <%= link_to settings_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(settings_path) ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
-          <i class="fa-solid fa-gear w-5 text-center" style="color: <%= current_page?(settings_path) ? '#000000' : '#000000' %>;"></i>
-          <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(settings_path) ? '#000000' : '#000000' %>; opacity: <%= current_page?(settings_path) ? '1' : '0.7' %>;">Settings</span>
-        <% end %>
-        <% if user_signed_in? %>
-          <%= link_to edit_user_registration_path, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm", style: current_page?(edit_user_registration_path) ? "background-color: rgba(0, 0, 0, 0.06);" : "" do %>
-            <i class="fa-solid fa-user w-5 text-center" style="color: <%= current_page?(edit_user_registration_path) ? '#000000' : '#000000' %>;"></i>
-            <span style="font-weight: 200; letter-spacing: 0.03em; color: <%= current_page?(edit_user_registration_path) ? '#000000' : '#000000' %>; opacity: <%= current_page?(edit_user_registration_path) ? '1' : '0.7' %>;">My Account</span>
-          <% end %>
-          <%= button_to destroy_user_session_path, method: :delete, class: "flex items-center gap-3 py-1.5 rounded-lg transition-all duration-150 text-sm w-full text-left", style: "" do %>
-            <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center" style="color: #000000;"></i>
-            <span style="font-weight: 200; letter-spacing: 0.03em; color: #000000; opacity: 0.7;">Sign Out</span>
-          <% end %>
-        <% end %>
-      </div>
-    </div>
+    <% end %>
   </div>
 
-  <% unless user_signed_in? %>
-    <!-- Sign In/Sign Up for logged out users -->
-    <div class="p-4 border-t" style="border-color: rgba(0, 0, 0, 0.12);">
-      <div class="space-y-1">
-        <%= link_to new_user_session_path, class: "flex items-center gap-3 pl-4 pr-0 py-1.5 rounded-lg hover:bg-black/10 transition text-sm" do %>
-          <i class="fa-solid fa-arrow-right-to-bracket w-5 text-center" style="color: #000000;"></i>
-          <span style="font-weight: 200; letter-spacing: 0.03em; color: #000000; opacity: 0.7;">Sign In</span>
-        <% end %>
-        <%= link_to new_user_registration_path, class: "flex items-center gap-3 pl-4 pr-0 py-1.5 rounded-lg hover:bg-black/10 transition text-sm" do %>
-          <i class="fa-solid fa-user-plus w-5 text-center" style="color: #000000;"></i>
-          <span style="font-weight: 200; letter-spacing: 0.03em; color: #000000; opacity: 0.7;">Create Account</span>
-        <% end %>
+  <!-- Footer -->
+  <div class="v2-sidebar-footer">
+    <% if user_signed_in? %>
+      <!-- Theme Switcher -->
+      <div class="v2-theme-switcher" style="margin-bottom: 12px; padding: 0 4px;">
+        <span class="v2-caption" style="margin-right: 4px;">Theme</span>
+        <button class="v2-theme-swatch v2-theme-swatch--white <%= 'active' if current_user.theme == 'white' %>" data-theme-value="white" title="White"></button>
+        <button class="v2-theme-swatch v2-theme-swatch--cream <%= 'active' if current_user.theme == 'cream' || current_user.theme.blank? %>" data-theme-value="cream" title="Cream"></button>
+        <button class="v2-theme-swatch v2-theme-swatch--dark <%= 'active' if current_user.theme == 'dark' %>" data-theme-value="dark" title="Dark"></button>
       </div>
-    </div>
-  <% end %>
+
+      <div class="v2-sidebar-user">
+        <div class="v2-sidebar-avatar"><%= current_user.first_name&.first&.upcase || current_user.email.first.upcase %></div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 0.833rem; font-weight: 500; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><%= current_user.first_name || current_user.email %></div>
+          <div style="font-size: 0.7rem; color: var(--ink-tertiary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><%= current_user.email %></div>
+        </div>
+      </div>
+
+      <%= button_to destroy_user_session_path, method: :delete, style: "display: block; margin-top: 6px; padding: 4px 4px; font-size: 0.8rem; color: var(--ink-tertiary); width: 100%; text-align: left; font-family: var(--font-body); background: none; border: none; border-radius: 6px; cursor: pointer; transition: all 0.15s ease;" do %>
+        Sign out
+      <% end %>
+    <% else %>
+      <div class="space-y-1">
+        <%= link_to "Sign In", new_user_session_path, class: "flex items-center gap-2.5 py-1.5 px-2.5 rounded-lg text-sm v2-sidebar-link" %>
+        <%= link_to "Create Account", new_user_registration_path, class: "flex items-center gap-2.5 py-1.5 px-2.5 rounded-lg text-sm v2-sidebar-link" %>
+      </div>
+    <% end %>
+  </div>
 </aside>
+
+<!-- Mobile overlay -->
+<div class="v2-sidebar-overlay" id="v2-sidebar-overlay"></div>
+
+<script>
+  // Theme switching
+  document.querySelectorAll('.v2-theme-swatch').forEach(function(swatch) {
+    swatch.addEventListener('click', function() {
+      var theme = this.dataset.themeValue;
+      document.documentElement.classList.add('theme-transitioning');
+      document.documentElement.setAttribute('data-theme', theme);
+      document.querySelectorAll('.v2-theme-swatch').forEach(function(s) { s.classList.remove('active'); });
+      this.classList.add('active');
+      setTimeout(function() { document.documentElement.classList.remove('theme-transitioning'); }, 350);
+
+      // Persist to server
+      var token = document.querySelector('meta[name="csrf-token"]');
+      if (token) {
+        fetch('/settings', {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': token.content,
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({ user: { theme: theme } })
+        });
+      }
+    });
+  });
+
+  // Mobile sidebar toggle
+  (function() {
+    var sidebar = document.getElementById('v2-sidebar');
+    var overlay = document.getElementById('v2-sidebar-overlay');
+    var menuBtn = document.getElementById('v2-menu-btn');
+    var closeBtn = document.getElementById('v2-sidebar-close');
+
+    function openSidebar() { sidebar.classList.add('open'); }
+    function closeSidebar() { sidebar.classList.remove('open'); }
+
+    if (menuBtn) menuBtn.addEventListener('click', openSidebar);
+    if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+    if (overlay) overlay.addEventListener('click', closeSidebar);
+  })();
+</script>

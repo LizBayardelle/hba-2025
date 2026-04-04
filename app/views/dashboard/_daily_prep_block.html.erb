@@ -1,42 +1,35 @@
-<div class="rounded-xl p-6 shadow-deep" style="background: #FFFFFF;">
+<div class="v2-card" style="padding: 0;">
   <!-- Header -->
-  <div class="mb-4">
-    <div class="flex items-center justify-between">
-      <h2 class="text-2xl font-display" style="color: #1D1D1F;">Daily Prep</h2>
-      <%= link_to daily_prep_path, class: "text-xs hover:underline", style: "color: #8E8E93;" do %>
-        View All
+  <div class="v2-section-header" style="padding: 14px 18px 10px;">
+    <h2 class="v2-section-title">Daily Prep</h2>
+    <div class="flex items-center gap-3">
+      <% answered_count = @prep_response_map.count { |_, r| r.response_value.present? || r.long_response.present? } %>
+      <span class="v2-caption"><%= answered_count %> of <%= @prep_questions.count %> answered</span>
+      <%= link_to daily_prep_path, class: "v2-caption", style: "color: var(--ink-tertiary);" do %>
+        View all
       <% end %>
-    </div>
-    <% answered_count = @prep_response_map.count { |_, r| r.response_value.present? || r.long_response.present? } %>
-    <div class="text-sm mt-1" style="color: #8E8E93; font-weight: 200; font-family: 'Inter', sans-serif;">
-      <%= answered_count %> / <%= @prep_questions.count %> answered
     </div>
   </div>
 
   <!-- Questions -->
   <div>
     <% if @prep_questions.any? %>
-      <div class="space-y-5">
+      <div>
         <% @prep_questions.each_with_index do |question, index| %>
           <% response = @prep_response_map[question.id] %>
-          <div class="prep-question-item" data-question-id="<%= question.id %>" data-question-type="<%= question.question_type %>" data-today="<%= @today %>">
+          <div class="prep-question-item" style="padding: 14px 24px; border-top: 1px solid var(--border); <%= index == 0 ? 'border-top: none;' : '' %>" data-question-id="<%= question.id %>" data-question-type="<%= question.question_type %>" data-today="<%= @today %>">
             <!-- Question text -->
-            <div class="flex items-start gap-3 mb-2">
-              <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs flex-shrink-0" style="background: #F5F5F7; color: #8E8E93;">
-                <%= index + 1 %>
-              </span>
-              <p class="text-sm font-medium" style="color: #1D1D1F;"><%= question.question_text %></p>
-            </div>
+            <p class="v2-small" style="margin-bottom: 6px; color: var(--ink-secondary);"><%= question.question_text %></p>
 
             <!-- Response input -->
-            <div class="ml-9">
+            <div>
               <% case question.question_type %>
               <% when 'short_answer' %>
                 <input
                   type="text"
-                  class="prep-input w-full px-3 py-2 rounded-lg text-sm focus:outline-none transition"
-                  style="border: 1px solid rgba(199, 199, 204, 0.4); background: #F9F9FB;"
-                  placeholder="Type your answer..."
+                  class="prep-input w-full rounded-lg text-sm focus:outline-none transition"
+                  style="border: 1px solid var(--border); background: var(--bg); color: var(--ink); font-family: var(--font-display); font-style: italic; padding: 6px 10px;"
+                  placeholder="Write your answer..."
                   value="<%= response&.response_value&.dig('text') || '' %>"
                   data-response-id="<%= response&.id %>"
                 />
@@ -48,7 +41,7 @@
                   <trix-editor
                     input="<%= input_id %>"
                     class="prep-trix trix-content text-sm rounded-lg"
-                    style="border: 1px solid rgba(199, 199, 204, 0.4); background: #F9F9FB; min-height: 80px;"
+                    style="border: 1px solid var(--border); background: var(--bg); min-height: 60px; color: var(--ink);"
                   ></trix-editor>
                 </div>
 
@@ -60,54 +53,53 @@
                   data-response-id="<%= response&.id %>"
                 >
                   <div
-                    class="prep-toggle relative w-12 h-7 rounded-full transition-colors duration-200"
-                    style="background-color: <%= checked ? '#34C759' : '#E5E5E7' %>;"
+                    class="prep-toggle relative w-10 h-6 rounded-full transition-colors duration-200"
+                    style="background-color: <%= checked ? 'var(--ink)' : 'var(--border)' %>;"
                   >
                     <div
-                      class="prep-toggle-knob absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200"
-                      style="transform: translateX(<%= checked ? '22px' : '4px' %>);"
+                      class="prep-toggle-knob absolute w-4 h-4 rounded-full shadow transition-transform duration-200"
+                      style="top: 4px; background: var(--surface); transform: translateX(<%= checked ? '18px' : '4px' %>);"
                     ></div>
                   </div>
-                  <span class="prep-toggle-label text-sm" style="color: #1D1D1F;"><%= checked ? 'Yes' : 'No' %></span>
+                  <span class="prep-toggle-label v2-small" style="color: var(--ink);"><%= checked ? 'Yes' : 'No' %></span>
                 </div>
 
               <% when 'multiple_choice' %>
                 <% selected = response&.response_value&.dig('selected') || [] %>
-                <div class="prep-multiple-choice space-y-2" data-allow-multiple="<%= question.allow_multiple %>" data-response-id="<%= response&.id %>">
+                <div class="prep-multiple-choice space-y-1.5" data-allow-multiple="<%= question.allow_multiple %>" data-response-id="<%= response&.id %>">
                   <% (question.options || []).each_with_index do |option, opt_index| %>
                     <% is_selected = selected.include?(opt_index) %>
                     <button
                       type="button"
                       class="prep-option w-full text-left px-3 py-2 rounded-lg transition flex items-center gap-3 text-sm"
-                      style="background: <%= is_selected ? '#E8F5E9' : '#F9F9FB' %>; border: <%= is_selected ? '2px solid #34C759' : '1px solid rgba(199, 199, 204, 0.4)' %>;"
+                      style="background: <%= is_selected ? 'var(--hover-tint-strong)' : 'var(--bg)' %>; border: 1px solid <%= is_selected ? 'var(--ink-faint)' : 'var(--border)' %>; color: var(--ink); font-family: var(--font-body);"
                       data-index="<%= opt_index %>"
                       data-selected="<%= is_selected %>"
                     >
                       <div
-                        class="w-5 h-5 rounded-<%= question.allow_multiple ? 'md' : 'full' %> border-2 flex items-center justify-center transition"
-                        style="border-color: <%= is_selected ? '#34C759' : '#C7C7CC' %>; background-color: <%= is_selected ? '#34C759' : 'transparent' %>;"
+                        class="w-4 h-4 rounded-<%= question.allow_multiple ? 'sm' : 'full' %> border-2 flex items-center justify-center transition flex-shrink-0"
+                        style="border-color: <%= is_selected ? 'var(--ink)' : 'var(--border-hover)' %>; background-color: <%= is_selected ? 'var(--ink)' : 'transparent' %>;"
                       >
                         <% if is_selected %>
-                          <i class="fa-solid fa-check text-white text-xs"></i>
+                          <i class="fa-solid fa-check text-xs" style="font-size: 0.5rem; color: var(--check-ink);"></i>
                         <% end %>
                       </div>
-                      <span style="color: #1D1D1F;"><%= option %></span>
+                      <span><%= option %></span>
                     </button>
                   <% end %>
                 </div>
               <% end %>
 
               <!-- Save status indicator -->
-              <div class="prep-status mt-1 text-xs" style="color: #8E8E93; display: none;"></div>
+              <div class="prep-status mt-1 v2-caption" style="color: var(--ink-faint); display: none;"></div>
             </div>
           </div>
         <% end %>
       </div>
     <% else %>
-      <div class="text-center py-6">
-        <i class="fa-solid fa-clipboard-list text-4xl mb-3" style="color: #E5E5E7;"></i>
-        <p class="text-sm" style="color: #8E8E93;">No prep questions configured</p>
-        <%= link_to "Add Questions", daily_prep_manage_path, class: "inline-block mt-2 text-sm hover:underline", style: "color: #8E8E93;" %>
+      <div style="text-align: center; padding: 32px 18px;">
+        <p class="v2-small" style="color: var(--ink-faint);">No prep questions configured</p>
+        <%= link_to "Add Questions", daily_prep_manage_path, class: "v2-btn v2-btn-primary", style: "margin-top: 12px;" %>
       </div>
     <% end %>
   </div>
@@ -215,8 +207,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const knob = checkbox.querySelector('.prep-toggle-knob');
       const label = checkbox.querySelector('.prep-toggle-label');
 
-      toggle.style.backgroundColor = newChecked ? '#34C759' : '#E5E5E7';
-      knob.style.transform = newChecked ? 'translateX(22px)' : 'translateX(4px)';
+      toggle.style.backgroundColor = newChecked ? 'var(--ink)' : 'var(--border)';
+      knob.style.transform = newChecked ? 'translateX(18px)' : 'translateX(4px)';
       label.textContent = newChecked ? 'Yes' : 'No';
 
       // Save
@@ -263,13 +255,13 @@ document.addEventListener('DOMContentLoaded', () => {
           const optIndex = parseInt(opt.dataset.index);
           const isSelected = selected.includes(optIndex);
           opt.dataset.selected = isSelected;
-          opt.style.background = isSelected ? '#E8F5E9' : '#F9F9FB';
-          opt.style.border = isSelected ? '2px solid #34C759' : '1px solid rgba(199, 199, 204, 0.4)';
+          opt.style.background = isSelected ? 'var(--hover-tint-strong)' : 'var(--bg)';
+          opt.style.border = isSelected ? '1px solid var(--ink-faint)' : '1px solid var(--border)';
 
           const checkDiv = opt.querySelector('div');
-          checkDiv.style.borderColor = isSelected ? '#34C759' : '#C7C7CC';
-          checkDiv.style.backgroundColor = isSelected ? '#34C759' : 'transparent';
-          checkDiv.innerHTML = isSelected ? '<i class="fa-solid fa-check text-white text-xs"></i>' : '';
+          checkDiv.style.borderColor = isSelected ? 'var(--ink)' : 'var(--border-hover)';
+          checkDiv.style.backgroundColor = isSelected ? 'var(--ink)' : 'transparent';
+          checkDiv.innerHTML = isSelected ? '<i class="fa-solid fa-check text-xs" style="font-size: 0.5rem; color: var(--check-ink);"></i>' : '';
         });
 
         // Save

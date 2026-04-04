@@ -1,6 +1,80 @@
 Rails.application.routes.draw do
   devise_for :users
 
+  # === iOS App API ===
+  namespace :app_api do
+    namespace :v1 do
+      devise_scope :user do
+        post 'users/sign_in', to: 'sessions#create', as: :user_session
+        delete 'users/sign_out', to: 'sessions#destroy', as: :destroy_user_session
+        post 'users', to: 'registrations#create', as: :user_registration
+      end
+
+      get 'dashboard', to: 'dashboard#index'
+
+      resources :habits, only: [:index, :show, :create, :update, :destroy] do
+        post 'completions/increment', to: 'habit_completions#increment'
+        post 'completions/decrement', to: 'habit_completions#decrement'
+      end
+
+      resources :tasks, only: [:index, :show, :create, :update, :destroy]
+      resources :goals, only: [:index, :show, :create, :update, :destroy] do
+        member do
+          post :increment
+          post :decrement
+        end
+      end
+
+      resources :journals, only: [:index, :show, :create, :update, :destroy]
+      resources :notes, only: [:index, :show, :create, :update, :destroy]
+      resources :lists, only: [:index, :show, :create, :update, :destroy] do
+        member do
+          post :toggle_pin
+        end
+      end
+
+      resources :categories, only: [:index, :show, :create, :update, :destroy]
+      resources :tags, only: [:index, :show, :update, :destroy]
+      resources :documents, only: [:index, :show, :create, :update, :destroy] do
+        member do
+          post :toggle_pin
+        end
+      end
+
+      scope ':parent_type/:parent_id' do
+        resources :checklist_items, only: [:create, :update, :destroy] do
+          collection do
+            patch :reorder
+          end
+        end
+      end
+
+      resource :settings, only: [:show, :update] do
+        resources :importance_levels, only: [:index, :show, :create, :update, :destroy] do
+          collection do
+            patch :reorder
+          end
+        end
+        resources :time_blocks, only: [:index, :show, :create, :update, :destroy] do
+          collection do
+            patch :reorder
+          end
+        end
+      end
+
+      get 'daily_prep', to: 'prep_questions#index'
+      get 'daily_prep/manage', to: 'prep_questions#manage'
+      get 'daily_prep/answers', to: 'prep_questions#answers'
+      resources :prep_questions, only: [:create, :update, :destroy]
+      resources :prep_responses, only: [:create, :update]
+
+      get 'google_calendar/calendars', to: 'google_calendar#calendars'
+      patch 'google_calendar/select', to: 'google_calendar#select_calendar'
+      delete 'google_calendar/disconnect', to: 'google_calendar#disconnect'
+      post 'google_calendar/refresh', to: 'google_calendar#refresh'
+    end
+  end
+
   root to: 'home#index'
 
   get 'dashboard', to: 'dashboard#index'
@@ -78,6 +152,17 @@ Rails.application.routes.draw do
 
   resources :categories, only: [:index, :create, :update, :destroy, :show] do
     resources :habits, only: [:show, :create, :update, :destroy]
+  end
+
+  resources :projects, only: [:index, :show, :create, :update, :destroy] do
+    resources :sections, only: [:create, :update, :destroy] do
+      resources :project_tasks, only: [:create], shallow: true
+    end
+  end
+  resources :project_tasks, only: [:update, :destroy] do
+    collection do
+      patch :reorder
+    end
   end
 
   resources :habits, only: [] do

@@ -75,7 +75,7 @@ const GoalViewModal = () => {
         <div className="flex items-center justify-center py-12">
           <div
             className="animate-spin rounded-full h-12 w-12 border-b-2"
-            style={{ borderColor: '#1D1D1F' }}
+            style={{ borderColor: 'var(--ink)' }}
           ></div>
         </div>
       );
@@ -83,7 +83,7 @@ const GoalViewModal = () => {
 
     if (error) {
       return (
-        <div className="text-center py-8" style={{ color: '#DC2626' }}>
+        <div className="text-center py-8" style={{ color: 'var(--overdue)' }}>
           <i className="fa-solid fa-exclamation-circle text-4xl mb-4"></i>
           <p>Error loading goal: {error.message}</p>
         </div>
@@ -98,14 +98,14 @@ const GoalViewModal = () => {
         <div className="flex items-start gap-5">
           <ProgressThermometer
             progress={goal.progress}
-            color={goal.category?.color || '#8E8E93'}
+            color={goal.category?.color || 'var(--ink-tertiary)'}
             size="normal"
             countLabel={getCountLabel()}
           />
           <div className="flex-1">
             <h2
               className={`text-2xl font-bold ${goal.completed ? 'line-through opacity-60' : ''}`}
-              style={{ color: '#1D1D1F' }}
+              style={{ color: 'var(--ink)' }}
             >
               {goal.name}
             </h2>
@@ -121,8 +121,7 @@ const GoalViewModal = () => {
         <div className="flex flex-wrap gap-2">
           {/* Goal Type */}
           <div
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-sm liquid-surface-subtle"
-            style={{ '--surface-color': '#1D1D1F' }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-sm v2-badge v2-badge-neutral"
           >
             {goal.goal_type === 'counted' && !goal.unit_name && <i className="fa-solid fa-hashtag"></i>}
             {goal.goal_type !== 'counted' && <i className="fa-solid fa-list-ol"></i>}
@@ -132,8 +131,7 @@ const GoalViewModal = () => {
           {/* Category */}
           {goal.category && (
             <div
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-sm liquid-surface-subtle"
-              style={{ '--surface-color': goal.category.color }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-sm v2-badge v2-badge-neutral"
             >
               <i className={`fa-solid ${goal.category.icon}`}></i>
               <span style={{ fontWeight: 500 }}>{goal.category.name}</span>
@@ -143,8 +141,7 @@ const GoalViewModal = () => {
           {/* Importance Level */}
           {goal.importance_level && (
             <div
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-sm liquid-surface-subtle"
-              style={{ '--surface-color': goal.importance_level.color }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-sm v2-badge v2-badge-neutral"
             >
               <i className={`${goal.importance_level.icon}`}></i>
               <span style={{ fontWeight: 500 }}>{goal.importance_level.name}</span>
@@ -154,8 +151,7 @@ const GoalViewModal = () => {
           {/* Time Block */}
           {goal.time_block && (
             <div
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-sm liquid-surface-subtle"
-              style={{ '--surface-color': goal.time_block.color }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-sm v2-badge v2-badge-neutral"
             >
               <i className={`${goal.time_block.icon}`}></i>
               <span style={{ fontWeight: 500 }}>{goal.time_block.name}</span>
@@ -165,8 +161,7 @@ const GoalViewModal = () => {
           {/* Completed */}
           {goal.completed && goal.completed_at && (
             <div
-              className="px-3 py-1.5 rounded-[10px] text-sm liquid-surface-subtle"
-              style={{ '--surface-color': '#4A6B27' }}
+              className="px-3 py-1.5 rounded-[10px] text-sm v2-badge v2-badge-neutral"
             >
               <i className="fa-solid fa-check-circle mr-1"></i>
               Completed {formatDateTime(goal.completed_at)}
@@ -184,10 +179,9 @@ const GoalViewModal = () => {
               {goal.tags.map((tag) => (
                 <span
                   key={tag.id}
-                  className="px-3 py-1.5 rounded-[10px] text-sm liquid-surface-subtle"
+                  className="px-3 py-1.5 rounded-[10px] text-sm v2-badge v2-badge-neutral"
                   style={{
-                    '--surface-color': '#2C2C2E',
-                    fontFamily: "'Inter', sans-serif",
+                    fontFamily: 'var(--font-body)',
                     fontWeight: 600,
                   }}
                 >
@@ -212,20 +206,19 @@ const GoalViewModal = () => {
                 className="w-10 h-10 rounded-[10px] flex items-center justify-center transition hover:opacity-80 disabled:opacity-30 badge-outline"
               >
                 {decrementMutation.isPending ? (
-                  <i className="fa-solid fa-spinner fa-spin" style={{ color: '#1D1D1F' }}></i>
+                  <i className="fa-solid fa-spinner fa-spin" style={{ color: 'var(--ink)' }}></i>
                 ) : (
-                  <i className="fa-solid fa-minus" style={{ color: '#1D1D1F' }}></i>
+                  <i className="fa-solid fa-minus" style={{ color: 'var(--ink)' }}></i>
                 )}
               </button>
-              <div className="text-xl font-bold" style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif" }}>
+              <div className="text-xl font-bold" style={{ color: 'var(--ink)', fontFamily: 'var(--font-body)' }}>
                 {goal.current_count} / {goal.target_count}
-                {goal.unit_name && <span className="text-sm font-normal ml-1" style={{ color: '#8E8E93' }}>{goal.unit_name}</span>}
+                {goal.unit_name && <span className="text-sm font-normal ml-1" style={{ color: 'var(--ink-tertiary)' }}>{goal.unit_name}</span>}
               </div>
               <button
                 onClick={() => incrementMutation.mutate()}
                 disabled={incrementMutation.isPending}
-                className="w-10 h-10 rounded-[10px] flex items-center justify-center transition hover:opacity-80 liquid-surface-subtle"
-                style={{ '--surface-color': '#22C55E' }}
+                className="w-10 h-10 rounded-[10px] flex items-center justify-center transition hover:opacity-80 v2-badge v2-badge-neutral"
               >
                 {incrementMutation.isPending ? (
                   <i className="fa-solid fa-spinner fa-spin"></i>
@@ -247,7 +240,7 @@ const GoalViewModal = () => {
               parentType="goal"
               parentId={goalId}
               items={goal.checklist_items || []}
-              color={goal.category?.color || '#1D1D1F'}
+              color={goal.category?.color || 'var(--ink)'}
               editable={true}
             />
           </div>
@@ -255,7 +248,7 @@ const GoalViewModal = () => {
 
         {/* Created Date */}
         <div className="pt-4 border-t" style={{ borderColor: 'rgba(199, 199, 204, 0.3)' }}>
-          <p className="text-xs" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#8E8E93' }}>
+          <p className="text-xs" style={{ fontFamily: 'var(--font-body)', fontWeight: 200, color: 'var(--ink-tertiary)' }}>
             Created {formatDateTime(goal.created_at)}
           </p>
         </div>
@@ -273,14 +266,14 @@ const GoalViewModal = () => {
     <>
       <button
         onClick={handleDelete}
-        className="btn-delete-icon"
+        className="v2-btn v2-btn-danger" style={{ marginRight: 'auto' }}
         disabled={deleteMutation.isPending}
         title="Delete goal"
       >
         {deleteMutation.isPending ? (
-          <i className="fa-solid fa-spinner fa-spin" style={{ color: '#8E8E93' }}></i>
+          <i className="fa-solid fa-spinner fa-spin" style={{ color: 'var(--ink-tertiary)' }}></i>
         ) : (
-          <i className="fa-solid fa-trash text-lg" style={{ color: '#DC2626' }}></i>
+          <i className="fa-solid fa-trash text-lg" style={{ color: 'var(--overdue)' }}></i>
         )}
       </button>
       <button
@@ -288,13 +281,13 @@ const GoalViewModal = () => {
           closeViewModal();
           openEditModal(goalId);
         }}
-        className="btn-liquid-outline-light"
+        className="v2-btn v2-btn-secondary"
       >
         Edit
       </button>
       <button
         onClick={closeViewModal}
-        className="btn-liquid"
+        className="v2-btn v2-btn-primary"
       >
         Close
       </button>

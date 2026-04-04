@@ -1,0 +1,2294 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="cream">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Habit Beaver — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    /* ═══════════════════════════════════════════
+       RESET
+       ═══════════════════════════════════════════ */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      /* Category accents — always the same across themes */
+      --cat-wellness: #7BA38E;
+      --cat-learning: #6B8DB5;
+      --cat-fitness: #C08B5C;
+      --cat-mindfulness: #9B85B2;
+      --cat-work: #8B9BA8;
+      --cat-health: #B5856B;
+
+      /* Fonts */
+      --font-body: 'Figtree', -apple-system, sans-serif;
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+
+      /* Spacing */
+      --sidebar-w: 224px;
+    }
+
+    /* ── Cream (default) ── */
+    [data-theme="cream"], :root {
+      --bg: #F8F7F4;
+      --surface: #FFFFFF;
+      --sidebar-bg: #FFFFFF;
+      --border: #ECEAE5;
+      --border-hover: #DDD9D1;
+      --ink: #2D2A26;
+      --ink-secondary: #7D7971;
+      --ink-tertiary: #A9A49C;
+      --ink-faint: #C8C4BC;
+      --overdue: #C4554D;
+      --overdue-bg: #FDF2F1;
+      --streak: #C4914A;
+      --complete: #7BA38E;
+      --complete-bg: #F0F6F2;
+      --hover-tint: rgba(45, 42, 38, 0.04);
+      --hover-tint-strong: rgba(45, 42, 38, 0.06);
+      --check-ink: white;
+    }
+
+    /* ── White ── */
+    [data-theme="white"] {
+      --bg: #FFFFFF;
+      --surface: #FFFFFF;
+      --sidebar-bg: #FAFAFA;
+      --border: #EEEEEE;
+      --border-hover: #DDDDDD;
+      --ink: #1A1A1A;
+      --ink-secondary: #6B6B6B;
+      --ink-tertiary: #999999;
+      --ink-faint: #C0C0C0;
+      --overdue: #D1453B;
+      --overdue-bg: #FEF2F1;
+      --streak: #C4914A;
+      --complete: #6BA37B;
+      --complete-bg: #EFF6F1;
+      --hover-tint: rgba(0, 0, 0, 0.03);
+      --hover-tint-strong: rgba(0, 0, 0, 0.05);
+      --check-ink: white;
+    }
+
+    /* White theme: cards get a subtle border since bg matches */
+    [data-theme="white"] .card {
+      box-shadow: 0 0 0 1px var(--border), 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    [data-theme="white"] .sidebar {
+      border-right-color: var(--border);
+    }
+
+    /* ── Dark ── */
+    [data-theme="dark"] {
+      --bg: #1C1B1A;
+      --surface: #262524;
+      --sidebar-bg: #212120;
+      --border: #333231;
+      --border-hover: #444342;
+      --ink: #E8E5E1;
+      --ink-secondary: #A09C96;
+      --ink-tertiary: #6E6A64;
+      --ink-faint: #4A4744;
+      --overdue: #E07368;
+      --overdue-bg: rgba(224, 115, 104, 0.12);
+      --streak: #D4A154;
+      --complete: #7BA38E;
+      --complete-bg: rgba(123, 163, 142, 0.12);
+      --hover-tint: rgba(255, 255, 255, 0.04);
+      --hover-tint-strong: rgba(255, 255, 255, 0.07);
+      --check-ink: #1C1B1A;
+    }
+
+    [data-theme="dark"] .sidebar {
+      border-right-color: var(--border);
+    }
+
+    [data-theme="dark"] .sidebar-logo {
+      background: var(--ink);
+    }
+
+    [data-theme="dark"] .sidebar-logo svg rect {
+      fill: var(--bg);
+    }
+
+    [data-theme="dark"] .page-header {
+      background: var(--bg);
+    }
+
+    [data-theme="dark"] .page-header::after {
+      background: linear-gradient(to bottom, var(--bg), transparent);
+    }
+
+    [data-theme="dark"] ::selection {
+      background: rgba(232, 229, 225, 0.15);
+    }
+
+
+    html {
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    html.theme-transitioning,
+    html.theme-transitioning *,
+    html.theme-transitioning *::before,
+    html.theme-transitioning *::after {
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+    /* Selection */
+    ::selection {
+      background: var(--hover-tint-strong);
+    }
+
+    /* ═══════════════════════════════════════════
+       SIDEBAR
+       ═══════════════════════════════════════════ */
+
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      width: var(--sidebar-w);
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    /* Subtle scrollbar */
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-track { background: transparent; }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .sidebar-header {
+      padding: 24px 20px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sidebar-logo {
+      width: 26px;
+      height: 26px;
+      background: var(--ink);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .sidebar-logo svg { width: 14px; height: 14px; }
+
+    .sidebar-brand {
+      font-size: 0.933rem;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+
+    /* Nav sections */
+    .sidebar-section {
+      padding: 0 12px;
+      margin-bottom: 4px;
+    }
+
+    .sidebar-label {
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--ink-tertiary);
+      padding: 16px 8px 6px;
+      letter-spacing: 0.03em;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 7px 10px;
+      border-radius: 7px;
+      font-size: 0.867rem;
+      font-weight: 400;
+      color: var(--ink-secondary);
+      transition: all 0.12s ease;
+      position: relative;
+    }
+
+    .sidebar-link:hover {
+      background: var(--hover-tint);
+      color: var(--ink);
+    }
+
+    .sidebar-link.active {
+      background: var(--hover-tint-strong);
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    .sidebar-link.active::before {
+      content: '';
+      position: absolute;
+      left: -12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 16px;
+      background: var(--ink);
+      border-radius: 0 2px 2px 0;
+    }
+
+    .sidebar-link svg,
+    .sidebar-link .nav-icon {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      opacity: 0.45;
+      stroke-width: 1.7;
+    }
+
+    .sidebar-link.active svg,
+    .sidebar-link.active .nav-icon {
+      opacity: 0.7;
+    }
+
+    .sidebar-link .count-badge {
+      margin-left: auto;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--ink-tertiary);
+      background: var(--hover-tint-strong);
+      padding: 1px 6px;
+      border-radius: 8px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Categories */
+    .categories-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 16px 8px 6px;
+      cursor: pointer;
+    }
+
+    .categories-toggle span {
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--ink-tertiary);
+      letter-spacing: 0.03em;
+    }
+
+    .categories-toggle svg {
+      width: 12px;
+      height: 12px;
+      color: var(--ink-faint);
+      transition: transform 0.2s ease;
+    }
+
+    .categories-toggle.open svg {
+      transform: rotate(180deg);
+    }
+
+    .category-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 6px 10px;
+      border-radius: 7px;
+      font-size: 0.833rem;
+      color: var(--ink-secondary);
+      transition: all 0.12s ease;
+      cursor: pointer;
+    }
+
+    .category-item:hover {
+      background: var(--hover-tint);
+    }
+
+    .category-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .categories-list {
+      max-height: 200px;
+      overflow: hidden;
+      transition: max-height 0.25s ease;
+    }
+
+    .categories-list.collapsed {
+      max-height: 0;
+    }
+
+    /* Sidebar footer */
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 16px 16px 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* Theme switcher */
+    .theme-switcher {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 4px;
+      margin-bottom: 14px;
+    }
+
+    .theme-switcher-label {
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--ink-tertiary);
+      margin-right: 4px;
+      letter-spacing: 0.02em;
+    }
+
+    .theme-swatch {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+
+    .theme-swatch:hover {
+      transform: scale(1.12);
+    }
+
+    .theme-swatch.active {
+      border-color: var(--ink-secondary);
+    }
+
+    .theme-swatch.active::after {
+      content: '';
+      position: absolute;
+      inset: -5px;
+      border-radius: 50%;
+      border: 1.5px solid var(--ink-faint);
+    }
+
+    .theme-swatch--white {
+      background: #FFFFFF;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+    }
+
+    .theme-swatch--cream {
+      background: #F0EDE8;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06);
+    }
+
+    .theme-swatch--dark {
+      background: #1C1B1A;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
+    }
+
+    .sidebar-user {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 6px 4px;
+      border-radius: 8px;
+      transition: background 0.12s ease;
+    }
+
+    .sidebar-user:hover {
+      background: var(--hover-tint);
+    }
+
+    .user-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--ink-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .user-name {
+      font-size: 0.833rem;
+      font-weight: 500;
+      color: var(--ink);
+    }
+
+    .user-email {
+      font-size: 0.7rem;
+      color: var(--ink-tertiary);
+    }
+
+    /* ═══════════════════════════════════════════
+       MAIN
+       ═══════════════════════════════════════════ */
+
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      min-height: 100vh;
+    }
+
+    .main-inner {
+      max-width: 840px;
+      padding: 0 44px 80px;
+    }
+
+    /* ═══════════════════════════════════════════
+       HEADER
+       ═══════════════════════════════════════════ */
+
+    .page-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg);
+      padding: 32px 0 20px;
+    }
+
+    /* Soft fade at bottom of sticky header */
+    .page-header::after {
+      content: '';
+      position: absolute;
+      bottom: -16px;
+      left: 0; right: 0;
+      height: 16px;
+      background: linear-gradient(to bottom, var(--bg), transparent);
+      pointer-events: none;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+
+    .header-date {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 400;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .header-nav-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ink-tertiary);
+      transition: all 0.12s ease;
+    }
+
+    .header-nav-btn:hover {
+      background: var(--hover-tint-strong);
+      color: var(--ink-secondary);
+    }
+
+    .header-nav-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .header-today {
+      font-size: 0.767rem;
+      color: var(--ink-tertiary);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 500;
+      transition: all 0.12s ease;
+    }
+
+    .header-today:hover {
+      background: var(--hover-tint-strong);
+      color: var(--ink-secondary);
+    }
+
+    .header-summary {
+      margin-top: 4px;
+      font-size: 0.867rem;
+      color: var(--ink-tertiary);
+      font-weight: 400;
+    }
+
+    .header-summary .sep {
+      margin: 0 6px;
+      color: var(--ink-faint);
+    }
+
+    /* ═══════════════════════════════════════════
+       CONTENT GRID
+       ═══════════════════════════════════════════ */
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 8px;
+    }
+
+    .content-section {
+      min-width: 0;
+    }
+
+    .content-section.full-width {
+      grid-column: 1 / -1;
+    }
+
+    /* ═══════════════════════════════════════════
+       SECTION HEADER
+       ═══════════════════════════════════════════ */
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding: 0 2px;
+    }
+
+    .section-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--ink-secondary);
+      letter-spacing: 0.02em;
+    }
+
+    .section-actions {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .section-action-btn {
+      font-size: 0.733rem;
+      color: var(--ink-tertiary);
+      padding: 3px 8px;
+      border-radius: 5px;
+      font-weight: 500;
+      transition: all 0.12s ease;
+    }
+
+    .section-action-btn:hover {
+      background: var(--hover-tint-strong);
+      color: var(--ink-secondary);
+    }
+
+    .section-action-btn svg {
+      width: 13px;
+      height: 13px;
+    }
+
+    /* Segmented control */
+    .seg-control {
+      display: flex;
+      background: var(--hover-tint-strong);
+      border-radius: 6px;
+      padding: 2px;
+      gap: 1px;
+    }
+
+    .seg-btn {
+      font-size: 0.7rem;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: 5px;
+      color: var(--ink-tertiary);
+      transition: all 0.15s ease;
+    }
+
+    .seg-btn:hover {
+      color: var(--ink-secondary);
+    }
+
+    .seg-btn.active {
+      background: var(--surface);
+      color: var(--ink);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 0 0 0.5px rgba(0,0,0,0.04);
+    }
+
+    /* ═══════════════════════════════════════════
+       CARDS
+       ═══════════════════════════════════════════ */
+
+    .card {
+      background: var(--surface);
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .card-padded {
+      padding: 16px 18px;
+    }
+
+    /* ═══════════════════════════════════════════
+       HABITS
+       ═══════════════════════════════════════════ */
+
+    .time-group {
+      margin-bottom: 2px;
+    }
+
+    .time-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .time-group-label {
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--ink-faint);
+      padding: 10px 18px 4px;
+      letter-spacing: 0.02em;
+    }
+
+    .habit-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 18px;
+      transition: background 0.1s ease;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .habit-row:hover {
+      background: var(--hover-tint);
+    }
+
+    .habit-check {
+      position: relative;
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    .habit-check input {
+      position: absolute;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+      z-index: 1;
+    }
+
+    .habit-check .check-visual {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border-hover);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .habit-check .check-visual svg {
+      width: 10px;
+      height: 10px;
+      opacity: 0;
+      transform: scale(0.5);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      color: var(--check-ink);
+    }
+
+    .habit-check input:checked + .check-visual {
+      background: var(--ink);
+      border-color: var(--ink);
+    }
+
+    .habit-check input:checked + .check-visual svg {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .habit-cat-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .habit-name {
+      flex: 1;
+      font-size: 0.9rem;
+      font-weight: 400;
+      color: var(--ink);
+      min-width: 0;
+      transition: color 0.2s ease;
+    }
+
+    .habit-row.completed .habit-name {
+      color: var(--ink-tertiary);
+      text-decoration: line-through;
+      text-decoration-color: var(--ink-faint);
+    }
+
+    .habit-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .habit-streak {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 0.733rem;
+      font-weight: 500;
+      color: var(--streak);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .habit-streak svg {
+      width: 11px;
+      height: 11px;
+    }
+
+    .habit-progress {
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      font-weight: 400;
+      color: var(--ink-tertiary);
+      background: var(--hover-tint);
+      padding: 1px 7px;
+      border-radius: 8px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .habit-progress.done {
+      background: var(--complete-bg);
+      color: var(--complete);
+    }
+
+    /* Subtle divider between time groups */
+    .time-group + .time-group {
+      border-top: 1px solid var(--border);
+    }
+
+    /* ═══════════════════════════════════════════
+       TASKS
+       ═══════════════════════════════════════════ */
+
+    .task-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 18px;
+      transition: background 0.1s ease;
+      cursor: pointer;
+    }
+
+    .task-row:hover {
+      background: var(--hover-tint);
+    }
+
+    .task-check {
+      position: relative;
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    .task-check input {
+      position: absolute;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+      z-index: 1;
+    }
+
+    .task-check .check-visual {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      border: 1.5px solid var(--border-hover);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .task-check .check-visual svg {
+      width: 10px;
+      height: 10px;
+      opacity: 0;
+      transform: scale(0.5);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      color: var(--check-ink);
+    }
+
+    .task-check input:checked + .check-visual {
+      background: var(--ink);
+      border-color: var(--ink);
+    }
+
+    .task-check input:checked + .check-visual svg {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .task-name {
+      flex: 1;
+      font-size: 0.9rem;
+      font-weight: 400;
+      color: var(--ink);
+      min-width: 0;
+    }
+
+    .task-row.completed .task-name {
+      color: var(--ink-tertiary);
+      text-decoration: line-through;
+      text-decoration-color: var(--ink-faint);
+    }
+
+    .task-due {
+      font-size: 0.733rem;
+      font-weight: 500;
+      color: var(--ink-tertiary);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .task-due.overdue {
+      color: var(--overdue);
+      background: var(--overdue-bg);
+      padding: 1px 7px;
+      border-radius: 8px;
+    }
+
+    .task-due.today {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    /* ═══════════════════════════════════════════
+       CALENDAR
+       ═══════════════════════════════════════════ */
+
+    .cal-event {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 18px;
+      transition: background 0.1s ease;
+    }
+
+    .cal-event:hover {
+      background: var(--hover-tint);
+    }
+
+    .cal-event + .cal-event {
+      border-top: 1px solid var(--border);
+    }
+
+    .cal-time {
+      font-size: 0.8rem;
+      font-family: var(--font-mono);
+      font-weight: 300;
+      color: var(--ink-tertiary);
+      width: 68px;
+      flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .cal-pip {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      background: var(--cat-work);
+    }
+
+    .cal-title {
+      font-size: 0.867rem;
+      color: var(--ink);
+      font-weight: 400;
+    }
+
+    /* ═══════════════════════════════════════════
+       DAILY PREP
+       ═══════════════════════════════════════════ */
+
+    .prep-item {
+      padding: 14px 18px;
+    }
+
+    .prep-item + .prep-item {
+      border-top: 1px solid var(--border);
+    }
+
+    .prep-question {
+      font-size: 0.833rem;
+      color: var(--ink-secondary);
+      font-weight: 400;
+      margin-bottom: 6px;
+    }
+
+    .prep-answer {
+      font-size: 0.9rem;
+      color: var(--ink);
+      font-weight: 400;
+      font-family: var(--font-display);
+      font-style: italic;
+      letter-spacing: -0.01em;
+    }
+
+    .prep-unanswered {
+      font-size: 0.833rem;
+      color: var(--ink-faint);
+      font-style: italic;
+      cursor: text;
+    }
+
+    .prep-unanswered:hover {
+      color: var(--ink-tertiary);
+    }
+
+    /* ═══════════════════════════════════════════
+       ANIMATIONS
+       ═══════════════════════════════════════════ */
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-in {
+      animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .d1 { animation-delay: 0.03s; }
+    .d2 { animation-delay: 0.06s; }
+    .d3 { animation-delay: 0.09s; }
+    .d4 { animation-delay: 0.12s; }
+    .d5 { animation-delay: 0.15s; }
+
+    /* Checkmark ripple on complete */
+    @keyframes softPulse {
+      0% { box-shadow: 0 0 0 0 var(--hover-tint-strong); }
+      70% { box-shadow: 0 0 0 8px transparent; }
+      100% { box-shadow: 0 0 0 0 transparent; }
+    }
+
+    .check-pulse {
+      animation: softPulse 0.5s ease-out;
+    }
+
+    /* ═══════════════════════════════════════════
+       SCROLLBAR
+       ═══════════════════════════════════════════ */
+
+    .main::-webkit-scrollbar { width: 5px; }
+    .main::-webkit-scrollbar-track { background: transparent; }
+    .main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
+    .main::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
+
+    /* ═══════════════════════════════════════════
+       RESPONSIVE
+       ═══════════════════════════════════════════ */
+
+    /* ═══════════════════════════════════════════
+       BUTTONS
+       ═══════════════════════════════════════════ */
+
+    /* Shared base */
+    .btn, .btn-sm, .btn-icon {
+      font-family: var(--font-body);
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .btn svg, .btn-sm svg {
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+    }
+
+    .btn-sm svg {
+      width: 13px;
+      height: 13px;
+    }
+
+    /* ── Standard size ── */
+    .btn {
+      font-size: 0.867rem;
+      padding: 8px 16px;
+      border-radius: 8px;
+    }
+
+    /* ── Small ── */
+    .btn-sm {
+      font-size: 0.767rem;
+      padding: 5px 12px;
+      border-radius: 6px;
+    }
+
+    /* ── Icon-only ── */
+    .btn-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      padding: 0;
+      background: transparent;
+      color: var(--ink-tertiary);
+    }
+
+    .btn-icon:hover {
+      background: var(--hover-tint);
+      color: var(--ink-secondary);
+    }
+
+    .btn-icon svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .btn-icon.sm {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+    }
+
+    .btn-icon.sm svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* ── Primary ── */
+    .btn-primary {
+      background: var(--ink);
+      color: var(--bg);
+    }
+
+    .btn-primary:hover {
+      background: var(--ink-secondary);
+    }
+
+    .btn-primary:active {
+      transform: scale(0.97);
+    }
+
+    /* ── Secondary ── */
+    .btn-secondary {
+      background: var(--hover-tint-strong);
+      color: var(--ink);
+    }
+
+    .btn-secondary:hover {
+      background: var(--border);
+    }
+
+    .btn-secondary:active {
+      transform: scale(0.97);
+    }
+
+    /* ── Ghost ── */
+    .btn-ghost {
+      background: transparent;
+      color: var(--ink-secondary);
+    }
+
+    .btn-ghost:hover {
+      background: var(--hover-tint);
+      color: var(--ink);
+    }
+
+    /* ── Outline ── */
+    .btn-outline {
+      background: transparent;
+      color: var(--ink);
+      box-shadow: inset 0 0 0 1px var(--border-hover);
+    }
+
+    .btn-outline:hover {
+      box-shadow: inset 0 0 0 1px var(--ink-faint);
+      background: var(--hover-tint);
+    }
+
+    /* ── Danger ── */
+    .btn-danger {
+      background: transparent;
+      color: var(--overdue);
+    }
+
+    .btn-danger:hover {
+      background: var(--overdue-bg);
+    }
+
+    .btn-danger-filled {
+      background: var(--overdue);
+      color: white;
+    }
+
+    .btn-danger-filled:hover {
+      opacity: 0.88;
+    }
+
+    .btn-danger-filled:active {
+      transform: scale(0.97);
+    }
+
+    [data-theme="dark"] .btn-danger-filled {
+      color: #1C1B1A;
+    }
+
+    /* ── Disabled state (works with any variant) ── */
+    .btn[disabled], .btn-sm[disabled], .btn-icon[disabled] {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    /* ═══════════════════════════════════════════
+       BUTTON SHOWCASE SECTION
+       ═══════════════════════════════════════════ */
+
+    .showcase {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px dashed var(--border);
+    }
+
+    .showcase-title {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      font-weight: 400;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+
+    .showcase-subtitle {
+      font-size: 0.833rem;
+      color: var(--ink-tertiary);
+      margin-bottom: 28px;
+    }
+
+    .showcase-group {
+      margin-bottom: 28px;
+    }
+
+    .showcase-group-label {
+      font-size: 0.733rem;
+      font-weight: 500;
+      color: var(--ink-faint);
+      letter-spacing: 0.04em;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    .showcase-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .showcase-divider {
+      width: 1px;
+      height: 28px;
+      background: var(--border);
+      margin: 0 6px;
+    }
+
+    .showcase-context-bar {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    .showcase-context-dark {
+      background: var(--ink);
+      border-color: transparent;
+      padding: 12px 18px;
+      border-radius: 10px;
+    }
+
+    @media (max-width: 900px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+      .content-section.full-width {
+        grid-column: 1;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; }
+      .main-inner { padding: 0 20px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ════════ SIDEBAR ════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <svg viewBox="0 0 14 14" fill="none">
+          <rect x="2" y="3" width="4" height="8" rx="1" fill="rgba(255,255,255,0.9)"/>
+          <rect x="8" y="3" width="4" height="5" rx="1" fill="rgba(255,255,255,0.5)"/>
+        </svg>
+      </div>
+      <span class="sidebar-brand">Habit Beaver</span>
+    </div>
+
+    <div class="sidebar-section">
+      <a href="#" class="sidebar-link active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+          <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+        </svg>
+        Dashboard
+      </a>
+      <a href="#" class="sidebar-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+        Habits
+        <span class="count-badge">7</span>
+      </a>
+      <a href="#" class="sidebar-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 11l3 3L22 4"/>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+        </svg>
+        Tasks
+        <span class="count-badge">5</span>
+      </a>
+      <a href="#" class="sidebar-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 8v8m-4-4h8"/>
+        </svg>
+        Goals
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Library</div>
+      <a href="#" class="sidebar-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+        Journal
+      </a>
+      <a href="#" class="sidebar-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+        Notes
+      </a>
+      <a href="#" class="sidebar-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="8" y1="6" x2="21" y2="6"/>
+          <line x1="8" y1="12" x2="21" y2="12"/>
+          <line x1="8" y1="18" x2="21" y2="18"/>
+          <line x1="3" y1="6" x2="3.01" y2="6"/>
+          <line x1="3" y1="12" x2="3.01" y2="12"/>
+          <line x1="3" y1="18" x2="3.01" y2="18"/>
+        </svg>
+        Lists
+      </a>
+      <a href="#" class="sidebar-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+          <polyline points="13 2 13 9 20 9"/>
+        </svg>
+        Documents
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <button class="categories-toggle open" onclick="this.classList.toggle('open'); this.nextElementSibling.classList.toggle('collapsed')">
+        <span>Categories</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="categories-list">
+        <div class="category-item">
+          <div class="category-dot" style="background: var(--cat-mindfulness)"></div>
+          Mindfulness
+        </div>
+        <div class="category-item">
+          <div class="category-dot" style="background: var(--cat-learning)"></div>
+          Learning
+        </div>
+        <div class="category-item">
+          <div class="category-dot" style="background: var(--cat-fitness)"></div>
+          Fitness
+        </div>
+        <div class="category-item">
+          <div class="category-dot" style="background: var(--cat-wellness)"></div>
+          Wellness
+        </div>
+        <div class="category-item">
+          <div class="category-dot" style="background: var(--cat-work)"></div>
+          Work
+        </div>
+        <div class="category-item">
+          <div class="category-dot" style="background: var(--cat-health)"></div>
+          Health
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section" style="margin-top: 8px;">
+      <div class="sidebar-label">Utility</div>
+      <a href="#" class="sidebar-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+          <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+        </svg>
+        Daily Prep
+      </a>
+      <a href="#" class="sidebar-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10"/>
+          <line x1="12" y1="20" x2="12" y2="4"/>
+          <line x1="6" y1="20" x2="6" y2="14"/>
+        </svg>
+        Analytics
+      </a>
+      <a href="#" class="sidebar-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        Settings
+      </a>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="theme-switcher">
+        <span class="theme-switcher-label">Theme</span>
+        <button class="theme-swatch theme-swatch--white" data-theme-value="white" title="White"></button>
+        <button class="theme-swatch theme-swatch--cream active" data-theme-value="cream" title="Cream"></button>
+        <button class="theme-swatch theme-swatch--dark" data-theme-value="dark" title="Dark"></button>
+      </div>
+      <div class="sidebar-user">
+        <div class="user-avatar">E</div>
+        <div>
+          <div class="user-name">Ellie</div>
+          <div class="user-email">ellie@example.com</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ════════ MAIN ════════ -->
+  <main class="main">
+    <div class="main-inner">
+
+      <!-- Header -->
+      <div class="page-header animate-in">
+        <div class="header-row">
+          <h1 class="header-date">Thursday, April 3</h1>
+          <div class="header-nav">
+            <button class="header-nav-btn" title="Previous day">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <span class="header-today">Today</span>
+            <button class="header-nav-btn" title="Next day" style="opacity: 0.3; pointer-events: none;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+        <p class="header-summary">
+          4 of 7 habits done<span class="sep">&middot;</span>2 tasks due today<span class="sep">&middot;</span>3 events
+        </p>
+      </div>
+
+      <!-- Content Grid -->
+      <div class="content-grid">
+
+        <!-- ═══ HABITS ═══ -->
+        <div class="content-section animate-in d1">
+          <div class="section-header">
+            <h2 class="section-title">Habits</h2>
+            <div class="section-actions">
+              <div class="seg-control">
+                <button class="seg-btn active">Time</button>
+                <button class="seg-btn">Category</button>
+                <button class="seg-btn">Priority</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <!-- Morning -->
+            <div class="time-group">
+              <div class="time-group-label">Morning</div>
+              <label class="habit-row completed">
+                <span class="habit-check">
+                  <input type="checkbox" checked>
+                  <span class="check-visual">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </span>
+                </span>
+                <span class="habit-cat-dot" style="background: var(--cat-mindfulness)"></span>
+                <span class="habit-name">Meditate</span>
+                <span class="habit-meta">
+                  <span class="habit-streak">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 23c-1.5 0-5-1-7-5.5S3 8 3 8s3.5 2 6 .5S12 3 12 1c0 2 .5 5.5 3 7S21 8 21 8s-1 9-3 13.5S13.5 23 12 23z"/></svg>
+                    12
+                  </span>
+                </span>
+              </label>
+              <label class="habit-row">
+                <span class="habit-check">
+                  <input type="checkbox">
+                  <span class="check-visual">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </span>
+                </span>
+                <span class="habit-cat-dot" style="background: var(--cat-learning)"></span>
+                <span class="habit-name">Read 30 min</span>
+                <span class="habit-meta">
+                  <span class="habit-streak">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 23c-1.5 0-5-1-7-5.5S3 8 3 8s3.5 2 6 .5S12 3 12 1c0 2 .5 5.5 3 7S21 8 21 8s-1 9-3 13.5S13.5 23 12 23z"/></svg>
+                    8
+                  </span>
+                  <span class="habit-progress">1 / 2</span>
+                </span>
+              </label>
+              <label class="habit-row completed">
+                <span class="habit-check">
+                  <input type="checkbox" checked>
+                  <span class="check-visual">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </span>
+                </span>
+                <span class="habit-cat-dot" style="background: var(--cat-fitness)"></span>
+                <span class="habit-name">Exercise</span>
+                <span class="habit-meta">
+                  <span class="habit-streak">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 23c-1.5 0-5-1-7-5.5S3 8 3 8s3.5 2 6 .5S12 3 12 1c0 2 .5 5.5 3 7S21 8 21 8s-1 9-3 13.5S13.5 23 12 23z"/></svg>
+                    5
+                  </span>
+                </span>
+              </label>
+            </div>
+
+            <!-- Afternoon -->
+            <div class="time-group">
+              <div class="time-group-label">Afternoon</div>
+              <label class="habit-row">
+                <span class="habit-check">
+                  <input type="checkbox">
+                  <span class="check-visual">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </span>
+                </span>
+                <span class="habit-cat-dot" style="background: var(--cat-health)"></span>
+                <span class="habit-name">Drink water</span>
+                <span class="habit-meta">
+                  <span class="habit-progress">3 / 8</span>
+                </span>
+              </label>
+              <label class="habit-row completed">
+                <span class="habit-check">
+                  <input type="checkbox" checked>
+                  <span class="check-visual">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </span>
+                </span>
+                <span class="habit-cat-dot" style="background: var(--cat-work)"></span>
+                <span class="habit-name">Review goals</span>
+                <span class="habit-meta"></span>
+              </label>
+            </div>
+
+            <!-- Evening -->
+            <div class="time-group">
+              <div class="time-group-label">Evening</div>
+              <label class="habit-row completed">
+                <span class="habit-check">
+                  <input type="checkbox" checked>
+                  <span class="check-visual">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </span>
+                </span>
+                <span class="habit-cat-dot" style="background: var(--cat-mindfulness)"></span>
+                <span class="habit-name">Journal</span>
+                <span class="habit-meta">
+                  <span class="habit-streak">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 23c-1.5 0-5-1-7-5.5S3 8 3 8s3.5 2 6 .5S12 3 12 1c0 2 .5 5.5 3 7S21 8 21 8s-1 9-3 13.5S13.5 23 12 23z"/></svg>
+                    21
+                  </span>
+                </span>
+              </label>
+              <label class="habit-row">
+                <span class="habit-check">
+                  <input type="checkbox">
+                  <span class="check-visual">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </span>
+                </span>
+                <span class="habit-cat-dot" style="background: var(--cat-wellness)"></span>
+                <span class="habit-name">No phone after 9pm</span>
+                <span class="habit-meta"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ RIGHT COLUMN ═══ -->
+        <div class="content-section" style="display: flex; flex-direction: column; gap: 24px;">
+
+          <!-- Calendar -->
+          <div class="animate-in d2">
+            <div class="section-header">
+              <h2 class="section-title">Calendar</h2>
+              <button class="section-action-btn">Open Google</button>
+            </div>
+            <div class="card">
+              <div class="cal-event">
+                <span class="cal-time">9:00 am</span>
+                <span class="cal-pip" style="background: var(--cat-work)"></span>
+                <span class="cal-title">Team standup</span>
+              </div>
+              <div class="cal-event">
+                <span class="cal-time">2:00 pm</span>
+                <span class="cal-pip" style="background: var(--cat-learning)"></span>
+                <span class="cal-title">Design review</span>
+              </div>
+              <div class="cal-event">
+                <span class="cal-time">4:30 pm</span>
+                <span class="cal-pip" style="background: var(--cat-wellness)"></span>
+                <span class="cal-title">Coffee with Sarah</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tasks -->
+          <div class="animate-in d3">
+            <div class="section-header">
+              <h2 class="section-title">Tasks</h2>
+              <div class="seg-control">
+                <button class="seg-btn active">Date</button>
+                <button class="seg-btn">Category</button>
+                <button class="seg-btn">Priority</button>
+              </div>
+            </div>
+            <div class="card">
+              <label class="task-row">
+                <span class="task-check">
+                  <input type="checkbox">
+                  <span class="check-visual">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </span>
+                </span>
+                <span class="task-name">Review Q1 metrics</span>
+                <span class="task-due overdue">Mar 31</span>
+              </label>
+              <label class="task-row">
+                <span class="task-check">
+                  <input type="checkbox">
+                  <span class="check-visual">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </span>
+                </span>
+                <span class="task-name">Call dentist</span>
+                <span class="task-due today">Today</span>
+              </label>
+              <label class="task-row">
+                <span class="task-check">
+                  <input type="checkbox">
+                  <span class="check-visual">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </span>
+                </span>
+                <span class="task-name">Prepare presentation slides</span>
+                <span class="task-due today">Today</span>
+              </label>
+              <label class="task-row">
+                <span class="task-check">
+                  <input type="checkbox">
+                  <span class="check-visual">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </span>
+                </span>
+                <span class="task-name">Book flights for May trip</span>
+                <span class="task-due">Apr 8</span>
+              </label>
+              <label class="task-row">
+                <span class="task-check">
+                  <input type="checkbox">
+                  <span class="check-visual">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </span>
+                </span>
+                <span class="task-name">Update portfolio site</span>
+                <span class="task-due" style="color: var(--ink-faint);">No date</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ DAILY PREP ═══ -->
+        <div class="content-section full-width animate-in d4">
+          <div class="section-header">
+            <h2 class="section-title">Daily Prep</h2>
+            <button class="section-action-btn">2 of 3 answered</button>
+          </div>
+          <div class="card">
+            <div class="prep-item">
+              <div class="prep-question">What's your top priority today?</div>
+              <div class="prep-answer">Ship the habits redesign</div>
+            </div>
+            <div class="prep-item">
+              <div class="prep-question">How are you feeling? (1-10)</div>
+              <div class="prep-answer">7</div>
+            </div>
+            <div class="prep-item">
+              <div class="prep-question">Anything blocking you?</div>
+              <div class="prep-unanswered">Write your answer...</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ═══════════ BUTTON SHOWCASE ═══════════ -->
+      <div class="showcase animate-in d5">
+        <h2 class="showcase-title">Button system</h2>
+        <p class="showcase-subtitle">All variants adapt to white, cream, and dark themes. Switch above to preview.</p>
+
+        <!-- Primary -->
+        <div class="showcase-group">
+          <div class="showcase-group-label">Primary actions</div>
+          <div class="showcase-row">
+            <button class="btn btn-primary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New Habit
+            </button>
+            <button class="btn btn-primary">Save Changes</button>
+            <button class="btn-sm btn-primary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add
+            </button>
+            <button class="btn btn-primary" disabled>Disabled</button>
+          </div>
+        </div>
+
+        <!-- Secondary -->
+        <div class="showcase-group">
+          <div class="showcase-group-label">Secondary</div>
+          <div class="showcase-row">
+            <button class="btn btn-secondary">Cancel</button>
+            <button class="btn btn-secondary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Export
+            </button>
+            <button class="btn-sm btn-secondary">Edit</button>
+          </div>
+        </div>
+
+        <!-- Outline -->
+        <div class="showcase-group">
+          <div class="showcase-group-label">Outline</div>
+          <div class="showcase-row">
+            <button class="btn btn-outline">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Pick a date
+            </button>
+            <button class="btn btn-outline">View all</button>
+            <button class="btn-sm btn-outline">Filter</button>
+          </div>
+        </div>
+
+        <!-- Ghost -->
+        <div class="showcase-group">
+          <div class="showcase-group-label">Ghost (inline / low emphasis)</div>
+          <div class="showcase-row">
+            <button class="btn btn-ghost">Cancel</button>
+            <button class="btn btn-ghost">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              View all
+            </button>
+            <button class="btn-sm btn-ghost">Skip</button>
+          </div>
+        </div>
+
+        <!-- Danger -->
+        <div class="showcase-group">
+          <div class="showcase-group-label">Danger / destructive</div>
+          <div class="showcase-row">
+            <button class="btn btn-danger">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              Delete
+            </button>
+            <button class="btn btn-danger-filled">Delete Habit</button>
+            <button class="btn-sm btn-danger">Remove</button>
+          </div>
+        </div>
+
+        <!-- Icon buttons -->
+        <div class="showcase-group">
+          <div class="showcase-group-label">Icon buttons</div>
+          <div class="showcase-row">
+            <button class="btn-icon" title="Add">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <button class="btn-icon" title="Settings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </button>
+            <button class="btn-icon" title="Close">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <span class="showcase-divider"></span>
+            <button class="btn-icon sm" title="Add (small)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <button class="btn-icon sm" title="More">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+            </button>
+            <button class="btn-icon sm" title="Refresh">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Composition examples -->
+        <div class="showcase-group">
+          <div class="showcase-group-label">In context</div>
+          <div class="showcase-row" style="flex-direction: column; align-items: flex-start; gap: 16px;">
+
+            <!-- Modal footer pattern -->
+            <div class="showcase-context-bar" style="width: 100%; justify-content: flex-end;">
+              <button class="btn btn-ghost">Cancel</button>
+              <button class="btn btn-primary">Save Changes</button>
+            </div>
+
+            <!-- Destructive confirmation pattern -->
+            <div class="showcase-context-bar" style="width: 100%; justify-content: flex-end;">
+              <button class="btn btn-secondary">Keep it</button>
+              <button class="btn btn-danger-filled">Delete Habit</button>
+            </div>
+
+            <!-- Section header pattern -->
+            <div class="showcase-context-bar" style="width: 100%; justify-content: space-between;">
+              <span style="font-size: 0.8rem; font-weight: 600; color: var(--ink-secondary);">Habits</span>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                <div class="seg-control">
+                  <button class="seg-btn active">Time</button>
+                  <button class="seg-btn">Category</button>
+                  <button class="seg-btn">Priority</button>
+                </div>
+                <button class="btn-icon sm" title="Add">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Empty state pattern -->
+            <div class="showcase-context-bar" style="width: 100%; flex-direction: column; padding: 28px; text-align: center; gap: 6px;">
+              <span style="font-size: 0.9rem; color: var(--ink);">No habits for today</span>
+              <span style="font-size: 0.833rem; color: var(--ink-tertiary);">Create your first habit to start tracking</span>
+              <button class="btn btn-primary" style="margin-top: 8px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                New Habit
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ═══════════ LOGO EXPLORATIONS ═══════════ -->
+      <div class="showcase" style="margin-top: 48px;">
+        <h2 class="showcase-title">Logo explorations</h2>
+        <p class="showcase-subtitle">Each shown at sidebar size (26px mark), medium (48px), and large (80px). All single-color, all theme-adaptive.</p>
+
+        <style>
+          .logo-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 20px;
+          }
+          .logo-option {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 28px;
+            background: var(--surface);
+            text-align: center;
+          }
+          .logo-option-label {
+            font-size: 0.733rem;
+            font-weight: 500;
+            color: var(--ink-faint);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 6px;
+          }
+          .logo-option-desc {
+            font-size: 0.8rem;
+            color: var(--ink-tertiary);
+            margin-bottom: 20px;
+            line-height: 1.45;
+          }
+          .logo-sizes {
+            display: flex;
+            align-items: end;
+            justify-content: center;
+            gap: 24px;
+          }
+          .logo-size-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+          }
+          .logo-size-item span {
+            font-size: 0.667rem;
+            color: var(--ink-faint);
+            font-family: var(--font-mono);
+          }
+          .logo-mark {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .logo-mark svg {
+            fill: var(--ink);
+          }
+
+          /* Lockup previews */
+          .logo-lockup {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+          }
+          .logo-lockup-mark {
+            width: 26px;
+            height: 26px;
+            background: var(--ink);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .logo-lockup-mark svg {
+            fill: var(--bg);
+          }
+          .logo-lockup-text {
+            font-family: var(--font-body);
+            font-size: 0.933rem;
+            font-weight: 600;
+            color: var(--ink);
+            letter-spacing: -0.02em;
+          }
+
+          /* Inverted mark variant */
+          .logo-lockup-mark.inverted {
+            background: transparent;
+            border: 1.5px solid var(--border-hover);
+          }
+          .logo-lockup-mark.inverted svg {
+            fill: var(--ink);
+          }
+        </style>
+
+        <div class="logo-grid">
+
+          <!-- Option A: Minimal beaver face -->
+          <div class="logo-option">
+            <div class="logo-option-label">A — Beaver face</div>
+            <div class="logo-option-desc">Minimal front-facing beaver. Two ears, two teeth. Reads as "beaver" instantly even at tiny sizes.</div>
+            <div class="logo-sizes">
+              <div class="logo-size-item">
+                <div class="logo-mark">
+                  <svg width="26" height="26" viewBox="0 0 100 100">
+                    <!-- Ears -->
+                    <circle cx="24" cy="22" r="14"/>
+                    <circle cx="76" cy="22" r="14"/>
+                    <!-- Head -->
+                    <ellipse cx="50" cy="50" rx="36" ry="34"/>
+                    <!-- Eyes -->
+                    <circle cx="36" cy="44" r="4.5" fill="var(--bg)"/>
+                    <circle cx="64" cy="44" r="4.5" fill="var(--bg)"/>
+                    <!-- Nose -->
+                    <ellipse cx="50" cy="56" rx="7" ry="5" fill="var(--bg)"/>
+                    <!-- Teeth -->
+                    <rect x="43" y="64" width="6" height="9" rx="1.5" fill="var(--bg)"/>
+                    <rect x="51" y="64" width="6" height="9" rx="1.5" fill="var(--bg)"/>
+                  </svg>
+                </div>
+                <span>26px</span>
+              </div>
+              <div class="logo-size-item">
+                <div class="logo-mark">
+                  <svg width="48" height="48" viewBox="0 0 100 100">
+                    <circle cx="24" cy="22" r="14"/>
+                    <circle cx="76" cy="22" r="14"/>
+                    <ellipse cx="50" cy="50" rx="36" ry="34"/>
+                    <circle cx="36" cy="44" r="4.5" fill="var(--bg)"/>
+                    <circle cx="64" cy="44" r="4.5" fill="var(--bg)"/>
+                    <ellipse cx="50" cy="56" rx="7" ry="5" fill="var(--bg)"/>
+                    <rect x="43" y="64" width="6" height="9" rx="1.5" fill="var(--bg)"/>
+                    <rect x="51" y="64" width="6" height="9" rx="1.5" fill="var(--bg)"/>
+                  </svg>
+                </div>
+                <span>48px</span>
+              </div>
+              <div class="logo-size-item">
+                <div class="logo-mark">
+                  <svg width="80" height="80" viewBox="0 0 100 100">
+                    <circle cx="24" cy="22" r="14"/>
+                    <circle cx="76" cy="22" r="14"/>
+                    <ellipse cx="50" cy="50" rx="36" ry="34"/>
+                    <circle cx="36" cy="44" r="4.5" fill="var(--bg)"/>
+                    <circle cx="64" cy="44" r="4.5" fill="var(--bg)"/>
+                    <ellipse cx="50" cy="56" rx="7" ry="5" fill="var(--bg)"/>
+                    <rect x="43" y="64" width="6" height="9" rx="1.5" fill="var(--bg)"/>
+                    <rect x="51" y="64" width="6" height="9" rx="1.5" fill="var(--bg)"/>
+                  </svg>
+                </div>
+                <span>80px</span>
+              </div>
+            </div>
+            <div class="logo-lockup">
+              <div class="logo-lockup-mark">
+                <svg width="16" height="16" viewBox="0 0 100 100">
+                  <circle cx="24" cy="22" r="14"/>
+                  <circle cx="76" cy="22" r="14"/>
+                  <ellipse cx="50" cy="50" rx="36" ry="34"/>
+                  <circle cx="36" cy="44" r="4.5" fill="var(--ink)"/>
+                  <circle cx="64" cy="44" r="4.5" fill="var(--ink)"/>
+                  <ellipse cx="50" cy="56" rx="7" ry="5" fill="var(--ink)"/>
+                  <rect x="43" y="64" width="6" height="9" rx="1.5" fill="var(--ink)"/>
+                  <rect x="51" y="64" width="6" height="9" rx="1.5" fill="var(--ink)"/>
+                </svg>
+              </div>
+              <span class="logo-lockup-text">Habit Beaver</span>
+            </div>
+          </div>
+
+          <!-- Option B: Beaver tail checkmark -->
+          <div class="logo-option">
+            <div class="logo-option-label">B — Tail as checkmark</div>
+            <div class="logo-option-desc">A beaver tail shaped like a checkmark. Ties "habit completion" to "beaver" in one mark. Abstract but meaningful.</div>
+            <div class="logo-sizes">
+              <div class="logo-size-item">
+                <div class="logo-mark">
+                  <svg width="26" height="26" viewBox="0 0 100 100">
+                    <!-- Paddle tail shaped as checkmark with crosshatch texture -->
+                    <path d="M18 52 L40 78 L82 24" stroke="var(--ink)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    <!-- Tail texture lines -->
+                    <line x1="32" y1="58" x2="38" y2="52" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round"/>
+                    <line x1="42" y1="62" x2="48" y2="56" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round"/>
+                    <line x1="50" y1="52" x2="56" y2="46" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round"/>
+                    <line x1="58" y1="44" x2="64" y2="38" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <span>26px</span>
+              </div>
+              <div class="logo-size-item">
+                <div class="logo-mark">
+                  <svg width="48" height="48" viewBox="0 0 100 100">
+                    <path d="M18 52 L40 78 L82 24" stroke="var(--ink)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    <line x1="32" y1="58" x2="38" y2="52" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round"/>
+                    <line x1="42" y1="62" x2="48" y2="56" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round"/>
+                    <line x1="50" y1="52" x2="56" y2="46" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round"/>
+                    <line x1="58" y1="44" x2="64" y2="38" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <span>48px</span>
+              </div>
+              <div class="logo-size-item">
+                <div class="logo-mark">
+                  <svg width="80" height="80" viewBox="0 0 100 100">
+                    <path d="M18 52 L40 78 L82 24" stroke="var(--ink)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    <line x1="32" y1="58" x2="38" y2="52" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round"/>
+                    <line x1="42" y1="62" x2="48" y2="56" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round"/>
+                    <line x1="50" y1="52" x2="56" y2="46" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round"/>
+                    <line x1="58" y1="44" x2="64" y2="38" stroke="var(--bg)" stroke-width="2.5" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <span>80px</span>
+              </div>
+            </div>
+            <div class="logo-lockup">
+              <div class="logo-lockup-mark">
+                <svg width="16" height="16" viewBox="0 0 100 100">
+                  <path d="M18 52 L40 78 L82 24" stroke="var(--bg)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                  <line x1="32" y1="58" x2="38" y2="52" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round"/>
+                  <line x1="42" y1="62" x2="48" y2="56" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round"/>
+                  <line x1="50" y1="52" x2="56" y2="46" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round"/>
+                  <line x1="58" y1="44" x2="64" y2="38" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <span class="logo-lockup-text">Habit Beaver</span>
+            </div>
+          </div>
+
+          <!-- Option C: Beaver profile silhouette -->
+          <div class="logo-option">
+            <div class="logo-option-label">C — Profile silhouette</div>
+            <div class="logo-option-desc">Side profile of a beaver — round body, flat tail, visible tooth. Charming but clean. Works like an editorial illustration mark.</div>
+            <div class="logo-sizes">
+              <div class="logo-size-item">
+                <div class="logo-mark">
+                  <svg width="26" height="26" viewBox="0 0 100 100">
+                    <!-- Body -->
+                    <ellipse cx="42" cy="54" rx="28" ry="26"/>
+                    <!-- Head -->
+                    <circle cx="22" cy="38" r="18"/>
+                    <!-- Ear -->
+                    <circle cx="14" cy="22" r="7"/>
+                    <!-- Eye -->
+                    <circle cx="16" cy="36" r="3.5" fill="var(--bg)"/>
+                    <!-- Tooth -->
+                    <rect x="10" y="48" width="5" height="7" rx="1.5" fill="var(--bg)"/>
+                    <!-- Tail -->
+                    <ellipse cx="82" cy="50" rx="16" ry="8" transform="rotate(-15, 82, 50)"/>
+                  </svg>
+                </div>
+                <span>26px</span>
+              </div>
+              <div class="logo-size-item">
+                <div class="logo-mark">
+                  <svg width="48" height="48" viewBox="0 0 100 100">
+                    <ellipse cx="42" cy="54" rx="28" ry="26"/>
+                    <circle cx="22" cy="38" r="18"/>
+                    <circle cx="14" cy="22" r="7"/>
+                    <circle cx="16" cy="36" r="3.5" fill="var(--bg)"/>
+                    <rect x="10" y="48" width="5" height="7" rx="1.5" fill="var(--bg)"/>
+                    <ellipse cx="82" cy="50" rx="16" ry="8" transform="rotate(-15, 82, 50)"/>
+                  </svg>
+                </div>
+                <span>48px</span>
+              </div>
+              <div class="logo-size-item">
+                <div class="logo-mark">
+                  <svg width="80" height="80" viewBox="0 0 100 100">
+                    <ellipse cx="42" cy="54" rx="28" ry="26"/>
+                    <circle cx="22" cy="38" r="18"/>
+                    <circle cx="14" cy="22" r="7"/>
+                    <circle cx="16" cy="36" r="3.5" fill="var(--bg)"/>
+                    <rect x="10" y="48" width="5" height="7" rx="1.5" fill="var(--bg)"/>
+                    <ellipse cx="82" cy="50" rx="16" ry="8" transform="rotate(-15, 82, 50)"/>
+                  </svg>
+                </div>
+                <span>80px</span>
+              </div>
+            </div>
+            <div class="logo-lockup">
+              <div class="logo-lockup-mark">
+                <svg width="16" height="16" viewBox="0 0 100 100">
+                  <ellipse cx="42" cy="54" rx="28" ry="26"/>
+                  <circle cx="22" cy="38" r="18"/>
+                  <circle cx="14" cy="22" r="7"/>
+                  <circle cx="16" cy="36" r="3.5" fill="var(--ink)"/>
+                  <rect x="10" y="48" width="5" height="7" rx="1.5" fill="var(--ink)"/>
+                  <ellipse cx="82" cy="50" rx="16" ry="8" transform="rotate(-15, 82, 50)"/>
+                </svg>
+              </div>
+              <span class="logo-lockup-text">Habit Beaver</span>
+            </div>
+          </div>
+
+          <!-- Option D: Geometric beaver -->
+          <div class="logo-option">
+            <div class="logo-option-label">D — Geometric</div>
+            <div class="logo-option-desc">Rounded square head with two teeth below. The most reduced version — almost a pictogram. Maximum legibility at small sizes.</div>
+            <div class="logo-sizes">
+              <div class="logo-size-item">
+                <div class="logo-mark">
+                  <svg width="26" height="26" viewBox="0 0 100 100">
+                    <!-- Head: rounded square -->
+                    <rect x="14" y="8" width="72" height="60" rx="22"/>
+                    <!-- Eyes -->
+                    <circle cx="36" cy="36" r="5" fill="var(--bg)"/>
+                    <circle cx="64" cy="36" r="5" fill="var(--bg)"/>
+                    <!-- Nose -->
+                    <ellipse cx="50" cy="50" rx="8" ry="5.5" fill="var(--bg)"/>
+                    <!-- Teeth -->
+                    <rect x="40" y="68" width="8.5" height="14" rx="3" fill="var(--ink)"/>
+                    <rect x="51.5" y="68" width="8.5" height="14" rx="3" fill="var(--ink)"/>
+                    <!-- Tooth inner -->
+                    <rect x="42" y="70" width="4.5" height="10" rx="1.5" fill="var(--bg)"/>
+                    <rect x="53.5" y="70" width="4.5" height="10" rx="1.5" fill="var(--bg)"/>
+                  </svg>
+                </div>
+                <span>26px</span>
+              </div>
+              <div class="logo-size-item">
+                <div class="logo-mark">
+                  <svg width="48" height="48" viewBox="0 0 100 100">
+                    <rect x="14" y="8" width="72" height="60" rx="22"/>
+                    <circle cx="36" cy="36" r="5" fill="var(--bg)"/>
+                    <circle cx="64" cy="36" r="5" fill="var(--bg)"/>
+                    <ellipse cx="50" cy="50" rx="8" ry="5.5" fill="var(--bg)"/>
+                    <rect x="40" y="68" width="8.5" height="14" rx="3" fill="var(--ink)"/>
+                    <rect x="51.5" y="68" width="8.5" height="14" rx="3" fill="var(--ink)"/>
+                    <rect x="42" y="70" width="4.5" height="10" rx="1.5" fill="var(--bg)"/>
+                    <rect x="53.5" y="70" width="4.5" height="10" rx="1.5" fill="var(--bg)"/>
+                  </svg>
+                </div>
+                <span>48px</span>
+              </div>
+              <div class="logo-size-item">
+                <div class="logo-mark">
+                  <svg width="80" height="80" viewBox="0 0 100 100">
+                    <rect x="14" y="8" width="72" height="60" rx="22"/>
+                    <circle cx="36" cy="36" r="5" fill="var(--bg)"/>
+                    <circle cx="64" cy="36" r="5" fill="var(--bg)"/>
+                    <ellipse cx="50" cy="50" rx="8" ry="5.5" fill="var(--bg)"/>
+                    <rect x="40" y="68" width="8.5" height="14" rx="3" fill="var(--ink)"/>
+                    <rect x="51.5" y="68" width="8.5" height="14" rx="3" fill="var(--ink)"/>
+                    <rect x="42" y="70" width="4.5" height="10" rx="1.5" fill="var(--bg)"/>
+                    <rect x="53.5" y="70" width="4.5" height="10" rx="1.5" fill="var(--bg)"/>
+                  </svg>
+                </div>
+                <span>80px</span>
+              </div>
+            </div>
+            <div class="logo-lockup">
+              <div class="logo-lockup-mark">
+                <svg width="16" height="16" viewBox="0 0 100 100">
+                  <rect x="14" y="8" width="72" height="60" rx="22"/>
+                  <circle cx="36" cy="36" r="5" fill="var(--ink)"/>
+                  <circle cx="64" cy="36" r="5" fill="var(--ink)"/>
+                  <ellipse cx="50" cy="50" rx="8" ry="5.5" fill="var(--ink)"/>
+                  <rect x="40" y="68" width="8.5" height="14" rx="3" fill="var(--bg)"/>
+                  <rect x="51.5" y="68" width="8.5" height="14" rx="3" fill="var(--bg)"/>
+                </svg>
+              </div>
+              <span class="logo-lockup-text">Habit Beaver</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Theme switching
+    document.querySelectorAll('.theme-swatch').forEach(swatch => {
+      swatch.addEventListener('click', () => {
+        const theme = swatch.dataset.themeValue;
+        document.documentElement.classList.add('theme-transitioning');
+        document.documentElement.setAttribute('data-theme', theme);
+        document.querySelectorAll('.theme-swatch').forEach(s => s.classList.remove('active'));
+        swatch.classList.add('active');
+        localStorage.setItem('hb-theme', theme);
+        setTimeout(() => document.documentElement.classList.remove('theme-transitioning'), 350);
+      });
+    });
+
+    // Restore saved theme
+    const saved = localStorage.getItem('hb-theme');
+    if (saved) {
+      document.documentElement.setAttribute('data-theme', saved);
+      document.querySelectorAll('.theme-swatch').forEach(s => {
+        s.classList.toggle('active', s.dataset.themeValue === saved);
+      });
+    }
+
+    // Checkbox interaction — toggle completed state and pulse
+    document.querySelectorAll('.habit-check input, .task-check input').forEach(cb => {
+      cb.addEventListener('change', function() {
+        const row = this.closest('.habit-row, .task-row');
+        const visual = this.nextElementSibling;
+
+        if (this.checked) {
+          row.classList.add('completed');
+          visual.classList.add('check-pulse');
+          setTimeout(() => visual.classList.remove('check-pulse'), 500);
+        } else {
+          row.classList.remove('completed');
+        }
+
+        // Update summary count
+        updateSummary();
+      });
+    });
+
+    function updateSummary() {
+      const totalHabits = document.querySelectorAll('.habit-row').length;
+      const doneHabits = document.querySelectorAll('.habit-row.completed').length;
+      const summary = document.querySelector('.header-summary');
+      const parts = summary.innerHTML.split('<span class="sep">');
+      parts[0] = `${doneHabits} of ${totalHabits} habits done`;
+      summary.innerHTML = parts.join('<span class="sep">');
+    }
+
+    // Segmented control interaction
+    document.querySelectorAll('.seg-control').forEach(control => {
+      control.querySelectorAll('.seg-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          control.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>

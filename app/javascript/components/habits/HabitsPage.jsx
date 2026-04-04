@@ -34,11 +34,18 @@ const HabitsPage = () => {
     }
   }, [selectedDate, goToToday]);
 
-  // Check if selected date is today (use local date comparison)
+  // Check if selected date is today
   const today = new Date();
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   const isToday = selectedDate === todayStr;
   const isFuture = selectedDate > todayStr;
+
+  // Format display date
+  const displayDate = useMemo(() => {
+    const [year, month, day] = selectedDate.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  }, [selectedDate]);
 
   // Fetch habits data
   const { data: habitsData, isLoading, error } = useQuery({
@@ -59,29 +66,18 @@ const HabitsPage = () => {
   // Calculate stats
   const stats = useMemo(() => {
     if (!habitsData) return { completed: 0, total: 0, percentage: 0 };
-
     const completed = habitsData.habits.filter(
       h => (h.today_count || 0) >= h.target_count
     ).length;
     const total = habitsData.habits.length;
     const percentage = total > 0 ? Math.round((completed * 100) / total) : 0;
-
     return { completed, total, percentage };
   }, [habitsData]);
-
-  // Format date for display
-  const formatDate = (dateStr) => {
-    if (isToday) return 'Today';
-    const [year, month, day] = dateStr.split('-').map(Number);
-    const date = new Date(year, month - 1, day);
-    return date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' });
-  };
 
   // Filter habits by search query
   const filteredHabits = useMemo(() => {
     if (!habitsData) return [];
     if (!searchQuery.trim()) return habitsData.habits;
-
     const query = searchQuery.toLowerCase();
     return habitsData.habits.filter(habit =>
       habit.name.toLowerCase().includes(query) ||
@@ -98,7 +94,6 @@ const HabitsPage = () => {
     }
 
     if (viewMode === 'category') {
-      // Group by category
       const groups = {};
       filteredHabits.forEach(habit => {
         const catId = habit.category_id;
@@ -116,12 +111,9 @@ const HabitsPage = () => {
       });
       return Object.values(groups);
     } else if (viewMode === 'time') {
-      // Group by time_block
       const groups = {};
-
       filteredHabits.forEach(habit => {
         const blockId = habit.time_block_id || 'anytime';
-
         if (!groups[blockId]) {
           groups[blockId] = {
             id: blockId,
@@ -133,8 +125,6 @@ const HabitsPage = () => {
             habits: [],
           };
         }
-
-        // Add category color info to habit for display
         const habitWithColor = {
           ...habit,
           category_color: habit.category_color,
@@ -142,11 +132,8 @@ const HabitsPage = () => {
         };
         groups[blockId].habits.push(habitWithColor);
       });
-
-      // Sort groups by rank (anytime will have rank 999)
       return Object.values(groups).sort((a, b) => a.rank - b.rank);
     } else {
-      // Group by priority (importance_level)
       const groups = {};
       filteredHabits.forEach(habit => {
         const levelId = habit.importance_level?.id || 'none';
@@ -161,7 +148,6 @@ const HabitsPage = () => {
             habits: [],
           };
         }
-
         const habitWithColor = {
           ...habit,
           category_color: habit.category_color,
@@ -169,162 +155,135 @@ const HabitsPage = () => {
         };
         groups[levelId].habits.push(habitWithColor);
       });
-
-      // Sort groups by rank
       return Object.values(groups).sort((a, b) => a.rank - b.rank);
     }
   }, [habitsData, filteredHabits, viewMode]);
 
   return (
     <>
-      {/* Header Section */}
-      <div className="sticky top-0 z-10 shadow-deep" style={{ background: '#FFFFFF' }}>
-        <div className="p-8">
-          <div className="flex items-start justify-between mb-6">
-            <div className="flex-1">
-              <h1 className="text-5xl font-display mb-2" style={{ color: '#1D1D1F' }}>
-                Habits
-              </h1>
+      {/* v2 Header */}
+      <div className="sticky top-0 z-10" style={{ background: 'var(--bg)' }}>
+        <div className="pl-14 pr-4 pt-6 pb-4 md:pl-8 md:pr-8 md:pt-8 md:pb-5">
+          <div className="flex items-baseline justify-between">
+            <div>
+              <h1 className="v2-h1">{isToday ? displayDate : displayDate}</h1>
+              <p className="v2-small" style={{ marginTop: 4, color: 'var(--ink-tertiary)' }}>
+                {stats.total > 0
+                  ? `${stats.completed} of ${stats.total} habits done · ${stats.percentage}%`
+                  : 'No habits today'
+                }
+              </p>
+            </div>
+
+            <div className="flex items-center gap-1">
+              <button onClick={goToPreviousDay} className="v2-btn-icon" title="Previous day">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              {isToday ? (
+                <span className="v2-caption" style={{ padding: '4px 10px' }}>Today</span>
+              ) : (
+                <button onClick={goToToday} className="v2-btn-sm v2-btn-ghost">Today</button>
+              )}
+              <button
+                onClick={goToNextDay}
+                disabled={isToday || isFuture}
+                className="v2-btn-icon"
+                style={{ opacity: isToday || isFuture ? 0.3 : 1, pointerEvents: isToday || isFuture ? 'none' : 'auto' }}
+                title="Next day"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Controls row */}
+          <div className="flex flex-wrap items-center gap-3 mt-4">
+            <div className="v2-seg-control">
+              {[
+                { value: 'none', label: 'All' },
+                { value: 'category', label: 'Category' },
+                { value: 'time', label: 'Time' },
+                { value: 'priority', label: 'Priority' },
+              ].map(({ value, label }) => (
+                <button
+                  key={value}
+                  onClick={() => setViewMode(value)}
+                  className={`v2-seg-btn ${viewMode === value ? 'active' : ''}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {/* Search */}
+            <div className="relative flex-1 min-w-[160px] max-w-xs">
+              <svg className="absolute left-2.5 top-1/2 -translate-y-1/2" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input
+                type="text"
+                placeholder="Search habits..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 rounded-lg text-sm focus:outline-none"
+                style={{
+                  border: '1px solid var(--border)',
+                  fontFamily: 'var(--font-body)',
+                  fontWeight: 400,
+                  background: 'var(--surface)',
+                  color: 'var(--ink)',
+                  fontSize: '0.833rem',
+                }}
+              />
             </div>
 
             <button
               onClick={() => openNewModal({})}
-              className="w-12 h-12 rounded-xl text-white transition transform hover:scale-105 flex items-center justify-center btn-onyx"
-              title="New Habit"
+              className="v2-btn-sm v2-btn-primary ml-auto"
             >
-              <i className="fa-solid fa-plus text-lg"></i>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New Habit
             </button>
           </div>
-
-          {/* Filters Row */}
-          <div className="flex flex-wrap gap-4 items-center mb-4">
-            {/* View Toggle */}
-            <div>
-              <span className="block text-xs uppercase tracking-wide mb-2" style={{ color: '#8E8E93', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
-                Group By
-              </span>
-              <div className="inline-flex rounded-lg overflow-hidden" style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}>
-                {[
-                  { value: 'none', label: 'None' },
-                  { value: 'category', label: 'Category' },
-                  { value: 'time', label: 'Time' },
-                  { value: 'priority', label: 'Priority' },
-                ].map(({ value, label }) => (
-                  <button
-                    key={value}
-                    onClick={() => setViewMode(value)}
-                    className="px-4 py-2 text-sm transition"
-                    style={{
-                      background: viewMode === value ? 'linear-gradient(to bottom, #A8A8AD 0%, #8E8E93 100%)' : '#F5F5F7',
-                      color: viewMode === value ? '#FFFFFF' : '#1D1D1F',
-                      fontWeight: 500,
-                      fontFamily: "'Inter', sans-serif",
-                    }}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Date Navigation */}
-            <div className="flex items-center gap-2 ml-auto">
-              <button
-                onClick={goToPreviousDay}
-                className="w-10 h-10 rounded-lg flex items-center justify-center transition"
-                style={{ background: 'linear-gradient(135deg, rgba(229, 229, 231, 0.3) 0%, rgba(199, 199, 204, 0.4) 50%, rgba(142, 142, 147, 0.3) 100%)', border: '0.5px solid rgba(199, 199, 204, 0.3)', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)' }}
-              >
-                <i className="fa-solid fa-chevron-left text-sm" style={{ color: '#2C2C2E' }}></i>
-              </button>
-              <div className="px-2 text-sm" style={{ color: '#1D1D1F', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
-                {formatDate(selectedDate)}
-              </div>
-              <button
-                onClick={goToNextDay}
-                disabled={isToday || isFuture}
-                className={`w-10 h-10 rounded-lg flex items-center justify-center transition ${isToday || isFuture ? 'opacity-30 pointer-events-none' : ''}`}
-                style={{ background: 'linear-gradient(135deg, rgba(229, 229, 231, 0.3) 0%, rgba(199, 199, 204, 0.4) 50%, rgba(142, 142, 147, 0.3) 100%)', border: '0.5px solid rgba(199, 199, 204, 0.3)', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)' }}
-              >
-                <i className="fa-solid fa-chevron-right text-sm" style={{ color: '#2C2C2E' }}></i>
-              </button>
-              {!isToday && (
-                <button
-                  onClick={goToToday}
-                  className="ml-2 px-4 py-2 rounded-lg text-sm transition"
-                  style={{ background: 'linear-gradient(135deg, rgba(229, 229, 231, 0.3) 0%, rgba(199, 199, 204, 0.4) 50%, rgba(142, 142, 147, 0.3) 100%)', border: '0.5px solid rgba(199, 199, 204, 0.3)', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)', color: '#1D1D1F', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
-                >
-                  Today
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Search Row */}
-          <div className="relative">
-            <i className="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#8E8E93' }}></i>
-            <input
-              type="text"
-              placeholder="Search habits..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 rounded-lg text-sm focus:outline-none transition-shadow duration-200"
-              style={{
-                border: '1px solid #8E8E93',
-                fontFamily: "'Inter', sans-serif",
-                fontWeight: 400,
-                background: '#FFFFFF',
-                boxShadow: 'inset 0 3px 6px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(255, 255, 255, 0.8)',
-                letterSpacing: '0.01em',
-                fontSize: '0.9rem',
-              }}
-            />
-          </div>
         </div>
+        {/* Soft fade */}
+        <div style={{ height: 12, background: 'linear-gradient(to bottom, var(--bg), transparent)', pointerEvents: 'none' }} />
       </div>
 
       {/* Content Area */}
-      <div className={`p-8 pt-6 ${viewMode !== 'none' ? 'pb-0' : ''}`}>
+      <div className="px-4 pb-16 md:px-8" style={{ maxWidth: 920, paddingTop: 8 }}>
         {/* Loading State */}
         {isLoading && (
           <div className="flex items-center justify-center py-12">
-            <div
-              className="animate-spin rounded-full h-12 w-12 border-b-2"
-              style={{ borderColor: '#2C2C2E' }}
-            ></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: 'var(--ink-faint)' }} />
           </div>
         )}
 
         {/* Error State */}
         {error && (
-          <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
-            <i className="fa-solid fa-exclamation-circle text-6xl mb-4" style={{ color: '#DC2626' }}></i>
-            <p style={{ color: '#DC2626', fontFamily: "'Inter', sans-serif", fontWeight: 400 }}>Error loading habits: {error.message}</p>
+          <div className="v2-card v2-card-padded text-center" style={{ padding: '48px 24px' }}>
+            <p className="v2-small" style={{ color: 'var(--overdue)' }}>Error loading habits: {error.message}</p>
           </div>
         )}
 
         {/* Empty State */}
         {!isLoading && !error && (!habitsData || habitsData.habits.length === 0) && (
-          <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
-            <i className="fa-solid fa-clipboard-list text-6xl mb-4" style={{ color: '#E5E5E7' }}></i>
-            <h3 className="text-xl mb-2" style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif", fontWeight: 700 }}>
-              No Habits Yet
-            </h3>
-            <p className="mb-4" style={{ color: '#8E8E93', fontWeight: 200, fontFamily: "'Inter', sans-serif" }}>
-              Start building better habits by creating your first one!
+          <div className="v2-card text-center" style={{ padding: '48px 24px' }}>
+            <p className="v2-body" style={{ color: 'var(--ink)' }}>No habits yet</p>
+            <p className="v2-small" style={{ color: 'var(--ink-faint)', marginTop: 4 }}>
+              Create your first habit to start tracking.
             </p>
-            <a
-              href="/"
-              className="inline-block px-6 py-3 rounded-lg text-white transition btn-onyx"
-              style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
+            <button
+              onClick={() => openNewModal({})}
+              className="v2-btn v2-btn-primary"
+              style={{ marginTop: 16 }}
             >
-              Browse Categories
-            </a>
+              New Habit
+            </button>
           </div>
         )}
 
         {/* Habits List */}
         {!isLoading && !error && habitsData && habitsData.habits.length > 0 && (
-          <div className={viewMode !== 'none' ? '-mt-6' : ''}>
+          <div className="space-y-4">
             {groupedHabits.map((group) => (
               <HabitGroup
                 key={group.id}

@@ -305,6 +305,19 @@ Devise.setup do |config|
   config.responder.error_status = :unprocessable_entity
   config.responder.redirect_status = :see_other
 
+  # ==> Configuration for JWT (devise-jwt)
+  config.jwt do |jwt|
+    jwt.secret = Rails.application.credentials.secret_key_base
+    jwt.expiration_time = 24.hours.to_i
+    jwt.dispatch_requests = [
+      ['POST', %r{^/app_api/v1/users/sign_in$}],
+      ['POST', %r{^/app_api/v1/users$}]
+    ]
+    jwt.revocation_requests = [
+      ['DELETE', %r{^/app_api/v1/users/sign_out$}]
+    ]
+  end
+
   # ==> Configuration for :registerable
 
   # When set to false, does not sign a user in automatically after their password is

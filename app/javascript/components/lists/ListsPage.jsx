@@ -5,12 +5,10 @@ import ListFormModal from './ListFormModal';
 import useListsStore from '../../stores/listsStore';
 import { listsApi, categoriesApi } from '../../utils/api';
 
-// Get initial grouping from URL or user default
 const getInitialGrouping = () => {
   const params = new URLSearchParams(window.location.search);
   const urlGroupBy = params.get('groupBy');
   if (urlGroupBy) return urlGroupBy;
-
   const rootElement = document.getElementById('lists-react-root');
   return rootElement?.dataset?.defaultGrouping || 'type';
 };
@@ -21,387 +19,166 @@ const ListsPage = () => {
   const { openFormModal, openEditModal } = useListsStore();
   const queryClient = useQueryClient();
 
-  // Toggle pin mutation
   const togglePinMutation = useMutation({
     mutationFn: listsApi.togglePin,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['lists'] });
-    },
+    onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: ['lists'] }); },
   });
 
-  // Update URL when groupBy changes
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (groupBy && groupBy !== 'type') {
-      params.set('groupBy', groupBy);
-    } else {
-      params.delete('groupBy');
-    }
+    if (groupBy && groupBy !== 'type') params.set('groupBy', groupBy); else params.delete('groupBy');
     const newUrl = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
     window.history.replaceState({}, '', newUrl);
   }, [groupBy]);
 
-  // Fetch lists data
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['lists'],
-    queryFn: listsApi.fetchAll,
-  });
-
-  // Fetch categories for grouping
-  const { data: categoriesData } = useQuery({
-    queryKey: ['categories'],
-    queryFn: categoriesApi.fetchAll,
-  });
+  const { data, isLoading, error } = useQuery({ queryKey: ['lists'], queryFn: listsApi.fetchAll });
+  const { data: categoriesData } = useQuery({ queryKey: ['categories'], queryFn: categoriesApi.fetchAll });
 
   const lists = data?.lists || [];
   const categories = Array.isArray(categoriesData) ? categoriesData : [];
 
-  // Filter based on search query
-  const filterItem = (item) => {
+  const filteredLists = lists.filter(item => {
     if (!searchQuery.trim()) return true;
-    const query = searchQuery.toLowerCase();
-    if (item.name.toLowerCase().includes(query)) return true;
-    if (item.category?.name?.toLowerCase().includes(query)) return true;
-    if (item.checklist_items.some(ci => ci.name.toLowerCase().includes(query))) return true;
-    return false;
-  };
+    const q = searchQuery.toLowerCase();
+    return item.name.toLowerCase().includes(q) || item.category?.name?.toLowerCase().includes(q) || item.checklist_items.some(ci => ci.name.toLowerCase().includes(q));
+  });
 
-  const filteredLists = lists.filter(filterItem);
+  const sortPinnedFirst = (items) => [...items].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
 
-  // Helper to sort lists with pinned first
-  const sortPinnedFirst = (items) => {
-    return [...items].sort((a, b) => {
-      if (a.pinned && !b.pinned) return -1;
-      if (!a.pinned && b.pinned) return 1;
-      return 0;
-    });
-  };
-
-  // Group lists based on selected grouping
   const groupedLists = useMemo(() => {
-    if (groupBy === 'none') {
-      return [{ key: 'all', title: 'All Lists', lists: sortPinnedFirst(filteredLists), hideHeader: true }];
-    }
+    if (groupBy === 'none') return [{ key: 'all', title: 'All Lists', lists: sortPinnedFirst(filteredLists), hideHeader: true }];
 
     if (groupBy === 'type') {
       const groups = [
-        { key: 'habits', title: 'Attached to Habits', icon: 'fa-chart-line', color: '#8E8E93', lists: [] },
-        { key: 'tasks', title: 'Attached to Tasks', icon: 'fa-check', color: '#8E8E93', lists: [] },
-        { key: 'standalone', title: 'Unassigned', icon: 'fa-list-check', color: '#8E8E93', lists: [] },
+        { key: 'habits', title: 'Attached to Habits', lists: [] },
+        { key: 'tasks', title: 'Attached to Tasks', lists: [] },
+        { key: 'standalone', title: 'Unassigned', lists: [] },
       ];
-
       filteredLists.forEach(list => {
-        const hasHabits = list.habits && list.habits.length > 0;
-        const hasTasks = list.tasks && list.tasks.length > 0;
-
-        if (hasHabits) {
-          groups[0].lists.push(list);
-        } else if (hasTasks) {
-          groups[1].lists.push(list);
-        } else {
-          groups[2].lists.push(list);
-        }
+        if (list.habits?.length > 0) groups[0].lists.push(list);
+        else if (list.tasks?.length > 0) groups[1].lists.push(list);
+        else groups[2].lists.push(list);
       });
-
-      // Sort pinned first within each group
-      return groups.map(group => ({
-        ...group,
-        lists: sortPinnedFirst(group.lists),
-      }));
+      return groups.map(g => ({ ...g, lists: sortPinnedFirst(g.lists) }));
     } else {
-      // Group by category - start with all categories
-      const result = categories.map(cat => ({
-        key: `cat-${cat.id}`,
-        title: cat.name,
-        icon: cat.icon,
-        color: cat.color,
-        lists: [],
-      }));
-
-      // Add uncategorized group
-      const uncategorized = { key: 'uncategorized', title: 'Uncategorized', icon: 'fa-folder', color: '#8E8E93', lists: [] };
-
+      const result = categories.map(cat => ({ key: `cat-${cat.id}`, title: cat.name, color: cat.color, icon: cat.icon, lists: [] }));
+      const uncategorized = { key: 'uncategorized', title: 'Uncategorized', color: '#9CA3A8', lists: [] };
       filteredLists.forEach(list => {
-        if (list.category) {
-          const group = result.find(g => g.key === `cat-${list.category.id}`);
-          if (group) {
-            group.lists.push(list);
-          }
-        } else {
-          uncategorized.lists.push(list);
-        }
+        if (list.category) { const g = result.find(g => g.key === `cat-${list.category.id}`); if (g) g.lists.push(list); }
+        else uncategorized.lists.push(list);
       });
-
-      // Sort by name and add uncategorized at the end
       result.sort((a, b) => a.title.localeCompare(b.title));
       result.push(uncategorized);
-
-      // Sort pinned first within each group
-      return result.map(group => ({
-        ...group,
-        lists: sortPinnedFirst(group.lists),
-      }));
+      return result.map(g => ({ ...g, lists: sortPinnedFirst(g.lists) }));
     }
   }, [filteredLists, groupBy, categories]);
 
   return (
     <>
-      {/* Header Section */}
-      <div className="sticky top-0 z-10 shadow-deep" style={{ background: '#FFFFFF' }}>
-        <div className="p-8">
-          <div className="flex items-start justify-between mb-6">
-            <div className="flex-1">
-              <h1 className="text-5xl font-display" style={{ color: '#1D1D1F' }}>
-                Lists
-              </h1>
-              <p className="text-sm mt-1" style={{ color: '#8E8E93', fontFamily: "'Inter', sans-serif", fontWeight: 300 }}>
-                Attach to habits for reusable checklists, or to tasks for single-use.
-              </p>
+      {/* v2 Header */}
+      <div className="sticky top-0 z-10" style={{ background: 'var(--bg)' }}>
+        <div className="pl-14 pr-4 pt-6 pb-4 md:pl-8 md:pr-8 md:pt-8 md:pb-5">
+          <div className="flex items-baseline justify-between">
+            <div>
+              <h1 className="v2-h1">Lists</h1>
+              <p className="v2-small" style={{ marginTop: 4, color: 'var(--ink-tertiary)' }}>Reusable checklists for habits and tasks.</p>
             </div>
-
-            <button
-              onClick={openFormModal}
-              className="w-12 h-12 rounded-xl text-white transition transform hover:scale-105 flex items-center justify-center btn-onyx"
-              title="New List"
-            >
-              <i className="fa-solid fa-plus text-lg"></i>
+            <button onClick={openFormModal} className="v2-btn-sm v2-btn-primary">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New List
             </button>
           </div>
 
-          {/* Filters Row */}
-          <div className="mb-4">
-            <span className="block text-xs uppercase tracking-wide mb-2" style={{ color: '#8E8E93', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
-              Group By
-            </span>
-            <div className="inline-flex rounded-lg overflow-hidden" style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}>
-              {[
-                { value: 'none', label: 'None' },
-                { value: 'type', label: 'Type' },
-                { value: 'category', label: 'Category' },
-              ].map(({ value, label }) => (
-                <button
-                  key={value}
-                  onClick={() => setGroupBy(value)}
-                  className="px-4 py-2 text-sm transition"
-                  style={{
-                    background: groupBy === value ? 'linear-gradient(to bottom, #A8A8AD 0%, #8E8E93 100%)' : '#F5F5F7',
-                    color: groupBy === value ? '#FFFFFF' : '#1D1D1F',
-                    fontWeight: 500,
-                    fontFamily: "'Inter', sans-serif",
-                  }}
-                >
-                  {label}
-                </button>
+          <div className="flex flex-wrap items-center gap-3 mt-4">
+            <div className="v2-seg-control">
+              {[{ value: 'none', label: 'All' }, { value: 'type', label: 'Type' }, { value: 'category', label: 'Category' }].map(({ value, label }) => (
+                <button key={value} onClick={() => setGroupBy(value)} className={`v2-seg-btn ${groupBy === value ? 'active' : ''}`}>{label}</button>
               ))}
             </div>
-          </div>
 
-          {/* Search Row */}
-          <div className="relative">
-            <i className="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#8E8E93' }}></i>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search lists..."
-              className="w-full pl-9 pr-4 py-2.5 rounded-lg text-sm focus:outline-none transition-shadow duration-200"
-              style={{
-                border: '1px solid #8E8E93',
-                fontFamily: "'Inter', sans-serif",
-                fontWeight: 400,
-                background: '#FFFFFF',
-                boxShadow: 'inset 0 3px 6px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(255, 255, 255, 0.8)',
-                letterSpacing: '0.01em',
-                fontSize: '0.9rem',
-              }}
-            />
+            <div className="relative flex-1 min-w-[160px] max-w-xs ml-auto">
+              <svg className="absolute left-2.5 top-1/2 -translate-y-1/2" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search lists..."
+                className="w-full pl-8 pr-3 py-1.5 rounded-lg text-sm focus:outline-none"
+                style={{ border: '1px solid var(--border)', fontFamily: 'var(--font-body)', background: 'var(--surface)', color: 'var(--ink)', fontSize: '0.833rem' }} />
+            </div>
           </div>
         </div>
+        <div style={{ height: 12, background: 'linear-gradient(to bottom, var(--bg), transparent)', pointerEvents: 'none' }} />
       </div>
 
-      {/* Content Area */}
-      <div className={`px-8 pb-8 ${groupBy !== 'none' ? 'pb-0 pt-0' : 'pt-6'}`}>
-        {isLoading && (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#2C2C2E' }}></div>
-          </div>
-        )}
+      {/* Content */}
+      <div className="px-4 pb-16 md:px-8 space-y-4" style={{ maxWidth: 920, paddingTop: 8 }}>
+        {isLoading && <div className="flex items-center justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: 'var(--ink-faint)' }} /></div>}
+        {error && <div className="v2-card text-center" style={{ padding: '48px 24px' }}><p className="v2-small" style={{ color: 'var(--overdue)' }}>Error: {error.message}</p></div>}
 
-        {error && (
-          <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
-            <i className="fa-solid fa-exclamation-circle text-6xl mb-4" style={{ color: '#DC2626' }}></i>
-            <p style={{ color: '#DC2626', fontFamily: "'Inter', sans-serif", fontWeight: 400 }}>Error loading lists: {error.message}</p>
-          </div>
-        )}
+        {!isLoading && !error && groupedLists.map((group) => {
+          if (group.hideHeader) {
+            return (
+              <div key={group.key} className="space-y-3">
+                {group.lists.map(list => <ListCard key={list.id} list={list} onEdit={openEditModal} onTogglePin={() => togglePinMutation.mutate(list.id)} />)}
+              </div>
+            );
+          }
 
-        {!isLoading && !error && (
-          <div>
-            {groupedLists.map((group) => {
-              const groupColor = group.color || '#8E8E93';
-
-              if (group.hideHeader) {
-                return (
-                  <div key={group.key}>
-                    <div className="space-y-4">
-                      {group.lists.map((list) => (
-                        <ListCard
-                          key={list.id}
-                          list={list}
-                          onEdit={openEditModal}
-                          onTogglePin={() => togglePinMutation.mutate(list.id)}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                );
-              }
-
-              return (
-                <div
-                  key={group.key}
-                  className="-mx-8 px-8 pb-8"
-                  style={{
-                    background: `linear-gradient(180deg, color-mix(in srgb, ${groupColor} 12%, white) 0%, color-mix(in srgb, ${groupColor} 6%, white) 100%)`,
-                  }}
-                >
-                  <div
-                    className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3 bar-colored"
-                    style={{ '--bar-color': groupColor }}
-                  >
-                    <i className={`fa-solid ${group.icon} text-white text-lg`}></i>
-                    <h3 className="text-3xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
-                      {group.title} ({group.lists.length})
-                    </h3>
-                    <button
-                      onClick={openFormModal}
-                      className="w-8 h-8 rounded-md flex items-center justify-center transition hover:opacity-80"
-                      style={{ backgroundColor: 'rgba(255,255,255,0.95)' }}
-                      title="New list"
-                    >
-                      <i className="fa-solid fa-plus" style={{ color: '#333' }}></i>
-                    </button>
-                  </div>
-                  {group.lists.length > 0 ? (
-                    <div className="space-y-4">
-                      {group.lists.map((list) => (
-                        <ListCard
-                          key={list.id}
-                          list={list}
-                          onEdit={openEditModal}
-                          onTogglePin={() => togglePinMutation.mutate(list.id)}
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="py-3 text-sm" style={{ color: '#8E8E93', fontFamily: "'Inter', sans-serif", fontWeight: 300 }}>
-                      No current lists
-                    </p>
-                  )}
+          return (
+            <div key={group.key} className="v2-card" style={{ padding: 0 }}>
+              <div className="v2-section-header" style={{ padding: '12px 18px 8px' }}>
+                <div className="flex items-center gap-2">
+                  {group.color && <span style={{ width: 8, height: 8, borderRadius: '50%', background: group.color, flexShrink: 0 }} />}
+                  <span className="v2-section-title">{group.title}</span>
+                  <span className="v2-caption" style={{ color: 'var(--ink-faint)' }}>{group.lists.length}</span>
                 </div>
-              );
-            })}
-          </div>
-        )}
+                <button onClick={openFormModal} className="v2-btn-icon-sm" title="New list">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+              </div>
+              {group.lists.length > 0 ? (
+                <div style={{ padding: '0 18px 12px' }} className="space-y-3">
+                  {group.lists.map(list => <ListCard key={list.id} list={list} onEdit={openEditModal} onTogglePin={() => togglePinMutation.mutate(list.id)} />)}
+                </div>
+              ) : (
+                <p className="v2-small" style={{ padding: '12px 18px 16px', color: 'var(--ink-faint)' }}>No lists</p>
+              )}
+            </div>
+          );
+        })}
       </div>
 
-      {/* Modal */}
       <ListFormModal />
     </>
   );
 };
 
 const ListCard = ({ list, onEdit, onTogglePin }) => {
-  const color = list.category?.color || '#1D1D1F';
+  const color = list.category?.color || 'var(--ink)';
   const completedCount = list.checklist_items.filter(i => i.completed).length;
   const totalCount = list.checklist_items.length;
 
   return (
-    <div
-      className="rounded-xl p-5 transition relative shadow-medium"
-      style={{
-        background: '#FFFFFF',
-      }}
-    >
-      {/* Pin toggle button - top right */}
-      <button
-        onClick={onTogglePin}
-        className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center transition hover:scale-110 rounded-full hover:bg-gray-100"
-        title={list.pinned ? 'Unpin list' : 'Pin list'}
-      >
-        <i
-          className={`fa-solid fa-thumbtack text-sm transition ${list.pinned ? '' : 'opacity-30 hover:opacity-60'}`}
-          style={{ color: list.pinned ? '#2D2D2F' : '#8E8E93' }}
-        ></i>
-      </button>
-
-      {/* Header */}
-      <div className="flex items-center justify-between mb-3 pr-8">
-        <div className="flex items-center gap-3">
-          {/* Category Icon */}
-          <div
-            className="w-10 h-10 rounded-lg flex items-center justify-center"
-            style={{ backgroundColor: color }}
-          >
-            {list.category ? (
-              <i className={`fa-solid ${list.category.icon} text-white`}></i>
-            ) : (
-              <i className="fa-solid fa-list-check text-white"></i>
-            )}
-          </div>
-
-          <div>
-            <div className="flex items-center gap-2">
-              <h3
-                className="font-semibold"
-                style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif" }}
-              >
-                {list.name}
-              </h3>
-            </div>
-            <div className="flex items-center gap-2 text-xs" style={{ color: '#8E8E93' }}>
-              {list.category && (
-                <span>{list.category.name}</span>
-              )}
-              {!list.category && (
-                <span>No category</span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* Edit Button */}
-          <button
-            onClick={() => onEdit(list.id)}
-            className="w-8 h-8 rounded-lg flex items-center justify-center transition hover:bg-gray-200"
-            style={{ backgroundColor: '#F5F5F7' }}
-            title="Edit list"
-          >
-            <i className="fa-solid fa-pen text-sm" style={{ color: '#636366' }}></i>
-          </button>
-
-          {/* Progress Badge */}
-          <div
-            className="px-3 py-1.5 rounded-lg font-semibold text-sm"
-            style={{
-              backgroundColor: completedCount === totalCount ? '#D1FAE5' : `${color}15`,
-              color: completedCount === totalCount ? '#059669' : color,
-            }}
-          >
+    <div style={{ padding: '14px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', position: 'relative' }}>
+      {/* Header row */}
+      <div className="flex items-center justify-between" style={{ marginBottom: 8 }}>
+        <div className="flex items-center gap-2.5">
+          {list.category && <span style={{ width: 8, height: 8, borderRadius: '50%', background: color, flexShrink: 0 }} />}
+          <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.933rem', fontWeight: 500, color: 'var(--ink)' }}>{list.name}</span>
+          {list.pinned && <i className="fa-solid fa-thumbtack" style={{ fontSize: '0.55rem', color: 'var(--ink-faint)', transform: 'rotate(30deg)' }} />}
+          <span className="v2-caption" style={{ color: 'var(--ink-faint)' }}>
             {completedCount}/{totalCount}
-          </div>
+          </span>
+        </div>
+        <div className="flex items-center gap-0.5">
+          <button onClick={onTogglePin} className="v2-btn-icon-sm" title={list.pinned ? 'Unpin' : 'Pin'}>
+            <i className={`fa-solid fa-thumbtack`} style={{ fontSize: '0.6rem', color: list.pinned ? 'var(--ink)' : 'var(--ink-faint)', opacity: list.pinned ? 1 : 0.4 }} />
+          </button>
+          <button onClick={() => onEdit(list.id)} className="v2-btn-icon-sm" title="Edit">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+          </button>
         </div>
       </div>
 
       {/* Checklist */}
-      <ChecklistSection
-        parentType="list"
-        parentId={list.id}
-        items={list.checklist_items}
-        color={color}
-        editable={false}
-        compact={true}
-      />
+      <ChecklistSection parentType="list" parentId={list.id} items={list.checklist_items} color={color} editable={false} compact={true} />
     </div>
   );
 };

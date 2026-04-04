@@ -97,7 +97,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
         };
       });
 
-      const noImportance = { id: 'none', title: 'No Priority', habits: [], color: '#9CA3A8', icon: 'fa-circle', rank: 999 };
+      const noImportance = { id: 'none', title: 'No Priority', habits: [], color: 'var(--ink-faint)', icon: 'fa-circle', rank: 999 };
 
       habits.forEach(habit => {
         if (habit.importance_level) {
@@ -129,7 +129,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
         };
       });
 
-      const anytime = { id: 'anytime', title: 'Anytime', habits: [], color: '#9CA3A8', icon: 'fa-clock', rank: 999 };
+      const anytime = { id: 'anytime', title: 'Anytime', habits: [], color: 'var(--ink-faint)', icon: 'fa-clock', rank: 999 };
 
       habits.forEach(habit => {
         if (habit.time_block_id) {
@@ -149,7 +149,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
       return result;
     }
 
-    return [{ title: 'All Habits', habits, color: '#9CA3A8', icon: 'fa-list' }];
+    return [{ title: 'All Habits', habits, color: 'var(--ink-faint)', icon: 'fa-list' }];
   }, [categoryData, groupBy, importanceLevels, timeBlocks]);
 
   // Calculate today's task count (due today, overdue, or no due date)
@@ -171,7 +171,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
       <div className="flex items-center justify-center py-12">
         <div
           className="animate-spin rounded-full h-12 w-12 border-b-2"
-          style={{ borderColor: '#2C2C2E' }}
+          style={{ borderColor: 'var(--ink)' }}
         ></div>
       </div>
     );
@@ -180,9 +180,9 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
   if (error) {
     return (
       <div className="p-8">
-        <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
-          <i className="fa-solid fa-exclamation-circle text-6xl mb-4" style={{ color: '#DC2626' }}></i>
-          <p style={{ color: '#DC2626', fontFamily: "'Inter', sans-serif", fontWeight: 400 }}>Error loading category: {error.message}</p>
+        <div className="rounded-xl p-12 text-center" style={{ background: 'var(--surface)' }}>
+          <i className="fa-solid fa-exclamation-circle text-6xl mb-4" style={{ color: 'var(--overdue)' }}></i>
+          <p style={{ color: 'var(--overdue)', fontFamily: 'var(--font-body)', fontWeight: 400 }}>Error loading category: {error.message}</p>
         </div>
       </div>
     );
@@ -218,18 +218,10 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
 
     return (
       <div key={group.title}>
-        <div
-          className="-mx-6 px-6 pb-6"
-          style={{
-            background: `linear-gradient(180deg, color-mix(in srgb, ${groupColor} 12%, white) 0%, color-mix(in srgb, ${groupColor} 6%, white) 100%)`,
-          }}
-        >
-          <div
-            className="-mx-6 px-6 py-3 mb-4 flex items-center gap-3 bar-colored"
-            style={{ '--bar-color': groupColor }}
-          >
-            <i className={`fa-solid ${groupIcon} text-white text-lg`}></i>
-            <h3 className="text-2xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
+        <div className="mb-4">
+          <div className="v2-section-header flex items-center gap-3 mb-3">
+            <i className={`fa-solid ${groupIcon} text-lg`} style={{ color: groupColor }}></i>
+            <h3 className="text-lg flex-1" style={{ fontWeight: 600, fontFamily: 'var(--font-body)', color: 'var(--ink)' }}>
               {group.title} ({group.habits.length})
             </h3>
           </div>
@@ -256,7 +248,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
             </div>
           ) : (
             <div className="py-4 text-center">
-              <p className="text-sm italic" style={{ color: '#8E8E93' }}>
+              <p className="text-sm italic" style={{ color: 'var(--ink-tertiary)' }}>
                 No habits in this group
               </p>
             </div>
@@ -305,9 +297,9 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
           {groupedHabits.map((group) => renderHabitGroup(group))}
         </div>
       ) : (
-        <div className="py-8 text-center rounded-xl shadow-medium" style={{ background: '#FFFFFF' }}>
-          <i className="fa-solid fa-list-check text-4xl mb-2" style={{ color: '#E5E5E7' }}></i>
-          <p className="text-sm mb-4" style={{ color: '#8E8E93' }}>
+        <div className="py-8 text-center rounded-xl shadow-medium" style={{ background: 'var(--surface)' }}>
+          <i className="fa-solid fa-list-check text-4xl mb-2" style={{ color: 'var(--border)' }}></i>
+          <p className="text-sm mb-4" style={{ color: 'var(--ink-tertiary)' }}>
             No habits yet
           </p>
           <button
@@ -333,7 +325,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
       if (diffDays < 0) return { text: 'Overdue', color: '#FB7185', isToday: false, isOverdue: true };
       if (diffDays === 0) return { text: 'Today', color: '#E5C730', isToday: true, isOverdue: false };
       if (diffDays <= 7) return { text: `${diffDays}d`, color: '#22D3EE', isToday: false, isOverdue: false };
-      return { text: parseLocalDate(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), color: '#8E8E93', isToday: false, isOverdue: false };
+      return { text: parseLocalDate(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), color: 'var(--ink-tertiary)', isToday: false, isOverdue: false };
     };
 
     const getRepeatDescription = (task) => {
@@ -440,7 +432,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
                   </button>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className={`font-semibold ${task.completed ? 'line-through' : ''}`} style={{ color: '#1D1D1F' }}>
+                      <span className={`font-semibold ${task.completed ? 'line-through' : ''}`} style={{ color: 'var(--ink)' }}>
                         {task.name}
                       </span>
                       {repeatDesc && (
@@ -448,7 +440,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
                           className="text-xs px-1.5 py-0.5 rounded-full"
                           style={{
                             backgroundColor: 'rgba(142, 142, 147, 0.15)',
-                            color: '#8E8E93',
+                            color: 'var(--ink-tertiary)',
                             fontWeight: 500,
                             fontSize: '0.65rem',
                           }}
@@ -480,7 +472,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
                       {dueDateStatus && (
                         <div
                           className="px-2 py-0.5 rounded-lg text-xs font-medium"
-                          style={{ backgroundColor: '#1D1D1F', color: 'white' }}
+                          style={{ backgroundColor: 'var(--ink)', color: 'white' }}
                         >
                           <i className="fa-solid fa-calendar-day mr-1"></i>
                           {dueDateStatus.text}
@@ -500,7 +492,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
                       {task.checklist_items && task.checklist_items.length > 0 && (
                         <div
                           className="px-2 py-0.5 rounded-lg text-xs font-medium"
-                          style={{ backgroundColor: '#1D1D1F', color: 'white' }}
+                          style={{ backgroundColor: 'var(--ink)', color: 'white' }}
                         >
                           <i className="fa-solid fa-list-check mr-1"></i>
                           {task.checklist_items.filter(i => i.completed).length}/{task.checklist_items.length}
@@ -511,7 +503,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
                         <div
                           key={tag.id}
                           className="px-2 py-0.5 rounded-lg text-xs font-medium"
-                          style={{ backgroundColor: '#1D1D1F', color: 'white' }}
+                          style={{ backgroundColor: 'var(--ink)', color: 'white' }}
                         >
                           <i className="fa-solid fa-tag mr-1"></i>
                           {tag.name}
@@ -526,16 +518,16 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
                     }}
                     className="w-5 h-5 flex items-center justify-center transition hover:opacity-70"
                   >
-                    <i className="fa-solid fa-pen text-xs" style={{ color: '#9CA3A8' }}></i>
+                    <i className="fa-solid fa-pen text-xs" style={{ color: 'var(--ink-faint)' }}></i>
                   </button>
                 </div>
               );
             })}
           </div>
         ) : (
-          <div className="py-8 text-center rounded-xl shadow-medium" style={{ background: '#FFFFFF' }}>
-            <i className="fa-solid fa-square-check text-4xl mb-2" style={{ color: '#E5E5E7' }}></i>
-            <p className="text-sm mb-4" style={{ color: '#8E8E93' }}>
+          <div className="py-8 text-center rounded-xl shadow-medium" style={{ background: 'var(--surface)' }}>
+            <i className="fa-solid fa-square-check text-4xl mb-2" style={{ color: 'var(--border)' }}></i>
+            <p className="text-sm mb-4" style={{ color: 'var(--ink-tertiary)' }}>
               {taskFilter === 'today' ? 'No tasks due today' : 'No tasks yet'}
             </p>
             <button
@@ -589,17 +581,17 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
                   <i className={`fa-solid ${icon} text-white`}></i>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold truncate" style={{ color: '#1D1D1F' }}>{doc.title}</div>
-                  <div className="text-xs capitalize" style={{ color: '#8E8E93' }}>{doc.content_type}</div>
+                  <div className="font-semibold truncate" style={{ color: 'var(--ink)' }}>{doc.title}</div>
+                  <div className="text-xs capitalize" style={{ color: 'var(--ink-tertiary)' }}>{doc.content_type}</div>
                 </div>
               </button>
             );
           })}
         </div>
       ) : (
-        <div className="py-8 text-center rounded-xl shadow-medium" style={{ background: '#FFFFFF' }}>
-          <i className="fa-solid fa-file-lines text-4xl mb-2" style={{ color: '#E5E5E7' }}></i>
-          <p className="text-sm mb-4" style={{ color: '#8E8E93' }}>
+        <div className="py-8 text-center rounded-xl shadow-medium" style={{ background: 'var(--surface)' }}>
+          <i className="fa-solid fa-file-lines text-4xl mb-2" style={{ color: 'var(--border)' }}></i>
+          <p className="text-sm mb-4" style={{ color: 'var(--ink-tertiary)' }}>
             No documents yet
           </p>
           <button
@@ -636,7 +628,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
               onClick={() => openEditNoteModal(note.id)}
               className="text-left w-full rounded-xl p-4 pb-6 transition-all duration-200 hover:-translate-y-0.5 relative shadow-medium"
               style={{
-                backgroundColor: '#FFFFFF',
+                backgroundColor: 'var(--surface)',
               }}
             >
               {note.pinned && (
@@ -647,8 +639,8 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
               )}
               {note.title && (
                 <h4
-                  className="font-display text-base mb-1 line-clamp-1 pr-4"
-                  style={{ color: '#1D1D1F', fontWeight: 500 }}
+                  className="text-base mb-1 line-clamp-1 pr-4"
+                  style={{ color: 'var(--ink)', fontWeight: 500 }}
                 >
                   {note.title}
                 </h4>
@@ -656,7 +648,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
               {note.body && (
                 <p
                   className="text-sm line-clamp-3 mb-2"
-                  style={{ color: '#4A4A4E', fontFamily: "'Inter', sans-serif", fontWeight: 300, lineHeight: 1.5 }}
+                  style={{ color: '#4A4A4E', fontFamily: 'var(--font-body)', fontWeight: 300, lineHeight: 1.5 }}
                 >
                   {note.body}
                 </p>
@@ -667,7 +659,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
                     <span
                       key={tag.id}
                       className="text-xs px-2 py-0.5 rounded-md"
-                      style={{ backgroundColor: 'rgba(0,0,0,0.06)', color: '#6B6B6F', fontFamily: "'Inter', sans-serif", fontWeight: 500 }}
+                      style={{ backgroundColor: 'rgba(0,0,0,0.06)', color: '#6B6B6F', fontFamily: 'var(--font-body)', fontWeight: 500 }}
                     >
                       {tag.name}
                     </span>
@@ -684,9 +676,9 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
           ))}
         </div>
       ) : (
-        <div className="py-8 text-center rounded-xl shadow-medium" style={{ background: '#FFFFFF' }}>
-          <i className="fa-solid fa-note-sticky text-4xl mb-2" style={{ color: '#E5E5E7' }}></i>
-          <p className="text-sm mb-4" style={{ color: '#8E8E93' }}>
+        <div className="py-8 text-center rounded-xl shadow-medium" style={{ background: 'var(--surface)' }}>
+          <i className="fa-solid fa-note-sticky text-4xl mb-2" style={{ color: 'var(--border)' }}></i>
+          <p className="text-sm mb-4" style={{ color: 'var(--ink-tertiary)' }}>
             No notes yet
           </p>
           <button
@@ -734,8 +726,8 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
                     <i className="fa-solid fa-clipboard-list text-white"></i>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold truncate" style={{ color: '#1D1D1F' }}>{list.name}</div>
-                    <div className="text-xs" style={{ color: '#8E8E93' }}>
+                    <div className="font-semibold truncate" style={{ color: 'var(--ink)' }}>{list.name}</div>
+                    <div className="text-xs" style={{ color: 'var(--ink-tertiary)' }}>
                       {list.completed_count}/{list.total_count} items
                     </div>
                   </div>
@@ -753,9 +745,9 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
           })}
         </div>
       ) : (
-        <div className="py-8 text-center rounded-xl shadow-medium" style={{ background: '#FFFFFF' }}>
-          <i className="fa-solid fa-clipboard-list text-4xl mb-2" style={{ color: '#E5E5E7' }}></i>
-          <p className="text-sm mb-4" style={{ color: '#8E8E93' }}>
+        <div className="py-8 text-center rounded-xl shadow-medium" style={{ background: 'var(--surface)' }}>
+          <i className="fa-solid fa-clipboard-list text-4xl mb-2" style={{ color: 'var(--border)' }}></i>
+          <p className="text-sm mb-4" style={{ color: 'var(--ink-tertiary)' }}>
             No lists yet
           </p>
           <button
@@ -773,7 +765,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
   return (
     <>
       {/* Header Section */}
-      <div className="sticky top-0 z-10 shadow-deep" style={{ background: '#FFFFFF' }}>
+      <div className="sticky top-0 z-10" style={{ background: 'var(--bg)' }}>
         <div className="px-8 pt-8 pb-4">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
@@ -784,11 +776,11 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
                 <i className={`fa-solid ${category.icon} text-white text-2xl`}></i>
               </div>
               <div>
-                <h1 className="text-5xl font-display mb-1" style={{ color: categoryColor }}>
+                <h1 className="text-5xl mb-1" style={{ color: categoryColor, fontFamily: 'var(--font-body)' }}>
                   {category.name}
                 </h1>
                 {category.description && (
-                  <p className="text-sm" style={{ color: '#8E8E93' }}>
+                  <p className="text-sm" style={{ color: 'var(--ink-tertiary)' }}>
                     {category.description}
                   </p>
                 )}
@@ -801,7 +793,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
               style={{
                 color: categoryColor,
                 fontWeight: 600,
-                fontFamily: "'Inter', sans-serif",
+                fontFamily: 'var(--font-body)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em'
               }}
@@ -829,7 +821,7 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
                   className="text-sm"
                   style={{
                     color: isActive ? categoryColor : '#8E8E93',
-                    fontFamily: "'Inter', sans-serif",
+                    fontFamily: 'var(--font-body)',
                     fontWeight: isActive ? 600 : 400,
                   }}
                 >

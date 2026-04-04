@@ -10,327 +10,125 @@ import DocumentFormModal from '../documents/DocumentFormModal';
 import ListShowModal from '../lists/ListShowModal';
 
 const GoalsPage = () => {
-  const {
-    statusFilter,
-    groupBy,
-    searchQuery,
-    setStatusFilter,
-    setGroupBy,
-    setSearchQuery,
-    openNewModal,
-  } = useGoalsStore();
+  const { statusFilter, groupBy, searchQuery, setStatusFilter, setGroupBy, setSearchQuery, openNewModal } = useGoalsStore();
 
-  // Initialize from URL params on mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const urlStatus = params.get('status');
-    const urlGroupBy = params.get('groupBy');
-    const urlSearch = params.get('search');
-
-    if (urlStatus) setStatusFilter(urlStatus);
-    if (urlGroupBy) setGroupBy(urlGroupBy);
-    if (urlSearch) setSearchQuery(urlSearch);
+    if (params.get('status')) setStatusFilter(params.get('status'));
+    if (params.get('groupBy')) setGroupBy(params.get('groupBy'));
+    if (params.get('search')) setSearchQuery(params.get('search'));
   }, []);
 
-  // Update URL when filters change
   useEffect(() => {
     const params = new URLSearchParams();
     if (statusFilter && statusFilter !== 'active') params.set('status', statusFilter);
     if (groupBy && groupBy !== 'none') params.set('groupBy', groupBy);
     if (searchQuery) params.set('search', searchQuery);
-
-    const newUrl = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
-    window.history.replaceState({}, '', newUrl);
+    window.history.replaceState({}, '', params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname);
   }, [statusFilter, groupBy, searchQuery]);
 
-  // Fetch goals
   const { data: goals = [], isLoading, error } = useQuery({
     queryKey: ['goals', statusFilter, searchQuery],
-    queryFn: () => {
-      const params = { status: statusFilter };
-      if (searchQuery) params.search = searchQuery;
-      return goalsApi.fetchAll(params);
-    },
+    queryFn: () => goalsApi.fetchAll({ status: statusFilter, ...(searchQuery ? { search: searchQuery } : {}) }),
   });
 
-  // Fetch all categories
-  const { data: categories = [] } = useQuery({
-    queryKey: ['categories'],
-    queryFn: () => categoriesApi.fetchAll(),
-  });
+  const { data: categories = [] } = useQuery({ queryKey: ['categories'], queryFn: categoriesApi.fetchAll });
+  const { data: allTags = [] } = useQuery({ queryKey: ['tags'], queryFn: tagsApi.fetchAll });
+  const { data: documents = [] } = useQuery({ queryKey: ['documents'], queryFn: documentsApi.fetchAll });
 
-  // Fetch all user tags for autocomplete
-  const { data: allTags = [] } = useQuery({
-    queryKey: ['tags'],
-    queryFn: tagsApi.fetchAll,
-  });
-
-  // Fetch all documents
-  const { data: documents = [] } = useQuery({
-    queryKey: ['documents'],
-    queryFn: documentsApi.fetchAll,
-  });
-
-  // Group goals based on groupBy setting
   const groupedGoals = useMemo(() => {
-    if (groupBy === 'none') {
-      return [{ title: 'All Goals', goals, hideHeader: true }];
-    }
-
+    if (groupBy === 'none') return [{ title: 'All Goals', goals, hideHeader: true }];
     if (groupBy === 'category') {
-      const groups = {};
-      const uncategorized = { title: 'Uncategorized', goals: [], color: '#9CA3A8', icon: 'fa-inbox', id: null };
-
-      goals.forEach(goal => {
-        if (goal.category) {
-          const catId = goal.category.id;
-          if (!groups[catId]) {
-            groups[catId] = {
-              id: catId,
-              title: goal.category.name,
-              color: goal.category.color,
-              icon: goal.category.icon,
-              goals: [],
-            };
-          }
-          groups[catId].goals.push(goal);
-        } else {
-          uncategorized.goals.push(goal);
-        }
-      });
-
-      const result = Object.values(groups);
-      if (uncategorized.goals.length > 0) {
-        result.push(uncategorized);
-      }
-      return result;
+      const groups = {}; const uncategorized = { title: 'Uncategorized', goals: [], color: '#9CA3A8', id: null };
+      goals.forEach(g => { if (g.category) { const cid = g.category.id; if (!groups[cid]) groups[cid] = { id: cid, title: g.category.name, color: g.category.color, goals: [] }; groups[cid].goals.push(g); } else uncategorized.goals.push(g); });
+      const result = Object.values(groups); if (uncategorized.goals.length > 0) result.push(uncategorized); return result;
     } else if (groupBy === 'type') {
-      const metallicGrey = '#8E8E93';
-      const groups = {
-        counted: { title: 'Counted', goals: [], color: '#7C3AED', icon: 'fa-hashtag' },
-        named_steps: { title: 'Named Steps', goals: [], color: '#0891B2', icon: 'fa-list-ol' },
-      };
-
-      goals.forEach(goal => {
-        if (groups[goal.goal_type]) {
-          groups[goal.goal_type].goals.push(goal);
-        }
-      });
-
+      const groups = { counted: { title: 'Counted', goals: [] }, named_steps: { title: 'Named Steps', goals: [] } };
+      goals.forEach(g => { if (groups[g.goal_type]) groups[g.goal_type].goals.push(g); });
       return Object.values(groups).filter(g => g.goals.length > 0);
     } else if (groupBy === 'importance') {
-      const groups = {};
-      const noImportance = { title: 'No Importance', goals: [], color: '#9CA3A8', icon: 'fa-circle', id: null };
-
-      goals.forEach(goal => {
-        if (goal.importance_level) {
-          const levelId = goal.importance_level.id;
-          if (!groups[levelId]) {
-            groups[levelId] = {
-              id: levelId,
-              title: goal.importance_level.name,
-              color: goal.importance_level.color,
-              icon: goal.importance_level.icon || 'fa-circle',
-              goals: [],
-            };
-          }
-          groups[levelId].goals.push(goal);
-        } else {
-          noImportance.goals.push(goal);
-        }
-      });
-
-      const result = Object.values(groups).sort((a, b) => (a.rank || 0) - (b.rank || 0));
-      if (noImportance.goals.length > 0) {
-        result.push(noImportance);
-      }
-      return result;
+      const groups = {}; const noImp = { title: 'No Importance', goals: [], color: '#9CA3A8', id: null };
+      goals.forEach(g => { if (g.importance_level) { const lid = g.importance_level.id; if (!groups[lid]) groups[lid] = { id: lid, title: g.importance_level.name, color: g.importance_level.color, goals: [] }; groups[lid].goals.push(g); } else noImp.goals.push(g); });
+      const result = Object.values(groups).sort((a, b) => (a.rank || 0) - (b.rank || 0)); if (noImp.goals.length > 0) result.push(noImp); return result;
     }
-
     return [{ title: 'All Goals', goals }];
   }, [goals, groupBy]);
 
-  // Handle new goal button click based on group type
-  const handleNewGoalForGroup = (group) => {
-    if (groupBy === 'category' && group.id) {
-      openNewModal({ categoryId: group.id });
-    } else if (groupBy === 'importance' && group.id) {
-      openNewModal({ importanceLevelId: group.id });
-    } else {
-      openNewModal({});
-    }
-  };
-
-  const renderGroup = (group, index) => {
-    const groupColor = group.color || '#8E8E93';
-    const groupIcon = group.icon || 'fa-list';
-
-    return (
-      <div key={group.title}>
-        {!group.hideHeader ? (
-          <div
-            className="-mx-8 px-8 pb-8"
-            style={{
-              background: `linear-gradient(180deg, color-mix(in srgb, ${groupColor} 12%, white) 0%, color-mix(in srgb, ${groupColor} 6%, white) 100%)`,
-            }}
-          >
-            <div
-              className="-mx-8 px-8 py-4 mb-4 flex items-center gap-3 bar-colored"
-              style={{ '--bar-color': groupColor }}
-            >
-              <i className={`fa-solid ${groupIcon} text-white text-lg`}></i>
-              <h3 className="text-3xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
-                {group.title} ({group.goals.length})
-              </h3>
-              <button
-                onClick={() => handleNewGoalForGroup(group)}
-                className="w-8 h-8 rounded-md flex items-center justify-center transition hover:opacity-80"
-                style={{ backgroundColor: 'rgba(255,255,255,0.95)' }}
-                title="New goal"
-              >
-                <i className="fa-solid fa-plus" style={{ color: '#333' }}></i>
-              </button>
-            </div>
-            <div className="space-y-2">
-              {group.goals.map(goal => (
-                <GoalItem key={goal.id} goal={goal} groupBy={groupBy} />
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="pt-6">
-            <div className="space-y-2">
-              {group.goals.map(goal => (
-                <GoalItem key={goal.id} goal={goal} groupBy={groupBy} />
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    );
+  const handleNewForGroup = (group) => {
+    if (groupBy === 'category' && group.id) openNewModal({ categoryId: group.id });
+    else if (groupBy === 'importance' && group.id) openNewModal({ importanceLevelId: group.id });
+    else openNewModal({});
   };
 
   return (
     <>
-      {/* Header Section */}
-      <div className="sticky top-0 z-10 shadow-deep" style={{ background: '#FFFFFF' }}>
-        <div className="p-8">
-          <div className="flex items-start justify-between mb-6">
-            <div className="flex-1">
-              <h1 className="text-5xl font-display mb-2" style={{ color: '#1D1D1F' }}>
-                Goals
-              </h1>
+      <div className="sticky top-0 z-10" style={{ background: 'var(--bg)' }}>
+        <div className="pl-14 pr-4 pt-6 pb-4 md:pl-8 md:pr-8 md:pt-8 md:pb-5">
+          <div className="flex items-baseline justify-between">
+            <div>
+              <h1 className="v2-h1">Goals</h1>
+              <p className="v2-small" style={{ marginTop: 4, color: 'var(--ink-tertiary)' }}>
+                {goals.length > 0 ? `${goals.filter(g => !g.completed).length} active` : 'No goals yet'}
+              </p>
             </div>
-
-            <button
-              onClick={() => openNewModal({})}
-              className="w-12 h-12 rounded-xl text-white transition transform hover:scale-105 flex items-center justify-center btn-onyx"
-              title="New Goal"
-            >
-              <i className="fa-solid fa-plus text-lg"></i>
+            <button onClick={() => openNewModal({})} className="v2-btn-sm v2-btn-primary">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New Goal
             </button>
           </div>
-
-          {/* Filters Row */}
-          <div className="flex items-center gap-6 mb-4">
-            {/* Group By */}
-            <div>
-              <span className="block text-xs uppercase tracking-wide mb-2" style={{ color: '#8E8E93', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
-                Group By
-              </span>
-              <div className="inline-flex rounded-lg overflow-hidden" style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}>
-                {[
-                  { value: 'none', label: 'None' },
-                  { value: 'category', label: 'Category' },
-                  { value: 'type', label: 'Type' },
-                  { value: 'importance', label: 'Importance' },
-                ].map(({ value, label }) => (
-                  <button
-                    key={value}
-                    onClick={() => setGroupBy(value)}
-                    className="px-4 py-2 text-sm transition"
-                    style={{
-                      background: groupBy === value ? 'linear-gradient(to bottom, #A8A8AD 0%, #8E8E93 100%)' : '#F5F5F7',
-                      color: groupBy === value ? '#FFFFFF' : '#1D1D1F',
-                      fontWeight: 500,
-                      fontFamily: "'Inter', sans-serif",
-                    }}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
+          <div className="flex flex-wrap items-center gap-3 mt-4">
+            <div className="v2-seg-control">
+              {[{ value: 'none', label: 'All' }, { value: 'category', label: 'Category' }, { value: 'type', label: 'Type' }, { value: 'importance', label: 'Importance' }].map(({ value, label }) => (
+                <button key={value} onClick={() => setGroupBy(value)} className={`v2-seg-btn ${groupBy === value ? 'active' : ''}`}>{label}</button>
+              ))}
             </div>
-
-            {/* Active Only Checkbox - far right */}
-            <label className="flex items-center gap-2 cursor-pointer select-none ml-auto">
-              <input
-                type="checkbox"
-                checked={statusFilter === 'active'}
-                onChange={(e) => setStatusFilter(e.target.checked ? 'active' : 'all')}
-                className="w-4 h-4 rounded cursor-pointer"
-                style={{ accentColor: '#8E8E93' }}
-              />
-              <span style={{ color: '#8E8E93', fontWeight: 400, fontFamily: "'Inter', sans-serif", fontSize: '0.8125rem' }}>
-                Active only
-              </span>
+            <label className="flex items-center gap-2 cursor-pointer select-none" style={{ fontFamily: 'var(--font-body)', fontSize: '0.8rem', color: 'var(--ink-secondary)' }}>
+              <input type="checkbox" checked={statusFilter === 'active'} onChange={(e) => setStatusFilter(e.target.checked ? 'active' : 'all')} style={{ accentColor: 'var(--ink)', width: 15, height: 15 }} />
+              Active only
             </label>
-          </div>
-
-          {/* Search Row */}
-          <div className="relative">
-            <i className="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#8E8E93' }}></i>
-            <input
-              type="text"
-              placeholder="Search goals..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 rounded-lg text-sm focus:outline-none transition-shadow duration-200"
-              style={{
-                border: '1px solid #8E8E93',
-                fontFamily: "'Inter', sans-serif",
-                fontWeight: 400,
-                background: '#FFFFFF',
-                boxShadow: 'inset 0 3px 6px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(255, 255, 255, 0.8)',
-                letterSpacing: '0.01em',
-                fontSize: '0.9rem',
-              }}
-            />
+            <div className="relative flex-1 min-w-[160px] max-w-xs ml-auto">
+              <svg className="absolute left-2.5 top-1/2 -translate-y-1/2" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" placeholder="Search goals..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 rounded-lg text-sm focus:outline-none"
+                style={{ border: '1px solid var(--border)', fontFamily: 'var(--font-body)', background: 'var(--surface)', color: 'var(--ink)', fontSize: '0.833rem' }} />
+            </div>
           </div>
         </div>
+        <div style={{ height: 12, background: 'linear-gradient(to bottom, var(--bg), transparent)', pointerEvents: 'none' }} />
       </div>
 
-      {/* Goals List */}
-      <div className={`px-8 pb-8 ${groupBy !== 'none' ? 'pb-0 pt-0' : 'pt-6'}`}>
-        {isLoading && (
-          <div className="text-center py-12">
-            <i className="fa-solid fa-spinner fa-spin text-4xl" style={{ color: '#2C2C2E' }}></i>
-          </div>
-        )}
-
-        {error && (
-          <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
-            <i className="fa-solid fa-exclamation-circle text-6xl mb-4" style={{ color: '#DC2626' }}></i>
-            <p style={{ color: '#DC2626', fontFamily: "'Inter', sans-serif", fontWeight: 400 }}>Error loading goals: {error.message}</p>
-          </div>
-        )}
-
+      <div className="px-4 pb-16 md:px-8 space-y-4" style={{ maxWidth: 920, paddingTop: 8 }}>
+        {isLoading && <div className="flex items-center justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: 'var(--ink-faint)' }} /></div>}
+        {error && <div className="v2-card text-center" style={{ padding: '48px 24px' }}><p className="v2-small" style={{ color: 'var(--overdue)' }}>Error: {error.message}</p></div>}
         {!isLoading && !error && goals.length === 0 && (
-          <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
-            <i className="fa-solid fa-bullseye text-6xl mb-4" style={{ color: '#E5E5E7' }}></i>
-            <p className="text-lg mb-2" style={{ color: '#1D1D1F', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
-              No goals yet
-            </p>
-            <p className="text-sm" style={{ color: '#8E8E93', fontWeight: 200, fontFamily: "'Inter', sans-serif" }}>
-              Create your first goal to get started
-            </p>
+          <div className="v2-card text-center" style={{ padding: '48px 24px' }}>
+            <p className="v2-body">No goals yet</p>
+            <p className="v2-small" style={{ color: 'var(--ink-faint)', marginTop: 4 }}>Create your first goal to start tracking.</p>
+            <button onClick={() => openNewModal({})} className="v2-btn v2-btn-primary" style={{ marginTop: 16 }}>New Goal</button>
           </div>
         )}
-
-        {!isLoading && !error && goals.length > 0 && groupedGoals.map((group, index) => renderGroup(group, index))}
+        {!isLoading && !error && goals.length > 0 && groupedGoals.map(group => {
+          if (group.hideHeader) return <div key={group.title} className="space-y-3">{group.goals.map(g => <GoalItem key={g.id} goal={g} groupBy={groupBy} />)}</div>;
+          return (
+            <div key={group.title} className="v2-card" style={{ padding: 0 }}>
+              <div className="v2-section-header" style={{ padding: '12px 18px 8px' }}>
+                <div className="flex items-center gap-2">
+                  {group.color && <span style={{ width: 8, height: 8, borderRadius: '50%', background: group.color, flexShrink: 0 }} />}
+                  <span className="v2-section-title">{group.title}</span>
+                  <span className="v2-caption" style={{ color: 'var(--ink-faint)' }}>{group.goals.length}</span>
+                </div>
+                <button onClick={() => handleNewForGroup(group)} className="v2-btn-icon-sm" title="New goal">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+              </div>
+              <div style={{ padding: '0 18px 12px' }} className="space-y-3">
+                {group.goals.map(g => <GoalItem key={g.id} goal={g} groupBy={groupBy} />)}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      {/* Modals */}
       <GoalFormModal allTags={allTags} categories={categories} documents={documents} />
       <GoalViewModal />
       <DocumentViewModal />

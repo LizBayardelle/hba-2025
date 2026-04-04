@@ -1,5 +1,499 @@
 @import "tailwindcss";
 
+/* ═══════════════════════════════════════════════════════════════════════
+   NEW DESIGN SYSTEM (v2)
+   Theme-adaptive tokens, typography, buttons, cards, badges, components.
+   All existing (v1) classes are preserved below for backward compat.
+   Migrate page-by-page, then remove v1 classes when fully transitioned.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Theme: Cream (default) ───────────────────────────────────────── */
+[data-theme="cream"], :root {
+  --bg: #F8F7F4;
+  --surface: #FFFFFF;
+  --sidebar-bg: #FFFFFF;
+  --border: #ECEAE5;
+  --border-hover: #DDD9D1;
+  --ink: #2D2A26;
+  --ink-secondary: #7D7971;
+  --ink-tertiary: #A9A49C;
+  --ink-faint: #C8C4BC;
+  --overdue: #C4554D;
+  --overdue-bg: #FDF2F1;
+  --streak: #C4914A;
+  --hover-tint: rgba(45, 42, 38, 0.04);
+  --hover-tint-strong: rgba(45, 42, 38, 0.06);
+  --check-ink: white;
+  --font-body: 'Figtree', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+}
+
+/* ── Theme: White ─────────────────────────────────────────────────── */
+[data-theme="white"] {
+  --bg: #FFFFFF;
+  --surface: #FFFFFF;
+  --sidebar-bg: #FAFAFA;
+  --border: #EEEEEE;
+  --border-hover: #DDDDDD;
+  --ink: #1A1A1A;
+  --ink-secondary: #6B6B6B;
+  --ink-tertiary: #999999;
+  --ink-faint: #C0C0C0;
+  --overdue: #D1453B;
+  --overdue-bg: #FEF2F1;
+  --streak: #C4914A;
+  --hover-tint: rgba(0, 0, 0, 0.03);
+  --hover-tint-strong: rgba(0, 0, 0, 0.05);
+  --check-ink: white;
+}
+
+/* White theme: cards need border emphasis since bg matches */
+[data-theme="white"] .v2-card {
+  box-shadow: 0 0 0 1px var(--border), 0 1px 3px rgba(0,0,0,0.04);
+}
+
+/* ── Theme: Dark ──────────────────────────────────────────────────── */
+[data-theme="dark"] {
+  --bg: #1C1B1A;
+  --surface: #262524;
+  --sidebar-bg: #212120;
+  --border: #333231;
+  --border-hover: #444342;
+  --ink: #E8E5E1;
+  --ink-secondary: #A09C96;
+  --ink-tertiary: #6E6A64;
+  --ink-faint: #4A4744;
+  --overdue: #E07368;
+  --overdue-bg: rgba(224, 115, 104, 0.12);
+  --streak: #D4A154;
+  --hover-tint: rgba(255, 255, 255, 0.04);
+  --hover-tint-strong: rgba(255, 255, 255, 0.07);
+  --check-ink: #1C1B1A;
+}
+
+/* ── Theme transition (applied by JS during switch) ───────────────── */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+/* ── v2 Typography ────────────────────────────────────────────────── */
+
+.v2-font-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+/* Heading hierarchy — normal case, weight-based */
+.v2-h1 {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.v2-h2 {
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.v2-h3 {
+  font-family: var(--font-body);
+  font-size: 0.933rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.v2-h4 {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-secondary);
+  letter-spacing: 0.02em;
+}
+
+.v2-body {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.v2-small {
+  font-family: var(--font-body);
+  font-size: 0.833rem;
+  color: var(--ink-secondary);
+}
+
+.v2-caption {
+  font-family: var(--font-body);
+  font-size: 0.733rem;
+  font-weight: 500;
+  color: var(--ink-tertiary);
+  letter-spacing: 0.02em;
+}
+
+.v2-mono {
+  font-family: var(--font-mono);
+  font-size: 0.867rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.v2-section-label {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--ink-faint);
+  letter-spacing: 0.02em;
+}
+
+/* ── v2 Buttons — shared base ─────────────────────────────────────── */
+
+.v2-btn, .v2-btn-sm, .v2-btn-icon {
+  font-family: var(--font-body);
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.v2-btn svg, .v2-btn-sm svg { flex-shrink: 0; }
+.v2-btn svg { width: 15px; height: 15px; }
+.v2-btn-sm svg { width: 13px; height: 13px; }
+
+/* Standard size */
+.v2-btn {
+  font-size: 0.867rem;
+  padding: 8px 16px;
+  border-radius: 8px;
+}
+
+/* Small */
+.v2-btn-sm {
+  font-size: 0.767rem;
+  padding: 5px 12px;
+  border-radius: 6px;
+}
+
+/* Icon-only */
+.v2-btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  padding: 0;
+  background: transparent;
+  color: var(--ink-tertiary);
+}
+
+.v2-btn-icon:hover {
+  background: var(--hover-tint);
+  color: var(--ink-secondary);
+}
+
+.v2-btn-icon svg { width: 16px; height: 16px; }
+
+.v2-btn-icon-sm {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  padding: 0;
+  background: transparent;
+  color: var(--ink-tertiary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s ease;
+}
+
+.v2-btn-icon-sm:hover {
+  background: var(--hover-tint);
+  color: var(--ink-secondary);
+}
+
+.v2-btn-icon-sm svg { width: 14px; height: 14px; }
+
+/* ── Button variants ─────────────────────────────────────────��────── */
+
+/* Primary — ink fill */
+.v2-btn-primary {
+  background: var(--ink);
+  color: var(--bg);
+}
+.v2-btn-primary:hover { background: var(--ink-secondary); }
+.v2-btn-primary:active { transform: scale(0.97); }
+
+/* Secondary — subtle tint fill */
+.v2-btn-secondary {
+  background: var(--hover-tint-strong);
+  color: var(--ink);
+}
+.v2-btn-secondary:hover { background: var(--border); }
+.v2-btn-secondary:active { transform: scale(0.97); }
+
+/* Ghost — invisible until hover */
+.v2-btn-ghost {
+  background: transparent;
+  color: var(--ink-secondary);
+}
+.v2-btn-ghost:hover {
+  background: var(--hover-tint);
+  color: var(--ink);
+}
+
+/* Outline — border only */
+.v2-btn-outline {
+  background: transparent;
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--border-hover);
+}
+.v2-btn-outline:hover {
+  box-shadow: inset 0 0 0 1px var(--ink-faint);
+  background: var(--hover-tint);
+}
+
+/* Danger — ghost red */
+.v2-btn-danger {
+  background: transparent;
+  color: var(--overdue);
+}
+.v2-btn-danger:hover { background: var(--overdue-bg); }
+
+/* Danger filled */
+.v2-btn-danger-filled {
+  background: var(--overdue);
+  color: white;
+}
+.v2-btn-danger-filled:hover { opacity: 0.88; }
+.v2-btn-danger-filled:active { transform: scale(0.97); }
+[data-theme="dark"] .v2-btn-danger-filled { color: #1C1B1A; }
+
+/* Disabled — works with any variant */
+.v2-btn[disabled], .v2-btn-sm[disabled], .v2-btn-icon[disabled], .v2-btn-icon-sm[disabled] {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ── v2 Segmented Control ─────────────────────────────────────────── */
+
+.v2-seg-control {
+  display: flex;
+  background: var(--hover-tint-strong);
+  border-radius: 6px;
+  padding: 2px;
+  gap: 1px;
+}
+
+.v2-seg-btn {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 5px;
+  color: var(--ink-tertiary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.v2-seg-btn:hover { color: var(--ink-secondary); }
+
+.v2-seg-btn.active {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 0 0 0.5px rgba(0,0,0,0.04);
+}
+
+/* ── v2 Cards ─────────────────────────────────────────────────────── */
+
+.v2-card {
+  background: var(--surface);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.v2-card-padded {
+  padding: 16px 18px;
+}
+
+/* ── v2 Badges ────────────────────────────────────────────────────── */
+
+.v2-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-family: var(--font-body);
+  font-size: 0.733rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.v2-badge-active {
+  background: rgba(123, 163, 142, 0.12);
+  color: #5A8A6E;
+}
+[data-theme="dark"] .v2-badge-active {
+  background: rgba(123, 163, 142, 0.15);
+  color: #8FC0A5;
+}
+
+.v2-badge-pending {
+  background: rgba(196, 145, 74, 0.1);
+  color: var(--streak);
+}
+
+.v2-badge-overdue {
+  background: var(--overdue-bg);
+  color: var(--overdue);
+}
+
+.v2-badge-neutral {
+  background: var(--hover-tint-strong);
+  color: var(--ink-secondary);
+}
+
+/* ── v2 Section header ────────────────────────────────────────────── */
+
+.v2-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 0 2px;
+}
+
+.v2-section-title {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-secondary);
+  letter-spacing: 0.02em;
+}
+
+/* ── v2 Utility ───────────────────────────────────────────────────── */
+
+.v2-bg { background: var(--bg); }
+.v2-surface { background: var(--surface); }
+.v2-border { border-color: var(--border); }
+.v2-ink { color: var(--ink); }
+.v2-ink-secondary { color: var(--ink-secondary); }
+.v2-ink-tertiary { color: var(--ink-tertiary); }
+.v2-ink-faint { color: var(--ink-faint); }
+
+/* ── v2 Theme Switcher ────────────────────────────────────────────── */
+
+.v2-theme-switcher {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.v2-theme-swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+  padding: 0;
+  background: none;
+}
+
+.v2-theme-swatch:hover { transform: scale(1.12); }
+
+.v2-theme-swatch.active {
+  border-color: var(--ink-secondary);
+}
+
+.v2-theme-swatch.active::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink-faint);
+}
+
+.v2-theme-swatch--white {
+  background: #FFFFFF;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+}
+
+.v2-theme-swatch--cream {
+  background: #F0EDE8;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06);
+}
+
+.v2-theme-swatch--dark {
+  background: #1C1B1A;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
+}
+
+/* ── v2 Global overrides for legacy styles ────────────────────────── */
+
+/* The legacy CSS sets a global `label` rule (uppercase, Inter, 0.75rem).
+   Reset it inside v2 contexts so labels behave normally. */
+.v2-card label,
+[style*="--font-body"] label,
+.v2-sidebar label {
+  font-family: var(--font-body);
+  font-size: inherit;
+  font-weight: inherit;
+  text-transform: none;
+  letter-spacing: normal;
+  color: inherit;
+}
+
+/* Also reset inside SlideOverPanel (which uses var(--bg) background) */
+.fixed.z-50 label {
+  font-family: var(--font-body);
+  font-size: inherit;
+  font-weight: inherit;
+  text-transform: none;
+  letter-spacing: normal;
+  color: inherit;
+}
+
+/* ── v2 Dashboard item rows ────────────────────────────────────────── */
+
+.habit-item,
+.task-item {
+  padding: 8px 24px !important;
+}
+
+.cal-event-row {
+  padding: 8px 24px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LEGACY DESIGN SYSTEM (v1)
+   Everything below is the original design system.
+   Will be removed page-by-page as templates migrate to v2 classes.
+   ═══════════════════════════════════════════════════════════════════════ */
+
 /* Display Font - Big Shoulders Inline Display for headers and category names */
 .font-display {
   font-family: 'Big Shoulders Inline Display', sans-serif;
@@ -818,13 +1312,13 @@ label {
 input:focus,
 select:focus,
 textarea:focus {
-  border-color: rgba(142, 142, 147, 0.5) !important;
-  box-shadow: 0 0 0 3px rgba(142, 142, 147, 0.08), inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  border-color: var(--border-hover) !important;
+  box-shadow: 0 0 0 3px var(--hover-tint), inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
 }
 
 /* Softer placeholder text */
 ::placeholder {
-  color: #C7C7CC !important;
+  color: var(--ink-faint) !important;
   font-weight: 300;
 }
 
@@ -882,100 +1376,93 @@ trix-toolbar + trix-editor {
   border-radius: 0 0 0.5rem 0.5rem;
 }
 
-/* Trix Content Styling */
+/* ── Trix Content Styling (v2) ── */
+
 .trix-content h1 {
-  font-family: 'Big Shoulders Inline Display', sans-serif;
-  font-size: 2em;
-  font-weight: 500;
+  font-family: var(--font-display);
+  font-size: 1.75em;
+  font-weight: 400;
   margin-top: 1em;
   margin-bottom: 0.5em;
-  padding-bottom: 0.35em;
-  line-height: 1.2;
-  color: var(--heading-color, #2C2C2E);
-  border-bottom: 2px solid var(--heading-color, #E5E5E7);
+  padding-bottom: 0.3em;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--heading-color, var(--ink));
+  border-bottom: 1px solid var(--heading-color, var(--border));
 }
 
-.trix-content h1:first-child {
-  margin-top: 0;
-}
+.trix-content h1:first-child { margin-top: 0; }
 
 .trix-content h2 {
+  font-family: var(--font-body);
   font-size: 1.3em;
-  font-weight: 700;
+  font-weight: 600;
   margin-top: 1em;
   margin-bottom: 0.4em;
   line-height: 1.35;
-  color: var(--heading-color, #2C2C2E);
+  letter-spacing: -0.01em;
+  color: var(--heading-color, var(--ink));
 }
 
-.trix-content h2:first-child {
-  margin-top: 0;
-}
+.trix-content h2:first-child { margin-top: 0; }
 
 .trix-content h3 {
-  font-size: 1.25em;
+  font-family: var(--font-body);
+  font-size: 1.15em;
   font-weight: 600;
   margin-top: 0.9em;
   margin-bottom: 0.35em;
   line-height: 1.4;
-  color: var(--heading-color, #2C2C2E);
+  color: var(--heading-color, var(--ink));
 }
 
-.trix-content h3:first-child {
-  margin-top: 0;
-}
+.trix-content h3:first-child { margin-top: 0; }
 
 .trix-content h4 {
-  font-size: 1.1em;
+  font-family: var(--font-body);
+  font-size: 1em;
   font-weight: 600;
   margin-top: 0.8em;
   margin-bottom: 0.3em;
   line-height: 1.45;
-  color: var(--heading-color, #2C2C2E);
+  color: var(--heading-color, var(--ink-secondary));
 }
 
-.trix-content h4:first-child {
-  margin-top: 0;
-}
+.trix-content h4:first-child { margin-top: 0; }
 
 .trix-content h5 {
-  font-size: 1em;
+  font-family: var(--font-body);
+  font-size: 0.9em;
   font-weight: 600;
   margin-top: 0.75em;
   margin-bottom: 0.25em;
   line-height: 1.5;
-  color: var(--heading-color, #2C2C2E);
+  color: var(--heading-color, var(--ink-secondary));
 }
 
-.trix-content h5:first-child {
-  margin-top: 0;
-}
+.trix-content h5:first-child { margin-top: 0; }
 
 .trix-content h6 {
-  font-size: 0.925em;
+  font-family: var(--font-body);
+  font-size: 0.8em;
   font-weight: 600;
   margin-top: 0.7em;
   margin-bottom: 0.25em;
   line-height: 1.5;
-  color: var(--heading-color, #2C2C2E);
-  text-transform: uppercase;
   letter-spacing: 0.03em;
+  color: var(--heading-color, var(--ink-tertiary));
 }
 
-.trix-content h6:first-child {
-  margin-top: 0;
-}
+.trix-content h6:first-child { margin-top: 0; }
 
 .trix-content p {
   margin-top: 0;
   margin-bottom: 1em;
   line-height: 1.7;
-  color: #1D1D1F;
+  color: var(--ink);
 }
 
-.trix-content p:last-child {
-  margin-bottom: 0;
-}
+.trix-content p:last-child { margin-bottom: 0; }
 
 .trix-content ul {
   list-style-type: none;
@@ -988,40 +1475,23 @@ trix-toolbar + trix-editor {
   padding-left: 1.75em;
   margin-bottom: 0.1em;
   line-height: 1.6;
-  color: #1D1D1F;
+  color: var(--ink);
 }
 
 .trix-content ul li:before {
   content: "·";
   position: absolute;
   left: 0.5em;
-  color: var(--heading-color, #8E8E93);
+  color: var(--heading-color, var(--ink-faint));
   font-size: 1.2em;
   font-weight: 900;
   top: -0.05em;
   line-height: 1;
 }
 
-.trix-content ul ul {
-  margin-top: 0.1em;
-  margin-bottom: 0.1em;
-}
-
-.trix-content ul ul li:before {
-  content: "·";
-  color: var(--heading-color, #8E8E93);
-  font-size: 1em;
-  font-weight: 700;
-  top: 0;
-}
-
-.trix-content ul ul ul li:before {
-  content: "·";
-  color: var(--heading-color, #8E8E93);
-  font-size: 0.85em;
-  font-weight: 700;
-  top: 0.05em;
-}
+.trix-content ul ul { margin-top: 0.1em; margin-bottom: 0.1em; }
+.trix-content ul ul li:before { font-size: 1em; font-weight: 700; top: 0; }
+.trix-content ul ul ul li:before { font-size: 0.85em; top: 0.05em; }
 
 .trix-content ol {
   list-style-type: none;
@@ -1035,7 +1505,7 @@ trix-toolbar + trix-editor {
   padding-left: 1.75em;
   margin-bottom: 0.1em;
   line-height: 1.6;
-  color: #1D1D1F;
+  color: var(--ink);
   counter-increment: item;
 }
 
@@ -1043,67 +1513,50 @@ trix-toolbar + trix-editor {
   content: counter(item) ".";
   position: absolute;
   left: 0.25em;
-  color: var(--heading-color, #8E8E93);
+  color: var(--heading-color, var(--ink-faint));
   font-weight: 600;
   font-size: 0.95em;
 }
 
-.trix-content ol ol {
-  margin-top: 0.1em;
-  margin-bottom: 0.1em;
-}
-
-.trix-content ol ol li:before {
-  content: counter(item, lower-alpha) ".";
-}
-
-.trix-content ol ol ol li:before {
-  content: counter(item, lower-roman) ".";
-}
+.trix-content ol ol { margin-top: 0.1em; margin-bottom: 0.1em; }
+.trix-content ol ol li:before { content: counter(item, lower-alpha) "."; }
+.trix-content ol ol ol li:before { content: counter(item, lower-roman) "."; }
 
 .trix-content blockquote {
   margin: 1.5em 0;
-  padding: 1em 1.5em;
-  border-left: 4px solid #6B8A99;
-  background-color: #f8fafb;
-  border-radius: 0 8px 8px 0;
+  padding: 0.75em 1.25em;
+  border-left: 3px solid var(--heading-color, var(--border-hover));
+  background-color: var(--hover-tint);
+  border-radius: 0 6px 6px 0;
   font-style: italic;
-  color: #45606b;
+  color: var(--ink-secondary);
 }
 
-.trix-content blockquote p {
-  margin: 0.5em 0;
-}
-
-.trix-content blockquote p:first-child {
-  margin-top: 0;
-}
-
-.trix-content blockquote p:last-child {
-  margin-bottom: 0;
-}
+.trix-content blockquote p { margin: 0.5em 0; }
+.trix-content blockquote p:first-child { margin-top: 0; }
+.trix-content blockquote p:last-child { margin-bottom: 0; }
 
 .trix-content pre {
-  background-color: #f8fafb;
-  border: 1px solid #E8EEF1;
+  background-color: var(--hover-tint);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 1em;
   margin: 1em 0;
   overflow-x: auto;
-  font-family: 'Monaco', 'Courier New', monospace;
+  font-family: var(--font-mono);
   font-size: 0.9em;
   line-height: 1.5;
-  color: #1D1D1F;
+  color: var(--ink);
 }
 
 .trix-content code {
-  background-color: #f8fafb;
-  border: 1px solid #E8EEF1;
+  background-color: var(--hover-tint);
+  border: 1px solid var(--border);
   border-radius: 4px;
   padding: 0.2em 0.4em;
-  font-family: 'Monaco', 'Courier New', monospace;
+  font-family: var(--font-mono);
   font-size: 0.9em;
-  color: #45606b;
+  color: var(--ink-secondary);
 }
 
 .trix-content pre code {
@@ -1115,28 +1568,29 @@ trix-toolbar + trix-editor {
 .trix-content strong,
 .trix-content b {
   font-weight: 700;
-  color: #1D1D1F;
+  color: var(--ink);
 }
 
 .trix-content em,
 .trix-content i {
   font-style: italic;
-  color: #45606b;
+  color: var(--ink-secondary);
 }
 
 .trix-content a {
-  color: #6B8A99;
+  color: var(--ink-secondary);
   text-decoration: underline;
-  transition: color 0.2s ease;
+  text-underline-offset: 2px;
+  transition: color 0.15s ease;
 }
 
 .trix-content a:hover {
-  color: #45606b;
+  color: var(--ink);
 }
 
 .trix-content hr {
   border: 0;
-  border-top: 2px solid #E8EEF1;
+  border-top: 1px solid var(--border);
   margin: 2em 0;
 }
 

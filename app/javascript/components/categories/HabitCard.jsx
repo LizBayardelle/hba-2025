@@ -6,27 +6,16 @@ import useDocumentsStore from '../../stores/documentsStore';
 import useListsStore from '../../stores/listsStore';
 
 const HabitCard = ({ habit, categoryColor, categoryDarkColor, viewMode, useHabitsPage = false, isOptional = false }) => {
-  // Check if habit is due today (default to true for flexible mode or if not provided)
   const isDueToday = habit.is_due_today !== false;
-
-  // Determine schedule mode (default to 'flexible')
   const scheduleMode = habit.schedule_mode || 'flexible';
-
-  // Check if habit is scheduled (non-flexible)
   const isScheduled = scheduleMode !== 'flexible';
 
-  // Compute schedule description with fallback
   const getScheduleDescription = () => {
     if (habit.schedule_description) return habit.schedule_description;
-    // Fallback for flexible mode
-    if (scheduleMode === 'flexible') {
-      return `${habit.target_count}x/${habit.frequency_type}`;
-    }
+    if (scheduleMode === 'flexible') return `${habit.target_count}x/${habit.frequency_type}`;
     return null;
   };
   const scheduleDescription = getScheduleDescription();
-
-  // Show schedule badge for scheduled (non-flexible) habits
   const showScheduleBadge = isScheduled && scheduleDescription;
 
   const queryClient = useQueryClient();
@@ -35,7 +24,6 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, viewMode, useHabit
   const { openViewModal, openNewModal } = useDocumentsStore();
   const { openShowModal: openListShowModal } = useListsStore();
 
-  // Use the appropriate store based on context
   const openEditModal = useHabitsPage
     ? (habitId, categoryId) => habitsStore.openEditModal(habitId, categoryId)
     : (habitId, categoryId) => categoryStore.openEditHabitModal(habitId, categoryId);
@@ -45,7 +33,6 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, viewMode, useHabit
   const [health, setHealth] = useState(habit.health ?? 100);
   const [celebrateKey, setCelebrateKey] = useState(0);
 
-  // Auto-clear celebration after animation finishes
   useEffect(() => {
     if (celebrateKey > 0) {
       const timer = setTimeout(() => setCelebrateKey(0), 600);
@@ -53,7 +40,6 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, viewMode, useHabit
     }
   }, [celebrateKey]);
 
-  // Increment mutation
   const incrementMutation = useMutation({
     mutationFn: async () => {
       const response = await fetch(`/habits/${habit.id}/completions/increment`, {
@@ -67,7 +53,6 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, viewMode, useHabit
       return response.json();
     },
     onMutate: () => {
-      // Optimistic update + celebrate
       setCount((prev) => prev + 1);
       setCelebrateKey((k) => k + 1);
     },
@@ -76,13 +61,9 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, viewMode, useHabit
       setStreak(data.streak);
       if (data.health !== undefined) setHealth(data.health);
     },
-    onError: () => {
-      // Revert on error
-      setCount(habit.today_count || 0);
-    },
+    onError: () => setCount(habit.today_count || 0),
   });
 
-  // Decrement mutation
   const decrementMutation = useMutation({
     mutationFn: async () => {
       const response = await fetch(`/habits/${habit.id}/completions/decrement`, {
@@ -95,19 +76,13 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, viewMode, useHabit
       if (!response.ok) throw new Error('Failed to decrement');
       return response.json();
     },
-    onMutate: () => {
-      // Optimistic update
-      setCount((prev) => Math.max(0, prev - 1));
-    },
+    onMutate: () => setCount((prev) => Math.max(0, prev - 1)),
     onSuccess: (data) => {
       setCount(data.count);
       setStreak(data.streak);
       if (data.health !== undefined) setHealth(data.health);
     },
-    onError: () => {
-      // Revert on error
-      setCount(habit.today_count || 0);
-    },
+    onError: () => setCount(habit.today_count || 0),
   });
 
   const handleToggle = () => {
@@ -118,276 +93,209 @@ const HabitCard = ({ habit, categoryColor, categoryDarkColor, viewMode, useHabit
     }
   };
 
+  const isComplete = count >= habit.target_count;
+  const isPending = incrementMutation.isPending || decrementMutation.isPending;
+
   return (
-    <div className="flex items-start gap-3">
-      <div
-        className="rounded-xl p-4 transition flex-1 shadow-medium"
+    <div
+      className="habit-item flex items-center gap-2.5"
+      style={{
+        transition: 'background 0.1s ease',
+        cursor: 'pointer',
+        opacity: isDueToday ? 1 : 0.5,
+        background: isOptional ? 'var(--hover-tint)' : 'transparent',
+      }}
+      onClick={() => openEditModal(habit.id, habit.category_id)}
+    >
+      {/* Checkbox */}
+      <div className="flex-shrink-0 relative" style={{ overflow: 'visible' }} onClick={(e) => e.stopPropagation()}>
+        {habit.target_count === 1 ? (
+          <button
+            onClick={handleToggle}
+            disabled={isPending}
+            style={{
+              width: 18,
+              height: 18,
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: `1.5px solid ${isComplete ? 'var(--ink)' : 'var(--border-hover)'}`,
+              background: isComplete ? 'var(--ink)' : 'transparent',
+              transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              cursor: 'pointer',
+              padding: 0,
+            }}
+          >
+            {isPending ? (
+              <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '0.5rem', color: 'var(--ink-tertiary)' }} />
+            ) : (
+              <i className="fa-solid fa-check" style={{ fontSize: '0.55rem', color: 'var(--check-ink)', opacity: isComplete ? 1 : 0 }} />
+            )}
+          </button>
+        ) : (
+          /* Multi-target counter */
+          <div className="flex items-center gap-0.5">
+            <button
+              onClick={() => decrementMutation.mutate()}
+              disabled={isPending}
+              className="v2-btn-icon-sm"
+              style={{ width: 18, height: 18, color: 'var(--ink-tertiary)' }}
+            >
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <span
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.733rem',
+                color: isComplete ? 'var(--ink)' : 'var(--ink-tertiary)',
+                fontWeight: isComplete ? 600 : 400,
+                minWidth: 28,
+                textAlign: 'center',
+              }}
+            >
+              {count}/{habit.target_count}
+            </span>
+            <button
+              onClick={() => incrementMutation.mutate()}
+              disabled={isPending}
+              className="v2-btn-icon-sm"
+              style={{ width: 18, height: 18, color: 'var(--ink-tertiary)' }}
+            >
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+          </div>
+        )}
+
+        {/* Celebration glow */}
+        {celebrateKey > 0 && (
+          <div
+            className="absolute inset-0 rounded-full pointer-events-none"
+            style={{
+              backgroundColor: categoryColor,
+              animation: 'celebrate-glow 0.55s ease-out forwards',
+            }}
+          />
+        )}
+      </div>
+
+      {/* Category dot */}
+      <span
         style={{
-          backgroundColor: isOptional ? '#F0F0F2' : (!isDueToday ? '#FCFCFC' : 'white'),
-          opacity: isDueToday ? 1 : 0.6,
+          width: 6,
+          height: 6,
+          borderRadius: '50%',
+          background: categoryColor,
+          flexShrink: 0,
         }}
-      >
-        <div className="flex items-start gap-3">
-          {/* Completion Indicator */}
-          <div className="flex-shrink-0 relative" style={{ overflow: 'visible' }}>
-          {habit.target_count === 1 ? (
-            // Single toggle — no spinner, trust optimistic update
-            <div
-              key={`bounce-${celebrateKey}`}
-              style={celebrateKey > 0 ? { animation: 'celebrate-bounce 0.5s ease-out' } : undefined}
-            >
-              <button
-                onClick={handleToggle}
-                disabled={incrementMutation.isPending || decrementMutation.isPending}
-                className="w-10 h-10 rounded-lg border-2 flex items-center justify-center font-bold transition hover:scale-110"
-                style={{
-                  borderColor: isDueToday ? categoryColor : '#9CA3AF',
-                  color: count > 0 ? 'white' : (isDueToday ? categoryColor : '#9CA3AF'),
-                  backgroundColor: count > 0 ? (isDueToday ? categoryColor : '#9CA3AF') : 'transparent',
-                }}
-              >
-                <i className={`fa-solid ${count > 0 ? 'fa-check' : 'fa-plus'}`}></i>
-              </button>
-            </div>
-          ) : (
-            // Counter with +/- buttons
-            <div
-              key={`bounce-${celebrateKey}`}
-              style={celebrateKey > 0 ? { animation: 'celebrate-bounce 0.5s ease-out' } : undefined}
-            >
-              <div
-                className="flex items-center rounded-lg border-2 overflow-hidden"
-                style={{ borderColor: isDueToday ? categoryColor : '#9CA3AF' }}
-              >
-                <button
-                  onClick={() => decrementMutation.mutate()}
-                  disabled={decrementMutation.isPending || incrementMutation.isPending}
-                  className="flex-1 h-10 px-[5px] flex items-center justify-center font-bold transition hover:bg-gray-50"
-                  style={{ color: isDueToday ? categoryColor : '#9CA3AF' }}
-                >
-                  <i className="fa-solid fa-minus"></i>
-                </button>
-                <div
-                  className="flex-[2] h-10 px-[10px] flex items-center justify-center font-bold"
-                  style={{ color: isDueToday ? categoryColor : '#9CA3AF' }}
-                >
-                  {count}
-                </div>
-                <button
-                  onClick={() => incrementMutation.mutate()}
-                  disabled={incrementMutation.isPending || decrementMutation.isPending}
-                  className="flex-1 h-10 px-[5px] flex items-center justify-center font-bold transition hover:bg-gray-50"
-                  style={{ color: isDueToday ? categoryColor : '#9CA3AF' }}
-                >
-                  <i className="fa-solid fa-plus"></i>
-                </button>
-              </div>
-            </div>
+      />
+
+      {/* Name + badges */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: '0.9rem',
+              color: isComplete ? 'var(--ink-tertiary)' : 'var(--ink)',
+              textDecoration: isComplete ? 'line-through' : 'none',
+              textDecorationColor: 'var(--ink-faint)',
+              transition: 'color 0.2s ease',
+            }}
+          >
+            {habit.name}
+          </span>
+
+          {showScheduleBadge && (
+            <span className="v2-badge v2-badge-neutral" style={{ fontSize: '0.6rem', padding: '1px 6px' }}>
+              {scheduleDescription}
+            </span>
           )}
 
-          {/* Celebration glow */}
-          {celebrateKey > 0 && (
-            <div
-              key={`glow-${celebrateKey}`}
-              className="absolute inset-0 rounded-lg pointer-events-none"
-              style={{
-                backgroundColor: categoryColor,
-                animation: 'celebrate-glow 0.55s ease-out forwards',
-              }}
+          {!isDueToday && (
+            <span className="v2-badge v2-badge-neutral" style={{ fontSize: '0.6rem', padding: '1px 6px' }}>
+              Not due
+            </span>
+          )}
+
+          {/* Importance level icon — hidden when grouped by priority */}
+          {habit.importance_level && viewMode !== 'priority' && (
+            <i
+              className={`${habit.importance_level.icon} flex-shrink-0`}
+              style={{ color: habit.importance_level.color, fontSize: '0.65rem' }}
+              title={habit.importance_level.name}
             />
           )}
         </div>
 
-        {/* Habit Name & Info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <div className="font-semibold" style={{ color: categoryDarkColor }}>
-              {habit.name}
-            </div>
+        {/* Inline badges for contextual info */}
+        <div className="flex flex-wrap items-center gap-1 mt-0.5">
+          {/* Category badge — hidden when grouped by category */}
+          {habit.category_name && viewMode !== 'category' && (
+            <span className="v2-badge v2-badge-neutral" style={{ fontSize: '0.6rem', padding: '1px 6px' }}>
+              {habit.category_name}
+            </span>
+          )}
 
-            {/* Schedule badge for non-flexible habits */}
-            {showScheduleBadge && (
-              <span
-                className="text-xs px-1.5 py-0.5 rounded-full"
-                style={{
-                  backgroundColor: 'rgba(142, 142, 147, 0.15)',
-                  color: '#8E8E93',
-                  fontWeight: 500,
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: '0.65rem',
-                }}
-              >
-                {scheduleDescription}
-              </span>
-            )}
+          {/* Document */}
+          {habit.habit_contents && habit.habit_contents.length > 0 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); openViewModal(habit.habit_contents[0].id); }}
+              style={{ color: 'var(--ink-faint)', fontSize: '0.7rem', background: 'none', border: 'none', cursor: 'pointer' }}
+              title={habit.habit_contents[0].title}
+            >
+              <i className="fa-solid fa-file-alt" />
+            </button>
+          )}
 
-            {/* Importance Level icon — hidden when grouped by priority */}
-            {habit.importance_level && viewMode !== 'priority' && (
-              <i
-                className={`${habit.importance_level.icon} text-sm flex-shrink-0`}
-                style={{ color: habit.importance_level.color }}
-                title={habit.importance_level.name}
-              ></i>
-            )}
-          </div>
+          {/* Attached lists */}
+          {habit.list_attachments && habit.list_attachments.map((attachment) => (
+            <button
+              key={attachment.list_id}
+              onClick={(e) => { e.stopPropagation(); openListShowModal(attachment.list_id); }}
+              style={{ color: 'var(--ink-faint)', fontSize: '0.7rem', background: 'none', border: 'none', cursor: 'pointer' }}
+              title={attachment.list_name}
+            >
+              <i className="fa-solid fa-list-check" />
+            </button>
+          ))}
 
-          {/* Badges: Category, Document, Frequency, Time, Tags */}
-          <div className="flex flex-wrap items-center gap-1.5 mt-1">
-            {/* Category badge — hidden when grouped by category */}
-            {habit.category_name && viewMode !== 'category' && (
-              <span
-                className="text-xs px-2 py-0.5 rounded-full font-semibold flex items-center gap-1"
-                style={{ backgroundColor: categoryColor, color: 'white' }}
-              >
-                <i className={`fa-solid ${habit.category_icon || 'fa-folder'} text-[10px]`}></i>
-                {habit.category_name}
-              </span>
-            )}
+          {/* Tags */}
+          {habit.tags && habit.tags.length > 0 && habit.tags.map((tag) => (
+            <a
+              key={tag.id}
+              href={`/tags?tag_id=${tag.id}`}
+              onClick={(e) => e.stopPropagation()}
+              className="v2-badge v2-badge-neutral"
+              style={{ fontSize: '0.6rem', padding: '1px 6px', textDecoration: 'none' }}
+            >
+              {tag.name}
+            </a>
+          ))}
 
-            {/* Document badge */}
-            {habit.habit_contents && habit.habit_contents.length > 0 && (
-              <button
-                onClick={() => openViewModal(habit.habit_contents[0].id)}
-                className="text-xs px-2 py-0.5 rounded-full font-semibold hover:opacity-70 transition cursor-pointer flex items-center gap-1 max-w-xs min-w-0"
-                style={{
-                  backgroundColor: categoryColor,
-                  color: 'white',
-                }}
-                title={habit.habit_contents[0].title}
-              >
-                <i className="fa-solid fa-file-alt text-[10px] flex-shrink-0"></i>
-                <span className="truncate min-w-0 block">{habit.habit_contents[0].title}</span>
-              </button>
-            )}
-
-            {/* Not due today indicator */}
-            {!isDueToday && (
-              <span
-                className="text-xs px-2 py-0.5 rounded-full font-semibold flex items-center gap-1"
-                style={{
-                  backgroundColor: '#9CA3AF',
-                  color: 'white',
-                }}
-              >
-                <i className="fa-solid fa-calendar-xmark text-[10px]"></i>
-                Not due today
-              </span>
-            )}
-
-            {/* Time block badge — hidden when grouped by time */}
-            {viewMode !== 'time' && habit.time_block_name &&
-              habit.time_block_name.toLowerCase() !== 'anytime' && (
-                <span
-                  className="text-xs px-2 py-0.5 rounded-full font-semibold flex items-center gap-1"
-                  style={{
-                    backgroundColor: habit.time_block_color,
-                    color: 'white',
-                  }}
-                >
-                  <i className={`${habit.time_block_icon} text-[10px]`}></i>
-                  {habit.time_block_name}
-                </span>
-              )}
-
-            {/* Tags */}
-            {habit.tags && habit.tags.length > 0 && habit.tags.map((tag) => (
-              <a
-                key={tag.id}
-                href={`/tags?tag_id=${tag.id}`}
-                className="text-xs px-2 py-0.5 rounded-full font-semibold hover:opacity-70 transition cursor-pointer flex items-center gap-1"
-                style={{
-                  backgroundColor: '#1D1D1F',
-                  color: 'white',
-                }}
-              >
-                <i className="fa-solid fa-tags text-[10px]"></i>
-                {tag.name}
-              </a>
-            ))}
-
-            {/* Checklist badge (habit's own checklist) - display only */}
-            {habit.checklist_items && habit.checklist_items.length > 0 && (
-              <span
-                className="text-xs px-2 py-0.5 rounded-full font-semibold flex items-center gap-1"
-                style={{
-                  backgroundColor: categoryColor,
-                  color: 'white',
-                }}
-                title="Habit checklist progress"
-              >
-                <i className="fa-solid fa-list-check text-[10px]"></i>
-                {habit.checklist_items.filter(i => i.completed).length}/{habit.checklist_items.length}
-              </span>
-            )}
-
-            {/* Attached list badges */}
-            {habit.list_attachments && habit.list_attachments.map((attachment) => (
-              <button
-                key={attachment.list_id}
-                onClick={() => openListShowModal(attachment.list_id)}
-                className="text-xs px-2 py-0.5 rounded-full font-semibold hover:opacity-70 transition cursor-pointer flex items-center gap-1"
-                style={{
-                  backgroundColor: attachment.list_category?.color || categoryColor,
-                  color: 'white',
-                }}
-                title={`Open ${attachment.list_name}`}
-              >
-                <i className={`fa-solid ${attachment.list_category?.icon || 'fa-list-check'} text-[10px]`}></i>
-                {attachment.list_name} ({attachment.checklist_items?.filter(i => i.completed).length || 0}/{attachment.checklist_items?.length || 0})
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Streak & Health */}
-        <div className="flex-shrink-0 w-20">
-          <div className="flex flex-col items-center gap-1">
-            {/* Streak */}
-            {streak > 0 && (
-              <div className="flex items-center gap-1">
-                <i className="fa-solid fa-fire text-sm" style={{ color: categoryColor }}></i>
-                <span className="text-lg font-bold display-font" style={{ color: categoryColor }}>
-                  {streak}
-                </span>
-              </div>
-            )}
-
-            {/* Health bar */}
-            <div className="w-full relative">
-              <div
-                className="w-full h-5 rounded-full overflow-hidden"
-                style={{ backgroundColor: `${categoryColor}20` }}
-              >
-                <div
-                  className="h-full rounded-full transition-all duration-500"
-                  style={{
-                    width: `${health}%`,
-                    backgroundColor: categoryColor,
-                  }}
-                />
-              </div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span
-                  className="text-[10px] font-bold leading-none text-white"
-                  style={{ textShadow: '0 0 3px rgba(0,0,0,0.7), 0 0 1px rgba(0,0,0,0.9)' }}
-                >
-                  {health}%
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+          {/* Time block — hidden when grouped by time */}
+          {viewMode !== 'time' && habit.time_block_name && habit.time_block_name.toLowerCase() !== 'anytime' && (
+            <span className="v2-badge v2-badge-neutral" style={{ fontSize: '0.6rem', padding: '1px 6px' }}>
+              {habit.time_block_name}
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Actions (outside the white card) */}
-      <button
-        onClick={() => openEditModal(habit.id, habit.category_id)}
-        className="w-5 h-5 flex items-center justify-center transition hover:opacity-70"
-        title="Edit"
-      >
-        <i className="fa-solid fa-pen text-sm" style={{ color: '#9CA3A8' }}></i>
-      </button>
+      {/* Meta: streak + health */}
+      <div className="flex items-center gap-2.5 flex-shrink-0">
+        {streak > 0 && (
+          <div className="flex items-center gap-1" style={{ fontSize: '0.733rem', fontWeight: 500, color: categoryColor }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 23c-1.5 0-5-1-7-5.5S3 8 3 8s3.5 2 6 .5S12 3 12 1c0 2 .5 5.5 3 7S21 8 21 8s-1 9-3 13.5S13.5 23 12 23z"/></svg>
+            <span>{streak}</span>
+          </div>
+        )}
+
+        <div className="flex items-center gap-1" style={{ fontSize: '0.6rem', color: health > 0 ? categoryColor : 'var(--ink-faint)' }}>
+          <i className="fa-solid fa-heart-pulse" style={{ fontSize: '0.55rem' }} />
+          <span>{health}%</span>
+        </div>
+      </div>
     </div>
   );
 };

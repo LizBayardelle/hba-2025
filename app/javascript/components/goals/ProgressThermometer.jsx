@@ -117,7 +117,7 @@ const ProgressThermometer = ({ progress = 0, color = '#8E8E93', size = 'normal',
               <path d={outline} />
             </clipPath>
           </defs>
-          <path d={outline} fill="#E5E5E7" />
+          <path d={outline} fill="#ECEAE5" />
           {fillH > 0 && (
             <path
               d={meniscusFillPath(tubeX, fillY, tubeWidth, fillH, dip)}
@@ -162,7 +162,7 @@ const ProgressThermometer = ({ progress = 0, color = '#8E8E93', size = 'normal',
             <path d={outline} />
           </clipPath>
         </defs>
-        <path d={outline} fill="#E5E5E7" />
+        <path d={outline} fill="#ECEAE5" />
         {fillH > 0 && (
           <path
             d={meniscusFillPath(tubeX, fillY, tubeWidth, fillH, dip)}
@@ -175,7 +175,7 @@ const ProgressThermometer = ({ progress = 0, color = '#8E8E93', size = 'normal',
         <circle cx={bulbCx - 3} cy={bulbCy - 3} r={5} fill="white" opacity={0.2} />
       </svg>
       {countLabel && (
-        <div className="text-center mt-1" style={{ fontSize: '0.625rem', fontWeight: 500, color: '#8E8E93', lineHeight: 1.2 }}>
+        <div className="text-center mt-1" style={{ fontSize: '0.625rem', fontWeight: 500, color: 'var(--ink-tertiary)', lineHeight: 1.2 }}>
           {countLabel}
         </div>
       )}

@@ -2,7 +2,7 @@
   <%= javascript_include_tag "daily_prep_app", type: "module" %>
 <% end %>
 
-<div class="flex h-screen relative" style="background-color: #adadb3;">
+<div class="flex h-screen relative" style="background-color: var(--bg);">
   <!-- Grain texture -->
   <style>
     .grain-bg {
@@ -69,6 +69,6 @@
 
   <!-- Main Content Area - React will mount here -->
   <main class="flex-1 overflow-y-auto">
-    <div id="daily-prep-root" class="grain-bg" style="background-color: #adadb3; min-height: 100%;" data-view="respond"></div>
+    <div id="daily-prep-root" class="grain-bg" style="background-color: var(--bg); min-height: 100%;" data-view="respond"></div>
   </main>
 </div>

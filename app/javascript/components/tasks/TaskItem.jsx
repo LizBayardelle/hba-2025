@@ -15,7 +15,6 @@ const TaskItem = ({ task, groupBy }) => {
 
   const [celebrateKey, setCelebrateKey] = useState(0);
 
-  // Auto-clear celebration after animation finishes
   useEffect(() => {
     if (celebrateKey > 0) {
       const timer = setTimeout(() => setCelebrateKey(0), 600);
@@ -23,299 +22,152 @@ const TaskItem = ({ task, groupBy }) => {
     }
   }, [celebrateKey]);
 
-  // Toggle completion mutation
   const toggleCompleteMutation = useMutation({
     mutationFn: (completed) => tasksApi.update(task.id, { task: { completed } }),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['tasks']);
-    },
+    onSuccess: () => queryClient.invalidateQueries(['tasks']),
   });
 
   const handleCheckboxChange = (e) => {
     e.stopPropagation();
-    if (!task.completed) {
-      setCelebrateKey((k) => k + 1);
-    }
+    if (!task.completed) setCelebrateKey((k) => k + 1);
     toggleCompleteMutation.mutate(!task.completed);
   };
 
-  const handleClick = () => {
-    openViewModal(task.id);
-  };
-
-  const handleEdit = (e) => {
-    e.stopPropagation();
-    openEditModal(task.id);
-  };
-
-  // Determine due date status
-  const getDueDateStatus = () => {
+  // Due date status
+  const getDueDateInfo = () => {
     if (!task.due_date) return null;
-
     const dueDate = parseLocalDate(task.due_date);
     const today = getToday();
-
-    const diffTime = dueDate - today;
-    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays < 0) {
-      return { text: 'Overdue', color: '#FB7185', bgColor: '#FFE4E6' };
-    } else if (diffDays === 0) {
-      return { text: 'Due Today', color: '#E5C730', bgColor: '#FEF7C3' };
-    } else if (diffDays <= 7) {
-      return { text: `Due in ${diffDays}d`, color: '#22D3EE', bgColor: '#CFFAFE' };
-    } else {
-      return { text: parseLocalDate(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), color: '#6B8A99', bgColor: '#E8EEF1' };
-    }
+    const diff = Math.round((dueDate - today) / (1000 * 60 * 60 * 24));
+    if (diff < 0) return { text: 'Overdue', isOverdue: true };
+    if (diff === 0) return { text: 'Today', isToday: true };
+    if (diff <= 7) return { text: `${diff}d`, isSoon: true };
+    return { text: dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) };
   };
 
-  const dueDateStatus = getDueDateStatus();
-
-  // Theme color for non-category badges
-  const themeColor = '#1D1D1F';
-  const themeBgColor = '#E8EEF1';
+  const dueInfo = getDueDateInfo();
 
   return (
-    <div className="flex items-start gap-3">
-      {/* Checkbox - outside card on left */}
-      <div className="flex-shrink-0 mt-0.5 relative" style={{ overflow: 'visible' }}>
-        <div
-          key={`bounce-${celebrateKey}`}
-          style={celebrateKey > 0 ? { animation: 'celebrate-bounce 0.5s ease-out' } : undefined}
+    <div
+      className="task-item flex items-center gap-2.5"
+      style={{ transition: 'background 0.1s ease', cursor: 'pointer', opacity: task.completed ? 0.5 : 1 }}
+      onClick={() => openViewModal(task.id)}
+    >
+      {/* Checkbox */}
+      <div className="flex-shrink-0 relative" style={{ overflow: 'visible' }} onClick={(e) => e.stopPropagation()}>
+        <button
+          onClick={handleCheckboxChange}
+          disabled={toggleCompleteMutation.isPending}
+          style={{
+            width: 18, height: 18, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            border: `1.5px solid ${task.completed ? 'var(--ink)' : 'var(--border-hover)'}`,
+            background: task.completed ? 'var(--ink)' : 'transparent',
+            transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)', cursor: 'pointer', padding: 0,
+          }}
         >
-          <button
-            onClick={handleCheckboxChange}
-            disabled={toggleCompleteMutation.isPending}
-            className="w-6 h-6 rounded-md border-2 flex items-center justify-center transition hover:scale-110 cursor-pointer"
-            style={{
-              borderColor: task.category?.color || '#1D1D1F',
-              backgroundColor: task.completed ? (task.category?.color || '#1D1D1F') : 'white',
-            }}
-          >
-            {task.completed ? (
-              <i className="fa-solid fa-check text-white text-xs"></i>
-            ) : null}
-          </button>
-        </div>
+          {toggleCompleteMutation.isPending ? (
+            <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '0.5rem', color: 'var(--ink-tertiary)' }} />
+          ) : (
+            <i className="fa-solid fa-check" style={{ fontSize: '0.55rem', color: 'var(--check-ink)', opacity: task.completed ? 1 : 0 }} />
+          )}
+        </button>
         {celebrateKey > 0 && (
-          <div
-            key={`glow-${celebrateKey}`}
-            className="absolute inset-0 rounded-md pointer-events-none"
-            style={{
-              backgroundColor: task.category?.color || '#1D1D1F',
-              animation: 'celebrate-glow 0.55s ease-out forwards',
-            }}
-          />
+          <div className="absolute inset-0 rounded pointer-events-none"
+            style={{ backgroundColor: task.category?.color || 'var(--ink)', animation: 'celebrate-glow 0.55s ease-out forwards' }} />
         )}
       </div>
 
-      <div
-        onClick={handleClick}
-        className="bg-white rounded-xl p-4 transition cursor-pointer flex-1 shadow-medium"
-        style={{
-          opacity: task.completed ? 0.6 : 1,
-        }}
-      >
-        {/* Task Content */}
-        <div className="flex-1 min-w-0">
-          <div className="mb-0">
-            <h4
-              className={`font-semibold ${task.completed ? 'line-through' : ''}`}
-              style={{ color: '#1D1D1F' }}
-            >
-              {task.name}
-            </h4>
-          </div>
+      {/* Category dot (if not grouped by category) */}
+      {task.category && groupBy !== 'category' && (
+        <span style={{ width: 6, height: 6, borderRadius: '50%', background: task.category.color, flexShrink: 0 }} />
+      )}
 
-          {/* Metadata row */}
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Importance Level icon — hidden when grouped by importance */}
-            {task.importance_level && groupBy !== 'importance' && (
-              <i
-                className={`${task.importance_level.icon} text-sm flex-shrink-0`}
-                style={{ color: task.importance_level.color }}
-                title={task.importance_level.name}
-              ></i>
-            )}
+      {/* Name + inline badges */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span style={{
+            fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink)',
+            textDecoration: task.completed ? 'line-through' : 'none', textDecorationColor: 'var(--ink-faint)',
+            transition: 'color 0.2s ease',
+          }}>
+            {task.name}
+          </span>
 
-            {/* Category — hidden when grouped by category */}
-            {task.category && groupBy !== 'category' && (
-              <div
-                className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium"
-                style={{
-                  backgroundColor: task.category.color,
-                  color: 'white',
-                }}
-              >
-                <i className={`fa-solid ${task.category.icon}`}></i>
-                <span>{task.category.name}</span>
-              </div>
-            )}
+          {/* Importance icon */}
+          {task.importance_level && groupBy !== 'importance' && (
+            <i className={`${task.importance_level.icon} flex-shrink-0`} style={{ color: task.importance_level.color, fontSize: '0.65rem' }} title={task.importance_level.name} />
+          )}
 
-            {/* Time Block */}
-            {task.time_block && task.time_block.name.toLowerCase() !== 'anytime' && (
-              <div
-                className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium"
-                style={{
-                  backgroundColor: task.time_block.color,
-                  color: 'white',
-                }}
-              >
-                <i className={`${task.time_block.icon} text-[10px]`}></i>
-                <span>{task.time_block.name}</span>
-              </div>
-            )}
+          {/* On Hold */}
+          {task.on_hold && <span className="v2-badge v2-badge-neutral" style={{ fontSize: '0.6rem', padding: '1px 6px' }}>On Hold</span>}
 
-            {/* Document Badge */}
-            {task.document && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  openDocumentModal(task.document.id);
-                }}
-                className="px-2 py-1 rounded-lg text-xs font-medium hover:opacity-70 transition flex items-center gap-1"
-                style={{
-                  backgroundColor: themeColor,
-                  color: 'white',
-                }}
-                title="View attached document"
-              >
-                <i className="fa-solid fa-file-alt text-[10px]"></i>
-                {task.document.title}
-              </button>
-            )}
+          {/* Repeat */}
+          {task.repeat_frequency && <span className="v2-badge v2-badge-neutral" style={{ fontSize: '0.6rem', padding: '1px 6px' }}>
+            <i className="fa-solid fa-repeat" style={{ fontSize: '0.5rem', marginRight: 3 }} />{task.repeat_frequency}
+          </span>}
+        </div>
 
-            {/* Due Date */}
-            {dueDateStatus && (
-              <div
-                className="px-2 py-1 rounded-lg text-xs font-medium"
-                style={{
-                  backgroundColor: themeColor,
-                  color: 'white',
-                }}
-              >
-                <i className="fa-solid fa-calendar-day mr-1"></i>
-                {dueDateStatus.text}
-              </div>
-            )}
+        {/* Second row badges */}
+        <div className="flex flex-wrap items-center gap-1 mt-0.5">
+          {task.category && groupBy !== 'category' && (
+            <span className="v2-badge v2-badge-neutral" style={{ fontSize: '0.6rem', padding: '1px 6px' }}>{task.category.name}</span>
+          )}
 
-            {/* Repeat indicator */}
-            {task.repeat_frequency && (
-              <div
-                className="px-2 py-1 rounded-lg text-xs font-medium"
-                style={{
-                  backgroundColor: '#7C3AED',
-                  color: 'white',
-                }}
-                title={`Repeats ${task.repeat_frequency}${task.repeat_interval > 1 ? ` every ${task.repeat_interval}` : ''}`}
-              >
-                <i className="fa-solid fa-repeat mr-1"></i>
-                {task.repeat_frequency.charAt(0).toUpperCase() + task.repeat_frequency.slice(1)}
-              </div>
-            )}
+          {task.time_block && task.time_block.name.toLowerCase() !== 'anytime' && (
+            <span className="v2-badge v2-badge-neutral" style={{ fontSize: '0.6rem', padding: '1px 6px' }}>{task.time_block.name}</span>
+          )}
 
-            {/* On Hold */}
-            {task.on_hold && (
-              <div
-                className="px-2 py-1 rounded-lg text-xs font-medium"
-                style={{
-                  backgroundColor: themeColor,
-                  color: 'white',
-                }}
-              >
-                <i className="fa-solid fa-pause mr-1"></i>
-                On Hold
-              </div>
-            )}
+          {task.document && (
+            <button onClick={(e) => { e.stopPropagation(); openDocumentModal(task.document.id); }}
+              style={{ color: 'var(--ink-faint)', fontSize: '0.7rem', background: 'none', border: 'none', cursor: 'pointer' }} title={task.document.title}>
+              <i className="fa-solid fa-file-alt" />
+            </button>
+          )}
 
-            {/* Tags */}
-            {task.tags?.map(tag => (
-              <div
-                key={tag.id}
-                className="px-2 py-1 rounded-lg text-xs font-medium"
-                style={{
-                  backgroundColor: themeColor,
-                  color: 'white',
-                }}
-              >
-                <i className="fa-solid fa-tag mr-1"></i>
-                {tag.name}
-              </div>
-            ))}
+          {task.tags?.map(tag => (
+            <span key={tag.id} className="v2-badge v2-badge-neutral" style={{ fontSize: '0.6rem', padding: '1px 6px' }}>{tag.name}</span>
+          ))}
 
-            {/* URL indicator */}
-            {task.url && (
-              <div className="text-xs" style={{ color: '#6B8A99' }}>
-                <i className="fa-solid fa-link"></i>
-              </div>
-            )}
+          {task.list_attachments?.map(a => (
+            <button key={a.list_id} onClick={(e) => { e.stopPropagation(); openListShowModal(a.list_id); }}
+              style={{ color: 'var(--ink-faint)', fontSize: '0.7rem', background: 'none', border: 'none', cursor: 'pointer' }} title={a.list_name}>
+              <i className="fa-solid fa-list-check" />
+            </button>
+          ))}
 
-            {/* Location indicator */}
-            {task.location_name && (
-              <div className="text-xs" style={{ color: '#6B8A99' }}>
-                <i className="fa-solid fa-location-dot"></i>
-              </div>
-            )}
+          {task.url && <i className="fa-solid fa-link" style={{ fontSize: '0.6rem', color: 'var(--ink-faint)' }} />}
+          {task.location_name && <i className="fa-solid fa-location-dot" style={{ fontSize: '0.6rem', color: 'var(--ink-faint)' }} />}
 
-            {/* Checklist indicator */}
-            {task.checklist_items && task.checklist_items.length > 0 && (
-              <div
-                className="px-2 py-1 rounded-lg text-xs font-medium"
-                style={{
-                  backgroundColor: themeColor,
-                  color: 'white',
-                }}
-              >
-                <i className="fa-solid fa-list-check mr-1"></i>
-                {task.checklist_items.filter(i => i.completed).length}/{task.checklist_items.length}
-              </div>
-            )}
-
-            {/* Attached list badges */}
-            {task.list_attachments && task.list_attachments.map((attachment) => (
-              <button
-                key={attachment.list_id}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  openListShowModal(attachment.list_id);
-                }}
-                className="px-2 py-1 rounded-lg text-xs font-medium hover:opacity-70 transition cursor-pointer flex items-center gap-1"
-                style={{
-                  backgroundColor: attachment.list_category?.color || themeColor,
-                  color: 'white',
-                }}
-                title={`Open ${attachment.list_name}`}
-              >
-                <i className={`fa-solid ${attachment.list_category?.icon || 'fa-list-check'} text-[10px]`}></i>
-                {attachment.list_name} ({attachment.checklist_items?.filter(i => i.completed).length || 0}/{attachment.checklist_items?.length || 0})
-              </button>
-            ))}
-          </div>
-
-          {/* Checklist (read-only toggle) */}
           {task.checklist_items && task.checklist_items.length > 0 && (
-            <div onClick={(e) => e.stopPropagation()}>
-              <ChecklistSection
-                parentType="task"
-                parentId={task.id}
-                items={task.checklist_items}
-                color={task.category?.color || themeColor}
-                editable={false}
-                compact={true}
-              />
-            </div>
+            <span className="v2-caption" style={{ color: 'var(--ink-faint)' }}>
+              <i className="fa-solid fa-list-check" style={{ fontSize: '0.55rem', marginRight: 2 }} />
+              {task.checklist_items.filter(i => i.completed).length}/{task.checklist_items.length}
+            </span>
           )}
         </div>
+
+        {/* Inline checklist */}
+        {task.checklist_items && task.checklist_items.length > 0 && (
+          <div onClick={(e) => e.stopPropagation()} style={{ marginTop: 4 }}>
+            <ChecklistSection parentType="task" parentId={task.id} items={task.checklist_items}
+              color={task.category?.color || 'var(--ink)'} editable={false} compact={true} />
+          </div>
+        )}
       </div>
 
-      {/* Edit button outside card on right */}
-      <button
-        onClick={handleEdit}
-        className="w-5 h-5 flex items-center justify-center transition hover:opacity-70 mt-0.5"
-        title="Edit"
-      >
-        <i className="fa-solid fa-pen text-sm" style={{ color: '#9CA3A8' }}></i>
-      </button>
+      {/* Right side: due date */}
+      <div className="flex items-center gap-2 flex-shrink-0">
+        {dueInfo && (
+          <span style={{
+            fontSize: '0.733rem', fontWeight: 500, whiteSpace: 'nowrap',
+            ...(dueInfo.isOverdue ? { color: 'var(--overdue)', background: 'var(--overdue-bg)', padding: '1px 7px', borderRadius: 8 } :
+               dueInfo.isToday ? { color: 'var(--ink)', fontWeight: 600 } :
+               { color: 'var(--ink-tertiary)' }),
+          }}>
+            {dueInfo.text}
+          </span>
+        )}
+      </div>
     </div>
   );
 };

@@ -4,99 +4,59 @@ import useJournalStore from '../../stores/journalStore';
 const JournalCard = ({ journal }) => {
   const { openViewModal, openEditModal } = useJournalStore();
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
-  };
+  const formatDate = (ds) => new Date(ds).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
 
-  const getWordCount = (htmlContent) => {
-    if (!htmlContent) return 0;
-    // Strip HTML tags and decode HTML entities
+  const getWordCount = (html) => {
+    if (!html) return 0;
     const temp = document.createElement('div');
-    temp.innerHTML = htmlContent;
-    const text = (temp.textContent || temp.innerText || '').trim();
-    const words = text.split(/\s+/).filter(word => word.length > 0);
-    return words.length;
+    temp.innerHTML = html;
+    return (temp.textContent || '').trim().split(/\s+/).filter(w => w.length > 0).length;
   };
 
-  const formatWordCount = (count) => {
-    return count === 1 ? '1 Word' : `${count} Words`;
-  };
-
-  const getSnippet = (htmlContent, maxLength = 150) => {
-    if (!htmlContent) return '';
-    // Strip HTML tags and decode HTML entities
+  const getSnippet = (html, max = 150) => {
+    if (!html) return '';
     const temp = document.createElement('div');
-    temp.innerHTML = htmlContent;
-    const text = (temp.textContent || temp.innerText || '').replace(/\s+/g, ' ').trim();
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength).trim() + '...';
+    temp.innerHTML = html;
+    const text = (temp.textContent || '').replace(/\s+/g, ' ').trim();
+    return text.length <= max ? text : text.substring(0, max).trim() + '...';
   };
+
+  const words = getWordCount(journal.content);
 
   return (
-    <div className="flex items-center gap-3">
-      <div
-        onClick={() => openViewModal(journal.id)}
-        className="bg-white rounded-lg p-4 border shadow-deep transition cursor-pointer flex-1"
-        style={{ borderColor: '#E8EEF1' }}
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-lg font-bold display-font" style={{ color: '#1D1D1F' }}>
-                {formatWordCount(getWordCount(journal.content))}
-              </h3>
-              {journal.private && (
-                <i className="fa-solid fa-lock text-xs" style={{ color: '#8E8E93' }} title="Private entry"></i>
-              )}
-            </div>
-            <div className="text-sm font-light mb-2" style={{ color: '#657b84' }}>
-              {formatDate(journal.created_at)}
-            </div>
-            {/* Show snippet for non-private entries */}
-            {!journal.private && journal.content && (
-              <p className="text-sm mb-2" style={{ color: '#4A5568', fontFamily: "'Inter', sans-serif", fontWeight: 300, lineHeight: 1.5 }}>
-                {getSnippet(journal.content)}
-              </p>
-            )}
-            {journal.tags && journal.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {journal.tags.map((tag) => (
-                  <a
-                    key={tag.id}
-                    href={`/tags?tag_id=${tag.id}`}
-                    onClick={(e) => e.stopPropagation()}
-                    className="text-xs px-2 py-1 rounded-lg font-medium hover:opacity-70 transition cursor-pointer flex items-center gap-1"
-                    style={{
-                      backgroundColor: '#1D1D1F',
-                      color: 'white',
-                    }}
-                  >
-                    <i className="fa-solid fa-tag text-[10px]"></i>
-                    {tag.name}
-                  </a>
-                ))}
-              </div>
-            )}
-          </div>
+    <div
+      className="flex items-center gap-2.5"
+      style={{ padding: '10px 24px', transition: 'background 0.1s ease', cursor: 'pointer', borderBottom: '1px solid var(--border)' }}
+      onClick={() => openViewModal(journal.id)}
+    >
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', fontWeight: 450, color: 'var(--ink)' }}>
+            {words === 1 ? '1 word' : `${words} words`}
+          </span>
+          {journal.private && (
+            <i className="fa-solid fa-lock" style={{ fontSize: '0.6rem', color: 'var(--ink-faint)' }} title="Private" />
+          )}
+          <span className="v2-caption" style={{ color: 'var(--ink-faint)' }}>{formatDate(journal.created_at)}</span>
         </div>
-      </div>
 
-      {/* Edit button outside card */}
-      <button
-        onClick={() => openEditModal(journal.id)}
-        className="w-5 h-5 flex items-center justify-center transition hover:opacity-70"
-        title="Edit"
-      >
-        <i className="fa-solid fa-pen text-sm" style={{ color: '#9CA3A8' }}></i>
-      </button>
+        {!journal.private && journal.content && (
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.833rem', color: 'var(--ink-tertiary)', marginTop: 2, lineHeight: 1.5 }}>
+            {getSnippet(journal.content)}
+          </p>
+        )}
+
+        {journal.tags && journal.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-1.5">
+            {journal.tags.map(tag => (
+              <a key={tag.id} href={`/tags?tag_id=${tag.id}`} onClick={(e) => e.stopPropagation()}
+                className="v2-badge v2-badge-neutral" style={{ fontSize: '0.6rem', padding: '1px 6px', textDecoration: 'none' }}>
+                {tag.name}
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

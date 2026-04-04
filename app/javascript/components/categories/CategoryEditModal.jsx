@@ -216,11 +216,11 @@ const CategoryEditModal = () => {
     <div className="flex items-center gap-3">
       {/* Save status indicator */}
       {saveStatus && (
-        <div className="flex items-center gap-2 text-sm" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <div className="flex items-center gap-2 text-sm" style={{ fontFamily: 'var(--font-body)' }}>
           {saveStatus === 'saving' && (
             <>
-              <i className="fa-solid fa-spinner fa-spin" style={{ color: '#8E8E93' }}></i>
-              <span style={{ color: '#8E8E93' }}>Saving...</span>
+              <i className="fa-solid fa-spinner fa-spin" style={{ color: 'var(--ink-tertiary)' }}></i>
+              <span style={{ color: 'var(--ink-tertiary)' }}>Saving...</span>
             </>
           )}
           {saveStatus === 'saved' && (
@@ -231,8 +231,8 @@ const CategoryEditModal = () => {
           )}
           {saveStatus === 'error' && (
             <>
-              <i className="fa-solid fa-exclamation-circle" style={{ color: '#DC2626' }}></i>
-              <span style={{ color: '#DC2626' }}>Error</span>
+              <i className="fa-solid fa-exclamation-circle" style={{ color: 'var(--overdue)' }}></i>
+              <span style={{ color: 'var(--overdue)' }}>Error</span>
             </>
           )}
         </div>
@@ -247,9 +247,9 @@ const CategoryEditModal = () => {
         title="Delete category"
       >
         {deleteMutation.isPending ? (
-          <i className="fa-solid fa-spinner fa-spin" style={{ color: '#DC2626' }}></i>
+          <i className="fa-solid fa-spinner fa-spin" style={{ color: 'var(--overdue)' }}></i>
         ) : (
-          <i className="fa-solid fa-trash" style={{ color: '#DC2626' }}></i>
+          <i className="fa-solid fa-trash" style={{ color: 'var(--overdue)' }}></i>
         )}
       </button>
     </div>
@@ -265,7 +265,7 @@ const CategoryEditModal = () => {
       <div>
         {/* Category Name */}
         <div className="mb-6">
-          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: 'var(--font-body)', color: 'var(--ink)' }}>
             Category Name
           </label>
           <input
@@ -273,14 +273,14 @@ const CategoryEditModal = () => {
             value={formData.name}
             onChange={handleNameChange}
             className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light"
-            style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#1D1D1F' }}
+            style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: 'var(--font-body)', fontWeight: 200, color: 'var(--ink)' }}
             placeholder="e.g., Health & Fitness"
           />
         </div>
 
         {/* Description */}
         <div className="mb-6">
-          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: 'var(--font-body)', color: 'var(--ink)' }}>
             Description (Optional)
           </label>
           <textarea
@@ -288,14 +288,14 @@ const CategoryEditModal = () => {
             onChange={handleDescriptionChange}
             rows={2}
             className="w-full px-4 py-3 rounded-lg focus:outline-none transition font-light resize-none"
-            style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#1D1D1F' }}
+            style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', fontFamily: 'var(--font-body)', fontWeight: 200, color: 'var(--ink)' }}
             placeholder="Optional description"
           />
         </div>
 
         {/* Icon Selector */}
         <div className="mb-6">
-          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: 'var(--font-body)', color: 'var(--ink)' }}>
             Icon
           </label>
           <div className="grid grid-cols-6 md:grid-cols-9 gap-2 max-w-md">
@@ -308,7 +308,7 @@ const CategoryEditModal = () => {
                   formData.icon === icon ? 'border-theme-blue bg-theme-blue-light/10' : 'border-gray-200'
                 }`}
               >
-                <i className={`fa-solid ${icon} text-base`} style={{ color: '#1D1D1F' }}></i>
+                <i className={`fa-solid ${icon} text-base`} style={{ color: 'var(--ink)' }}></i>
               </button>
             ))}
           </div>
@@ -321,8 +321,8 @@ const CategoryEditModal = () => {
           </p>
           <div className="grid grid-cols-2 gap-3">
             {/* Preview on white background */}
-            <div className="p-3 rounded-lg" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E5E7' }}>
-              <p className="text-[10px] uppercase tracking-wide mb-2" style={{ color: '#8E8E93' }}>On White</p>
+            <div className="p-3 rounded-lg" style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)' }}>
+              <p className="text-[10px] uppercase tracking-wide mb-2" style={{ color: 'var(--ink-tertiary)' }}>On White</p>
               <div className="flex items-center gap-2">
                 <div
                   className="w-7 h-7 rounded-lg flex items-center justify-center"
@@ -338,7 +338,7 @@ const CategoryEditModal = () => {
 
             {/* Preview on dark background */}
             <div className="p-3 rounded-lg" style={{ backgroundColor: '#1D1D1F' }}>
-              <p className="text-[10px] uppercase tracking-wide mb-2" style={{ color: '#8E8E93' }}>On Dark</p>
+              <p className="text-[10px] uppercase tracking-wide mb-2" style={{ color: 'var(--ink-tertiary)' }}>On Dark</p>
               <div className="flex items-center gap-2">
                 <div
                   className="w-7 h-7 rounded-lg flex items-center justify-center"
@@ -354,7 +354,7 @@ const CategoryEditModal = () => {
 
             {/* Badge preview */}
             <div className="p-3 rounded-lg" style={{ backgroundColor: '#F5F5F7' }}>
-              <p className="text-[10px] uppercase tracking-wide mb-2" style={{ color: '#8E8E93' }}>As Badge</p>
+              <p className="text-[10px] uppercase tracking-wide mb-2" style={{ color: 'var(--ink-tertiary)' }}>As Badge</p>
               <span
                 className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold"
                 style={{ backgroundColor: formData.color, color: 'white' }}
@@ -369,7 +369,7 @@ const CategoryEditModal = () => {
               className="p-3 rounded-lg"
               style={{ backgroundColor: colorVariants.light, border: `1px solid ${formData.color}40` }}
             >
-              <p className="text-[10px] uppercase tracking-wide mb-2" style={{ color: '#8E8E93' }}>Light BG</p>
+              <p className="text-[10px] uppercase tracking-wide mb-2" style={{ color: 'var(--ink-tertiary)' }}>Light BG</p>
               <span className="text-sm font-semibold" style={{ color: colorVariants.dark }}>
                 {formData.name || 'Category'}
               </span>
@@ -389,7 +389,7 @@ const CategoryEditModal = () => {
 
         {/* Color Selector */}
         <div className="mb-6">
-          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
+          <label className="block text-sm font-semibold mb-2" style={{ fontWeight: 600, fontFamily: 'var(--font-body)', color: 'var(--ink)' }}>
             Color
           </label>
 
@@ -437,7 +437,7 @@ const CategoryEditModal = () => {
 
           {/* Custom color picker (expandable) */}
           {showCustomPicker && (
-            <div className="p-4 rounded-lg mb-2" style={{ backgroundColor: '#F5F5F7', border: '1px solid #E5E5E7' }}>
+            <div className="p-4 rounded-lg mb-2" style={{ backgroundColor: '#F5F5F7', border: '1px solid var(--border)' }}>
               <div className="flex items-center gap-3">
                 {/* Native color picker */}
                 <div className="relative">
@@ -453,7 +453,7 @@ const CategoryEditModal = () => {
 
                 {/* Hex input */}
                 <div className="flex-1">
-                  <label className="block text-xs mb-1" style={{ color: '#8E8E93' }}>Hex Code</label>
+                  <label className="block text-xs mb-1" style={{ color: 'var(--ink-tertiary)' }}>Hex Code</label>
                   <input
                     type="text"
                     value={customColorInput}
@@ -461,12 +461,12 @@ const CategoryEditModal = () => {
                     placeholder="#6B8A99"
                     className="w-full px-3 py-2 rounded-lg text-sm font-mono"
                     style={{
-                      border: isValidHexColor(customColorInput) || !customColorInput ? '1px solid #E5E5E7' : '1px solid #DC2626',
+                      border: isValidHexColor(customColorInput) || !customColorInput ? '1px solid var(--border)' : '1px solid var(--overdue)',
                       backgroundColor: 'white',
                     }}
                   />
                   {customColorInput && !isValidHexColor(customColorInput) && (
-                    <p className="text-xs mt-1" style={{ color: '#DC2626' }}>Invalid hex color</p>
+                    <p className="text-xs mt-1" style={{ color: 'var(--overdue)' }}>Invalid hex color</p>
                   )}
                 </div>
 
@@ -478,7 +478,7 @@ const CategoryEditModal = () => {
                   >
                     <i className={`fa-solid ${formData.icon} text-white`}></i>
                   </div>
-                  <p className="text-xs mt-1 font-mono" style={{ color: '#8E8E93' }}>{formData.color}</p>
+                  <p className="text-xs mt-1 font-mono" style={{ color: 'var(--ink-tertiary)' }}>{formData.color}</p>
                 </div>
               </div>
             </div>
@@ -486,7 +486,7 @@ const CategoryEditModal = () => {
 
           {/* Show current color if it's custom (not in presets) */}
           {!showCustomPicker && !presetColors.includes(formData.color) && (
-            <p className="text-xs" style={{ color: '#8E8E93' }}>
+            <p className="text-xs" style={{ color: 'var(--ink-tertiary)' }}>
               Custom color: <span className="font-mono">{formData.color}</span>
             </p>
           )}

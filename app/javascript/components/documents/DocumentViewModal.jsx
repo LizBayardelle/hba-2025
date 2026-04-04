@@ -31,14 +31,12 @@ const AttachmentRow = ({ file }) => {
   const measureHeight = useCallback(() => {
     if (!previewRef.current) return;
     const rect = previewRef.current.getBoundingClientRect();
-    const bottomPadding = 24;
-    const available = window.innerHeight - rect.top - bottomPadding;
+    const available = window.innerHeight - rect.top - 24;
     setPreviewHeight(Math.max(available, 200));
   }, []);
 
   useEffect(() => {
     if (!showPreview) return;
-    // Measure after render
     requestAnimationFrame(measureHeight);
     window.addEventListener('resize', measureHeight);
     return () => window.removeEventListener('resize', measureHeight);
@@ -47,62 +45,38 @@ const AttachmentRow = ({ file }) => {
   return (
     <div>
       <div
-        className="flex items-center gap-3 px-3 py-2.5 rounded-lg"
-        style={{ backgroundColor: 'rgba(142, 142, 147, 0.08)', border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
+        className="flex items-center gap-3"
+        style={{ padding: '8px 12px', borderRadius: 8, background: 'var(--hover-tint)', border: '1px solid var(--border)' }}
       >
-        <i className={`fa-solid ${getFileIcon(file.content_type)} text-base`} style={{ color: '#8E8E93' }}></i>
+        <i className={`fa-solid ${getFileIcon(file.content_type)}`} style={{ color: 'var(--ink-tertiary)', fontSize: '0.9rem' }} />
         <div className="min-w-0 flex-1">
-          <span className="text-sm block truncate" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, color: '#1D1D1F' }}>
+          <span style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: '0.867rem', fontWeight: 500, color: 'var(--ink)' }} className="truncate">
             {file.filename}
           </span>
-          <span className="text-xs" style={{ color: '#8E8E93' }}>
-            {formatFileSize(file.byte_size)}
-          </span>
+          <span className="v2-caption">{formatFileSize(file.byte_size)}</span>
         </div>
-        <div className="flex items-center gap-1 flex-shrink-0">
+        <div className="flex items-center gap-0.5 flex-shrink-0">
           {previewable && (
-            <button
-              type="button"
-              onClick={() => setShowPreview(!showPreview)}
-              className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-100 transition"
-              title={showPreview ? 'Hide preview' : 'Show preview'}
-            >
-              <i className={`fa-solid ${showPreview ? 'fa-eye-slash' : 'fa-eye'} text-sm`} style={{ color: '#8E8E93' }}></i>
+            <button onClick={() => setShowPreview(!showPreview)} className="v2-btn-icon-sm" title={showPreview ? 'Hide preview' : 'Show preview'}>
+              <i className={`fa-solid ${showPreview ? 'fa-eye-slash' : 'fa-eye'}`} style={{ fontSize: '0.7rem' }} />
             </button>
           )}
-          <a
-            href={file.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-100 transition"
-            title="Download"
-          >
-            <i className="fa-solid fa-download text-sm" style={{ color: '#8E8E93' }}></i>
+          <a href={file.url} target="_blank" rel="noopener noreferrer" className="v2-btn-icon-sm" title="Download">
+            <i className="fa-solid fa-download" style={{ fontSize: '0.7rem' }} />
           </a>
         </div>
       </div>
 
-      {/* Inline preview - fills remaining viewport */}
       {showPreview && (
         <div
           ref={previewRef}
           className="mt-2 mb-1 rounded-lg overflow-hidden"
-          style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)', height: previewHeight ? `${previewHeight}px` : 'auto' }}
+          style={{ border: '1px solid var(--border)', height: previewHeight ? `${previewHeight}px` : 'auto' }}
         >
           {file.content_type?.startsWith('image/') ? (
-            <img
-              src={file.url}
-              alt={file.filename}
-              className="w-full h-full rounded-lg"
-              style={{ objectFit: 'contain', backgroundColor: 'rgba(142, 142, 147, 0.04)' }}
-            />
+            <img src={file.url} alt={file.filename} className="w-full h-full rounded-lg" style={{ objectFit: 'contain', backgroundColor: 'var(--hover-tint)' }} />
           ) : file.content_type === 'application/pdf' ? (
-            <iframe
-              src={file.url}
-              title={file.filename}
-              className="w-full h-full rounded-lg"
-              style={{ border: 'none' }}
-            />
+            <iframe src={file.url} title={file.filename} className="w-full h-full rounded-lg" style={{ border: 'none' }} />
           ) : null}
         </div>
       )}
@@ -114,110 +88,32 @@ const DocumentViewModal = () => {
   const { viewModal, closeViewModal, openEditModal } = useDocumentsStore();
   const { documentId, isOpen } = viewModal;
 
-  // Fetch document data
   const { data: document, isLoading, error } = useQuery({
     queryKey: ['document', documentId],
     queryFn: () => documentsApi.fetchOne(documentId),
     enabled: isOpen && !!documentId,
   });
 
-  const renderContent = () => {
-    if (isLoading) {
-      return (
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#1D1D1F' }}></div>
-        </div>
-      );
-    }
-
-    if (error) {
-      return (
-        <div className="text-center py-8" style={{ color: '#DC2626' }}>
-          <i className="fa-solid fa-exclamation-circle text-4xl mb-4"></i>
-          <p>Error loading document: {error.message}</p>
-        </div>
-      );
-    }
-
-    if (!document) return null;
-
-    return (
-      <>
-        {/* Tags */}
-        {document.tags && document.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-6">
-            {document.tags.map((tag) => (
-              <a
-                key={tag.id}
-                href={`/tags?tag_id=${tag.id}`}
-                className="text-xs px-3 py-1.5 rounded-[10px] hover:opacity-70 transition cursor-pointer liquid-surface-subtle flex items-center gap-1"
-                style={{
-                  '--surface-color': '#2C2C2E',
-                  fontFamily: "'Inter', sans-serif",
-                  fontWeight: 600,
-                }}
-              >
-                <i className="fa-solid fa-tag text-[10px]"></i>
-                {tag.name}
-              </a>
-            ))}
-          </div>
-        )}
-
-        {/* Content */}
-        {renderContentByType(document)}
-
-        {/* File Attachments */}
-        {document.files && document.files.length > 0 && (
-          <div className="mt-8">
-            <h3 className="text-sm font-semibold mb-3" style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif", color: '#1D1D1F' }}>
-              <i className="fa-solid fa-paperclip mr-2" style={{ color: '#8E8E93' }}></i>
-              Attachments ({document.files.length})
-            </h3>
-            <div className="space-y-2">
-              {document.files.map((file) => (
-                <AttachmentRow key={file.id} file={file} />
-              ))}
-            </div>
-          </div>
-        )}
-      </>
-    );
-  };
-
   const renderContentByType = (document) => {
-    // Render based on content type
     switch (document.content_type) {
       case 'youtube':
         if (document.youtube_embed_url) {
           return (
             <div className="aspect-video w-full">
-              <iframe
-                width="100%"
-                height="100%"
-                src={document.youtube_embed_url}
-                frameBorder="0"
+              <iframe width="100%" height="100%" src={document.youtube_embed_url} frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="rounded-lg"
-              ></iframe>
+                allowFullScreen className="rounded-lg" />
             </div>
           );
         }
-        return <p className="text-center py-8" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, color: '#8E8E93' }}>Invalid YouTube URL</p>;
+        return <p className="v2-small" style={{ textAlign: 'center', padding: '32px 0', color: 'var(--ink-faint)' }}>Invalid YouTube URL</p>;
 
       case 'video':
       case 'link':
         return (
-          <div className="text-center py-8">
-            <a
-              href={document.metadata?.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-liquid inline-flex items-center gap-2"
-            >
-              <i className="fa-solid fa-external-link-alt"></i>
-              Open Link
+          <div style={{ textAlign: 'center', padding: '32px 0' }}>
+            <a href={document.metadata?.url} target="_blank" rel="noopener noreferrer" className="v2-btn v2-btn-primary">
+              <i className="fa-solid fa-external-link-alt" style={{ fontSize: '0.75rem' }} /> Open Link
             </a>
           </div>
         );
@@ -237,28 +133,76 @@ const DocumentViewModal = () => {
     }
   };
 
-  const handleEdit = () => {
-    closeViewModal();
-    openEditModal(documentId);
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: 'var(--ink-faint)' }} />
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--overdue)' }}>
+          <p className="v2-small">Error loading document: {error.message}</p>
+        </div>
+      );
+    }
+
+    if (!document) return null;
+
+    return (
+      <>
+        {/* Tags */}
+        {document.tags && document.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5" style={{ marginBottom: 20 }}>
+            {document.tags.map((tag) => (
+              <a
+                key={tag.id}
+                href={`/tags?tag_id=${tag.id}`}
+                className="v2-badge v2-badge-neutral"
+                style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4, padding: '3px 10px' }}
+              >
+                <i className="fa-solid fa-tag" style={{ fontSize: '0.55rem' }} />
+                {tag.name}
+              </a>
+            ))}
+          </div>
+        )}
+
+        {/* Content */}
+        {renderContentByType(document)}
+
+        {/* File Attachments */}
+        {document.files && document.files.length > 0 && (
+          <div style={{ marginTop: 32 }}>
+            <h3 className="v2-section-label" style={{ marginBottom: 10 }}>
+              Attachments ({document.files.length})
+            </h3>
+            <div className="space-y-2">
+              {document.files.map((file) => (
+                <AttachmentRow key={file.id} file={file} />
+              ))}
+            </div>
+          </div>
+        )}
+      </>
+    );
   };
 
-  const headerActions = document ? (
-    <button
-      type="button"
-      onClick={handleEdit}
-      className="w-8 h-8 rounded-lg transition hover:bg-gray-100 flex items-center justify-center"
-      title="Edit document"
-    >
-      <i className="fa-solid fa-pencil text-sm" style={{ color: '#8E8E93' }}></i>
-    </button>
-  ) : null;
+  const handleEdit = () => { closeViewModal(); openEditModal(documentId); };
 
   return (
     <SlideOverPanel
       isOpen={isOpen}
       onClose={closeViewModal}
       title={document?.title || 'Loading...'}
-      headerActions={headerActions}
+      headerActions={document ? (
+        <button onClick={handleEdit} className="v2-btn-icon" title="Edit document">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink-tertiary)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+        </button>
+      ) : null}
     >
       {renderContent()}
     </SlideOverPanel>

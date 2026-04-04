@@ -1,81 +1,16 @@
-<div class="flex h-screen relative" style="background-color: #adadb3;">
-  <!-- Grain texture -->
-  <style>
-    .grain-bg {
-      background-blend-mode: overlay;
-      background-repeat: repeat;
-      background-size: 200px 200px;
-    }
-  </style>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const canvas = document.createElement('canvas');
-      canvas.width = 200;
-      canvas.height = 200;
-      const ctx = canvas.getContext('2d');
-      const imageData = ctx.createImageData(200, 200);
-      for (let i = 0; i < imageData.data.length; i += 4) {
-        const v = Math.random() * 255;
-        imageData.data[i] = v;
-        imageData.data[i+1] = v;
-        imageData.data[i+2] = v;
-        imageData.data[i+3] = 40;
-      }
-      ctx.putImageData(imageData, 0, 0);
-      const el = document.querySelector('.grain-bg');
-      if (el) el.style.backgroundImage = 'url(' + canvas.toDataURL() + ')';
-    });
-  </script>
-
+<div class="flex h-screen relative" style="background-color: var(--bg);">
   <%= render 'shared/sidebar' %>
 
-  <!-- Mobile overlay -->
-  <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 md:hidden hidden"></div>
-
-  <!-- Menu flag button -->
-  <button id="menu-button" class="fixed left-0 z-20 md:hidden rounded-r-lg shadow-lg flex items-center justify-center py-1.5 px-3 transition-all"
-    style="top: 200px; background: linear-gradient(135deg, #424245, #2C2C2E); writing-mode: vertical-rl;">
-    <span class="text-white font-bold text-sm tracking-wider">MENU</span>
-  </button>
-
-  <script>
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebar-overlay');
-    const menuButton = document.getElementById('menu-button');
-    const closeButton = document.getElementById('sidebar-close');
-
-    function openSidebar() {
-      sidebar.classList.remove('-translate-x-full');
-      sidebar.classList.add('translate-x-0');
-      overlay.classList.remove('hidden');
-      menuButton.classList.add('hidden');
-    }
-
-    function closeSidebar() {
-      sidebar.classList.add('-translate-x-full');
-      sidebar.classList.remove('translate-x-0');
-      overlay.classList.add('hidden');
-      menuButton.classList.remove('hidden');
-    }
-
-    menuButton.addEventListener('click', openSidebar);
-    closeButton.addEventListener('click', closeSidebar);
-    overlay.addEventListener('click', closeSidebar);
-  </script>
-
   <!-- Main Content Area -->
-  <div class="flex-1 flex flex-col overflow-hidden">
-    <%= render 'shared/navbar' %>
-
-    <!-- Scrollable Content -->
-    <main class="flex-1 overflow-y-auto grain-bg" style="background-color: #adadb3;">
-      <!-- White Header -->
-      <div class="sticky top-0 z-10 shadow-deep" style="background: #FFFFFF;">
-        <div class="p-8 max-w-3xl mx-auto">
-          <h1 class="text-5xl font-display" style="color: #1D1D1F;">Settings</h1>
-          <p class="text-sm mt-1" style="color: #8E8E93; font-weight: 300; font-family: 'Inter', sans-serif;">Customize your habit tracking experience</p>
-        </div>
+  <main class="flex-1 overflow-y-auto md:ml-[224px]">
+    <!-- v2 Header -->
+    <div class="sticky top-0 z-10" style="background: var(--bg);">
+      <div class="pl-14 pr-4 pt-6 pb-4 md:pl-8 md:pr-8 md:pt-8 md:pb-5 max-w-3xl">
+        <h1 class="v2-h1">Settings</h1>
+        <p class="v2-small" style="margin-top: 4px; color: var(--ink-tertiary);">Customize your experience</p>
       </div>
+      <div style="height: 12px; background: linear-gradient(to bottom, var(--bg), transparent); pointer-events: none;"></div>
+    </div>
 
       <div class="max-w-3xl mx-auto p-8">
 
@@ -92,40 +27,40 @@
 
         <%= form_with model: current_user, url: settings_path, method: :patch, local: false, id: "settings-form" do |f| %>
           <!-- General Settings Card -->
-          <div class="bg-white rounded-2xl p-6 mb-6 shadow-deep">
-            <h2 class="text-2xl font-display mb-4" style="color: #1D1D1F;">
+          <div class="v2-card p-6 mb-6">
+            <h2 class="text-2xl v2-h2 mb-4" style="color: var(--ink);">
               <i class="fa-solid fa-sliders mr-2"></i>General Settings
             </h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <!-- Timezone -->
               <div class="setting-group" data-setting="timezone">
-                <%= f.label :timezone, class: "block text-sm font-semibold mb-1", style: "color: #1D1D1F;" do %>
-                  <i class="fa-solid fa-globe mr-1 text-xs" style="color: #8E8E93;"></i>Time Zone
+                <%= f.label :timezone, class: "block text-sm font-semibold mb-1", style: "color: var(--ink);" do %>
+                  <i class="fa-solid fa-globe mr-1 text-xs" style="color: var(--ink-tertiary);"></i>Time Zone
                 <% end %>
                 <%= f.select :timezone,
                     ActiveSupport::TimeZone.us_zones.map { |tz| [tz.to_s, tz.name] },
                     {},
                     class: "w-full px-3 py-2 rounded-lg border focus:outline-none transition font-light text-sm auto-save",
-                    style: "border-color: #E8EEF1;" %>
+                    style: "border-color: var(--border);" %>
               </div>
 
               <!-- Week Starts On -->
               <div class="setting-group" data-setting="week_starts_on">
-                <%= f.label :week_starts_on, class: "block text-sm font-semibold mb-1", style: "color: #1D1D1F;" do %>
-                  <i class="fa-solid fa-calendar-week mr-1 text-xs" style="color: #8E8E93;"></i>Week Starts On
+                <%= f.label :week_starts_on, class: "block text-sm font-semibold mb-1", style: "color: var(--ink);" do %>
+                  <i class="fa-solid fa-calendar-week mr-1 text-xs" style="color: var(--ink-tertiary);"></i>Week Starts On
                 <% end %>
                 <%= f.select :week_starts_on,
                     [['Monday', 'monday'], ['Sunday', 'sunday'], ['Saturday', 'saturday']],
                     {},
                     class: "w-full px-3 py-2 rounded-lg border focus:outline-none transition font-light text-sm auto-save",
-                    style: "border-color: #E8EEF1;" %>
+                    style: "border-color: var(--border);" %>
               </div>
 
               <!-- Date Format -->
               <div class="setting-group" data-setting="date_format">
-                <%= f.label :date_format, class: "block text-sm font-semibold mb-1", style: "color: #1D1D1F;" do %>
-                  <i class="fa-solid fa-calendar mr-1 text-xs" style="color: #8E8E93;"></i>Date Format
+                <%= f.label :date_format, class: "block text-sm font-semibold mb-1", style: "color: var(--ink);" do %>
+                  <i class="fa-solid fa-calendar mr-1 text-xs" style="color: var(--ink-tertiary);"></i>Date Format
                 <% end %>
                 <%= f.select :date_format,
                     [['MM/DD/YYYY', 'MM/DD/YYYY'],
@@ -133,19 +68,19 @@
                      ['YYYY-MM-DD', 'YYYY-MM-DD']],
                     {},
                     class: "w-full px-3 py-2 rounded-lg border focus:outline-none transition font-light text-sm auto-save",
-                    style: "border-color: #E8EEF1;" %>
+                    style: "border-color: var(--border);" %>
               </div>
 
               <!-- Time Format -->
               <div class="setting-group" data-setting="time_format">
-                <%= f.label :time_format, class: "block text-sm font-semibold mb-1", style: "color: #1D1D1F;" do %>
-                  <i class="fa-solid fa-clock mr-1 text-xs" style="color: #8E8E93;"></i>Time Format
+                <%= f.label :time_format, class: "block text-sm font-semibold mb-1", style: "color: var(--ink);" do %>
+                  <i class="fa-solid fa-clock mr-1 text-xs" style="color: var(--ink-tertiary);"></i>Time Format
                 <% end %>
                 <%= f.select :time_format,
                     [['12-hour (3:45 PM)', '12-hour'], ['24-hour (15:45)', '24-hour']],
                     {},
                     class: "w-full px-3 py-2 rounded-lg border focus:outline-none transition font-light text-sm auto-save",
-                    style: "border-color: #E8EEF1;" %>
+                    style: "border-color: var(--border);" %>
               </div>
 
             </div>
@@ -154,98 +89,98 @@
 
         <%= form_with model: current_user, url: settings_path, method: :patch, local: false, id: "settings-form-continued" do |f| %>
           <!-- Display Preferences Card -->
-          <div class="bg-white rounded-2xl p-6 mb-6 shadow-deep">
-            <h2 class="text-2xl font-display mb-4" style="color: #1D1D1F;">
+          <div class="v2-card p-6 mb-6">
+            <h2 class="text-2xl v2-h2 mb-4" style="color: var(--ink);">
               <i class="fa-solid fa-palette mr-2"></i>Display Preferences
             </h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <!-- Home Page -->
               <div class="setting-group" data-setting="root_location">
-                <%= f.label :root_location, class: "block text-sm font-semibold mb-1", style: "color: #1D1D1F;" do %>
-                  <i class="fa-solid fa-home mr-1 text-xs" style="color: #8E8E93;"></i>Home Page
+                <%= f.label :root_location, class: "block text-sm font-semibold mb-1", style: "color: var(--ink);" do %>
+                  <i class="fa-solid fa-home mr-1 text-xs" style="color: var(--ink-tertiary);"></i>Home Page
                 <% end %>
                 <%= f.select :root_location,
                     [['Dashboard', 'dashboard'], ['Habits', 'habits'], ['Analytics', 'analytics']],
                     {},
                     class: "w-full px-3 py-2 rounded-lg border focus:outline-none transition font-light text-sm auto-save",
-                    style: "border-color: #E8EEF1;" %>
+                    style: "border-color: var(--border);" %>
               </div>
 
               <!-- Theme -->
               <div class="setting-group" data-setting="theme">
-                <%= f.label :theme, class: "block text-sm font-semibold mb-1", style: "color: #1D1D1F;" do %>
-                  <i class="fa-solid fa-sun mr-1 text-xs" style="color: #8E8E93;"></i>Theme
+                <%= f.label :theme, class: "block text-sm font-semibold mb-1", style: "color: var(--ink);" do %>
+                  <i class="fa-solid fa-sun mr-1 text-xs" style="color: var(--ink-tertiary);"></i>Theme
                 <% end %>
                 <%= f.select :theme,
-                    [['Light', 'light'], ['Dark', 'dark'], ['Auto (match system)', 'auto']],
+                    [['Cream', 'cream'], ['White', 'white'], ['Dark', 'dark']],
                     {},
                     class: "w-full px-3 py-2 rounded-lg border focus:outline-none transition font-light text-sm auto-save",
-                    style: "border-color: #E8EEF1;" %>
+                    style: "border-color: var(--border);" %>
               </div>
             </div>
 
             <!-- Default Groupings -->
-            <h3 class="text-sm font-semibold mt-5 mb-3" style="color: #1D1D1F;">
-              <i class="fa-solid fa-layer-group mr-1 text-xs" style="color: #8E8E93;"></i>Default Groupings
+            <h3 class="text-sm font-semibold mt-5 mb-3" style="color: var(--ink);">
+              <i class="fa-solid fa-layer-group mr-1 text-xs" style="color: var(--ink-tertiary);"></i>Default Groupings
             </h3>
 
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
               <!-- Default Habits Grouping -->
               <div class="setting-group" data-setting="default_habits_grouping">
-                <%= f.label :default_habits_grouping, "Habits", class: "block text-xs font-medium mb-1", style: "color: #8E8E93;" %>
+                <%= f.label :default_habits_grouping, "Habits", class: "block text-xs font-medium mb-1", style: "color: var(--ink-tertiary);" %>
                 <%= f.select :default_habits_grouping,
                     [['None', 'none'], ['Category', 'category'], ['Time of Day', 'time'], ['Priority', 'priority']],
                     {},
                     class: "w-full px-3 py-2 rounded-lg border focus:outline-none transition font-light text-sm auto-save",
-                    style: "border-color: #E8EEF1;" %>
+                    style: "border-color: var(--border);" %>
               </div>
 
               <!-- Default Tasks Grouping -->
               <div class="setting-group" data-setting="default_tasks_grouping">
-                <%= f.label :default_tasks_grouping, "Tasks", class: "block text-xs font-medium mb-1", style: "color: #8E8E93;" %>
+                <%= f.label :default_tasks_grouping, "Tasks", class: "block text-xs font-medium mb-1", style: "color: var(--ink-tertiary);" %>
                 <%= f.select :default_tasks_grouping,
                     [['None', 'none'], ['Date Added', 'status'], ['Category', 'category'], ['Due Date', 'due_date'], ['Importance', 'importance']],
                     {},
                     class: "w-full px-3 py-2 rounded-lg border focus:outline-none transition font-light text-sm auto-save",
-                    style: "border-color: #E8EEF1;" %>
+                    style: "border-color: var(--border);" %>
               </div>
 
               <!-- Default Lists Grouping -->
               <div class="setting-group" data-setting="default_lists_grouping">
-                <%= f.label :default_lists_grouping, "Lists", class: "block text-xs font-medium mb-1", style: "color: #8E8E93;" %>
+                <%= f.label :default_lists_grouping, "Lists", class: "block text-xs font-medium mb-1", style: "color: var(--ink-tertiary);" %>
                 <%= f.select :default_lists_grouping,
                     [['None', 'none'], ['Type', 'type'], ['Category', 'category']],
                     {},
                     class: "w-full px-3 py-2 rounded-lg border focus:outline-none transition font-light text-sm auto-save",
-                    style: "border-color: #E8EEF1;" %>
+                    style: "border-color: var(--border);" %>
               </div>
 
               <!-- Default Documents Grouping -->
               <div class="setting-group" data-setting="default_documents_grouping">
-                <%= f.label :default_documents_grouping, "Documents", class: "block text-xs font-medium mb-1", style: "color: #8E8E93;" %>
+                <%= f.label :default_documents_grouping, "Documents", class: "block text-xs font-medium mb-1", style: "color: var(--ink-tertiary);" %>
                 <%= f.select :default_documents_grouping,
                     [['None', 'none'], ['Type', 'type'], ['Tag', 'tag'], ['Category', 'category']],
                     {},
                     class: "w-full px-3 py-2 rounded-lg border focus:outline-none transition font-light text-sm auto-save",
-                    style: "border-color: #E8EEF1;" %>
+                    style: "border-color: var(--border);" %>
               </div>
             </div>
           </div>
         <% end %>
 
         <!-- Importance Levels Card -->
-        <div class="bg-white rounded-2xl p-8 mb-6 shadow-deep">
+        <div class="v2-card p-6 mb-6">
           <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-display" style="color: #1D1D1F;">
+            <h2 class="text-2xl v2-h2" style="color: var(--ink);">
               <i class="fa-solid fa-star mr-2"></i>Importance Levels
             </h2>
-            <button id="add-importance-level-btn" class="btn-onyx px-4 py-2 rounded-lg text-sm text-white transition transform hover:scale-105" style="font-weight: 600; font-family: 'Inter', sans-serif;">
+            <button id="add-importance-level-btn" class="v2-btn-sm v2-btn-primary" style="font-weight: 600; font-family: var(--font-body);">
               <i class="fa-solid fa-plus mr-2"></i>Add Level
             </button>
           </div>
 
-          <p class="text-xs font-light mb-6" style="color: #8E8E93;">
+          <p class="text-xs font-light mb-6" style="color: var(--ink-tertiary);">
             Customize your priority levels for tasks and habits. Drag to reorder.
             <br><strong>Darker colors work best with white text.</strong>
           </p>
@@ -256,17 +191,17 @@
         </div>
 
         <!-- Time Blocks Card -->
-        <div class="bg-white rounded-2xl p-8 mb-6 shadow-deep">
+        <div class="v2-card p-6 mb-6">
           <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-display" style="color: #1D1D1F;">
+            <h2 class="text-2xl v2-h2" style="color: var(--ink);">
               <i class="fa-solid fa-clock mr-2"></i>Time Blocks
             </h2>
-            <button id="add-time-block-btn" class="btn-onyx px-4 py-2 rounded-lg text-sm text-white transition transform hover:scale-105" style="font-weight: 600; font-family: 'Inter', sans-serif;">
+            <button id="add-time-block-btn" class="v2-btn-sm v2-btn-primary" style="font-weight: 600; font-family: var(--font-body);">
               <i class="fa-solid fa-plus mr-2"></i>Add Time Block
             </button>
           </div>
 
-          <p class="text-xs font-light mb-6" style="color: #8E8E93;">
+          <p class="text-xs font-light mb-6" style="color: var(--ink-tertiary);">
             Customize your time blocks for organizing habits by time of day. Drag to reorder.
             <br><strong>Darker colors work best with white text.</strong>
           </p>
@@ -277,8 +212,8 @@
         </div>
 
         <!-- Google Calendar Integration Card -->
-        <div class="bg-white rounded-2xl p-8 mb-6 shadow-deep">
-          <h2 class="text-2xl font-display mb-6" style="color: #1D1D1F;">
+        <div class="v2-card p-6 mb-6">
+          <h2 class="text-2xl v2-h2 mb-6" style="color: var(--ink);">
             <i class="fa-brands fa-google mr-2"></i>Google Calendar Integration
           </h2>
 
@@ -295,14 +230,14 @@
 
               <!-- Calendar Selection -->
               <div class="mb-4">
-                <label class="block text-sm font-semibold mb-2" style="color: #1D1D1F;">
+                <label class="block text-sm font-semibold mb-2" style="color: var(--ink);">
                   <i class="fa-solid fa-calendar mr-2"></i>Select Calendars
                 </label>
-                <p class="text-xs font-light mb-3" style="color: #8E8E93;">
+                <p class="text-xs font-light mb-3" style="color: var(--ink-tertiary);">
                   Choose which Google Calendars to display on your dashboard
                 </p>
-                <div id="google-calendar-checkboxes" class="space-y-2 p-4 rounded-lg border-2" style="border-color: #E8EEF1;">
-                  <p class="text-xs" style="color: #8E8E93;">Loading calendars...</p>
+                <div id="google-calendar-checkboxes" class="space-y-2 p-4 rounded-lg border-2" style="border-color: var(--border);">
+                  <p class="text-xs" style="color: var(--ink-tertiary);">Loading calendars...</p>
                 </div>
               </div>
 
@@ -314,15 +249,15 @@
           <% else %>
             <!-- Not Connected State -->
             <div class="text-center py-8">
-              <i class="fa-brands fa-google text-5xl mb-4" style="color: #E8EEF1;"></i>
-              <h3 class="text-lg font-semibold mb-2" style="color: #1D1D1F;">Connect Your Google Calendar</h3>
-              <p class="text-sm font-light mb-6" style="color: #8E8E93;">
+              <i class="fa-brands fa-google text-5xl mb-4" style="color: var(--border);"></i>
+              <h3 class="text-lg font-semibold mb-2" style="color: var(--ink);">Connect Your Google Calendar</h3>
+              <p class="text-sm font-light mb-6" style="color: var(--ink-tertiary);">
                 View your calendar events directly on your dashboard for better planning
               </p>
-              <%= link_to google_calendar_connect_path, class: "btn-onyx inline-block px-6 py-3 rounded-lg text-sm text-white transition transform hover:scale-105", style: "font-weight: 600; font-family: 'Inter', sans-serif;" do %>
+              <%= link_to google_calendar_connect_path, class: "v2-btn v2-btn-primary", style: "font-weight: 600; font-family: var(--font-body);" do %>
                 <i class="fa-brands fa-google mr-2"></i>Connect Google Calendar
               <% end %>
-              <p class="text-xs font-light mt-4" style="color: #8E8E93;">
+              <p class="text-xs font-light mt-4" style="color: var(--ink-tertiary);">
                 We'll only request read-only access to your calendar events
               </p>
             </div>
@@ -330,11 +265,11 @@
         </div>
 
         <!-- Dashboard Layout Card -->
-        <div class="bg-white rounded-2xl p-6 mb-6 shadow-deep">
-          <h2 class="text-2xl font-display mb-4" style="color: #1D1D1F;">
+        <div class="v2-card p-6 mb-6">
+          <h2 class="text-2xl v2-h2 mb-4" style="color: var(--ink);">
             <i class="fa-solid fa-grip mr-2"></i>Dashboard Layout
           </h2>
-          <p class="text-xs font-light mb-4" style="color: #8E8E93;">
+          <p class="text-xs font-light mb-4" style="color: var(--ink-tertiary);">
             Drag to reorder blocks. Choose which column each block appears in.
           </p>
 
@@ -383,14 +318,14 @@
                 const block = blockLabels[item.block] || { name: item.block, icon: 'fa-square' };
                 return `
                   <div class="flex items-center gap-3 p-3 rounded-lg border bg-white cursor-grab active:cursor-grabbing"
-                       style="border-color: #E8EEF1;"
+                       style="border-color: var(--border);"
                        draggable="true"
                        data-block="${item.block}">
                     <i class="fa-solid fa-grip-vertical" style="color: #C7C7CC;"></i>
-                    <i class="fa-solid ${block.icon} w-5 text-center" style="color: #8E8E93;"></i>
-                    <span class="flex-1 text-sm font-medium" style="color: #1D1D1F;">${block.name}</span>
+                    <i class="fa-solid ${block.icon} w-5 text-center" style="color: var(--ink-tertiary);"></i>
+                    <span class="flex-1 text-sm font-medium" style="color: var(--ink);">${block.name}</span>
                     <select class="column-select px-3 py-1.5 rounded-lg border text-sm"
-                            style="border-color: #E8EEF1;"
+                            style="border-color: var(--border);"
                             data-block="${item.block}">
                       <option value="left" ${item.column === 'left' ? 'selected' : ''}>Left Column</option>
                       <option value="right" ${item.column === 'right' ? 'selected' : ''}>Right Column</option>
@@ -400,7 +335,7 @@
                       <input type="checkbox" class="visible-checkbox w-4 h-4 rounded"
                              data-block="${item.block}"
                              ${item.visible !== false ? 'checked' : ''}>
-                      <span class="text-xs" style="color: #8E8E93;">Show</span>
+                      <span class="text-xs" style="color: var(--ink-tertiary);">Show</span>
                     </label>
                   </div>
                 `;
@@ -456,7 +391,7 @@
               e.preventDefault();
               const target = e.target.closest('[draggable="true"]');
               if (target && target !== draggedItem) {
-                target.style.borderColor = '#2C2C2E';
+                target.style.borderColor = 'var(--ink)';
               }
             }
 
@@ -484,13 +419,13 @@
 
                 saveLayout();
               }
-              target.style.borderColor = '#E8EEF1';
+              target.style.borderColor = 'var(--border)';
             }
 
             function handleDragEnd(e) {
               e.target.style.opacity = '1';
               layoutList.querySelectorAll('[draggable="true"]').forEach(item => {
-                item.style.borderColor = '#E8EEF1';
+                item.style.borderColor = 'var(--border)';
               });
             }
 
@@ -552,13 +487,13 @@
                   calendarCheckboxes.innerHTML = data.calendars.map(cal => {
                     const isChecked = selectedCalendarIds.includes(cal.id);
                     return `
-                      <label class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition" style="border: 1px solid #E8EEF1;">
+                      <label class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition" style="border: 1px solid var(--border);">
                         <input type="checkbox"
                                value="${cal.id}"
                                class="calendar-checkbox w-4 h-4 rounded"
                                ${isChecked ? 'checked' : ''}>
-                        <span class="flex-1 text-sm" style="color: #1D1D1F;">
-                          ${cal.name}${cal.primary ? ' <span class="text-xs font-light" style="color: #8E8E93;">(Primary)</span>' : ''}
+                        <span class="flex-1 text-sm" style="color: var(--ink);">
+                          ${cal.name}${cal.primary ? ' <span class="text-xs font-light" style="color: var(--ink-tertiary);">(Primary)</span>' : ''}
                         </span>
                       </label>
                     `;
@@ -601,7 +536,7 @@
                     });
                   });
                 } else {
-                  calendarCheckboxes.innerHTML = '<p class="text-xs" style="color: #8E8E93;">No calendars found</p>';
+                  calendarCheckboxes.innerHTML = '<p class="text-xs" style="color: var(--ink-tertiary);">No calendars found</p>';
                 }
               })
               .catch(error => {
@@ -615,183 +550,183 @@
         <!-- Add/Edit Time Block Modal -->
         <div id="time-block-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div class="bg-white rounded-2xl shadow-xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h3 id="time-block-modal-title" class="text-xl font-display mb-6" style="color: #1D1D1F;">Add Time Block</h3>
+            <h3 id="time-block-modal-title" class="text-xl v2-h2 mb-6" style="color: var(--ink);">Add Time Block</h3>
 
             <form id="time-block-form">
               <input type="hidden" id="time-block-id">
 
               <div class="mb-4">
-                <label class="block text-sm font-semibold mb-2" style="color: #1D1D1F;">Name</label>
-                <input type="text" id="time-block-name" class="w-full px-4 py-3 rounded-lg border-2 focus:outline-none" style="border-color: #E8EEF1;" required>
+                <label class="block text-sm font-semibold mb-2" style="color: var(--ink);">Name</label>
+                <input type="text" id="time-block-name" class="w-full px-4 py-3 rounded-lg border-2 focus:outline-none" style="border-color: var(--border);" required>
               </div>
 
               <div class="mb-4">
-                <label class="block text-sm font-semibold mb-2" style="color: #1D1D1F;">Icon</label>
+                <label class="block text-sm font-semibold mb-2" style="color: var(--ink);">Icon</label>
                 <input type="hidden" id="time-block-icon" required>
 
                 <!-- Icon Picker Grid (time-specific icons) -->
-                <div id="time-block-icon-picker" class="p-3 rounded-lg border-2 bg-white max-h-64 overflow-y-auto flex flex-wrap gap-2" style="border-color: #E8EEF1; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr));">
+                <div id="time-block-icon-picker" class="p-3 rounded-lg border-2 bg-white max-h-64 overflow-y-auto flex flex-wrap gap-2" style="border-color: var(--border); display: grid; grid-template-columns: repeat(12, minmax(0, 1fr));">
                   <!-- Row 1: Time & Sky -->
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-sun">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-sun">
                     <i class="fa-solid fa-sun text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-cloud-sun">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-cloud-sun">
                     <i class="fa-solid fa-cloud-sun text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-moon">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-moon">
                     <i class="fa-solid fa-moon text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-cloud-moon">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-cloud-moon">
                     <i class="fa-solid fa-cloud-moon text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-regular fa-sun">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-regular fa-sun">
                     <i class="fa-regular fa-sun text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-regular fa-moon">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-regular fa-moon">
                     <i class="fa-regular fa-moon text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-cloud">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-cloud">
                     <i class="fa-solid fa-cloud text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-star">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-star">
                     <i class="fa-solid fa-star text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-snowflake">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-snowflake">
                     <i class="fa-solid fa-snowflake text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-rainbow">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-rainbow">
                     <i class="fa-solid fa-rainbow text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-meteor">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-meteor">
                     <i class="fa-solid fa-meteor text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-bolt">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-bolt">
                     <i class="fa-solid fa-bolt text-sm"></i>
                   </button>
 
                   <!-- Row 2: Clocks & Time -->
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-clock">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-clock">
                     <i class="fa-solid fa-clock text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-regular fa-clock">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-regular fa-clock">
                     <i class="fa-regular fa-clock text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-stopwatch">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-stopwatch">
                     <i class="fa-solid fa-stopwatch text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-hourglass">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-hourglass">
                     <i class="fa-solid fa-hourglass text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-hourglass-half">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-hourglass-half">
                     <i class="fa-solid fa-hourglass-half text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-hourglass-end">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-hourglass-end">
                     <i class="fa-solid fa-hourglass-end text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-bell-concierge">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-bell-concierge">
                     <i class="fa-solid fa-bell-concierge text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-calendar">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-calendar">
                     <i class="fa-solid fa-calendar text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-calendar-day">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-calendar-day">
                     <i class="fa-solid fa-calendar-day text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-calendar-week">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-calendar-week">
                     <i class="fa-solid fa-calendar-week text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-regular fa-calendar">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-regular fa-calendar">
                     <i class="fa-regular fa-calendar text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-watch">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-watch">
                     <i class="fa-solid fa-watch text-sm"></i>
                   </button>
 
                   <!-- Row 3: Activities & Lifestyle -->
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-mug-hot">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-mug-hot">
                     <i class="fa-solid fa-mug-hot text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-coffee">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-coffee">
                     <i class="fa-solid fa-coffee text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-bed">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-bed">
                     <i class="fa-solid fa-bed text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-utensils">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-utensils">
                     <i class="fa-solid fa-utensils text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-plate-wheat">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-plate-wheat">
                     <i class="fa-solid fa-plate-wheat text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-bowl-rice">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-bowl-rice">
                     <i class="fa-solid fa-bowl-rice text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-pizza-slice">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-pizza-slice">
                     <i class="fa-solid fa-pizza-slice text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-champagne-glasses">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-champagne-glasses">
                     <i class="fa-solid fa-champagne-glasses text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-dumbbell">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-dumbbell">
                     <i class="fa-solid fa-dumbbell text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-person-running">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-person-running">
                     <i class="fa-solid fa-person-running text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-person-walking">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-person-walking">
                     <i class="fa-solid fa-person-walking text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-spa">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-spa">
                     <i class="fa-solid fa-spa text-sm"></i>
                   </button>
 
                   <!-- Row 4: Places & Context -->
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-home">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-home">
                     <i class="fa-solid fa-home text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-briefcase">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-briefcase">
                     <i class="fa-solid fa-briefcase text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-school">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-school">
                     <i class="fa-solid fa-school text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-building">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-building">
                     <i class="fa-solid fa-building text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-car">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-car">
                     <i class="fa-solid fa-car text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-plane">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-plane">
                     <i class="fa-solid fa-plane text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-bell">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-bell">
                     <i class="fa-solid fa-bell text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-laptop">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-laptop">
                     <i class="fa-solid fa-laptop text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-book">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-book">
                     <i class="fa-solid fa-book text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-music">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-music">
                     <i class="fa-solid fa-music text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-gamepad">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-gamepad">
                     <i class="fa-solid fa-gamepad text-sm"></i>
                   </button>
-                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-tv">
+                  <button type="button" class="time-block-icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-tv">
                     <i class="fa-solid fa-tv text-sm"></i>
                   </button>
                 </div>
               </div>
 
               <div class="mb-6">
-                <label class="block text-sm font-semibold mb-2" style="color: #1D1D1F;">Color</label>
-                <input type="color" id="time-block-color" class="w-full h-12 rounded-lg border-2 cursor-pointer" style="border-color: #E8EEF1;">
+                <label class="block text-sm font-semibold mb-2" style="color: var(--ink);">Color</label>
+                <input type="color" id="time-block-color" class="w-full h-12 rounded-lg border-2 cursor-pointer" style="border-color: var(--border);">
               </div>
 
               <div class="flex gap-3">
-                <button type="button" id="cancel-time-block-modal-btn" class="flex-1 px-4 py-3 rounded-lg border-2 font-semibold transition hover:bg-gray-50" style="border-color: #E8EEF1; color: #1D1D1F;">
+                <button type="button" id="cancel-time-block-modal-btn" class="flex-1 px-4 py-3 rounded-lg border-2 font-semibold transition hover:bg-gray-50" style="border-color: var(--border); color: var(--ink);">
                   Cancel
                 </button>
                 <button type="submit" class="btn-onyx flex-1 px-4 py-3 rounded-lg font-semibold text-white transition hover:opacity-80">
@@ -805,230 +740,230 @@
         <!-- Add/Edit Importance Level Modal -->
         <div id="importance-level-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div class="bg-white rounded-2xl shadow-xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h3 id="modal-title" class="text-xl font-display mb-6" style="color: #1D1D1F;">Add Importance Level</h3>
+            <h3 id="modal-title" class="text-xl v2-h2 mb-6" style="color: var(--ink);">Add Importance Level</h3>
 
             <form id="importance-level-form">
               <input type="hidden" id="importance-level-id">
 
               <div class="mb-4">
-                <label class="block text-sm font-semibold mb-2" style="color: #1D1D1F;">Name</label>
-                <input type="text" id="importance-level-name" class="w-full px-4 py-3 rounded-lg border-2 focus:outline-none" style="border-color: #E8EEF1;" required>
+                <label class="block text-sm font-semibold mb-2" style="color: var(--ink);">Name</label>
+                <input type="text" id="importance-level-name" class="w-full px-4 py-3 rounded-lg border-2 focus:outline-none" style="border-color: var(--border);" required>
               </div>
 
               <div class="mb-4">
-                <label class="block text-sm font-semibold mb-2" style="color: #1D1D1F;">Icon</label>
+                <label class="block text-sm font-semibold mb-2" style="color: var(--ink);">Icon</label>
                 <input type="hidden" id="importance-level-icon" required>
 
                 <!-- Icon Picker Grid (always visible) -->
-                <div id="icon-picker" class="p-3 rounded-lg border-2 bg-white max-h-48 overflow-y-auto flex flex-wrap gap-2" style="border-color: #E8EEF1; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr));">
+                <div id="icon-picker" class="p-3 rounded-lg border-2 bg-white max-h-48 overflow-y-auto flex flex-wrap gap-2" style="border-color: var(--border); display: grid; grid-template-columns: repeat(12, minmax(0, 1fr));">
                   <!-- Exclamation & Alerts -->
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-circle-exclamation">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-circle-exclamation">
                     <i class="fa-solid fa-circle-exclamation text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-triangle-exclamation">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-triangle-exclamation">
                     <i class="fa-solid fa-triangle-exclamation text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-exclamation">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-exclamation">
                     <i class="fa-solid fa-exclamation text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-question">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-question">
                     <i class="fa-solid fa-question text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-circle-question">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-circle-question">
                     <i class="fa-solid fa-circle-question text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-info">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-info">
                     <i class="fa-solid fa-info text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-circle-info">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-circle-info">
                     <i class="fa-solid fa-circle-info text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-xmark">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-xmark">
                     <i class="fa-solid fa-xmark text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-circle-xmark">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-circle-xmark">
                     <i class="fa-solid fa-circle-xmark text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-ban">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-ban">
                     <i class="fa-solid fa-ban text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-skull-crossbones">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-skull-crossbones">
                     <i class="fa-solid fa-skull-crossbones text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-radiation">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-radiation">
                     <i class="fa-solid fa-radiation text-sm"></i>
                   </button>
 
                   <!-- Energy & Urgency -->
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-fire">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-fire">
                     <i class="fa-solid fa-fire text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-bolt">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-bolt">
                     <i class="fa-solid fa-bolt text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-bolt-lightning">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-bolt-lightning">
                     <i class="fa-solid fa-bolt-lightning text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-bomb">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-bomb">
                     <i class="fa-solid fa-bomb text-sm"></i>
                   </button>
 
                   <!-- Stars & Priority -->
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-star">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-star">
                     <i class="fa-solid fa-star text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-star-half-stroke">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-star-half-stroke">
                     <i class="fa-solid fa-star-half-stroke text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-regular fa-star">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-regular fa-star">
                     <i class="fa-regular fa-star text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-certificate">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-certificate">
                     <i class="fa-solid fa-certificate text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-award">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-award">
                     <i class="fa-solid fa-award text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-medal">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-medal">
                     <i class="fa-solid fa-medal text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-trophy">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-trophy">
                     <i class="fa-solid fa-trophy text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-crown">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-crown">
                     <i class="fa-solid fa-crown text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-ranking-star">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-ranking-star">
                     <i class="fa-solid fa-ranking-star text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-check">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-check">
                     <i class="fa-solid fa-check text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-circle-check">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-circle-check">
                     <i class="fa-solid fa-circle-check text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-square-check">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-square-check">
                     <i class="fa-solid fa-square-check text-sm"></i>
                   </button>
 
                   <!-- Markers & Flags -->
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-flag">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-flag">
                     <i class="fa-solid fa-flag text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-bookmark">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-bookmark">
                     <i class="fa-solid fa-bookmark text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-bullseye">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-bullseye">
                     <i class="fa-solid fa-bullseye text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-location-pin">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-location-pin">
                     <i class="fa-solid fa-location-pin text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-thumbtack">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-thumbtack">
                     <i class="fa-solid fa-thumbtack text-sm"></i>
                   </button>
 
                   <!-- Shapes -->
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-circle">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-circle">
                     <i class="fa-solid fa-circle text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-square">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-square">
                     <i class="fa-solid fa-square text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-diamond">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-diamond">
                     <i class="fa-solid fa-diamond text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-heart">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-heart">
                     <i class="fa-solid fa-heart text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-gem">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-gem">
                     <i class="fa-solid fa-gem text-sm"></i>
                   </button>
 
                   <!-- Arrows & Direction -->
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-angles-up">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-angles-up">
                     <i class="fa-solid fa-angles-up text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-angle-up">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-angle-up">
                     <i class="fa-solid fa-angle-up text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-chevron-up">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-chevron-up">
                     <i class="fa-solid fa-chevron-up text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-arrow-up">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-arrow-up">
                     <i class="fa-solid fa-arrow-up text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-circle-up">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-circle-up">
                     <i class="fa-solid fa-circle-up text-sm"></i>
                   </button>
 
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-minus">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-minus">
                     <i class="fa-solid fa-minus text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-equals">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-equals">
                     <i class="fa-solid fa-equals text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-circle-dot">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-circle-dot">
                     <i class="fa-solid fa-circle-dot text-sm"></i>
                   </button>
 
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-angle-down">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-angle-down">
                     <i class="fa-solid fa-angle-down text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-angles-down">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-angles-down">
                     <i class="fa-solid fa-angles-down text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-chevron-down">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-chevron-down">
                     <i class="fa-solid fa-chevron-down text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-arrow-down">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-arrow-down">
                     <i class="fa-solid fa-arrow-down text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-circle-down">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-circle-down">
                     <i class="fa-solid fa-circle-down text-sm"></i>
                   </button>
 
                   <!-- Numbers -->
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-0">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-0">
                     <i class="fa-solid fa-0 text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-1">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-1">
                     <i class="fa-solid fa-1 text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-2">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-2">
                     <i class="fa-solid fa-2 text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-3">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-3">
                     <i class="fa-solid fa-3 text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-4">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-4">
                     <i class="fa-solid fa-4 text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-5">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-5">
                     <i class="fa-solid fa-5 text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-6">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-6">
                     <i class="fa-solid fa-6 text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-7">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-7">
                     <i class="fa-solid fa-7 text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-8">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-8">
                     <i class="fa-solid fa-8 text-sm"></i>
                   </button>
-                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: #E8EEF1;" data-icon="fa-solid fa-9">
+                  <button type="button" class="icon-option w-8 h-8 rounded-lg border-2 hover:bg-gray-100 transition flex items-center justify-center" style="border-color: var(--border);" data-icon="fa-solid fa-9">
                     <i class="fa-solid fa-9 text-sm"></i>
                   </button>
                 </div>
               </div>
 
               <div class="mb-6">
-                <label class="block text-sm font-semibold mb-2" style="color: #1D1D1F;">Color</label>
-                <input type="color" id="importance-level-color" class="w-full h-12 rounded-lg border-2 cursor-pointer" style="border-color: #E8EEF1;">
+                <label class="block text-sm font-semibold mb-2" style="color: var(--ink);">Color</label>
+                <input type="color" id="importance-level-color" class="w-full h-12 rounded-lg border-2 cursor-pointer" style="border-color: var(--border);">
               </div>
 
               <div class="flex gap-3">
-                <button type="button" id="cancel-modal-btn" class="flex-1 px-4 py-3 rounded-lg border-2 font-semibold transition hover:bg-gray-50" style="border-color: #E8EEF1; color: #1D1D1F;">
+                <button type="button" id="cancel-modal-btn" class="flex-1 px-4 py-3 rounded-lg border-2 font-semibold transition hover:bg-gray-50" style="border-color: var(--border); color: var(--ink);">
                   Cancel
                 </button>
                 <button type="submit" class="btn-onyx flex-1 px-4 py-3 rounded-lg font-semibold text-white transition hover:opacity-80">
@@ -1144,13 +1079,13 @@
             levelsList.innerHTML = importanceLevels.map(level => {
               const isOptional = level.name === 'Optional';
               return `
-              <div class="flex items-center gap-3 p-3 rounded-lg border bg-white cursor-grab active:cursor-grabbing" style="border-color: #E8EEF1;" data-level-id="${level.id}">
+              <div class="flex items-center gap-3 p-3 rounded-lg border bg-white cursor-grab active:cursor-grabbing" style="border-color: var(--border);" data-level-id="${level.id}">
                 <i class="fa-solid fa-grip-vertical" style="color: #C7C7CC;"></i>
                 <i class="${level.icon || 'fa-solid fa-star'} w-5 text-center" style="color: ${level.color};"></i>
-                <span class="flex-1 text-sm font-medium" style="color: #1D1D1F;">${level.name}${isOptional ? ' <span class="text-xs font-normal" style="color: #8E8E93;">(default)</span>' : ''}</span>
+                <span class="flex-1 text-sm font-medium" style="color: var(--ink);">${level.name}${isOptional ? ' <span class="text-xs font-normal" style="color: var(--ink-tertiary);">(default)</span>' : ''}</span>
                 <div class="w-6 h-6 rounded" style="background-color: ${level.color};"></div>
                 <button onclick="editImportanceLevel(${level.id})" class="p-1.5 rounded hover:bg-gray-100 transition">
-                  <i class="fa-solid fa-pen text-xs" style="color: #8E8E93;"></i>
+                  <i class="fa-solid fa-pen text-xs" style="color: var(--ink-tertiary);"></i>
                 </button>
                 ${isOptional ? '' : `<button onclick="deleteImportanceLevel(${level.id})" class="p-1.5 rounded hover:bg-red-50 transition">
                   <i class="fa-solid fa-trash text-xs" style="color: #DC2626;"></i>
@@ -1172,11 +1107,11 @@
               // Remove selected state from all options
               iconOptions.forEach(opt => {
                 opt.classList.remove('bg-blue-100', 'border-blue-500');
-                opt.style.borderColor = '#E8EEF1';
+                opt.style.borderColor = 'var(--border)';
               });
               // Add selected state to this option
               this.classList.add('bg-blue-100', 'border-blue-500');
-              this.style.borderColor = '#6366F1';
+              this.style.borderColor = 'var(--ink)';
             });
           });
 
@@ -1191,7 +1126,7 @@
             nameInput.style.cursor = '';
             iconOptions.forEach(opt => {
               opt.classList.remove('bg-blue-100', 'border-blue-500');
-              opt.style.borderColor = '#E8EEF1';
+              opt.style.borderColor = 'var(--border)';
             });
             modal.classList.remove('hidden');
           });
@@ -1208,7 +1143,7 @@
             document.getElementById('importance-level-id').value = level.id;
             nameInput.value = level.name;
             nameInput.disabled = isOptional;
-            nameInput.style.backgroundColor = isOptional ? '#F5F5F7' : '';
+            nameInput.style.backgroundColor = isOptional ? 'var(--hover-tint)' : '';
             nameInput.style.cursor = isOptional ? 'not-allowed' : '';
             document.getElementById('importance-level-icon').value = level.icon || '';
             document.getElementById('importance-level-color').value = level.color || '#000000';
@@ -1216,10 +1151,10 @@
             // Highlight selected icon in picker
             iconOptions.forEach(opt => {
               opt.classList.remove('bg-blue-100', 'border-blue-500');
-              opt.style.borderColor = '#E8EEF1';
+              opt.style.borderColor = 'var(--border)';
               if (level.icon && opt.getAttribute('data-icon') === level.icon) {
                 opt.classList.add('bg-blue-100', 'border-blue-500');
-                opt.style.borderColor = '#6366F1';
+                opt.style.borderColor = 'var(--ink)';
               }
             });
 
@@ -1319,7 +1254,7 @@
                 this.style.opacity = '1';
                 // Remove all drag indicators
                 levelItems.forEach(level => {
-                  level.style.borderColor = '#E8EEF1';
+                  level.style.borderColor = 'var(--border)';
                 });
               });
 
@@ -1329,21 +1264,21 @@
                 e.dataTransfer.dropEffect = 'move';
 
                 if (draggedElement && draggedElement !== this) {
-                  this.style.borderColor = '#8E8E93';
+                  this.style.borderColor = 'var(--ink-tertiary)';
                 }
               });
 
               item.addEventListener('dragleave', function(e) {
                 // Only reset if we're actually leaving this element
                 if (!this.contains(e.relatedTarget)) {
-                  this.style.borderColor = '#E8EEF1';
+                  this.style.borderColor = 'var(--border)';
                 }
               });
 
               item.addEventListener('drop', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                this.style.borderColor = '#E8EEF1';
+                this.style.borderColor = 'var(--border)';
 
                 if (draggedElement && draggedElement !== this) {
                   const allLevels = Array.from(levelsList.children);
@@ -1456,13 +1391,13 @@
 
           function renderTimeBlocks() {
             timeBlocksList.innerHTML = timeBlocks.map(block => `
-              <div class="flex items-center gap-3 p-3 rounded-lg border bg-white cursor-grab active:cursor-grabbing" style="border-color: #E8EEF1;" data-block-id="${block.id}">
+              <div class="flex items-center gap-3 p-3 rounded-lg border bg-white cursor-grab active:cursor-grabbing" style="border-color: var(--border);" data-block-id="${block.id}">
                 <i class="fa-solid fa-grip-vertical" style="color: #C7C7CC;"></i>
                 <i class="${block.icon || 'fa-solid fa-clock'} w-5 text-center" style="color: ${block.color};"></i>
-                <span class="flex-1 text-sm font-medium" style="color: #1D1D1F;">${block.name}</span>
+                <span class="flex-1 text-sm font-medium" style="color: var(--ink);">${block.name}</span>
                 <div class="w-6 h-6 rounded" style="background-color: ${block.color};"></div>
                 <button onclick="editTimeBlock(${block.id})" class="p-1.5 rounded hover:bg-gray-100 transition">
-                  <i class="fa-solid fa-pen text-xs" style="color: #8E8E93;"></i>
+                  <i class="fa-solid fa-pen text-xs" style="color: var(--ink-tertiary);"></i>
                 </button>
                 <button onclick="deleteTimeBlock(${block.id})" class="p-1.5 rounded hover:bg-red-50 transition">
                   <i class="fa-solid fa-trash text-xs" style="color: #DC2626;"></i>
@@ -1484,10 +1419,10 @@
 
               timeBlockIconOptions.forEach(opt => {
                 opt.classList.remove('bg-blue-100', 'border-blue-500');
-                opt.style.borderColor = '#E8EEF1';
+                opt.style.borderColor = 'var(--border)';
               });
               this.classList.add('bg-blue-100', 'border-blue-500');
-              this.style.borderColor = '#6366F1';
+              this.style.borderColor = 'var(--ink)';
             });
           });
 
@@ -1498,7 +1433,7 @@
             document.getElementById('time-block-id').value = '';
             timeBlockIconOptions.forEach(opt => {
               opt.classList.remove('bg-blue-100', 'border-blue-500');
-              opt.style.borderColor = '#E8EEF1';
+              opt.style.borderColor = 'var(--border)';
             });
             timeBlockModal.classList.remove('hidden');
           });
@@ -1516,10 +1451,10 @@
 
             timeBlockIconOptions.forEach(opt => {
               opt.classList.remove('bg-blue-100', 'border-blue-500');
-              opt.style.borderColor = '#E8EEF1';
+              opt.style.borderColor = 'var(--border)';
               if (block.icon && opt.getAttribute('data-icon') === block.icon) {
                 opt.classList.add('bg-blue-100', 'border-blue-500');
-                opt.style.borderColor = '#6366F1';
+                opt.style.borderColor = 'var(--ink)';
               }
             });
 
@@ -1603,7 +1538,7 @@
                 this.style.opacity = '1';
                 // Remove all drag indicators
                 blockItems.forEach(block => {
-                  block.style.borderColor = '#E8EEF1';
+                  block.style.borderColor = 'var(--border)';
                 });
               });
 
@@ -1613,21 +1548,21 @@
                 e.dataTransfer.dropEffect = 'move';
 
                 if (draggedBlockElement && draggedBlockElement !== this) {
-                  this.style.borderColor = '#8E8E93';
+                  this.style.borderColor = 'var(--ink-tertiary)';
                 }
               });
 
               item.addEventListener('dragleave', function(e) {
                 // Only reset if we're actually leaving this element
                 if (!this.contains(e.relatedTarget)) {
-                  this.style.borderColor = '#E8EEF1';
+                  this.style.borderColor = 'var(--border)';
                 }
               });
 
               item.addEventListener('drop', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                this.style.borderColor = '#E8EEF1';
+                this.style.borderColor = 'var(--border)';
 
                 if (draggedBlockElement && draggedBlockElement !== this) {
                   const allBlocks = Array.from(timeBlocksList.children);
@@ -1712,6 +1647,5 @@
           loadTimeBlocks();
         </script>
       </div>
-    </main>
-  </div>
+  </main>
 </div>

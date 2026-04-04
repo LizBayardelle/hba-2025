@@ -14,291 +14,193 @@ const ListShowModal = () => {
   const [newItemName, setNewItemName] = useState('');
   const newItemInputRef = useRef(null);
 
-  // Fetch the list data
   const { data: list, isLoading } = useQuery({
     queryKey: ['list', listId],
     queryFn: () => listsApi.fetchOne(listId),
     enabled: isOpen && !!listId,
   });
 
-  // Reset recently checked when modal closes
   useEffect(() => {
-    if (!isOpen) {
-      setRecentlyChecked(new Set());
-      setNewItemName('');
-    }
+    if (!isOpen) { setRecentlyChecked(new Set()); setNewItemName(''); }
   }, [isOpen]);
 
-  // Toggle mutation
   const toggleMutation = useMutation({
-    mutationFn: async ({ checklistItemId, completed }) => {
-      return checklistItemsApi.updateForList(listId, checklistItemId, { completed });
-    },
+    mutationFn: async ({ checklistItemId, completed }) => checklistItemsApi.updateForList(listId, checklistItemId, { completed }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['list', listId] });
       queryClient.invalidateQueries({ queryKey: ['lists'] });
       queryClient.invalidateQueries({ queryKey: ['habits'] });
       setTogglingItemId(null);
     },
-    onError: () => {
-      setTogglingItemId(null);
-    },
+    onError: () => setTogglingItemId(null),
   });
 
-  // Create item mutation
   const createMutation = useMutation({
-    mutationFn: async (name) => {
-      return checklistItemsApi.createForList(listId, { name });
-    },
+    mutationFn: async (name) => checklistItemsApi.createForList(listId, { name }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['list', listId] });
       queryClient.invalidateQueries({ queryKey: ['lists'] });
       setNewItemName('');
-      // Re-focus the input for quick sequential adds
       setTimeout(() => newItemInputRef.current?.focus(), 50);
     },
   });
 
-  // Delete item mutation
   const deleteMutation = useMutation({
-    mutationFn: async (itemId) => {
-      return checklistItemsApi.deleteForList(listId, itemId);
-    },
+    mutationFn: async (itemId) => checklistItemsApi.deleteForList(listId, itemId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['list', listId] });
       queryClient.invalidateQueries({ queryKey: ['lists'] });
     },
   });
 
-  const handleDelete = (item) => {
-    deleteMutation.mutate(item.id);
-  };
-
-  const handleAddItem = () => {
-    const trimmed = newItemName.trim();
-    if (!trimmed || createMutation.isPending) return;
-    createMutation.mutate(trimmed);
-  };
-
   const handleToggle = (item) => {
     const newCompleted = !item.completed;
-
-    // If checking off, add to recently checked (delays move to bottom)
     if (newCompleted) {
       setRecentlyChecked(prev => new Set([...prev, item.id]));
-      // After delay, remove from recently checked so it moves to bottom
-      setTimeout(() => {
-        setRecentlyChecked(prev => {
-          const next = new Set(prev);
-          next.delete(item.id);
-          return next;
-        });
-      }, 800);
+      setTimeout(() => setRecentlyChecked(prev => { const next = new Set(prev); next.delete(item.id); return next; }), 800);
     }
-
     setTogglingItemId(item.id);
-    toggleMutation.mutate({
-      checklistItemId: item.id,
-      completed: newCompleted,
-    });
+    toggleMutation.mutate({ checklistItemId: item.id, completed: newCompleted });
   };
 
   const handleCopy = async (item) => {
-    try {
-      await navigator.clipboard.writeText(item.name);
-      setCopiedId(item.id);
-      setTimeout(() => setCopiedId(null), 1500);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-    }
+    try { await navigator.clipboard.writeText(item.name); setCopiedId(item.id); setTimeout(() => setCopiedId(null), 1500); } catch (err) { console.error('Failed to copy:', err); }
   };
 
-  const color = list?.category?.color || '#1D1D1F';
+  const handleAddItem = () => { const t = newItemName.trim(); if (!t || createMutation.isPending) return; createMutation.mutate(t); };
+
+  const color = list?.category?.color || 'var(--ink)';
   const checklistItems = list?.checklist_items || [];
   const completedCount = checklistItems.filter(i => i.completed).length;
   const totalCount = checklistItems.length;
   const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
-  // Sort items: incomplete first, then completed (but recently checked stay in place)
   const sortedItems = useMemo(() => {
     return [...checklistItems].sort((a, b) => {
-      const aIsRecentlyChecked = recentlyChecked.has(a.id);
-      const bIsRecentlyChecked = recentlyChecked.has(b.id);
-
-      // Recently checked items stay in their original position
-      if (aIsRecentlyChecked || bIsRecentlyChecked) return 0;
-
-      // Otherwise, incomplete items first
+      if (recentlyChecked.has(a.id) || recentlyChecked.has(b.id)) return 0;
       if (a.completed && !b.completed) return 1;
       if (!a.completed && b.completed) return -1;
       return 0;
     });
   }, [checklistItems, recentlyChecked]);
 
-  const footer = (
-    <button
-      type="button"
-      onClick={closeShowModal}
-      className="btn-liquid"
-    >
-      Done
-    </button>
-  );
-
   return (
     <SlideOverPanel
       isOpen={isOpen}
       onClose={closeShowModal}
       title={list?.name || 'List'}
-      footer={footer}
+      footer={<button type="button" onClick={closeShowModal} className="v2-btn v2-btn-primary">Done</button>}
     >
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: color }}></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: 'var(--ink-faint)' }} />
         </div>
       ) : (
         <div>
           {/* Category badge */}
-          <div className="mb-4">
-            <span
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
-              style={{ backgroundColor: `${color}15`, color }}
-            >
-              <i className={`fa-solid ${list?.category?.icon || 'fa-list-check'} text-[10px]`}></i>
+          <div style={{ marginBottom: 16 }}>
+            <span className="v2-badge" style={{ background: `${color}15`, color, padding: '3px 10px' }}>
+              <i className={`fa-solid ${list?.category?.icon || 'fa-list-check'}`} style={{ fontSize: '0.6rem', marginRight: 4 }} />
               {list?.category?.name || 'No category'}
             </span>
           </div>
 
           {/* Progress */}
           {totalCount > 0 && (
-            <div className="mb-4">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-semibold" style={{ color }}>
-                  Progress
-                </span>
-                <span
-                  className="text-sm font-semibold px-2 py-0.5 rounded"
-                  style={{ backgroundColor: `${color}15`, color }}
-                >
-                  {completedCount}/{totalCount}
-                </span>
+            <div style={{ marginBottom: 20 }}>
+              <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
+                <span className="v2-caption">{completedCount} of {totalCount}</span>
+                <span className="v2-caption">{Math.round(progressPercent)}%</span>
               </div>
-              <div
-                className="h-2 rounded-full overflow-hidden"
-                style={{ backgroundColor: `${color}20` }}
-              >
-                <div
-                  className="h-full rounded-full transition-all duration-300"
-                  style={{
-                    width: `${progressPercent}%`,
-                    backgroundColor: color,
-                  }}
-                />
+              <div style={{ height: 3, borderRadius: 3, background: 'var(--border)', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${progressPercent}%`, background: color, borderRadius: 3, transition: 'width 0.3s ease' }} />
               </div>
             </div>
           )}
 
           {/* Checklist items */}
-          <div className="space-y-2">
+          <div>
             {sortedItems.map((item) => (
               <div
                 key={item.id}
-                className="relative flex items-center gap-3 p-3 rounded-lg group transition-all duration-300"
-                style={{ border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
+                className="flex items-center gap-2.5 group"
+                style={{ padding: '8px 4px', borderBottom: '1px solid var(--border)', transition: 'background 0.1s ease' }}
               >
                 {/* Checkbox */}
                 <button
                   onClick={() => handleToggle(item)}
                   disabled={togglingItemId === item.id}
-                  className="w-6 h-6 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition hover:scale-110"
                   style={{
-                    borderColor: color,
-                    backgroundColor: item.completed ? color : 'transparent',
+                    width: 18, height: 18, borderRadius: 4, flexShrink: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    border: `1.5px solid ${item.completed ? 'var(--ink)' : 'var(--border-hover)'}`,
+                    background: item.completed ? 'var(--ink)' : 'transparent',
+                    transition: 'all 0.2s ease', cursor: 'pointer', padding: 0,
                   }}
                 >
                   {togglingItemId === item.id ? (
-                    <i className="fa-solid fa-spinner fa-spin text-xs" style={{ color: item.completed ? 'white' : color }}></i>
-                  ) : item.completed ? (
-                    <i className="fa-solid fa-check text-white text-xs"></i>
-                  ) : null}
+                    <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '0.5rem', color: item.completed ? 'var(--check-ink)' : 'var(--ink-tertiary)' }} />
+                  ) : (
+                    <i className="fa-solid fa-check" style={{ fontSize: '0.55rem', color: 'var(--check-ink)', opacity: item.completed ? 1 : 0 }} />
+                  )}
                 </button>
 
-                {/* Selectable text */}
+                {/* Text */}
                 <span
-                  className={`flex-1 select-text cursor-text ${item.completed ? 'line-through opacity-60' : ''}`}
-                  style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif" }}
+                  className="flex-1 select-text cursor-text"
+                  style={{
+                    fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink)',
+                    textDecoration: item.completed ? 'line-through' : 'none',
+                    textDecorationColor: 'var(--ink-faint)',
+                    opacity: item.completed ? 0.5 : 1,
+                    transition: 'opacity 0.2s ease',
+                  }}
                 >
                   {item.name}
                 </span>
 
-                {/* Copy button */}
-                <button
-                  onClick={() => handleCopy(item)}
-                  className="w-6 h-6 flex items-center justify-center rounded transition opacity-0 group-hover:opacity-100 hover:bg-gray-100"
-                  title="Copy to clipboard"
-                >
-                  <i
-                    className={`fa-solid ${copiedId === item.id ? 'fa-check' : 'fa-copy'} text-xs`}
-                    style={{ color: copiedId === item.id ? '#22C55E' : '#8E8E93' }}
-                  ></i>
-                </button>
-
-                {/* Delete button */}
-                <button
-                  onClick={() => handleDelete(item)}
-                  className="w-6 h-6 flex items-center justify-center rounded transition opacity-0 group-hover:opacity-100 hover:bg-red-50"
-                  title="Delete item"
-                >
-                  <i className="fa-solid fa-trash-can text-xs" style={{ color: '#C7C7CC' }}></i>
-                </button>
+                {/* Actions (visible on hover) */}
+                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button onClick={() => handleCopy(item)} className="v2-btn-icon-sm" title="Copy">
+                    <i className={`fa-solid ${copiedId === item.id ? 'fa-check' : 'fa-copy'}`} style={{ fontSize: '0.6rem', color: copiedId === item.id ? 'var(--ink)' : 'var(--ink-faint)' }} />
+                  </button>
+                  <button onClick={() => deleteMutation.mutate(item.id)} className="v2-btn-icon-sm" title="Delete">
+                    <i className="fa-solid fa-trash-can" style={{ fontSize: '0.6rem', color: 'var(--ink-faint)' }} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
 
-          {/* Add item input */}
-          <div
-            className="flex items-center gap-3 p-3 rounded-lg mt-2"
-            style={{ border: '0.5px dashed rgba(199, 199, 204, 0.5)' }}
-          >
-            <div
-              className="w-6 h-6 rounded-md border-2 flex-shrink-0 flex items-center justify-center"
-              style={{ borderColor: `${color}40` }}
-            >
-              <i className="fa-solid fa-plus text-[10px]" style={{ color: `${color}60` }}></i>
+          {/* Add item */}
+          <div className="flex items-center gap-2.5" style={{ padding: '8px 4px', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ width: 18, height: 18, borderRadius: 4, border: '1.5px dashed var(--border-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <i className="fa-solid fa-plus" style={{ fontSize: '0.45rem', color: 'var(--ink-faint)' }} />
             </div>
             <input
               ref={newItemInputRef}
               type="text"
               value={newItemName}
               onChange={(e) => setNewItemName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleAddItem();
-              }}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleAddItem(); }}
               placeholder="Add an item..."
-              className="flex-1 text-sm bg-transparent outline-none"
-              style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif" }}
+              style={{
+                flex: 1, background: 'transparent', outline: 'none', border: 'none',
+                fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'var(--ink)',
+              }}
             />
             {newItemName.trim() && (
-              <button
-                onClick={handleAddItem}
-                disabled={createMutation.isPending}
-                className="w-6 h-6 flex items-center justify-center rounded-full transition hover:scale-110"
-                style={{ backgroundColor: color }}
-              >
-                {createMutation.isPending ? (
-                  <i className="fa-solid fa-spinner fa-spin text-white text-[10px]"></i>
-                ) : (
-                  <i className="fa-solid fa-arrow-up text-white text-[10px]"></i>
-                )}
+              <button onClick={handleAddItem} disabled={createMutation.isPending} className="v2-btn-icon-sm" style={{ color: 'var(--ink)' }}>
+                {createMutation.isPending
+                  ? <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '0.6rem' }} />
+                  : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+                }
               </button>
             )}
           </div>
 
           {checklistItems.length === 0 && (
-            <p
-              className="text-center py-8"
-              style={{ color: '#8E8E93', fontFamily: "'Inter', sans-serif", fontWeight: 200 }}
-            >
+            <p className="v2-small" style={{ textAlign: 'center', padding: '32px 0', color: 'var(--ink-faint)' }}>
               No items in this list
             </p>
           )}

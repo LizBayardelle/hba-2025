@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_02_23_213151) do
+ActiveRecord::Schema[7.2].define(version: 2026_04_03_200003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -220,6 +220,12 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_23_213151) do
     t.index ["user_id"], name: "index_journals_on_user_id"
   end
 
+  create_table "jwt_denylist", force: :cascade do |t|
+    t.string "jti", null: false
+    t.datetime "exp", null: false
+    t.index ["jti"], name: "index_jwt_denylist_on_jti"
+  end
+
   create_table "list_attachments", force: :cascade do |t|
     t.string "attachable_type", null: false
     t.bigint "attachable_id", null: false
@@ -285,6 +291,49 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_23_213151) do
     t.index ["prep_question_id"], name: "index_prep_responses_on_prep_question_id"
     t.index ["user_id", "response_date"], name: "index_prep_responses_on_user_id_and_response_date"
     t.index ["user_id"], name: "index_prep_responses_on_user_id"
+  end
+
+  create_table "project_tasks", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "description"
+    t.bigint "section_id", null: false
+    t.bigint "project_id", null: false
+    t.bigint "user_id", null: false
+    t.bigint "parent_id"
+    t.integer "position"
+    t.boolean "completed", default: false
+    t.datetime "completed_at"
+    t.date "due_date"
+    t.boolean "archived", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["parent_id"], name: "index_project_tasks_on_parent_id"
+    t.index ["project_id"], name: "index_project_tasks_on_project_id"
+    t.index ["section_id"], name: "index_project_tasks_on_section_id"
+    t.index ["user_id"], name: "index_project_tasks_on_user_id"
+  end
+
+  create_table "projects", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "description"
+    t.string "color", default: "#6B8A99"
+    t.string "icon", default: "fa-briefcase"
+    t.bigint "user_id", null: false
+    t.integer "position"
+    t.boolean "archived", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_projects_on_user_id"
+  end
+
+  create_table "sections", force: :cascade do |t|
+    t.string "name", null: false
+    t.bigint "project_id", null: false
+    t.integer "position"
+    t.boolean "archived", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["project_id"], name: "index_sections_on_project_id"
   end
 
   create_table "taggings", force: :cascade do |t|
@@ -367,7 +416,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_23_213151) do
     t.string "time_format", default: "12-hour"
     t.boolean "email_reminders", default: false
     t.boolean "push_notifications", default: false
-    t.string "theme", default: "light"
+    t.string "theme", default: "cream"
     t.string "default_view", default: "category"
     t.string "root_location", default: "dashboard"
     t.datetime "last_cleared_at"
@@ -381,6 +430,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_23_213151) do
     t.string "default_lists_grouping", default: "type"
     t.string "default_documents_grouping", default: "type"
     t.jsonb "dashboard_layout", default: [{"block"=>"calendar", "column"=>"left", "visible"=>true, "position"=>0}, {"block"=>"quick_links", "column"=>"left", "visible"=>true, "position"=>1}, {"block"=>"habits", "column"=>"right", "visible"=>true, "position"=>0}, {"block"=>"tasks", "column"=>"right", "visible"=>true, "position"=>1}]
+    t.string "first_name"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
@@ -412,6 +462,12 @@ ActiveRecord::Schema[7.2].define(version: 2026_02_23_213151) do
   add_foreign_key "prep_questions", "users"
   add_foreign_key "prep_responses", "prep_questions"
   add_foreign_key "prep_responses", "users"
+  add_foreign_key "project_tasks", "project_tasks", column: "parent_id"
+  add_foreign_key "project_tasks", "projects"
+  add_foreign_key "project_tasks", "sections"
+  add_foreign_key "project_tasks", "users"
+  add_foreign_key "projects", "users"
+  add_foreign_key "sections", "projects"
   add_foreign_key "taggings", "tags"
   add_foreign_key "tags", "users"
   add_foreign_key "tasks", "categories"

@@ -8,20 +8,12 @@ import useGoalsStore from '../../stores/goalsStore';
 import useDocumentsStore from '../../stores/documentsStore';
 import useListsStore from '../../stores/listsStore';
 
-// Section with fieldset-legend style label on border
 const Section = ({ title, children, isLast = false }) => (
-  <div className={!isLast ? 'mb-6' : ''}>
-    <fieldset
-      className="rounded-2xl px-6 pb-6 pt-5"
-      style={{ border: '1px solid rgba(142, 142, 147, 0.3)' }}
-    >
-      <legend className="px-3 mx-auto">
-        <span className="uppercase tracking-wider" style={{ fontSize: '1.15rem', color: '#A1A1A6', fontWeight: 500, fontFamily: "'Big Shoulders Inline Display', sans-serif", letterSpacing: '0.1em' }}>
-          {title}
-        </span>
-      </legend>
-      {children}
-    </fieldset>
+  <div className={!isLast ? 'mb-5' : ''}>
+    <div className="v2-card" style={{ padding: 0 }}>
+      <div style={{ padding: '10px 18px 6px' }}><span className="v2-section-label">{title}</span></div>
+      <div style={{ padding: '0 18px 16px' }}>{children}</div>
+    </div>
   </div>
 );
 
@@ -353,11 +345,11 @@ const GoalFormModal = ({ allTags, categories }) => {
   const StatusIndicator = () => {
     if (!saveStatus) return null;
     return (
-      <div className="flex items-center gap-2 text-sm" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <div className="flex items-center gap-2 text-sm" style={{ fontFamily: 'var(--font-body)' }}>
         {saveStatus === 'saving' && (
           <>
-            <i className="fa-solid fa-spinner fa-spin" style={{ color: '#8E8E93' }}></i>
-            <span style={{ color: '#8E8E93' }}>Saving...</span>
+            <i className="fa-solid fa-spinner fa-spin" style={{ color: 'var(--ink-tertiary)' }}></i>
+            <span style={{ color: 'var(--ink-tertiary)' }}>Saving...</span>
           </>
         )}
         {saveStatus === 'saved' && (
@@ -368,8 +360,8 @@ const GoalFormModal = ({ allTags, categories }) => {
         )}
         {saveStatus === 'error' && (
           <>
-            <i className="fa-solid fa-exclamation-circle" style={{ color: '#DC2626' }}></i>
-            <span style={{ color: '#DC2626' }}>Error saving</span>
+            <i className="fa-solid fa-exclamation-circle" style={{ color: 'var(--overdue)' }}></i>
+            <span style={{ color: 'var(--overdue)' }}>Error saving</span>
           </>
         )}
       </div>
@@ -387,9 +379,9 @@ const GoalFormModal = ({ allTags, categories }) => {
         title="Delete goal"
       >
         {deleteMutation.isPending ? (
-          <i className="fa-solid fa-spinner fa-spin text-sm" style={{ color: '#8E8E93' }}></i>
+          <i className="fa-solid fa-spinner fa-spin text-sm" style={{ color: 'var(--ink-tertiary)' }}></i>
         ) : (
-          <i className="fa-solid fa-trash text-sm" style={{ color: '#8E8E93' }}></i>
+          <i className="fa-solid fa-trash text-sm" style={{ color: 'var(--ink-tertiary)' }}></i>
         )}
       </button>
       <StatusIndicator />
@@ -402,7 +394,7 @@ const GoalFormModal = ({ allTags, categories }) => {
       <button
         type="button"
         onClick={closeFormModal}
-        className="btn-liquid-outline-light"
+        className="v2-btn v2-btn-secondary"
         disabled={createMutation.isPending}
       >
         Cancel
@@ -410,7 +402,7 @@ const GoalFormModal = ({ allTags, categories }) => {
       <button
         type="submit"
         form="goal-form"
-        className="btn-liquid"
+        className="v2-btn v2-btn-primary"
         disabled={createMutation.isPending}
       >
         {createMutation.isPending ? 'Creating...' : 'Create Goal'}
@@ -440,16 +432,16 @@ const GoalFormModal = ({ allTags, categories }) => {
             onChange={(e) => handleFieldChange('name', e.target.value)}
             required={mode === 'new'}
             placeholder="Goal name..."
-            className="form-input-hero"
+            style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--ink)', fontFamily: 'var(--font-body)', fontSize: '1.1rem', fontWeight: 500, outline: 'none' }} className=""
           />
         </div>
 
         {/* Goal Type Toggle */}
         <div className="mb-4">
-          <label className="form-label">
+          <label style={{ display: 'block', marginBottom: 6, fontFamily: 'var(--font-body)', fontSize: '0.733rem', fontWeight: 500, color: 'var(--ink-tertiary)', letterSpacing: '0.02em' }} className="">
             Goal Type
           </label>
-          <div className="button-bar">
+          <div className="v2-seg-control flex-wrap">
             {[
               { value: 'counted', label: 'Counted', icon: 'fa-hashtag' },
               { value: 'named_steps', label: 'Named Steps', icon: 'fa-list-ol' },
@@ -460,11 +452,11 @@ const GoalFormModal = ({ allTags, categories }) => {
                   key={value}
                   type="button"
                   onClick={() => handleFieldChange('goal_type', value)}
-                  className={`flex items-center gap-2 px-4 py-2.5 ${isActive ? 'liquid-surface-subtle' : ''}`}
-                  style={isActive ? { '--surface-color': '#2C2C2E' } : {}}
+                  className={`flex items-center gap-2 px-4 py-2.5 ${isActive ? 'active' : ''} v2-seg-btn`}
+                  style={{}}
                 >
-                  <i className={`fa-solid ${icon} text-sm`} style={{ color: isActive ? 'white' : '#8E8E93' }}></i>
-                  <span className="bar-item-text" style={{ color: isActive ? 'white' : '#1D1D1F' }}>
+                  <i className={`fa-solid ${icon} text-sm`} style={{ color: isActive ? 'white' : 'var(--ink-tertiary)' }}></i>
+                  <span className="" style={{ color: isActive ? 'white' : 'var(--ink)' }}>
                     {label}
                   </span>
                 </button>
@@ -475,22 +467,21 @@ const GoalFormModal = ({ allTags, categories }) => {
 
         {/* Category */}
         <div className="mb-4">
-          <label className="form-label">
+          <label style={{ display: 'block', marginBottom: 6, fontFamily: 'var(--font-body)', fontSize: '0.733rem', fontWeight: 500, color: 'var(--ink-tertiary)', letterSpacing: '0.02em' }} className="">
             Category
           </label>
-          <div className="button-bar flex-wrap">
+          <div className="v2-seg-control flex-wrap">
             {/* None option */}
             <button
               type="button"
               onClick={() => handleFieldChange('category_id', '')}
-              className={`flex items-center gap-2 px-4 py-2.5 ${formData.category_id === '' ? 'liquid-surface-subtle' : ''}`}
-              style={formData.category_id === '' ? { '--surface-color': '#1D1D1F' } : {}}
+              className={`flex items-center gap-2 px-4 py-2.5 ${formData.category_id === '' ? 'active' : ''} v2-seg-btn`}
             >
               <i
                 className="fa-solid fa-folder text-sm"
-                style={{ color: formData.category_id === '' ? 'white' : '#8E8E93' }}
+                style={{ color: formData.category_id === '' ? 'white' : 'var(--ink-tertiary)' }}
               ></i>
-              <span className="bar-item-text" style={{ color: formData.category_id === '' ? 'white' : '#1D1D1F' }}>
+              <span className="" style={{ color: formData.category_id === '' ? 'white' : 'var(--ink)' }}>
                 None
               </span>
             </button>
@@ -501,14 +492,14 @@ const GoalFormModal = ({ allTags, categories }) => {
                   key={category.id}
                   type="button"
                   onClick={() => handleFieldChange('category_id', category.id)}
-                  className={`flex items-center gap-2 px-4 py-2.5 ${isActive ? 'liquid-surface-subtle' : ''}`}
-                  style={isActive ? { '--surface-color': category.color } : {}}
+                  className={`flex items-center gap-2 px-4 py-2.5 ${isActive ? 'active' : ''} v2-seg-btn`}
+                  style={{}}
                 >
                   <i
                     className={`fa-solid ${category.icon} text-sm`}
                     style={{ color: isActive ? 'white' : category.color }}
                   ></i>
-                  <span className="bar-item-text" style={{ color: isActive ? 'white' : '#1D1D1F' }}>
+                  <span className="" style={{ color: isActive ? 'white' : 'var(--ink)' }}>
                     {category.name}
                   </span>
                 </button>
@@ -519,7 +510,7 @@ const GoalFormModal = ({ allTags, categories }) => {
 
         {/* Description */}
         <div>
-          <label className="form-label">
+          <label style={{ display: 'block', marginBottom: 6, fontFamily: 'var(--font-body)', fontSize: '0.733rem', fontWeight: 500, color: 'var(--ink-tertiary)', letterSpacing: '0.02em' }} className="">
             Description
           </label>
           <textarea
@@ -528,7 +519,7 @@ const GoalFormModal = ({ allTags, categories }) => {
             onChange={(e) => handleFieldChange('description', e.target.value)}
             placeholder="Describe your goal..."
             rows={3}
-            className="form-input resize-none"
+            style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--ink)', fontFamily: 'var(--font-body)', fontSize: '0.9rem', outline: 'none' }} className=" resize-none"
           />
         </div>
       </Section>
@@ -538,7 +529,7 @@ const GoalFormModal = ({ allTags, categories }) => {
         {formData.goal_type === 'counted' ? (
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="form-label">
+              <label style={{ display: 'block', marginBottom: 6, fontFamily: 'var(--font-body)', fontSize: '0.733rem', fontWeight: 500, color: 'var(--ink-tertiary)', letterSpacing: '0.02em' }} className="">
                 Target Count *
               </label>
               <input
@@ -546,11 +537,11 @@ const GoalFormModal = ({ allTags, categories }) => {
                 min="1"
                 value={formData.target_count}
                 onChange={(e) => handleFieldChange('target_count', parseInt(e.target.value) || 1)}
-                className="form-input"
+                style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--ink)', fontFamily: 'var(--font-body)', fontSize: '0.9rem', outline: 'none' }} className=""
               />
             </div>
             <div>
-              <label className="form-label">
+              <label style={{ display: 'block', marginBottom: 6, fontFamily: 'var(--font-body)', fontSize: '0.733rem', fontWeight: 500, color: 'var(--ink-tertiary)', letterSpacing: '0.02em' }} className="">
                 Unit Name
               </label>
               <input
@@ -558,7 +549,7 @@ const GoalFormModal = ({ allTags, categories }) => {
                 value={formData.unit_name}
                 onChange={(e) => handleFieldChange('unit_name', e.target.value)}
                 placeholder="e.g., miles, reps, books..."
-                className="form-input"
+                style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--ink)', fontFamily: 'var(--font-body)', fontSize: '0.9rem', outline: 'none' }} className=""
               />
             </div>
           </div>
@@ -566,21 +557,21 @@ const GoalFormModal = ({ allTags, categories }) => {
           <div>
             {mode === 'edit' && goalId ? (
               <div>
-                <label className="form-label">
+                <label style={{ display: 'block', marginBottom: 6, fontFamily: 'var(--font-body)', fontSize: '0.733rem', fontWeight: 500, color: 'var(--ink-tertiary)', letterSpacing: '0.02em' }} className="">
                   Steps
                 </label>
                 <ChecklistSection
                   parentType="goal"
                   parentId={goalId}
                   items={goal?.checklist_items || []}
-                  color={categories?.find(c => c.id === formData.category_id)?.color || '#1D1D1F'}
+                  color={categories?.find(c => c.id === formData.category_id)?.color || 'var(--ink)'}
                   editable={true}
                 />
               </div>
             ) : (
               <div className="text-center py-4">
-                <i className="fa-solid fa-info-circle text-lg mb-2" style={{ color: '#8E8E93' }}></i>
-                <p className="text-sm" style={{ color: '#8E8E93', fontFamily: "'Inter', sans-serif" }}>
+                <i className="fa-solid fa-info-circle text-lg mb-2" style={{ color: 'var(--ink-tertiary)' }}></i>
+                <p className="text-sm" style={{ color: 'var(--ink-tertiary)', fontFamily: 'var(--font-body)' }}>
                   Steps can be added after creating the goal.
                 </p>
               </div>
@@ -593,21 +584,20 @@ const GoalFormModal = ({ allTags, categories }) => {
       <Section title="Priority">
         {/* Time Block */}
         <div className="mb-4">
-          <label className="form-label">
+          <label style={{ display: 'block', marginBottom: 6, fontFamily: 'var(--font-body)', fontSize: '0.733rem', fontWeight: 500, color: 'var(--ink-tertiary)', letterSpacing: '0.02em' }} className="">
             Time Block
           </label>
-          <div className="button-bar flex-wrap">
+          <div className="v2-seg-control flex-wrap">
             <button
               type="button"
               onClick={() => handleFieldChange('time_block_id', '')}
-              className={`flex items-center gap-2 px-4 py-2.5 ${formData.time_block_id === '' ? 'liquid-surface-subtle' : ''}`}
-              style={formData.time_block_id === '' ? { '--surface-color': '#1D1D1F' } : {}}
+              className={`flex items-center gap-2 px-4 py-2.5 ${formData.time_block_id === '' ? 'active' : ''} v2-seg-btn`}
             >
               <i
                 className="fa-solid fa-clock text-sm"
-                style={{ color: formData.time_block_id === '' ? 'white' : '#8E8E93' }}
+                style={{ color: formData.time_block_id === '' ? 'white' : 'var(--ink-tertiary)' }}
               ></i>
-              <span className="bar-item-text" style={{ color: formData.time_block_id === '' ? 'white' : '#1D1D1F' }}>
+              <span className="" style={{ color: formData.time_block_id === '' ? 'white' : 'var(--ink)' }}>
                 Anytime
               </span>
             </button>
@@ -618,14 +608,14 @@ const GoalFormModal = ({ allTags, categories }) => {
                   key={block.id}
                   type="button"
                   onClick={() => handleFieldChange('time_block_id', block.id)}
-                  className={`flex items-center gap-2 px-4 py-2.5 ${isActive ? 'liquid-surface-subtle' : ''}`}
-                  style={isActive ? { '--surface-color': block.color } : {}}
+                  className={`flex items-center gap-2 px-4 py-2.5 ${isActive ? 'active' : ''} v2-seg-btn`}
+                  style={{}}
                 >
                   <i
                     className={`${block.icon} text-sm`}
                     style={{ color: isActive ? 'white' : block.color }}
                   ></i>
-                  <span className="bar-item-text" style={{ color: isActive ? 'white' : '#1D1D1F' }}>
+                  <span className="" style={{ color: isActive ? 'white' : 'var(--ink)' }}>
                     {block.name}
                   </span>
                 </button>
@@ -636,10 +626,10 @@ const GoalFormModal = ({ allTags, categories }) => {
 
         {/* Importance Level */}
         <div className="mb-4">
-          <label className="form-label">
+          <label style={{ display: 'block', marginBottom: 6, fontFamily: 'var(--font-body)', fontSize: '0.733rem', fontWeight: 500, color: 'var(--ink-tertiary)', letterSpacing: '0.02em' }} className="">
             Importance Level
           </label>
-          <div className="button-bar flex-wrap">
+          <div className="v2-seg-control flex-wrap">
             {importanceLevels.map((level) => {
               const isActive = formData.importance_level_id === level.id;
               return (
@@ -647,14 +637,14 @@ const GoalFormModal = ({ allTags, categories }) => {
                   key={level.id}
                   type="button"
                   onClick={() => handleFieldChange('importance_level_id', level.id)}
-                  className={`flex items-center gap-2 px-4 py-2.5 ${isActive ? 'liquid-surface-subtle' : ''}`}
-                  style={isActive ? { '--surface-color': level.color } : {}}
+                  className={`flex items-center gap-2 px-4 py-2.5 ${isActive ? 'active' : ''} v2-seg-btn`}
+                  style={{}}
                 >
                   <i
                     className={`${level.icon} text-sm`}
                     style={{ color: isActive ? 'white' : level.color }}
                   ></i>
-                  <span className="bar-item-text" style={{ color: isActive ? 'white' : '#1D1D1F' }}>
+                  <span className="" style={{ color: isActive ? 'white' : 'var(--ink)' }}>
                     {level.name}
                   </span>
                 </button>
@@ -665,7 +655,7 @@ const GoalFormModal = ({ allTags, categories }) => {
 
         {/* Tags */}
         <div>
-          <label className="form-label">
+          <label style={{ display: 'block', marginBottom: 6, fontFamily: 'var(--font-body)', fontSize: '0.733rem', fontWeight: 500, color: 'var(--ink-tertiary)', letterSpacing: '0.02em' }} className="">
             Tags
           </label>
           <div className="relative">
@@ -679,12 +669,12 @@ const GoalFormModal = ({ allTags, categories }) => {
               onKeyDown={handleTagInputKeyDown}
               onFocus={() => tagInput.length > 0 && setShowTagSuggestions(true)}
               onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
-              className="form-input"
+              style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--ink)', fontFamily: 'var(--font-body)', fontSize: '0.9rem', outline: 'none' }} className=""
               placeholder="Type to add tags..."
             />
 
             {showTagSuggestions && (filteredSuggestions.length > 0 || tagInput.trim()) && (
-              <div className="form-dropdown">
+              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10, marginTop: 4, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, boxShadow: '0 4px 24px rgba(0,0,0,0.10)', overflow: 'hidden' }} className="">
                 {filteredSuggestions.map((tag) => (
                   <button
                     key={tag.id}
@@ -713,10 +703,9 @@ const GoalFormModal = ({ allTags, categories }) => {
               {selectedTags.map((tag) => (
                 <span
                   key={tag}
-                  className="text-xs px-3 py-1.5 rounded-[10px] flex items-center gap-2 liquid-surface-subtle"
+                  className="text-xs px-3 py-1.5 rounded-[10px] flex items-center gap-2 v2-badge v2-badge-neutral"
                   style={{
-                    '--surface-color': '#2C2C2E',
-                    fontFamily: "'Inter', sans-serif",
+                    fontFamily: 'var(--font-body)',
                     fontWeight: 600,
                   }}
                 >
@@ -736,8 +725,8 @@ const GoalFormModal = ({ allTags, categories }) => {
         <div className="grid grid-cols-2 gap-4">
           {/* Documents */}
           <div>
-            <label className="form-label">
-              <i className="fa-solid fa-file-lines mr-2 text-xs" style={{ color: '#8E8E93' }}></i>
+            <label style={{ display: 'block', marginBottom: 6, fontFamily: 'var(--font-body)', fontSize: '0.733rem', fontWeight: 500, color: 'var(--ink-tertiary)', letterSpacing: '0.02em' }} className="">
+              <i className="fa-solid fa-file-lines mr-2 text-xs" style={{ color: 'var(--ink-tertiary)' }}></i>
               Documents
             </label>
             <div>
@@ -745,7 +734,7 @@ const GoalFormModal = ({ allTags, categories }) => {
                 type="text"
                 value={documentSearchQuery}
                 onChange={(e) => setDocumentSearchQuery(e.target.value)}
-                className="form-input mb-2 text-sm"
+                style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--ink)', fontFamily: 'var(--font-body)', fontSize: '0.9rem', outline: 'none' }} className=" mb-2 text-sm"
                 placeholder="Search..."
               />
               {documents.length > 0 ? (
@@ -769,12 +758,12 @@ const GoalFormModal = ({ allTags, categories }) => {
                           className="w-4 h-4 rounded cursor-pointer"
                           style={{ accentColor: '#2C2C2E' }}
                         />
-                        <span className="text-sm flex-1 truncate" style={{ color: '#1D1D1F' }}>{doc.title}</span>
+                        <span className="text-sm flex-1 truncate" style={{ color: 'var(--ink)' }}>{doc.title}</span>
                       </label>
                     ))}
                 </div>
               ) : (
-                <p className="text-xs text-center py-2" style={{ color: '#8E8E93' }}>No documents</p>
+                <p className="text-xs text-center py-2" style={{ color: 'var(--ink-tertiary)' }}>No documents</p>
               )}
               <button
                 type="button"
@@ -789,8 +778,8 @@ const GoalFormModal = ({ allTags, categories }) => {
 
           {/* Lists */}
           <div>
-            <label className="form-label">
-              <i className="fa-solid fa-list-check mr-2 text-xs" style={{ color: '#8E8E93' }}></i>
+            <label style={{ display: 'block', marginBottom: 6, fontFamily: 'var(--font-body)', fontSize: '0.733rem', fontWeight: 500, color: 'var(--ink-tertiary)', letterSpacing: '0.02em' }} className="">
+              <i className="fa-solid fa-list-check mr-2 text-xs" style={{ color: 'var(--ink-tertiary)' }}></i>
               Lists
             </label>
             <div>
@@ -798,7 +787,7 @@ const GoalFormModal = ({ allTags, categories }) => {
                 type="text"
                 value={listSearchQuery}
                 onChange={(e) => setListSearchQuery(e.target.value)}
-                className="form-input mb-2 text-sm"
+                style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--ink)', fontFamily: 'var(--font-body)', fontSize: '0.9rem', outline: 'none' }} className=" mb-2 text-sm"
                 placeholder="Search..."
               />
               {availableLists.length > 0 ? (
@@ -834,17 +823,17 @@ const GoalFormModal = ({ allTags, categories }) => {
                             openListShowModal(list.id);
                           }}
                           className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0"
-                          style={{ backgroundColor: list.category?.color || '#1D1D1F' }}
+                          style={{ backgroundColor: list.category?.color || 'var(--ink)' }}
                           title="Preview list"
                         >
                           <i className={`fa-solid ${list.category?.icon || 'fa-list-check'} text-white`} style={{ fontSize: '0.6rem' }}></i>
                         </button>
-                        <span className="text-sm flex-1 truncate" style={{ color: '#1D1D1F' }}>{list.name}</span>
+                        <span className="text-sm flex-1 truncate" style={{ color: 'var(--ink)' }}>{list.name}</span>
                       </label>
                     ))}
                 </div>
               ) : (
-                <p className="text-xs text-center py-2" style={{ color: '#8E8E93' }}>No lists</p>
+                <p className="text-xs text-center py-2" style={{ color: 'var(--ink-tertiary)' }}>No lists</p>
               )}
               <button
                 type="button"

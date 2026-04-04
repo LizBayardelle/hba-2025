@@ -1,17 +1,19 @@
-<div class="rounded-xl p-4 shadow-deep" style="background: #FFFFFF;">
-  <h2 class="text-2xl font-display mb-3" style="color: #1D1D1F;">Quick Links</h2>
-  <div class="space-y-1">
-    <%= link_to analytics_path, class: "flex items-center gap-3 p-2 rounded-lg transition hover:bg-gray-50" do %>
-      <i class="fa-solid fa-chart-column text-lg" style="color: #2C2C2E;"></i>
-      <span class="text-sm" style="color: #1D1D1F; font-weight: 600; font-family: 'Inter', sans-serif;">View Analytics</span>
+<div class="v2-card" style="padding: 0;">
+  <div class="v2-section-header" style="padding: 14px 18px 10px;">
+    <h2 class="v2-section-title">Quick Links</h2>
+  </div>
+  <div>
+    <%= link_to analytics_path, class: "flex items-center gap-3 transition v2-sidebar-link", style: "padding: 8px 18px; border-bottom: 1px solid var(--border);" do %>
+      <i class="fa-solid fa-chart-column"></i>
+      <span>View Analytics</span>
     <% end %>
-    <%= link_to root_path, class: "flex items-center gap-3 p-2 rounded-lg transition hover:bg-gray-50" do %>
-      <i class="fa-solid fa-folder text-lg" style="color: #2C2C2E;"></i>
-      <span class="text-sm" style="color: #1D1D1F; font-weight: 600; font-family: 'Inter', sans-serif;">Browse Categories</span>
+    <%= link_to root_path, class: "flex items-center gap-3 transition v2-sidebar-link", style: "padding: 8px 18px; border-bottom: 1px solid var(--border);" do %>
+      <i class="fa-solid fa-folder"></i>
+      <span>Browse Categories</span>
     <% end %>
-    <%= link_to tasks_path, class: "flex items-center gap-3 p-2 rounded-lg transition hover:bg-gray-50" do %>
-      <i class="fa-solid fa-tasks text-lg" style="color: #2C2C2E;"></i>
-      <span class="text-sm" style="color: #1D1D1F; font-weight: 600; font-family: 'Inter', sans-serif;">All Tasks</span>
+    <%= link_to tasks_path, class: "flex items-center gap-3 transition v2-sidebar-link", style: "padding: 8px 18px;" do %>
+      <i class="fa-solid fa-check"></i>
+      <span>All Tasks</span>
     <% end %>
   </div>
 </div>

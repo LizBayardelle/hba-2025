@@ -1,0 +1,14 @@
+<% content_for :head do %>
+  <%= javascript_include_tag "project_app", type: "module" %>
+<% end %>
+
+<div class="flex h-screen relative" style="background-color: var(--bg);">
+  <%= render 'shared/sidebar' %>
+
+  <!-- Main Content Area - React will mount here -->
+  <main class="flex-1 overflow-y-auto md:ml-[224px]">
+    <div id="project-react-root" style="background-color: var(--bg); min-height: 100%;"
+         data-project-id="<%= @project.id %>">
+    </div>
+  </main>
+</div>

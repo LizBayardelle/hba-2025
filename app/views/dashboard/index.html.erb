@@ -1,186 +1,50 @@
-<div class="flex h-screen relative" style="background-color: #adadb3;"
+<div class="flex h-screen relative" style="background-color: var(--bg);"
      data-default-habits-grouping="<%= current_user.default_habits_grouping %>"
      data-default-tasks-grouping="<%= current_user.default_tasks_grouping %>">
-  <style>
-    .grain-bg {
-      background-blend-mode: overlay;
-      background-repeat: repeat;
-      background-size: 200px 200px;
-    }
-  </style>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const canvas = document.createElement('canvas');
-      canvas.width = 200;
-      canvas.height = 200;
-      const ctx = canvas.getContext('2d');
-      const imageData = ctx.createImageData(200, 200);
-      for (let i = 0; i < imageData.data.length; i += 4) {
-        const v = Math.random() * 255;
-        imageData.data[i] = v;
-        imageData.data[i+1] = v;
-        imageData.data[i+2] = v;
-        imageData.data[i+3] = 40;
-      }
-      ctx.putImageData(imageData, 0, 0);
-      const el = document.querySelector('.grain-bg');
-      if (el) el.style.backgroundImage = 'url(' + canvas.toDataURL() + ')';
-    });
-  </script>
-
   <%= render 'shared/sidebar' %>
 
-  <!-- Mobile overlay -->
-  <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 md:hidden hidden"></div>
-
-  <!-- Menu flag button -->
-  <button id="menu-button" class="fixed left-0 z-20 md:hidden rounded-r-lg shadow-lg flex items-center justify-center py-1.5 px-3 cursor-move"
-    style="top: 200px; background: linear-gradient(135deg, #424245, #2C2C2E); writing-mode: vertical-rl;">
-    <span class="text-white font-bold text-sm tracking-wider">MENU</span>
-  </button>
-
-  <script>
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebar-overlay');
-    const menuButton = document.getElementById('menu-button');
-    const closeButton = document.getElementById('sidebar-close');
-
-    function openSidebar() {
-      sidebar.classList.remove('-translate-x-full');
-      sidebar.classList.add('translate-x-0');
-      overlay.classList.remove('hidden');
-      menuButton.classList.add('hidden');
-    }
-
-    function closeSidebar() {
-      sidebar.classList.add('-translate-x-full');
-      sidebar.classList.remove('translate-x-0');
-      overlay.classList.add('hidden');
-      menuButton.classList.remove('hidden');
-    }
-
-    // Draggable menu button
-    let isDragging = false;
-    let startY = 0;
-    let startTop = 200;
-    let dragStartTime = 0;
-
-    menuButton.addEventListener('mousedown', (e) => {
-      isDragging = true;
-      dragStartTime = Date.now();
-      startY = e.clientY;
-      startTop = parseInt(menuButton.style.top) || 200;
-      e.preventDefault();
-    });
-
-    menuButton.addEventListener('touchstart', (e) => {
-      isDragging = true;
-      dragStartTime = Date.now();
-      startY = e.touches[0].clientY;
-      startTop = parseInt(menuButton.style.top) || 200;
-    });
-
-    document.addEventListener('mousemove', (e) => {
-      if (isDragging) {
-        const deltaY = e.clientY - startY;
-        const newTop = Math.max(0, Math.min(window.innerHeight - menuButton.offsetHeight, startTop + deltaY));
-        menuButton.style.top = newTop + 'px';
-        localStorage.setItem('menuButtonTop', newTop);
-      }
-    });
-
-    document.addEventListener('touchmove', (e) => {
-      if (isDragging) {
-        const deltaY = e.touches[0].clientY - startY;
-        const newTop = Math.max(0, Math.min(window.innerHeight - menuButton.offsetHeight, startTop + deltaY));
-        menuButton.style.top = newTop + 'px';
-        localStorage.setItem('menuButtonTop', newTop);
-      }
-    });
-
-    document.addEventListener('mouseup', (e) => {
-      if (isDragging) {
-        const dragDuration = Date.now() - dragStartTime;
-        const dragDistance = Math.abs(e.clientY - startY);
-
-        if (dragDuration < 200 && dragDistance < 5) {
-          openSidebar();
-        }
-        isDragging = false;
-      }
-    });
-
-    document.addEventListener('touchend', (e) => {
-      if (isDragging) {
-        const dragDuration = Date.now() - dragStartTime;
-        if (dragDuration < 200) {
-          openSidebar();
-        }
-        isDragging = false;
-      }
-    });
-
-    closeButton.addEventListener('click', closeSidebar);
-    overlay.addEventListener('click', closeSidebar);
-
-    const savedTop = localStorage.getItem('menuButtonTop');
-    if (savedTop) {
-      menuButton.style.top = savedTop + 'px';
-    }
-  </script>
-
   <!-- Main Content Area -->
-  <main class="flex-1 overflow-y-auto">
-    <!-- White Header Section with Shadow -->
-    <div class="sticky top-0 z-10" style="background: #FFFFFF; box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);">
-      <div class="p-8">
-        <div class="flex items-start justify-between mb-6">
-          <div class="flex-1">
-            <h1 class="text-5xl font-display" style="color: #1D1D1F;">
-              Daily Briefing
-            </h1>
-            <p class="text-sm mt-1" style="color: #8E8E93; font-weight: 400; font-family: 'Inter', sans-serif;"><%= @today.strftime('%A, %B %d, %Y') %></p>
+  <main class="flex-1 overflow-y-auto md:ml-[224px]">
+    <!-- v2 Header -->
+    <div class="sticky top-0 z-10" style="background: var(--bg);">
+      <div class="pl-14 pr-4 pt-6 pb-4 md:pl-8 md:pr-8 md:pt-8 md:pb-5">
+        <div class="flex items-baseline justify-between">
+          <div>
+            <h1 class="v2-h1"><%= @today.strftime('%A, %B %-d') %></h1>
+            <p class="v2-small" style="margin-top: 4px; color: var(--ink-tertiary);">
+              <span id="today-completion-count"><%= @today_habits.any? ? "#{@today_completions.count { |_, v| v >= 1 }} of #{@today_habits.size} habits done" : "No habits today" %></span>
+            </p>
           </div>
 
-          <!-- Date Navigation -->
-          <div class="flex flex-col items-center gap-1">
-            <div class="flex items-center gap-2">
-              <%= link_to dashboard_path(date: (@today - 1.day).strftime('%Y-%m-%d')),
-                  class: "w-10 h-10 rounded-lg flex items-center justify-center transition",
-                  style: "background: linear-gradient(135deg, rgba(229, 229, 231, 0.3) 0%, rgba(199, 199, 204, 0.4) 50%, rgba(142, 142, 147, 0.3) 100%); border: 0.5px solid rgba(199, 199, 204, 0.3); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2);" do %>
-                <i class="fa-solid fa-chevron-left text-sm" style="color: #2C2C2E;"></i>
-              <% end %>
+          <div class="flex items-center gap-1">
+            <%= link_to dashboard_path(date: (@today - 1.day).strftime('%Y-%m-%d')), class: "v2-btn-icon", title: "Previous day" do %>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            <% end %>
 
-              <div class="px-2 text-sm min-w-[60px] text-center" style="color: #1D1D1F; font-weight: 600; font-family: 'Inter', sans-serif;">
-                <%= @today == Time.zone.today ? 'Today' : @today.strftime('%m/%d') %>
+            <% if @today == Time.zone.today %>
+              <span class="v2-caption" style="padding: 4px 10px;">Today</span>
+            <% else %>
+              <%= link_to "Today", dashboard_path, class: "v2-btn-sm v2-btn-ghost" %>
+            <% end %>
+
+            <% if @today < Time.zone.today %>
+              <%= link_to dashboard_path(date: (@today + 1.day).strftime('%Y-%m-%d')), class: "v2-btn-icon", title: "Next day" do %>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              <% end %>
+            <% else %>
+              <div class="v2-btn-icon" style="opacity: 0.3; pointer-events: none;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
               </div>
-
-              <% if @today < Time.zone.today %>
-                <%= link_to dashboard_path(date: (@today + 1.day).strftime('%Y-%m-%d')),
-                    class: "w-10 h-10 rounded-lg flex items-center justify-center transition",
-                    style: "background: linear-gradient(135deg, rgba(229, 229, 231, 0.3) 0%, rgba(199, 199, 204, 0.4) 50%, rgba(142, 142, 147, 0.3) 100%); border: 0.5px solid rgba(199, 199, 204, 0.3); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2);" do %>
-                  <i class="fa-solid fa-chevron-right text-sm" style="color: #2C2C2E;"></i>
-                <% end %>
-              <% else %>
-                <div class="w-10 h-10 rounded-lg flex items-center justify-center opacity-30 pointer-events-none" style="background: linear-gradient(135deg, rgba(229, 229, 231, 0.3) 0%, rgba(199, 199, 204, 0.4) 50%, rgba(142, 142, 147, 0.3) 100%); border: 0.5px solid rgba(199, 199, 204, 0.3);">
-                  <i class="fa-solid fa-chevron-right text-sm" style="color: #2C2C2E;"></i>
-                </div>
-              <% end %>
-            </div>
-
-            <% if @today != Time.zone.today %>
-              <%= link_to "BACK TO TODAY", dashboard_path,
-                  class: "text-xs mt-1 hover:opacity-70 transition uppercase tracking-wide",
-                  style: "color: #8E8E93; font-family: 'Inter', sans-serif; font-weight: 300;" %>
             <% end %>
           </div>
         </div>
       </div>
+      <!-- Soft fade -->
+      <div style="height: 12px; background: linear-gradient(to bottom, var(--bg), transparent); pointer-events: none;"></div>
     </div>
 
     <!-- Grey Background Content -->
-    <div class="p-8 pt-6 space-y-6 grain-bg" style="background-color: #adadb3;">
+    <div class="space-y-6 px-4 pb-16 md:px-8" style="background-color: var(--bg); max-width: 920px; padding-top: 8px;">
       <%
         # Get layout and sort by position
         layout = current_user.dashboard_layout.presence || User::DEFAULT_DASHBOARD_LAYOUT
@@ -388,30 +252,11 @@ function switchFocusView(view) {
   const categoryBtn = document.getElementById('focus-category-btn');
   const priorityBtn = document.getElementById('focus-priority-btn');
 
-  // Update button styles
-  timeBtn.style.background = '';
-  timeBtn.style.boxShadow = '';
-  timeBtn.style.color = '#8E8E93';
-  categoryBtn.style.background = '';
-  categoryBtn.style.boxShadow = '';
-  categoryBtn.style.color = '#8E8E93';
-  priorityBtn.style.background = '';
-  priorityBtn.style.boxShadow = '';
-  priorityBtn.style.color = '#8E8E93';
-
-  if (view === 'time') {
-    timeBtn.style.background = 'linear-gradient(135deg, #2C2C2E, #1D1D1F)';
-    timeBtn.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.2)';
-    timeBtn.style.color = 'white';
-  } else if (view === 'category') {
-    categoryBtn.style.background = 'linear-gradient(135deg, #2C2C2E, #1D1D1F)';
-    categoryBtn.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.2)';
-    categoryBtn.style.color = 'white';
-  } else {
-    priorityBtn.style.background = 'linear-gradient(135deg, #2C2C2E, #1D1D1F)';
-    priorityBtn.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.2)';
-    priorityBtn.style.color = 'white';
-  }
+  // Update button styles — v2 segmented control
+  [timeBtn, categoryBtn, priorityBtn].forEach(b => b.classList.remove('active'));
+  if (view === 'time') timeBtn.classList.add('active');
+  else if (view === 'category') categoryBtn.classList.add('active');
+  else priorityBtn.classList.add('active');
 
   // Get all habit items
   const habitItems = Array.from(container.querySelectorAll('.habit-item'));
@@ -550,30 +395,15 @@ function switchFocusView(view) {
     const groupDiv = document.createElement('div');
     groupDiv.className = isFirst ? 'mb-4' : 'mb-4 mt-4';
 
-    // Create full-width stripe header
+    // Create v2 group label
     const headerDiv = document.createElement('div');
-    if (useBarDefault) {
-      headerDiv.className = '-mx-6 px-6 py-2 mb-3 flex items-center gap-2 bar-default';
-    } else {
-      headerDiv.className = '-mx-6 px-6 py-2 mb-3 flex items-center gap-2 bar-colored';
-      headerDiv.style.setProperty('--bar-color', groupColor);
-    }
-
-    // Add icon
-    const icon = document.createElement('i');
-    icon.className = `fa-solid ${groupIconClass} text-white text-sm`;
-    headerDiv.appendChild(icon);
-
-    // Add title
-    const title = document.createElement('span');
-    title.className = 'text-lg text-white font-display';
-    title.style.fontWeight = '500';
-    title.textContent = groupTitle;
-    headerDiv.appendChild(title);
+    headerDiv.className = 'v2-section-label';
+    headerDiv.style.cssText = 'padding: 10px 24px 4px; border-top: 1px solid var(--border);';
+    if (isFirst) headerDiv.style.borderTop = 'none';
+    headerDiv.textContent = groupTitle;
 
     // Create habits container
     const habitsDiv = document.createElement('div');
-    habitsDiv.className = 'space-y-2';
 
     // Sort items: Daily → Scheduled → Optional
     const sortedItems = groups[groupName].sort((a, b) => {
@@ -599,25 +429,15 @@ function switchFocusView(view) {
       const isOptional = habitItem.dataset.priorityName === 'Optional';
       const isScheduled = habitItem.dataset.isScheduled === 'true';
 
-      // Apply background styling based on type
+      // Apply subtle background for optional/scheduled items
       if (isOptional) {
-        // Optional: grey background
-        habitItem.style.backgroundColor = 'rgba(142, 142, 147, 0.08)';
-        habitItem.style.borderRadius = '6px';
-        habitItem.style.padding = '4px 8px';
-        habitItem.style.margin = '0 -8px';
+        habitItem.style.backgroundColor = 'var(--hover-tint)';
       } else if (isScheduled) {
-        // Scheduled (non-daily): very subtle indigo tint (lighter than optional)
-        habitItem.style.backgroundColor = 'rgba(99, 102, 241, 0.03)';
-        habitItem.style.borderRadius = '6px';
-        habitItem.style.padding = '4px 8px';
-        habitItem.style.margin = '0 -8px';
+        habitItem.style.backgroundColor = 'var(--hover-tint)';
+        habitItem.style.opacity = '0.85';
       } else {
-        // Daily: no background
         habitItem.style.backgroundColor = '';
-        habitItem.style.borderRadius = '';
-        habitItem.style.padding = '';
-        habitItem.style.margin = '';
+        habitItem.style.opacity = '';
       }
       habitsDiv.appendChild(habitItem);
     });
@@ -694,8 +514,9 @@ async function toggleDashboardHabit(habitId, wasComplete) {
 
   // Save original state and show spinner
   const originalIconClass = icon.className;
-  const originalIconColor = icon.style.color;
-  icon.className = 'fa-solid fa-spinner fa-spin text-sm';
+  const originalIconStyle = icon.style.cssText;
+  icon.className = 'fa-solid fa-spinner fa-spin';
+  icon.style.cssText = 'font-size: 0.55rem; color: var(--ink-tertiary); opacity: 1;';
   button.disabled = true;
 
   try {
@@ -735,19 +556,26 @@ async function toggleDashboardHabit(habitId, wasComplete) {
     // Always update onclick first so uncheck works
     button.setAttribute('onclick', `toggleDashboardHabit(${habitId}, ${newIsComplete})`);
 
-    // Update UI
+    // Restore icon from spinner
+    icon.className = 'fa-solid fa-check';
+    icon.style.cssText = 'font-size: 0.55rem; color: var(--check-ink);';
+
+    // Update UI — v2 checkbox style
     if (newIsComplete) {
-      icon.className = 'fa-solid fa-circle-check text-sm';
-      icon.style.color = categoryColor;
-      nameDiv.classList.add('line-through', 'opacity-60');
-      nameDiv.style.color = lightColor;
-      // Celebrate completion
+      button.style.background = 'var(--ink)';
+      button.style.borderColor = 'var(--ink)';
+      icon.style.opacity = '1';
+      nameDiv.classList.add('line-through');
+      nameDiv.style.color = 'var(--ink-tertiary)';
+      nameDiv.style.textDecorationColor = 'var(--ink-faint)';
       if (statusChanged) playCompletionAnimation(button, categoryColor);
     } else {
-      icon.className = 'fa-regular fa-circle text-sm';
-      icon.style.color = lightColor;
-      nameDiv.classList.remove('line-through', 'opacity-60');
-      nameDiv.style.color = categoryColor;
+      button.style.background = 'transparent';
+      button.style.borderColor = 'var(--border-hover)';
+      icon.style.opacity = '0';
+      nameDiv.classList.remove('line-through');
+      nameDiv.style.color = 'var(--ink)';
+      nameDiv.style.textDecorationColor = '';
     }
 
     if (countDiv) countDiv.textContent = `${data.count} / ${targetCount}`;
@@ -762,7 +590,7 @@ async function toggleDashboardHabit(habitId, wasComplete) {
       if (newStreak > 0) {
         streakDisplay.style.display = '';
         streakCount.textContent = newStreak;
-        streakDisplay.style.color = newIsComplete ? categoryColor : '#8E8E93';
+        streakDisplay.style.color = 'var(--streak)';
 
         // Animate if streak changed
         if (newStreak !== oldStreak) {
@@ -776,6 +604,18 @@ async function toggleDashboardHabit(habitId, wasComplete) {
         }
       } else {
         streakDisplay.style.display = 'none';
+      }
+    }
+
+    // Update health display
+    const healthValue = habitRow.querySelector('.health-value');
+    if (healthValue) {
+      const oldHealth = healthValue.textContent;
+      const newHealth = data.health + '%';
+      if (oldHealth !== newHealth) {
+        healthValue.textContent = newHealth;
+        healthValue.style.animation = 'dashStreakPop 0.45s ease-out';
+        healthValue.addEventListener('animationend', () => { healthValue.style.animation = ''; }, { once: true });
       }
     }
 
@@ -797,7 +637,7 @@ async function toggleDashboardHabit(habitId, wasComplete) {
     console.error('Error toggling habit:', error);
     // Restore original icon on error
     icon.className = originalIconClass;
-    icon.style.color = originalIconColor;
+    icon.style.cssText = originalIconStyle;
   } finally {
     button.disabled = false;
   }
@@ -810,30 +650,11 @@ function switchTasksView(view) {
   const categoryBtn = document.getElementById('tasks-category-btn');
   const priorityBtn = document.getElementById('tasks-priority-btn');
 
-  // Update button styles
-  dateBtn.style.background = '';
-  dateBtn.style.boxShadow = '';
-  dateBtn.style.color = '#8E8E93';
-  categoryBtn.style.background = '';
-  categoryBtn.style.boxShadow = '';
-  categoryBtn.style.color = '#8E8E93';
-  priorityBtn.style.background = '';
-  priorityBtn.style.boxShadow = '';
-  priorityBtn.style.color = '#8E8E93';
-
-  if (view === 'date') {
-    dateBtn.style.background = 'linear-gradient(135deg, #2C2C2E, #1D1D1F)';
-    dateBtn.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.2)';
-    dateBtn.style.color = 'white';
-  } else if (view === 'category') {
-    categoryBtn.style.background = 'linear-gradient(135deg, #2C2C2E, #1D1D1F)';
-    categoryBtn.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.2)';
-    categoryBtn.style.color = 'white';
-  } else {
-    priorityBtn.style.background = 'linear-gradient(135deg, #2C2C2E, #1D1D1F)';
-    priorityBtn.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.2)';
-    priorityBtn.style.color = 'white';
-  }
+  // Update button styles — v2 segmented control
+  [dateBtn, categoryBtn, priorityBtn].forEach(b => b.classList.remove('active'));
+  if (view === 'date') dateBtn.classList.add('active');
+  else if (view === 'category') categoryBtn.classList.add('active');
+  else priorityBtn.classList.add('active');
 
   // Get all task items
   const taskItems = Array.from(container.querySelectorAll('.task-item'));
@@ -970,30 +791,15 @@ function switchTasksView(view) {
     const groupDiv = document.createElement('div');
     groupDiv.className = isFirst ? 'mb-4' : 'mb-4 mt-4';
 
-    // Create full-width stripe header
+    // Create v2 group label
     const headerDiv = document.createElement('div');
-    if (useBarDefault) {
-      headerDiv.className = '-mx-6 px-6 py-2 mb-3 flex items-center gap-2 bar-default';
-    } else {
-      headerDiv.className = '-mx-6 px-6 py-2 mb-3 flex items-center gap-2 bar-colored';
-      headerDiv.style.setProperty('--bar-color', groupColor);
-    }
-
-    // Add icon
-    const icon = document.createElement('i');
-    icon.className = `fa-solid ${groupIconClass} text-white text-sm`;
-    headerDiv.appendChild(icon);
-
-    // Add title
-    const title = document.createElement('span');
-    title.className = 'text-lg text-white font-display';
-    title.style.fontWeight = '500';
-    title.textContent = groupTitle;
-    headerDiv.appendChild(title);
+    headerDiv.className = 'v2-section-label';
+    headerDiv.style.cssText = 'padding: 10px 24px 4px; border-top: 1px solid var(--border);';
+    if (isFirst) headerDiv.style.borderTop = 'none';
+    headerDiv.textContent = groupTitle;
 
     // Create tasks container
     const tasksDiv = document.createElement('div');
-    tasksDiv.className = 'space-y-2';
 
     // Sort items: non-optional first, optional last
     const sortedItems = groups[groupName].sort((a, b) => {
@@ -1005,17 +811,11 @@ function switchTasksView(view) {
     });
 
     sortedItems.forEach(taskItem => {
-      // Add subtle grey background for optional items
+      // Subtle background for optional items
       if (taskItem.dataset.priorityName === 'Optional') {
-        taskItem.style.backgroundColor = 'rgba(142, 142, 147, 0.08)';
-        taskItem.style.borderRadius = '6px';
-        taskItem.style.padding = '4px 8px';
-        taskItem.style.margin = '0 -8px';
+        taskItem.style.backgroundColor = 'var(--hover-tint)';
       } else {
         taskItem.style.backgroundColor = '';
-        taskItem.style.borderRadius = '';
-        taskItem.style.padding = '';
-        taskItem.style.margin = '';
       }
       tasksDiv.appendChild(taskItem);
     });
@@ -1067,9 +867,11 @@ async function toggleTask(taskId, wasCompleted) {
   const dateGroup = taskItem.dataset.dateGroup;
   const color = dateGroup === 'overdue' ? '#F8796D' : (dateGroup === 'today' ? '#1D1D1F' : '#657b84');
 
-  // Save original icon state and show spinner
+  // Save original state and show spinner
   const originalIconClass = icon.className;
-  icon.className = 'fa-solid fa-spinner fa-spin text-xs';
+  const originalIconStyle = icon.style.cssText;
+  icon.className = 'fa-solid fa-spinner fa-spin';
+  icon.style.cssText = 'font-size: 0.55rem; color: var(--ink-tertiary); opacity: 1;';
   button.disabled = true;
 
   try {
@@ -1096,29 +898,38 @@ async function toggleTask(taskId, wasCompleted) {
       // Find name span
       const nameSpan = taskItem.querySelector('.flex-1');
 
-      // Update UI
+      // Restore icon from spinner
+      icon.className = 'fa-solid fa-check';
+      icon.style.cssText = 'font-size: 0.55rem; color: var(--check-ink);';
+
+      // Update UI — v2 checkbox style
       if (newCompleted) {
-        icon.className = 'fa-solid fa-circle-check text-xs';
-        icon.style.color = color;
-        nameSpan.classList.add('line-through', 'opacity-60');
-        // Celebrate completion
+        button.style.background = 'var(--ink)';
+        button.style.borderColor = 'var(--ink)';
+        icon.style.opacity = '1';
+        nameSpan.classList.add('line-through');
+        nameSpan.style.color = 'var(--ink-tertiary)';
+        nameSpan.style.textDecorationColor = 'var(--ink-faint)';
         playCompletionAnimation(button, color);
       } else {
-        icon.className = 'fa-regular fa-circle text-xs';
-        icon.style.color = color;
-        nameSpan.classList.remove('line-through', 'opacity-60');
+        button.style.background = 'transparent';
+        button.style.borderColor = 'var(--border-hover)';
+        icon.style.opacity = '0';
+        nameSpan.classList.remove('line-through');
+        nameSpan.style.color = 'var(--ink)';
+        nameSpan.style.textDecorationColor = '';
       }
 
       button.setAttribute('onclick', `toggleTask(${taskId}, ${newCompleted})`);
     } else {
       console.error('Error toggling task:', data.errors);
-      // Restore original icon on error
       icon.className = originalIconClass;
+      icon.style.cssText = originalIconStyle;
     }
   } catch (error) {
     console.error('Error toggling task:', error);
-    // Restore original icon on error
     icon.className = originalIconClass;
+    icon.style.cssText = originalIconStyle;
   } finally {
     button.disabled = false;
   }

@@ -2,7 +2,8 @@ class User < ApplicationRecord
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :validatable
+         :recoverable, :rememberable, :validatable,
+         :jwt_authenticatable, jwt_revocation_strategy: JwtDenylist
 
   DEFAULT_DASHBOARD_LAYOUT = [
     { 'block' => 'calendar', 'column' => 'left', 'position' => 0, 'visible' => true },
@@ -25,8 +26,14 @@ class User < ApplicationRecord
   has_many :notes, dependent: :destroy
   has_many :lists, dependent: :destroy
   has_many :list_attachments, dependent: :destroy
+  has_many :projects, dependent: :destroy
+  has_many :project_tasks, dependent: :destroy
   has_many :prep_questions, dependent: :destroy
   has_many :prep_responses, dependent: :destroy
+
+  THEMES = %w[cream white dark].freeze
+  validates :theme, inclusion: { in: THEMES }, allow_nil: true
+  validates :first_name, presence: true
 
   after_create :create_default_time_blocks
   after_create :create_default_importance_levels

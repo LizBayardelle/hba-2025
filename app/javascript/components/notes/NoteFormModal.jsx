@@ -5,20 +5,16 @@ import useNoteTakingMode from '../../hooks/useNoteTakingMode';
 import { notesApi } from '../../utils/api';
 import useNotesStore from '../../stores/notesStore';
 
-// Section with fieldset-legend style label on border
+const inputStyle = { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--ink)', fontFamily: 'var(--font-body)', fontSize: '0.9rem', outline: 'none' };
+const labelStyle = { display: 'block', marginBottom: 6, fontFamily: 'var(--font-body)', fontSize: '0.733rem', fontWeight: 500, color: 'var(--ink-tertiary)', letterSpacing: '0.02em' };
+
+// v2 Section
 const Section = ({ title, children, isLast = false }) => (
-  <div className={!isLast ? 'mb-6' : ''}>
-    <fieldset
-      className="rounded-2xl px-6 pb-6 pt-5"
-      style={{ border: '1px solid rgba(142, 142, 147, 0.3)' }}
-    >
-      <legend className="px-3 mx-auto">
-        <span className="uppercase tracking-wider" style={{ fontSize: '1.15rem', color: '#A1A1A6', fontWeight: 500, fontFamily: "'Big Shoulders Inline Display', sans-serif", letterSpacing: '0.1em' }}>
-          {title}
-        </span>
-      </legend>
-      {children}
-    </fieldset>
+  <div className={!isLast ? 'mb-5' : ''}>
+    <div className="v2-card" style={{ padding: 0 }}>
+      <div style={{ padding: '10px 18px 6px' }}><span className="v2-section-label">{title}</span></div>
+      <div style={{ padding: '0 18px 16px' }}>{children}</div>
+    </div>
   </div>
 );
 
@@ -28,17 +24,11 @@ const NoteFormModal = ({ allTags, categories }) => {
   const queryClient = useQueryClient();
   const { isNoteTakingMode, toggleNoteTakingMode, exitNoteTakingMode, viewportHeight } = useNoteTakingMode();
 
-  const [formData, setFormData] = useState({
-    title: '',
-    body: '',
-    category_id: '',
-    pinned: false,
-  });
+  const [formData, setFormData] = useState({ title: '', body: '', category_id: '', pinned: false });
   const [tagInput, setTagInput] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
   const [showTagSuggestions, setShowTagSuggestions] = useState(false);
 
-  // Autosave infrastructure (edit mode only)
   const [saveStatus, setSaveStatus] = useState(null);
   const saveTimeoutRef = useRef(null);
   const debounceTimeoutRef = useRef(null);
@@ -47,495 +37,200 @@ const NoteFormModal = ({ allTags, categories }) => {
   const dataLoadedRef = useRef(false);
   const textareaRef = useRef(null);
 
-  // Fetch note data if editing
   const { data: note } = useQuery({
     queryKey: ['note', noteId],
     queryFn: () => notesApi.fetchOne(noteId),
     enabled: isOpen && mode === 'edit' && !!noteId,
   });
 
-  // Load note data when editing (only on initial load)
   useEffect(() => {
     if (note && mode === 'edit' && !dataLoadedRef.current) {
       dataLoadedRef.current = true;
-      setFormData({
-        title: note.title || '',
-        body: note.body || '',
-        category_id: note.category_id || '',
-        pinned: note.pinned || false,
-      });
+      setFormData({ title: note.title || '', body: note.body || '', category_id: note.category_id || '', pinned: note.pinned || false });
       setSelectedTags(note.tags?.map(t => t.name) || []);
     }
   }, [note, mode]);
 
-  // Reset form when modal opens for new note
   useEffect(() => {
-    if (isOpen && mode === 'new') {
-      setFormData({ title: '', body: '', category_id: defaultCategoryId || '', pinned: false });
-      setSelectedTags([]);
-      setTagInput('');
-    }
+    if (isOpen && mode === 'new') { setFormData({ title: '', body: '', category_id: defaultCategoryId || '', pinned: false }); setSelectedTags([]); setTagInput(''); }
   }, [isOpen, mode]);
 
-  // Reset refs when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      dataLoadedRef.current = false;
-      closeAfterSaveRef.current = false;
-      setSaveStatus(null);
-      exitNoteTakingMode();
-    }
-  }, [isOpen]);
+  useEffect(() => { if (isOpen) { dataLoadedRef.current = false; closeAfterSaveRef.current = false; setSaveStatus(null); exitNoteTakingMode(); } }, [isOpen]);
 
-  // Auto-expand textarea (skip in note-taking mode — CSS handles sizing)
   useEffect(() => {
-    if (textareaRef.current && !isNoteTakingMode) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
-    }
+    if (textareaRef.current && !isNoteTakingMode) { textareaRef.current.style.height = 'auto'; textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px'; }
   }, [formData.body, isNoteTakingMode]);
 
-  // Cleanup timeouts on unmount
-  useEffect(() => {
-    return () => {
-      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-      if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
-    };
-  }, []);
+  useEffect(() => { return () => { if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current); if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current); }; }, []);
 
-  // Show saved status briefly
   const showSavedStatus = useCallback(() => {
     setSaveStatus('saved');
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-    saveTimeoutRef.current = setTimeout(() => {
-      setSaveStatus(null);
-    }, 2000);
+    saveTimeoutRef.current = setTimeout(() => setSaveStatus(null), 2000);
   }, []);
 
-  // Build note data for saving
   const buildNoteData = useCallback((overrides = {}) => {
     const { tags: overrideTags, ...formOverrides } = overrides;
-    const currentFormData = { ...formData, ...formOverrides };
-    const currentTags = overrideTags !== undefined ? overrideTags : selectedTags;
-
-    return {
-      ...currentFormData,
-      tag_names: currentTags,
-      category_id: currentFormData.category_id || null,
-    };
+    const d = { ...formData, ...formOverrides };
+    return { ...d, tag_names: overrideTags !== undefined ? overrideTags : selectedTags, category_id: d.category_id || null };
   }, [formData, selectedTags]);
 
-  // Create mutation (new mode only)
   const createMutation = useMutation({
     mutationFn: (data) => notesApi.create({ note: data }),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['notes']);
-      queryClient.invalidateQueries(['tags']);
-      queryClient.invalidateQueries(['category']);
-      closeFormModal();
-    },
+    onSuccess: () => { queryClient.invalidateQueries(['notes']); queryClient.invalidateQueries(['tags']); queryClient.invalidateQueries(['category']); closeFormModal(); },
   });
 
-  // Update mutation (autosave in edit mode)
   const updateMutation = useMutation({
     mutationFn: (data) => notesApi.update(noteId, { note: data }),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['notes'] });
-      await queryClient.invalidateQueries({ queryKey: ['note', noteId] });
-      await queryClient.invalidateQueries({ queryKey: ['tags'] });
-      await queryClient.invalidateQueries({ queryKey: ['category'] });
-      if (closeAfterSaveRef.current) {
-        closeAfterSaveRef.current = false;
-        closeFormModal();
-      } else {
-        showSavedStatus();
-      }
+      await queryClient.invalidateQueries({ queryKey: ['notes'] }); await queryClient.invalidateQueries({ queryKey: ['note', noteId] }); await queryClient.invalidateQueries({ queryKey: ['tags'] });
+      if (closeAfterSaveRef.current) { closeAfterSaveRef.current = false; closeFormModal(); } else showSavedStatus();
     },
-    onError: () => {
-      setSaveStatus('error');
-      if (closeAfterSaveRef.current) {
-        closeAfterSaveRef.current = false;
-        closeFormModal();
-      }
-    },
+    onError: () => { setSaveStatus('error'); if (closeAfterSaveRef.current) { closeAfterSaveRef.current = false; closeFormModal(); } },
   });
 
-  // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: () => notesApi.delete(noteId),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['notes'] });
-      await queryClient.invalidateQueries({ queryKey: ['note', noteId] });
-      await queryClient.invalidateQueries({ queryKey: ['category'] });
-      closeFormModal();
-    },
+    onSuccess: async () => { await queryClient.invalidateQueries({ queryKey: ['notes'] }); closeFormModal(); },
   });
 
-  // Auto-save (debounced, for text inputs — edit mode only)
   const autoSave = useCallback((overrides = {}) => {
     if (mode !== 'edit') return;
     if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
-
-    setSaveStatus('saving');
-    pendingSaveDataRef.current = overrides;
-    debounceTimeoutRef.current = setTimeout(() => {
-      pendingSaveDataRef.current = null;
-      const data = buildNoteData(overrides);
-      updateMutation.mutate(data);
-    }, 500);
+    setSaveStatus('saving'); pendingSaveDataRef.current = overrides;
+    debounceTimeoutRef.current = setTimeout(() => { pendingSaveDataRef.current = null; updateMutation.mutate(buildNoteData(overrides)); }, 500);
   }, [mode, buildNoteData, updateMutation]);
 
-  // Immediate save (for selections/toggles — edit mode only)
   const immediateSave = useCallback((overrides = {}) => {
     if (mode !== 'edit') return;
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
-      debounceTimeoutRef.current = null;
-      pendingSaveDataRef.current = null;
-    }
-
-    setSaveStatus('saving');
-    const data = buildNoteData(overrides);
-    updateMutation.mutate(data);
+    if (debounceTimeoutRef.current) { clearTimeout(debounceTimeoutRef.current); debounceTimeoutRef.current = null; pendingSaveDataRef.current = null; }
+    setSaveStatus('saving'); updateMutation.mutate(buildNoteData(overrides));
   }, [mode, buildNoteData, updateMutation]);
 
-  // Handle close
   const handleClose = () => {
     if (mode === 'edit') {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-        debounceTimeoutRef.current = null;
-        const overrides = pendingSaveDataRef.current || {};
-        pendingSaveDataRef.current = null;
-        closeAfterSaveRef.current = true;
-        const data = buildNoteData(overrides);
-        updateMutation.mutate(data);
-        return;
-      }
-
-      if (updateMutation.isPending) {
-        closeAfterSaveRef.current = true;
-        return;
-      }
+      if (debounceTimeoutRef.current) { clearTimeout(debounceTimeoutRef.current); debounceTimeoutRef.current = null; closeAfterSaveRef.current = true; updateMutation.mutate(buildNoteData(pendingSaveDataRef.current || {})); pendingSaveDataRef.current = null; return; }
+      if (updateMutation.isPending) { closeAfterSaveRef.current = true; return; }
     }
-
     closeFormModal();
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const data = buildNoteData();
-    createMutation.mutate(data);
-  };
-
-  const handleDelete = () => {
-    if (window.confirm('Are you sure you want to delete this note?')) {
-      deleteMutation.mutate();
-    }
-  };
+  const handleSubmit = (e) => { e.preventDefault(); createMutation.mutate(buildNoteData()); };
+  const handleDelete = () => { if (window.confirm('Delete this note?')) deleteMutation.mutate(); };
 
   const handleFieldChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    if (mode === 'edit') {
-      if (field === 'title' || field === 'body') {
-        autoSave({ [field]: value });
-      } else {
-        immediateSave({ [field]: value });
-      }
-    }
+    if (mode === 'edit') { if (field === 'title' || field === 'body') autoSave({ [field]: value }); else immediateSave({ [field]: value }); }
   };
 
-  // Tag handling
-  const handleAddTag = (tagName) => {
-    const trimmedTag = tagName.trim();
-    if (trimmedTag && !selectedTags.some(tag => tag.toLowerCase() === trimmedTag.toLowerCase())) {
-      const newTags = [...selectedTags, trimmedTag];
-      setSelectedTags(newTags);
-      immediateSave({ tags: newTags });
-    }
-    setTagInput('');
-    setShowTagSuggestions(false);
+  const handleAddTag = (name) => {
+    const t = name.trim();
+    if (t && !selectedTags.some(tag => tag.toLowerCase() === t.toLowerCase())) { const newTags = [...selectedTags, t]; setSelectedTags(newTags); immediateSave({ tags: newTags }); }
+    setTagInput(''); setShowTagSuggestions(false);
   };
 
-  const handleTagInputKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      if (tagInput.trim()) handleAddTag(tagInput);
-    } else if (e.key === 'Escape') {
-      setShowTagSuggestions(false);
-    }
-  };
+  const handleTagInputKeyDown = (e) => { if (e.key === 'Enter') { e.preventDefault(); if (tagInput.trim()) handleAddTag(tagInput); } else if (e.key === 'Escape') setShowTagSuggestions(false); };
 
-  const handleRemoveTag = (tagToRemove) => {
-    const newTags = selectedTags.filter(tag => tag !== tagToRemove);
-    setSelectedTags(newTags);
-    immediateSave({ tags: newTags });
-  };
+  const handleRemoveTag = (tagToRemove) => { const newTags = selectedTags.filter(t => t !== tagToRemove); setSelectedTags(newTags); immediateSave({ tags: newTags }); };
 
-  const filteredSuggestions = (allTags || [])
-    .filter(tag =>
-      tag.name.toLowerCase().includes(tagInput.toLowerCase()) &&
-      !selectedTags.some(selectedTag => selectedTag.toLowerCase() === tag.name.toLowerCase())
-    )
-    .slice(0, 5);
+  const filteredSuggestions = (allTags || []).filter(tag => tag.name.toLowerCase().includes(tagInput.toLowerCase()) && !selectedTags.some(s => s.toLowerCase() === tag.name.toLowerCase())).slice(0, 5);
 
-  // Status indicator (edit mode)
   const StatusIndicator = () => {
     if (!saveStatus) return null;
     return (
-      <div className="flex items-center gap-2 text-sm" style={{ fontFamily: "'Inter', sans-serif" }}>
-        {saveStatus === 'saving' && (
-          <>
-            <i className="fa-solid fa-spinner fa-spin" style={{ color: '#8E8E93' }}></i>
-            <span style={{ color: '#8E8E93' }}>Saving...</span>
-          </>
-        )}
-        {saveStatus === 'saved' && (
-          <>
-            <i className="fa-solid fa-check" style={{ color: '#22C55E' }}></i>
-            <span style={{ color: '#22C55E' }}>Saved</span>
-          </>
-        )}
-        {saveStatus === 'error' && (
-          <>
-            <i className="fa-solid fa-exclamation-circle" style={{ color: '#DC2626' }}></i>
-            <span style={{ color: '#DC2626' }}>Error saving</span>
-          </>
-        )}
-      </div>
+      <span className="v2-caption" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        {saveStatus === 'saving' && <><i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '0.6rem' }} /> Saving</>}
+        {saveStatus === 'saved' && <><i className="fa-solid fa-check" style={{ fontSize: '0.6rem', color: 'var(--ink-tertiary)' }} /> Saved</>}
+        {saveStatus === 'error' && <><i className="fa-solid fa-exclamation-circle" style={{ fontSize: '0.6rem', color: 'var(--overdue)' }} /> Error</>}
+      </span>
     );
   };
-
-  // Toggle button for note-taking mode
-  const noteTakingToggle = (
-    <button
-      type="button"
-      onClick={toggleNoteTakingMode}
-      className="w-8 h-8 rounded-lg transition hover:bg-gray-100 flex items-center justify-center"
-      title={isNoteTakingMode ? 'Exit writing mode' : 'Writing mode'}
-    >
-      <i className={`fa-solid ${isNoteTakingMode ? 'fa-compress' : 'fa-expand'} text-sm`} style={{ color: '#8E8E93' }}></i>
-    </button>
-  );
-
-  // Header actions for edit mode
-  const headerActions = mode === 'edit' ? (
-    <>
-      {noteTakingToggle}
-      <button
-        type="button"
-        onClick={handleDelete}
-        className="w-8 h-8 rounded-lg transition hover:bg-gray-100 flex items-center justify-center"
-        disabled={deleteMutation.isPending}
-        title="Delete note"
-      >
-        {deleteMutation.isPending ? (
-          <i className="fa-solid fa-spinner fa-spin text-sm" style={{ color: '#8E8E93' }}></i>
-        ) : (
-          <i className="fa-solid fa-trash text-sm" style={{ color: '#8E8E93' }}></i>
-        )}
-      </button>
-      <StatusIndicator />
-    </>
-  ) : (
-    noteTakingToggle
-  );
-
-  // Footer only for new mode
-  const footer = mode === 'new' ? (
-    <>
-      <button
-        type="button"
-        onClick={closeFormModal}
-        className="btn-liquid-outline-light"
-        disabled={createMutation.isPending}
-      >
-        Cancel
-      </button>
-      <button
-        type="submit"
-        form="note-form"
-        className="btn-liquid"
-        disabled={createMutation.isPending}
-      >
-        {createMutation.isPending ? 'Creating...' : 'Create Note'}
-      </button>
-    </>
-  ) : null;
 
   const formContent = (
     <>
       {mode === 'new' && createMutation.isError && (
-        <div className="form-error note-taking-hidden">
-          <i className="fa-solid fa-circle-exclamation form-error-icon"></i>
-          <span className="form-error-text">
-            {createMutation.error?.message || 'An error occurred'}
-          </span>
+        <div className="note-taking-hidden" style={{ marginBottom: 16, padding: '10px 14px', borderRadius: 8, background: 'var(--overdue-bg)', color: 'var(--overdue)', fontSize: '0.833rem', fontFamily: 'var(--font-body)' }}>
+          {createMutation.error?.message || 'An error occurred'}
         </div>
       )}
 
-      {/* ==================== CONTENT SECTION ==================== */}
+      {/* Content */}
       <div className="note-taking-editor-wrapper">
-      <Section title="Content">
-        {/* Title */}
-        <div className="mb-4 note-taking-hide-in-mode">
-          <input
-            type="text"
-            name="title"
-            value={formData.title}
-            onChange={(e) => handleFieldChange('title', e.target.value)}
-            placeholder="Note title (optional)..."
-            className="form-input-hero"
-          />
-        </div>
-
-        {/* Body */}
-        <div className="note-taking-editor-inner">
-          <textarea
-            ref={textareaRef}
-            name="body"
-            value={formData.body}
-            onChange={(e) => handleFieldChange('body', e.target.value)}
-            placeholder="Start typing..."
-            rows={8}
-            className="form-input resize-none"
-            style={{ minHeight: '200px', lineHeight: '1.6' }}
-          />
-        </div>
-      </Section>
+        <Section title="Content">
+          <div className="mb-4 note-taking-hide-in-mode">
+            <input type="text" name="title" value={formData.title} onChange={(e) => handleFieldChange('title', e.target.value)}
+              placeholder="Note title (optional)..." style={{ ...inputStyle, fontSize: '1.1rem', fontWeight: 500, padding: '10px 14px' }} />
+          </div>
+          <div className="note-taking-editor-inner">
+            <textarea ref={textareaRef} name="body" value={formData.body} onChange={(e) => handleFieldChange('body', e.target.value)}
+              placeholder="Start typing..." rows={8}
+              style={{ ...inputStyle, minHeight: 200, lineHeight: '1.6', resize: 'none' }} />
+          </div>
+        </Section>
       </div>
 
-      {/* ==================== ORGANIZE SECTION ==================== */}
+      {/* Organize */}
       <div className="note-taking-hidden">
-      <Section title="Organize" isLast={true}>
-        {/* Category */}
-        <div className="mb-4">
-          <label className="form-label">
-            Category
-          </label>
-          <div className="button-bar flex-wrap">
-            <button
-              type="button"
-              onClick={() => handleFieldChange('category_id', '')}
-              className={`flex items-center gap-2 px-4 py-2.5 ${formData.category_id === '' ? 'liquid-surface-subtle' : ''}`}
-              style={formData.category_id === '' ? { '--surface-color': '#1D1D1F' } : {}}
-            >
-              <i
-                className="fa-solid fa-folder text-sm"
-                style={{ color: formData.category_id === '' ? 'white' : '#8E8E93' }}
-              ></i>
-              <span className="bar-item-text" style={{ color: formData.category_id === '' ? 'white' : '#1D1D1F' }}>
-                None
-              </span>
-            </button>
-            {categories?.map((category) => {
-              const isActive = formData.category_id === category.id;
-              return (
-                <button
-                  key={category.id}
-                  type="button"
-                  onClick={() => handleFieldChange('category_id', category.id)}
-                  className={`flex items-center gap-2 px-4 py-2.5 ${isActive ? 'liquid-surface-subtle' : ''}`}
-                  style={isActive ? { '--surface-color': category.color } : {}}
-                >
-                  <i
-                    className={`fa-solid ${category.icon} text-sm`}
-                    style={{ color: isActive ? 'white' : category.color }}
-                  ></i>
-                  <span className="bar-item-text" style={{ color: isActive ? 'white' : '#1D1D1F' }}>
-                    {category.name}
-                  </span>
+        <Section title="Organize" isLast={true}>
+          <div style={{ marginBottom: 16 }}>
+            <label style={labelStyle}>Category</label>
+            <div className="v2-seg-control flex-wrap">
+              <button type="button" onClick={() => handleFieldChange('category_id', '')} className={`v2-seg-btn ${formData.category_id === '' ? 'active' : ''}`}>None</button>
+              {categories?.map(cat => (
+                <button key={cat.id} type="button" onClick={() => handleFieldChange('category_id', cat.id)}
+                  className={`v2-seg-btn ${formData.category_id === cat.id ? 'active' : ''}`}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px' }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: cat.color, flexShrink: 0 }} />
+                  {cat.name}
                 </button>
-              );
-            })}
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Pin toggle */}
-        <div className="mb-4">
-          <label className="form-label">
-            Pin to Top
-          </label>
-          <button
-            type="button"
-            onClick={() => handleFieldChange('pinned', !formData.pinned)}
-            className="relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none"
-            style={{ backgroundColor: formData.pinned ? '#34C759' : '#E5E5EA' }}
-          >
-            <span
-              className="inline-block h-[22px] w-[22px] rounded-full bg-white shadow-md transform transition-transform duration-200 ease-in-out"
-              style={{ transform: formData.pinned ? 'translateX(22px)' : 'translateX(3px)' }}
-            />
-          </button>
-        </div>
+          <div style={{ marginBottom: 16 }}>
+            <label style={labelStyle}>Pin to top</label>
+            <div className="flex items-center gap-3 cursor-pointer select-none" onClick={() => handleFieldChange('pinned', !formData.pinned)}>
+              <div style={{ width: 40, height: 24, borderRadius: 12, background: formData.pinned ? 'var(--ink)' : 'var(--border)', position: 'relative', transition: 'background 0.2s ease', flexShrink: 0 }}>
+                <div style={{ position: 'absolute', top: 4, width: 16, height: 16, borderRadius: '50%', background: 'var(--surface)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', transform: formData.pinned ? 'translateX(18px)' : 'translateX(4px)', transition: 'transform 0.2s ease' }} />
+              </div>
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.867rem', color: 'var(--ink)' }}>{formData.pinned ? 'Pinned' : 'Not pinned'}</span>
+            </div>
+          </div>
 
-        {/* Tags */}
-        <div>
-          <label className="form-label">
-            Tags
-          </label>
-          <div className="relative">
-            <input
-              type="text"
-              value={tagInput}
-              onChange={(e) => {
-                setTagInput(e.target.value);
-                setShowTagSuggestions(e.target.value.length > 0);
-              }}
-              onKeyDown={handleTagInputKeyDown}
-              onFocus={() => tagInput.length > 0 && setShowTagSuggestions(true)}
-              onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
-              className="form-input"
-              placeholder="Type to add tags..."
-            />
-
-            {showTagSuggestions && (filteredSuggestions.length > 0 || tagInput.trim()) && (
-              <div className="form-dropdown">
-                {filteredSuggestions.map((tag) => (
-                  <button
-                    key={tag.id}
-                    type="button"
-                    onClick={() => handleAddTag(tag.name)}
-                  >
-                    {tag.name}
-                  </button>
+          <div>
+            <label style={labelStyle}>Tags</label>
+            <div className="relative">
+              <input type="text" value={tagInput}
+                onChange={(e) => { setTagInput(e.target.value); setShowTagSuggestions(e.target.value.length > 0); }}
+                onKeyDown={handleTagInputKeyDown}
+                onFocus={() => tagInput.length > 0 && setShowTagSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
+                style={inputStyle} placeholder="Type to add tags..." />
+              {showTagSuggestions && (filteredSuggestions.length > 0 || tagInput.trim()) && (
+                <div style={{ position: 'absolute', zIndex: 10, width: '100%', marginTop: 4, background: 'var(--surface)', borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.08)', border: '1px solid var(--border)', maxHeight: 160, overflowY: 'auto' }}>
+                  {filteredSuggestions.map(tag => (
+                    <button key={tag.id} type="button" onClick={() => handleAddTag(tag.name)}
+                      style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 12px', fontSize: '0.867rem', fontFamily: 'var(--font-body)', color: 'var(--ink)', background: 'none', border: 'none', cursor: 'pointer' }}>{tag.name}</button>
+                  ))}
+                  {tagInput.trim() && !filteredSuggestions.find(t => t.name.toLowerCase() === tagInput.toLowerCase()) && (
+                    <button type="button" onClick={() => handleAddTag(tagInput)}
+                      style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 12px', fontSize: '0.867rem', fontFamily: 'var(--font-body)', color: 'var(--ink-secondary)', background: 'none', border: 'none', borderTop: '1px solid var(--border)', cursor: 'pointer' }}>+ Create "{tagInput.trim()}"</button>
+                  )}
+                </div>
+              )}
+            </div>
+            {selectedTags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {selectedTags.map(tag => (
+                  <span key={tag} className="v2-badge v2-badge-neutral" style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 10px' }}>
+                    {tag}
+                    <button type="button" onClick={() => handleRemoveTag(tag)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-faint)', fontSize: '0.65rem' }}><i className="fa-solid fa-times" /></button>
+                  </span>
                 ))}
-                {tagInput.trim() && !filteredSuggestions.find(t => t.name.toLowerCase() === tagInput.toLowerCase()) && (
-                  <button
-                    type="button"
-                    onClick={() => handleAddTag(tagInput)}
-                    style={{ borderTop: '1px solid rgba(199, 199, 204, 0.3)' }}
-                  >
-                    <i className="fa-solid fa-plus mr-2 text-gray-400"></i>
-                    Create "{tagInput.trim()}"
-                  </button>
-                )}
               </div>
             )}
           </div>
-
-          {selectedTags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {selectedTags.map((tag) => (
-                <span
-                  key={tag}
-                  className="text-xs px-3 py-1.5 rounded-[10px] flex items-center gap-2 liquid-surface-subtle"
-                  style={{
-                    '--surface-color': '#2C2C2E',
-                    fontFamily: "'Inter', sans-serif",
-                    fontWeight: 600,
-                  }}
-                >
-                  {tag}
-                  <button type="button" onClick={() => handleRemoveTag(tag)} className="hover:opacity-70">
-                    <i className="fa-solid fa-times text-xs"></i>
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      </Section>
+        </Section>
       </div>
     </>
   );
@@ -545,18 +240,38 @@ const NoteFormModal = ({ allTags, categories }) => {
       isOpen={isOpen}
       onClose={handleClose}
       title={mode === 'edit' ? 'Edit Note' : 'New Note'}
-      headerActions={headerActions}
-      footer={footer}
       noteTakingMode={isNoteTakingMode}
       viewportHeight={viewportHeight}
+      headerActions={
+        mode === 'edit' ? (
+          <>
+            <button onClick={toggleNoteTakingMode} className="v2-btn-icon" title={isNoteTakingMode ? 'Exit writing mode' : 'Writing mode'}>
+              <i className={`fa-solid ${isNoteTakingMode ? 'fa-compress' : 'fa-expand'}`} style={{ fontSize: '0.75rem', color: 'var(--ink-tertiary)' }} />
+            </button>
+            <button onClick={handleDelete} className="v2-btn-icon" disabled={deleteMutation.isPending} title="Delete note">
+              {deleteMutation.isPending
+                ? <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '0.75rem', color: 'var(--ink-tertiary)' }} />
+                : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink-tertiary)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              }
+            </button>
+            <StatusIndicator />
+          </>
+        ) : (
+          <button onClick={toggleNoteTakingMode} className="v2-btn-icon" title={isNoteTakingMode ? 'Exit writing mode' : 'Writing mode'}>
+            <i className={`fa-solid ${isNoteTakingMode ? 'fa-compress' : 'fa-expand'}`} style={{ fontSize: '0.75rem', color: 'var(--ink-tertiary)' }} />
+          </button>
+        )
+      }
+      footer={mode === 'new' ? (
+        <>
+          <button type="button" onClick={closeFormModal} className="v2-btn v2-btn-secondary" disabled={createMutation.isPending}>Cancel</button>
+          <button type="submit" form="note-form" className="v2-btn v2-btn-primary" disabled={createMutation.isPending}>
+            {createMutation.isPending ? 'Creating...' : 'Create Note'}
+          </button>
+        </>
+      ) : null}
     >
-      {mode === 'new' ? (
-        <form id="note-form" onSubmit={handleSubmit}>
-          {formContent}
-        </form>
-      ) : (
-        formContent
-      )}
+      {mode === 'new' ? <form id="note-form" onSubmit={handleSubmit}>{formContent}</form> : formContent}
     </SlideOverPanel>
   );
 };

@@ -12,6 +12,9 @@ gem "puma", ">= 5.0"
 gem "jsbundling-rails"
 # Authentication
 gem "devise"
+gem "devise-jwt"
+# CORS for API
+gem "rack-cors"
 # Bundle and process CSS [https://github.com/rails/cssbundling-rails]
 gem "cssbundling-rails"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]

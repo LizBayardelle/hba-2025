@@ -13,20 +13,12 @@ const formatFileSize = (bytes) => {
 };
 import useDocumentsStore from '../../stores/documentsStore';
 
-// Section with fieldset-legend style label on border
 const Section = ({ title, children, isLast = false }) => (
-  <div className={!isLast ? 'mb-6' : ''}>
-    <fieldset
-      className="rounded-2xl px-6 pb-6 pt-5"
-      style={{ border: '1px solid rgba(142, 142, 147, 0.3)' }}
-    >
-      <legend className="px-3 mx-auto">
-        <span className="uppercase tracking-wider" style={{ fontSize: '1.15rem', color: '#A1A1A6', fontWeight: 500, fontFamily: "'Big Shoulders Inline Display', sans-serif", letterSpacing: '0.1em' }}>
-          {title}
-        </span>
-      </legend>
-      {children}
-    </fieldset>
+  <div className={!isLast ? 'mb-5' : ''}>
+    <div className="v2-card" style={{ padding: 0 }}>
+      <div style={{ padding: '10px 18px 6px' }}><span className="v2-section-label">{title}</span></div>
+      <div style={{ padding: '0 18px 16px' }}>{children}</div>
+    </div>
   </div>
 );
 
@@ -565,28 +557,12 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
   // Status indicator component (edit mode only)
   const StatusIndicator = () => {
     if (mode !== 'edit' || !saveStatus) return null;
-
     return (
-      <div className="flex items-center gap-2 text-sm" style={{ fontFamily: "'Inter', sans-serif" }}>
-        {saveStatus === 'saving' && (
-          <>
-            <i className="fa-solid fa-spinner fa-spin" style={{ color: '#8E8E93' }}></i>
-            <span style={{ color: '#8E8E93' }}>Saving...</span>
-          </>
-        )}
-        {saveStatus === 'saved' && (
-          <>
-            <i className="fa-solid fa-check" style={{ color: '#22C55E' }}></i>
-            <span style={{ color: '#22C55E' }}>Saved</span>
-          </>
-        )}
-        {saveStatus === 'error' && (
-          <>
-            <i className="fa-solid fa-exclamation-circle" style={{ color: '#DC2626' }}></i>
-            <span style={{ color: '#DC2626' }}>Error saving</span>
-          </>
-        )}
-      </div>
+      <span className="v2-caption" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        {saveStatus === 'saving' && <><i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '0.6rem' }} /> Saving</>}
+        {saveStatus === 'saved' && <><i className="fa-solid fa-check" style={{ fontSize: '0.6rem', color: 'var(--ink-tertiary)' }} /> Saved</>}
+        {saveStatus === 'error' && <><i className="fa-solid fa-exclamation-circle" style={{ fontSize: '0.6rem', color: 'var(--overdue)' }} /> Error</>}
+      </span>
     );
   };
 
@@ -598,7 +574,7 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
       className="w-8 h-8 rounded-lg transition hover:bg-gray-100 flex items-center justify-center"
       title={isNoteTakingMode ? 'Exit writing mode' : 'Writing mode'}
     >
-      <i className={`fa-solid ${isNoteTakingMode ? 'fa-compress' : 'fa-expand'} text-sm`} style={{ color: '#8E8E93' }}></i>
+      <i className={`fa-solid ${isNoteTakingMode ? 'fa-compress' : 'fa-expand'} text-sm`} style={{ color: 'var(--ink-tertiary)' }}></i>
     </button>
   );
 
@@ -614,9 +590,9 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
         title="Delete document"
       >
         {deleteMutation.isPending ? (
-          <i className="fa-solid fa-spinner fa-spin text-sm" style={{ color: '#8E8E93' }}></i>
+          <i className="fa-solid fa-spinner fa-spin text-sm" style={{ color: 'var(--ink-tertiary)' }}></i>
         ) : (
-          <i className="fa-solid fa-trash text-sm" style={{ color: '#8E8E93' }}></i>
+          <i className="fa-solid fa-trash text-sm" style={{ color: 'var(--ink-tertiary)' }}></i>
         )}
       </button>
       <StatusIndicator />
@@ -631,7 +607,7 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
       <button
         type="button"
         onClick={handleClose}
-        className="btn-liquid-outline-light"
+        className="v2-btn v2-btn-secondary"
         disabled={createMutation.isPending}
       >
         Cancel
@@ -639,7 +615,7 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
       <button
         type="submit"
         form="document-form"
-        className="btn-liquid"
+        className="v2-btn v2-btn-primary"
         disabled={createMutation.isPending || !formData.title.trim()}
       >
         {createMutation.isPending ? 'Creating...' : 'Add Document'}
@@ -663,7 +639,7 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
       <Section title="Content">
         {/* Title */}
         <div className="mb-4 note-taking-hide-in-mode">
-          <label className="form-label">
+          <label style={{ display: 'block', marginBottom: 6, fontFamily: 'var(--font-body)', fontSize: '0.733rem', fontWeight: 500, color: 'var(--ink-tertiary)', letterSpacing: '0.02em' }} className="">
             Title
           </label>
           <input
@@ -671,7 +647,7 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
             value={formData.title}
             onChange={handleTitleChange}
             required={mode === 'new'}
-            className="form-input-hero"
+            style={{ width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--ink)', fontFamily: 'var(--font-body)', fontSize: '1.1rem', fontWeight: 500, outline: 'none' }} className=""
             placeholder="Document title..."
             autoFocus={mode === 'new'}
           />
@@ -693,14 +669,14 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
           <button
             type="button"
             onClick={handlePinToggle}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition hover:opacity-80 ${formData.pinned ? 'liquid-surface-subtle' : ''}`}
-            style={formData.pinned ? { '--surface-color': '#2C2C2E' } : { background: 'rgba(142, 142, 147, 0.1)', color: '#8E8E93' }}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition hover:opacity-80 ${formData.pinned ? 'active' : ''} v2-seg-btn`}
+            style={{ padding: '2px 8px' }}
             title={formData.pinned ? 'Unpin document' : 'Pin document'}
           >
             <i className={`fa-solid fa-thumbtack text-sm ${formData.pinned ? '' : 'opacity-60'}`}
               style={{ color: formData.pinned ? 'white' : '#8E8E93' }}
             ></i>
-            <span className="text-xs font-semibold" style={{ fontFamily: "'Inter', sans-serif", color: formData.pinned ? 'white' : '#8E8E93' }}>
+            <span className="text-xs font-semibold" style={{ fontFamily: 'var(--font-body)', color: formData.pinned ? 'white' : '#8E8E93' }}>
               {formData.pinned ? 'Pinned' : 'Pin'}
             </span>
           </button>
@@ -708,10 +684,10 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
 
         {/* Categories */}
         <div className="mb-4">
-          <label className="form-label">
+          <label style={{ display: 'block', marginBottom: 6, fontFamily: 'var(--font-body)', fontSize: '0.733rem', fontWeight: 500, color: 'var(--ink-tertiary)', letterSpacing: '0.02em' }} className="">
             Categories
           </label>
-          <div className="button-bar flex-wrap">
+          <div className="v2-seg-control flex-wrap">
             {categories.map((category) => {
               const isSelected = formData.category_ids.includes(category.id.toString());
               return (
@@ -719,14 +695,14 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
                   key={category.id}
                   type="button"
                   onClick={() => handleCategoryToggle(category.id)}
-                  className={`flex items-center gap-2 px-4 py-2.5 ${isSelected ? 'liquid-surface-subtle' : ''}`}
-                  style={isSelected ? { '--surface-color': category.color } : {}}
+                  className={`flex items-center gap-2 px-4 py-2.5 ${isSelected ? 'active' : ''} v2-seg-btn`}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px' }}
                 >
                   <i
                     className={`fa-solid ${category.icon} text-sm`}
                     style={{ color: isSelected ? 'white' : category.color }}
                   ></i>
-                  <span className="bar-item-text" style={{ color: isSelected ? 'white' : '#1D1D1F' }}>
+                  <span className="" style={{ color: isSelected ? 'white' : '#1D1D1F' }}>
                     {category.name}
                   </span>
                 </button>
@@ -737,24 +713,24 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
 
         {/* URL */}
         <div className="mb-4">
-          <label className="form-label">
+          <label style={{ display: 'block', marginBottom: 6, fontFamily: 'var(--font-body)', fontSize: '0.733rem', fontWeight: 500, color: 'var(--ink-tertiary)', letterSpacing: '0.02em' }} className="">
             URL
           </label>
           <input
             type="url"
             value={formData.url}
             onChange={handleUrlChange}
-            className="form-input"
+            style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--ink)', fontFamily: 'var(--font-body)', fontSize: '0.9rem', outline: 'none' }} className=""
             placeholder="https://youtube.com/watch?v=... or any link"
           />
-          <p className="text-xs mt-1" style={{ color: '#8E8E93' }}>
+          <p className="text-xs mt-1" style={{ color: 'var(--ink-tertiary)' }}>
             YouTube, Vimeo, or external link
           </p>
         </div>
 
         {/* Tags */}
         <div className="mb-4">
-          <label className="form-label">
+          <label style={{ display: 'block', marginBottom: 6, fontFamily: 'var(--font-body)', fontSize: '0.733rem', fontWeight: 500, color: 'var(--ink-tertiary)', letterSpacing: '0.02em' }} className="">
             Tags
           </label>
           <div className="relative">
@@ -768,12 +744,12 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
               onKeyDown={handleTagInputKeyDown}
               onFocus={() => tagInput.length > 0 && setShowTagSuggestions(true)}
               onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
-              className="form-input"
+              style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--ink)', fontFamily: 'var(--font-body)', fontSize: '0.9rem', outline: 'none' }} className=""
               placeholder="Type to add tags..."
             />
 
             {showTagSuggestions && (filteredSuggestions.length > 0 || tagInput.trim()) && (
-              <div className="form-dropdown">
+              <div style={{ position: 'absolute', zIndex: 10, width: '100%', marginTop: 4, background: 'var(--surface)', borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.08)', border: '1px solid var(--border)', maxHeight: 160, overflowY: 'auto' }} className="">
                 {filteredSuggestions.map((tag) => (
                   <button
                     key={tag.id}
@@ -802,10 +778,10 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
               {selectedTags.map((tag) => (
                 <span
                   key={tag}
-                  className="text-xs px-3 py-1.5 rounded-[10px] flex items-center gap-2 liquid-surface-subtle"
+                  className="v2-badge v2-badge-neutral flex items-center gap-2"
                   style={{
-                    '--surface-color': '#2C2C2E',
-                    fontFamily: "'Inter', sans-serif",
+                    background: 'var(--hover-tint-strong)',
+                    fontFamily: 'var(--font-body)',
                     fontWeight: 600,
                   }}
                 >
@@ -821,7 +797,7 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
 
         {/* File Attachments */}
         <div>
-          <label className="form-label">
+          <label style={{ display: 'block', marginBottom: 6, fontFamily: 'var(--font-body)', fontSize: '0.733rem', fontWeight: 500, color: 'var(--ink-tertiary)', letterSpacing: '0.02em' }} className="">
             File Attachments
           </label>
 
@@ -835,11 +811,11 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
                   style={{ backgroundColor: 'rgba(142, 142, 147, 0.08)', border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
                 >
                   <div className="flex items-center gap-2 min-w-0">
-                    <i className={`fa-solid ${file.content_type?.startsWith('image/') ? 'fa-image' : file.content_type === 'application/pdf' ? 'fa-file-pdf' : 'fa-file'} text-sm`} style={{ color: '#8E8E93' }}></i>
-                    <span className="text-sm truncate" style={{ color: '#1D1D1F' }}>
+                    <i className={`fa-solid ${file.content_type?.startsWith('image/') ? 'fa-image' : file.content_type === 'application/pdf' ? 'fa-file-pdf' : 'fa-file'} text-sm`} style={{ color: 'var(--ink-tertiary)' }}></i>
+                    <span className="text-sm truncate" style={{ color: 'var(--ink)' }}>
                       {file.filename}
                     </span>
-                    <span className="text-xs flex-shrink-0" style={{ color: '#8E8E93' }}>
+                    <span className="text-xs flex-shrink-0" style={{ color: 'var(--ink-tertiary)' }}>
                       {formatFileSize(file.byte_size)}
                     </span>
                   </div>
@@ -850,7 +826,7 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
                     className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-50 transition"
                     title="Remove file"
                   >
-                    <i className="fa-solid fa-times text-xs" style={{ color: '#DC2626' }}></i>
+                    <i className="fa-solid fa-times text-xs" style={{ color: 'var(--overdue)' }}></i>
                   </button>
                 </div>
               ))}
@@ -867,11 +843,11 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
                   style={{ backgroundColor: 'rgba(142, 142, 147, 0.08)', border: '0.5px solid rgba(199, 199, 204, 0.3)' }}
                 >
                   <div className="flex items-center gap-2 min-w-0">
-                    <i className={`fa-solid ${file.type?.startsWith('image/') ? 'fa-image' : file.type === 'application/pdf' ? 'fa-file-pdf' : 'fa-file'} text-sm`} style={{ color: '#8E8E93' }}></i>
-                    <span className="text-sm truncate" style={{ color: '#1D1D1F' }}>
+                    <i className={`fa-solid ${file.type?.startsWith('image/') ? 'fa-image' : file.type === 'application/pdf' ? 'fa-file-pdf' : 'fa-file'} text-sm`} style={{ color: 'var(--ink-tertiary)' }}></i>
+                    <span className="text-sm truncate" style={{ color: 'var(--ink)' }}>
                       {file.name}
                     </span>
-                    <span className="text-xs flex-shrink-0" style={{ color: '#8E8E93' }}>
+                    <span className="text-xs flex-shrink-0" style={{ color: 'var(--ink-tertiary)' }}>
                       {formatFileSize(file.size)}
                     </span>
                   </div>
@@ -881,7 +857,7 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
                     className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-50 transition"
                     title="Remove file"
                   >
-                    <i className="fa-solid fa-times text-xs" style={{ color: '#DC2626' }}></i>
+                    <i className="fa-solid fa-times text-xs" style={{ color: 'var(--overdue)' }}></i>
                   </button>
                 </div>
               ))}
@@ -925,33 +901,33 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
         <div className="grid grid-cols-2 gap-4">
           {/* Attach to Habits */}
           <div>
-            <label className="form-label">
-              <i className="fa-solid fa-repeat mr-2 text-xs" style={{ color: '#8E8E93' }}></i>
+            <label style={{ display: 'block', marginBottom: 6, fontFamily: 'var(--font-body)', fontSize: '0.733rem', fontWeight: 500, color: 'var(--ink-tertiary)', letterSpacing: '0.02em' }} className="">
+              <i className="fa-solid fa-repeat mr-2 text-xs" style={{ color: 'var(--ink-tertiary)' }}></i>
               Habits
             </label>
             <div className="relative">
               <button
                 type="button"
                 onClick={() => { setShowHabitDropdown(!showHabitDropdown); setShowTaskDropdown(false); }}
-                className="form-input text-left flex items-center justify-between cursor-pointer"
+                style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--ink)', fontFamily: 'var(--font-body)', fontSize: '0.9rem', outline: 'none' }} className=" text-left flex items-center justify-between cursor-pointer"
               >
                 <span style={{ color: formData.habit_ids.length === 0 ? '#8E8E93' : '#1D1D1F' }}>
                   {formData.habit_ids.length === 0
                     ? 'None'
                     : `${formData.habit_ids.length} selected`}
                 </span>
-                <i className="fa-solid fa-chevron-down text-xs" style={{ color: '#8E8E93' }}></i>
+                <i className="fa-solid fa-chevron-down text-xs" style={{ color: 'var(--ink-tertiary)' }}></i>
               </button>
 
               {showHabitDropdown && (
-                <div className="form-dropdown" style={{ maxHeight: '15rem', overflowY: 'auto' }}>
+                <div style={{ position: 'absolute', zIndex: 10, width: '100%', marginTop: 4, background: 'var(--surface)', borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.08)', border: '1px solid var(--border)', maxHeight: 160, overflowY: 'auto' }} className="" style={{ maxHeight: '15rem', overflowY: 'auto' }}>
                   {/* Filter input */}
                   <div className="p-2 sticky top-0 bg-white" style={{ borderBottom: '1px solid rgba(199, 199, 204, 0.3)' }}>
                     <input
                       type="text"
                       value={habitFilter}
                       onChange={(e) => setHabitFilter(e.target.value)}
-                      className="form-input text-sm"
+                      style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--ink)', fontFamily: 'var(--font-body)', fontSize: '0.9rem', outline: 'none' }} className=" text-sm"
                       placeholder="Filter habits..."
                       onClick={(e) => e.stopPropagation()}
                     />
@@ -959,7 +935,7 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
 
                   {Object.entries(filteredGroupedHabits).map(([category, categoryHabits]) => (
                     <div key={category}>
-                      <div className="text-xs font-semibold uppercase tracking-wide px-4 py-1.5" style={{ color: '#8E8E93' }}>
+                      <div className="text-xs font-semibold uppercase tracking-wide px-4 py-1.5" style={{ color: 'var(--ink-tertiary)' }}>
                         {category}
                       </div>
                       {categoryHabits.map((habit) => (
@@ -972,7 +948,7 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
                             className="w-4 h-4 rounded cursor-pointer"
                             style={{ accentColor: '#2C2C2E' }}
                           />
-                          <span className="text-sm flex-1 truncate" style={{ color: '#1D1D1F' }}>
+                          <span className="text-sm flex-1 truncate" style={{ color: 'var(--ink)' }}>
                             {habit.name}
                           </span>
                         </label>
@@ -980,7 +956,7 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
                     </div>
                   ))}
                   {Object.keys(filteredGroupedHabits).length === 0 && (
-                    <div className="p-4 text-center text-xs" style={{ color: '#8E8E93' }}>
+                    <div className="p-4 text-center text-xs" style={{ color: 'var(--ink-tertiary)' }}>
                       {habitFilter ? 'No matching habits' : 'No habits available'}
                     </div>
                   )}
@@ -991,33 +967,33 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
 
           {/* Attach to Tasks */}
           <div>
-            <label className="form-label">
-              <i className="fa-solid fa-check-square mr-2 text-xs" style={{ color: '#8E8E93' }}></i>
+            <label style={{ display: 'block', marginBottom: 6, fontFamily: 'var(--font-body)', fontSize: '0.733rem', fontWeight: 500, color: 'var(--ink-tertiary)', letterSpacing: '0.02em' }} className="">
+              <i className="fa-solid fa-check-square mr-2 text-xs" style={{ color: 'var(--ink-tertiary)' }}></i>
               Tasks
             </label>
             <div className="relative">
               <button
                 type="button"
                 onClick={() => { setShowTaskDropdown(!showTaskDropdown); setShowHabitDropdown(false); }}
-                className="form-input text-left flex items-center justify-between cursor-pointer"
+                style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--ink)', fontFamily: 'var(--font-body)', fontSize: '0.9rem', outline: 'none' }} className=" text-left flex items-center justify-between cursor-pointer"
               >
                 <span style={{ color: formData.task_ids.length === 0 ? '#8E8E93' : '#1D1D1F' }}>
                   {formData.task_ids.length === 0
                     ? 'None'
                     : `${formData.task_ids.length} selected`}
                 </span>
-                <i className="fa-solid fa-chevron-down text-xs" style={{ color: '#8E8E93' }}></i>
+                <i className="fa-solid fa-chevron-down text-xs" style={{ color: 'var(--ink-tertiary)' }}></i>
               </button>
 
               {showTaskDropdown && (
-                <div className="form-dropdown" style={{ maxHeight: '15rem', overflowY: 'auto' }}>
+                <div style={{ position: 'absolute', zIndex: 10, width: '100%', marginTop: 4, background: 'var(--surface)', borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.08)', border: '1px solid var(--border)', maxHeight: 160, overflowY: 'auto' }} className="" style={{ maxHeight: '15rem', overflowY: 'auto' }}>
                   {/* Filter input */}
                   <div className="p-2 sticky top-0 bg-white" style={{ borderBottom: '1px solid rgba(199, 199, 204, 0.3)' }}>
                     <input
                       type="text"
                       value={taskFilter}
                       onChange={(e) => setTaskFilter(e.target.value)}
-                      className="form-input text-sm"
+                      style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--ink)', fontFamily: 'var(--font-body)', fontSize: '0.9rem', outline: 'none' }} className=" text-sm"
                       placeholder="Filter tasks..."
                       onClick={(e) => e.stopPropagation()}
                     />
@@ -1033,13 +1009,13 @@ const DocumentFormModal = ({ habits: habitsProp, allTags: allTagsProp }) => {
                         className="w-4 h-4 rounded cursor-pointer"
                         style={{ accentColor: '#2C2C2E' }}
                       />
-                      <span className="text-sm flex-1 truncate" style={{ color: '#1D1D1F' }}>
+                      <span className="text-sm flex-1 truncate" style={{ color: 'var(--ink)' }}>
                         {task.name}
                       </span>
                     </label>
                   ))}
                   {filteredTasks.length === 0 && (
-                    <div className="p-4 text-center text-xs" style={{ color: '#8E8E93' }}>
+                    <div className="p-4 text-center text-xs" style={{ color: 'var(--ink-tertiary)' }}>
                       {taskFilter ? 'No matching tasks' : 'No tasks available'}
                     </div>
                   )}

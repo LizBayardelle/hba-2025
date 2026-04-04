@@ -228,6 +228,48 @@ export const categoriesApi = {
   fetchAll: () => apiRequest('/categories.json'),
 };
 
+// Projects API methods
+export const projectsApi = {
+  fetchOne: (id) => apiRequest(`/projects/${id}.json`),
+  update: (id, data) => apiRequest(`/projects/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ project: data }),
+  }),
+  delete: (id) => apiRequest(`/projects/${id}`, { method: 'DELETE' }),
+};
+
+// Sections API methods
+export const sectionsApi = {
+  create: (projectId, data) => apiRequest(`/projects/${projectId}/sections`, {
+    method: 'POST',
+    body: JSON.stringify({ section: data }),
+  }),
+  update: (projectId, sectionId, data) => apiRequest(`/projects/${projectId}/sections/${sectionId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ section: data }),
+  }),
+  delete: (projectId, sectionId) => apiRequest(`/projects/${projectId}/sections/${sectionId}`, {
+    method: 'DELETE',
+  }),
+};
+
+// Project Tasks API methods
+export const projectTasksApi = {
+  create: (projectId, sectionId, data) => apiRequest(`/projects/${projectId}/sections/${sectionId}/project_tasks`, {
+    method: 'POST',
+    body: JSON.stringify({ project_task: data }),
+  }),
+  update: (id, data) => apiRequest(`/project_tasks/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ project_task: data }),
+  }),
+  delete: (id) => apiRequest(`/project_tasks/${id}`, { method: 'DELETE' }),
+  reorder: (tasks) => apiRequest('/project_tasks/reorder', {
+    method: 'PATCH',
+    body: JSON.stringify({ tasks }),
+  }),
+};
+
 // Habits API methods
 export const habitsApi = {
   // Fetch single habit
