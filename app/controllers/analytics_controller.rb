@@ -1,184 +1,155 @@
 class AnalyticsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_category, except: [:index]
-  before_action :set_habit, only: [:update, :destroy]
 
   def index
-    @view_mode = params[:view] || 'category' # 'category', 'time', or 'importance'
-    @selected_date = params[:date] ? Date.parse(params[:date]) : Time.zone.today
-
-    # Get all active habits for current user
     @habits = current_user.habits.active.includes(:category, :importance_level, :time_block)
+    @all_habits = current_user.habits.includes(:category) # including archived
+    habit_ids = @habits.pluck(:id)
 
-    # Update health for any habits that haven't been checked today
-    @habits.each do |habit|
-      if habit.last_health_check_at.nil? || habit.last_health_check_at.to_date < Time.zone.today
-        habit.calculate_streak!
-        habit.update_health!
-      end
-    end
+    # ═══════════════════════════════════════════
+    # 1. HERO STATS — the big numbers
+    # ═══════════════════════════════════════════
 
-    # Get today's completions
-    @completions = HabitCompletion.where(
-      habit_id: @habits.pluck(:id),
-      completed_at: @selected_date
-    ).group(:habit_id).sum(:count)
+    # Account age
+    @days_active = (Time.zone.today - current_user.created_at.to_date).to_i
 
-    # Calculate streaks as of the selected date
-    @streaks = {}
-    @habits.each do |habit|
-      streak = 0
-      date = @selected_date
+    # Total lifetime completions
+    @lifetime_completions = current_user.habit_completions.sum(:count)
 
-      # Count backwards from selected date while the target is met each day
-      loop do
-        completion = HabitCompletion.find_by(
-          habit_id: habit.id,
-          completed_at: date
-        )
+    # Total tasks completed
+    @tasks_completed = current_user.tasks.where(completed: true).count
 
-        if completion && completion.count >= habit.target_count
-          streak += 1
-          date -= 1.day
-        else
-          break
-        end
-      end
+    # Total journal entries
+    @journal_entries = current_user.journals.count
 
-      @streaks[habit.id] = streak
-    end
+    # Goals completed
+    @goals_completed = current_user.goals.where(completed: true).count
+    @goals_total = current_user.goals.count
 
-    # Group habits based on view mode
-    if @view_mode == 'time'
-      # Group by time_block, sorting by rank
-      @grouped_habits = @habits.sort_by { |h| h.time_block&.rank || 999 }.group_by(&:time_block)
-    elsif @view_mode == 'importance'
-      # Group by importance_level, sorting by rank
-      @grouped_habits = @habits.sort_by { |h| h.importance_level&.rank || 999 }.group_by(&:importance_level)
-    else
-      @grouped_habits = @habits.group_by(&:category)
-    end
+    # ═══════════════════════════════════════════
+    # 2. STREAKS & HEALTH — current state
+    # ═══════════════════════════════════════════
 
-    # Calculate completion stats
-    @total_habits = @habits.count
-    @completed_today = @habits.count { |h|
-      completion_count = @completions[h.id] || 0
-      completion_count >= h.target_count
-    }
-
-    # === Calendar Heatmap Data (last 90 days) ===
-    @heatmap_data = {}
-    @category_heatmap_data = {}
-
-    # Get all categories
-    categories = current_user.categories.includes(:habits)
-
-    90.downto(0) do |days_ago|
-      date = Time.zone.today - days_ago.days
-
-      completions = HabitCompletion.where(
-        habit_id: @habits.pluck(:id),
-        completed_at: date
-      ).group(:habit_id).sum(:count)
-
-      # Overall heatmap
-      completed_count = @habits.count { |h| (completions[h.id] || 0) >= h.target_count }
-      total_count = @habits.count
-      percentage = total_count > 0 ? (completed_count * 100 / total_count) : 0
-      @heatmap_data[date.to_s] = percentage
-
-      # Per-category heatmap
-      categories.each do |category|
-        category_habits = @habits.select { |h| h.category_id == category.id }
-        next if category_habits.empty?
-
-        @category_heatmap_data[category.id] ||= {}
-
-        completed_in_category = category_habits.count { |h| (completions[h.id] || 0) >= h.target_count }
-        category_total = category_habits.count
-        category_percentage = category_total > 0 ? (completed_in_category * 100 / category_total) : 0
-
-        @category_heatmap_data[category.id][date.to_s] = category_percentage
-      end
-    end
-
-    @categories = categories.select { |c| @category_heatmap_data[c.id].present? }
-
-    # === Quick Stats ===
-    # Current streak (consecutive days of 100% completion)
-    @current_streak = 0
+    # Current perfect-day streak (all habits done)
+    @perfect_streak = 0
     date = Time.zone.today
     loop do
-      completions = HabitCompletion.where(
-        habit_id: @habits.pluck(:id),
-        completed_at: date
-      ).group(:habit_id).sum(:count)
-
-      completed_count = @habits.count { |h| (completions[h.id] || 0) >= h.target_count }
-
-      if completed_count == @habits.count && @habits.count > 0
-        @current_streak += 1
+      break if @habits.empty?
+      completions = HabitCompletion.where(habit_id: habit_ids, completed_at: date).group(:habit_id).sum(:count)
+      all_done = @habits.all? { |h| (completions[h.id] || 0) >= h.target_count }
+      if all_done
+        @perfect_streak += 1
         date -= 1.day
       else
         break
       end
     end
 
-    # Total habits completed this week
+    # Best ever perfect-day streak
+    @best_streak = 0
+    current = 0
+    if @habits.any?
+      oldest_completion = current_user.habit_completions.minimum(:completed_at)
+      if oldest_completion
+        (oldest_completion.to_date..Time.zone.today).each do |d|
+          completions = HabitCompletion.where(habit_id: habit_ids, completed_at: d).group(:habit_id).sum(:count)
+          if @habits.all? { |h| (completions[h.id] || 0) >= h.target_count }
+            current += 1
+            @best_streak = current if current > @best_streak
+          else
+            current = 0
+          end
+        end
+      end
+    end
+
+    # Overall health score
+    @overall_health = @habits.any? ? (@habits.sum { |h| [h.health, 100].min }.to_f / @habits.count).round : 0
+
+    # Individual habit streaks (top 5 by streak)
+    @top_streaks = @habits.map { |h|
+      { name: h.name, streak: h.current_streak, color: h.category.color, health: h.health }
+    }.sort_by { |h| -h[:streak] }.first(5)
+
+    # Habits at risk (health < 40)
+    @at_risk = @habits.select { |h| h.health < 40 }.map { |h|
+      { name: h.name, health: h.health, color: h.category.color, last_completed: h.last_completed_at }
+    }.sort_by { |h| h[:health] }
+
+    # ═══════════════════════════════════════════
+    # 3. HEATMAP — 90-day calendar
+    # ═══════════════════════════════════════════
+
+    @heatmap_data = {}
+    90.downto(0) do |days_ago|
+      d = Time.zone.today - days_ago.days
+      completions = HabitCompletion.where(habit_id: habit_ids, completed_at: d).group(:habit_id).sum(:count)
+      completed_count = @habits.count { |h| (completions[h.id] || 0) >= h.target_count }
+      total = @habits.count
+      @heatmap_data[d.to_s] = total > 0 ? (completed_count * 100.0 / total).round : 0
+    end
+
+    # ═══════════════════════════════════════════
+    # 4. WEEKLY TREND — last 12 weeks
+    # ═══════════════════════════════════════════
+
+    @weekly_trend = []
+    12.downto(0) do |weeks_ago|
+      week_start = Time.zone.today.beginning_of_week - weeks_ago.weeks
+      week_end = week_start.end_of_week
+      week_end = Time.zone.today if week_end > Time.zone.today
+
+      days_in_week = (week_start..week_end).count
+      perfect_days = 0
+
+      (week_start..week_end).each do |d|
+        completions = HabitCompletion.where(habit_id: habit_ids, completed_at: d).group(:habit_id).sum(:count)
+        all_done = @habits.all? { |h| (completions[h.id] || 0) >= h.target_count }
+        perfect_days += 1 if all_done && @habits.any?
+      end
+
+      @weekly_trend << {
+        label: week_start.strftime('%b %-d'),
+        perfect_days: perfect_days,
+        total_days: days_in_week,
+        pct: days_in_week > 0 ? (perfect_days * 100.0 / days_in_week).round : 0
+      }
+    end
+
+    # ═══════════════════════════════════════════
+    # 5. CATEGORY BREAKDOWN
+    # ═══════════════════════════════════════════
+
+    @category_stats = current_user.categories.active.ordered.includes(:habits).map do |cat|
+      cat_habits = @habits.select { |h| h.category_id == cat.id }
+      next if cat_habits.empty?
+
+      avg_health = (cat_habits.sum(&:health).to_f / cat_habits.count).round
+      total_completions = current_user.habit_completions.where(habit_id: cat_habits.map(&:id)).sum(:count)
+
+      {
+        name: cat.name,
+        color: cat.color,
+        icon: cat.icon,
+        habits_count: cat_habits.count,
+        avg_health: avg_health,
+        total_completions: total_completions,
+        best_habit: cat_habits.max_by(&:current_streak)&.name,
+        best_streak: cat_habits.max_by(&:current_streak)&.current_streak || 0,
+      }
+    end.compact
+
+    # ═══════════════════════════════════════════
+    # 6. ACTIVITY SUMMARY — this week
+    # ═══════════════════════════════════════════
+
     week_start = Time.zone.today.beginning_of_week
-    week_completions = HabitCompletion.where(
-      habit_id: @habits.pluck(:id),
-      completed_at: week_start..Time.zone.today
-    )
-    @weekly_completions = week_completions.sum(:count)
-
-    # Overall health score (average of all habits)
-    if @habits.count > 0
-      total_health = @habits.sum { |h| [h.health, 100].min }
-      @overall_health = (total_health.to_f / @habits.count).round
-    else
-      @overall_health = 0
-    end
-
-    # Habits at risk (health < 50)
-    @habits_at_risk = @habits.count { |h| h.health < 50 }
-  end
-
-  def create
-    @habit = @category.habits.build(habit_params)
-    @habit.user = current_user
-
-    if @habit.save
-      redirect_to category_path(@category), notice: 'Habit created successfully.'
-    else
-      redirect_to category_path(@category), alert: "Error creating habit: #{@habit.errors.full_messages.join(', ')}"
-    end
-  end
-
-  def update
-    if @habit.update(habit_params)
-      redirect_to category_path(@category), notice: 'Habit updated successfully.'
-    else
-      redirect_to category_path(@category), alert: "Error updating habit: #{@habit.errors.full_messages.join(', ')}"
-    end
-  end
-
-  def destroy
-    @habit.update(archived_at: Time.current)
-    redirect_to category_path(@category), notice: 'Habit archived successfully.'
-  end
-
-  private
-
-  def set_category
-    @category = current_user.categories.find(params[:category_id])
-  end
-
-  def set_habit
-    @habit = @category.habits.find(params[:id])
-  end
-
-  def habit_params
-    params.require(:habit).permit(:name, :description, :positive, :frequency_type, :target_count, :time_of_day, :difficulty, :start_date, :reminder_enabled, :importance)
+    @this_week = {
+      completions: current_user.habit_completions.where(completed_at: week_start..Time.zone.today).sum(:count),
+      tasks_done: current_user.tasks.where(completed: true, completed_at: week_start.beginning_of_day..Time.zone.now).count,
+      journal_entries: current_user.journals.where(created_at: week_start.beginning_of_day..Time.zone.now).count,
+      notes_created: current_user.notes.where(created_at: week_start.beginning_of_day..Time.zone.now).count,
+      prep_answered: current_user.prep_responses.where(response_date: week_start..Time.zone.today).count,
+    }
   end
 end

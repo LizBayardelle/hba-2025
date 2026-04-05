@@ -1,19 +1,23 @@
 <!-- Public Navigation -->
-<nav class="shadow-sm" style="background: #000000; border-bottom: 0.5px solid rgba(199, 199, 204, 0.3);">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex justify-between items-center h-16">
+<nav style="background: var(--bg); border-bottom: 1px solid var(--border);">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-14">
+      <%= link_to root_path, class: "flex items-center gap-2.5", style: "text-decoration: none;" do %>
+        <div style="width: 24px; height: 24px; background: var(--ink); border-radius: 5px; display: flex; align-items: center; justify-content: center;">
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+            <rect x="2" y="3" width="4" height="8" rx="1" fill="var(--bg)"/>
+            <rect x="8" y="3" width="4" height="5" rx="1" fill="var(--bg)" opacity="0.5"/>
+          </svg>
+        </div>
+        <span style="font-family: var(--font-body); font-size: 0.9rem; font-weight: 600; color: var(--ink); letter-spacing: -0.02em;">Habit Beaver</span>
+      <% end %>
+
       <div class="flex items-center gap-3">
-        <%= link_to root_path, class: "flex items-center gap-3" do %>
-          <%= image_tag "HabitBeaver Logo.png", alt: "HabitBeaver Logo", style: "height: 40px; width: auto;" %>
-        <% end %>
-      </div>
-      <div class="flex items-center gap-4">
-        <%= link_to "Privacy Policy", privacy_path, class: "text-sm hover:opacity-70", style: "color: #E5E5E7; font-family: 'Inter', sans-serif; font-weight: 200;" %>
-        <%= link_to "Terms of Service", terms_path, class: "text-sm hover:opacity-70", style: "color: #E5E5E7; font-family: 'Inter', sans-serif; font-weight: 200;" %>
         <% if user_signed_in? %>
-          <%= link_to "Dashboard", dashboard_path, class: "px-4 py-2 rounded-lg text-sm transition hover:opacity-90", style: "background: linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%); border: 0.5px solid rgba(255, 255, 255, 0.3); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3); color: #1D1D1F; font-weight: 600; font-family: 'Inter', sans-serif;" %>
+          <%= link_to "Dashboard", dashboard_path, class: "v2-btn-sm v2-btn-primary" %>
         <% else %>
-          <%= link_to "Sign In", new_user_session_path, class: "px-4 py-2 rounded-lg text-sm transition hover:opacity-90", style: "background: linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%); border: 0.5px solid rgba(255, 255, 255, 0.3); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3); color: #1D1D1F; font-weight: 600; font-family: 'Inter', sans-serif;" %>
+          <%= link_to "Sign In", new_user_session_path, style: "font-family: var(--font-body); font-size: 0.833rem; color: var(--ink-secondary); text-decoration: none; padding: 4px 8px;" %>
+          <%= link_to "Get Started", new_user_registration_path, class: "v2-btn-sm v2-btn-primary" %>
         <% end %>
       </div>
     </div>

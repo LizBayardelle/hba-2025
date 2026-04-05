@@ -60,13 +60,13 @@ const DeleteQuestionModal = () => {
             className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
             style={{ background: '#FEE2E2' }}
           >
-            <i className="fa-solid fa-trash text-2xl" style={{ color: '#DC2626' }}></i>
+            <i className="fa-solid fa-trash text-2xl" style={{ color: 'var(--overdue)' }}></i>
           </div>
 
-          <h3 className="text-xl font-semibold mb-2" style={{ color: '#1D1D1F' }}>
+          <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--ink)' }}>
             Delete Question?
           </h3>
-          <p className="text-sm mb-6" style={{ color: '#8E8E93' }}>
+          <p className="text-sm mb-6" style={{ color: 'var(--ink-tertiary)' }}>
             This will archive the question. Past responses will be preserved, but you won't be prompted for this question going forward.
           </p>
 
@@ -74,7 +74,7 @@ const DeleteQuestionModal = () => {
             <button
               onClick={closeDeleteModal}
               className="flex-1 px-4 py-3 rounded-lg font-medium border transition hover:bg-gray-50"
-              style={{ borderColor: 'rgba(199, 199, 204, 0.4)', color: '#1D1D1F' }}
+              style={{ borderColor: 'rgba(199, 199, 204, 0.4)', color: 'var(--ink)' }}
               disabled={deleteMutation.isPending}
             >
               Cancel
@@ -82,7 +82,7 @@ const DeleteQuestionModal = () => {
             <button
               onClick={() => deleteMutation.mutate()}
               className="flex-1 px-4 py-3 rounded-lg font-medium text-white transition hover:opacity-90"
-              style={{ background: '#DC2626' }}
+              style={{ background: 'var(--overdue)' }}
               disabled={deleteMutation.isPending}
             >
               {deleteMutation.isPending ? 'Deleting...' : 'Delete'}

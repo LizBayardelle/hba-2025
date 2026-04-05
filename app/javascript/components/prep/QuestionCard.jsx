@@ -22,16 +22,16 @@ const QuestionCard = ({ question, index }) => {
     <div
       className="rounded-xl p-5 shadow-medium transition hover:shadow-md"
       style={{
-        background: '#FFFFFF',
+        background: 'var(--surface)',
       }}
     >
       <div className="flex items-start gap-4">
         {/* Position indicator */}
         <div
           className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-          style={{ background: '#F5F5F7' }}
+          style={{ background: 'var(--hover-tint)' }}
         >
-          <span className="text-sm font-medium" style={{ color: '#8E8E93' }}>
+          <span className="text-sm font-medium" style={{ color: 'var(--ink-tertiary)' }}>
             {index + 1}
           </span>
         </div>
@@ -42,14 +42,14 @@ const QuestionCard = ({ question, index }) => {
             <div className="flex-1 min-w-0">
               <h3
                 className="text-base font-medium mb-2 truncate"
-                style={{ color: '#1D1D1F' }}
+                style={{ color: 'var(--ink)' }}
               >
                 {question.question_text}
               </h3>
               <div className="flex items-center gap-2 flex-wrap">
                 <span
                   className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs"
-                  style={{ background: '#F5F5F7', color: '#8E8E93' }}
+                  style={{ background: 'var(--hover-tint)', color: 'var(--ink-tertiary)' }}
                 >
                   <i className={`fa-solid ${QUESTION_TYPE_ICONS[question.question_type]}`}></i>
                   {QUESTION_TYPE_LABELS[question.question_type]}
@@ -57,7 +57,7 @@ const QuestionCard = ({ question, index }) => {
                 {question.question_type === 'multiple_choice' && question.options?.length > 0 && (
                   <span
                     className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs"
-                    style={{ background: '#F5F5F7', color: '#8E8E93' }}
+                    style={{ background: 'var(--hover-tint)', color: 'var(--ink-tertiary)' }}
                   >
                     {question.options.length} options
                     {question.allow_multiple && ' (multi-select)'}
@@ -86,14 +86,14 @@ const QuestionCard = ({ question, index }) => {
                 className="w-9 h-9 rounded-lg flex items-center justify-center transition hover:bg-gray-100"
                 title="Edit"
               >
-                <i className="fa-solid fa-pen text-sm" style={{ color: '#8E8E93' }}></i>
+                <i className="fa-solid fa-pen text-sm" style={{ color: 'var(--ink-tertiary)' }}></i>
               </button>
               <button
                 onClick={() => openDeleteModal(question.id)}
                 className="w-9 h-9 rounded-lg flex items-center justify-center transition hover:bg-red-50"
                 title="Delete"
               >
-                <i className="fa-solid fa-trash text-sm" style={{ color: '#DC2626' }}></i>
+                <i className="fa-solid fa-trash text-sm" style={{ color: 'var(--overdue)' }}></i>
               </button>
             </div>
           </div>

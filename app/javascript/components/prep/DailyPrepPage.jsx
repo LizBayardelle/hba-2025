@@ -133,14 +133,14 @@ const DailyPrepPage = () => {
   return (
     <>
       {/* Header */}
-      <div className="sticky top-0 z-10 shadow-deep" style={{ background: '#FFFFFF' }}>
-        <div className="p-8">
+      <div className="sticky top-0 z-10" style={{ background: 'var(--bg)' }}>
+        <div className="pl-14 pr-4 pt-6 pb-4 md:pl-8 md:pr-8 md:pt-8 md:pb-5">
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1">
-              <h1 className="text-5xl font-display mb-2" style={{ color: '#1D1D1F' }}>
+              <h1 className="v2-h1 mb-2" style={{ color: 'var(--ink)' }}>
                 Daily Prep
               </h1>
-              <p className="text-sm" style={{ color: '#8E8E93', fontFamily: "'Inter', sans-serif", fontWeight: 300 }}>
+              <p className="text-sm" style={{ color: 'var(--ink-tertiary)', fontFamily: 'var(--font-body)', fontWeight: 300 }}>
                 {today ? new Date(today + 'T00:00:00').toLocaleDateString('en-US', {
                   weekday: 'long',
                   year: 'numeric',
@@ -155,8 +155,8 @@ const DailyPrepPage = () => {
                 href="/daily_prep/answers"
                 className="px-4 py-2 rounded-lg text-sm font-medium transition hover:opacity-80"
                 style={{
-                  background: '#F5F5F7',
-                  color: '#1D1D1F',
+                  background: 'var(--hover-tint)',
+                  color: 'var(--ink)',
                   border: '1px solid rgba(199, 199, 204, 0.4)'
                 }}
               >
@@ -165,7 +165,7 @@ const DailyPrepPage = () => {
               </a>
               <a
                 href="/daily_prep/manage"
-                className="btn-onyx px-4 py-2 rounded-lg text-sm font-medium text-white transition hover:opacity-80"
+                className="v2-btn-sm v2-btn-primary px-4 py-2 rounded-lg text-sm font-medium text-white transition hover:opacity-80"
               >
                 <i className="fa-solid fa-gear mr-2"></i>
                 Manage
@@ -174,6 +174,7 @@ const DailyPrepPage = () => {
           </div>
         </div>
       </div>
+      <div style={{ height: 12, background: 'linear-gradient(to bottom, var(--bg), transparent)', pointerEvents: 'none' }} />
 
       {/* Content */}
       <div className="px-8 py-6">
@@ -187,21 +188,21 @@ const DailyPrepPage = () => {
         )}
 
         {error && (
-          <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
-            <i className="fa-solid fa-exclamation-circle text-6xl mb-4" style={{ color: '#DC2626' }}></i>
-            <p style={{ color: '#DC2626', fontFamily: "'Inter', sans-serif", fontWeight: 400 }}>Error loading questions: {error.message}</p>
+          <div className="rounded-xl p-12 text-center v2-card" style={{ background: 'var(--surface)' }}>
+            <i className="fa-solid fa-exclamation-circle text-6xl mb-4" style={{ color: 'var(--overdue)' }}></i>
+            <p style={{ color: 'var(--overdue)', fontFamily: 'var(--font-body)', fontWeight: 400 }}>Error loading questions: {error.message}</p>
           </div>
         )}
 
         {!isLoading && !error && questions.length === 0 && (
-          <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
-            <i className="fa-solid fa-clipboard-list text-6xl mb-4" style={{ color: '#E5E5E7' }}></i>
-            <p className="mb-4" style={{ color: '#8E8E93', fontFamily: "'Inter', sans-serif", fontWeight: 300 }}>
+          <div className="rounded-xl p-12 text-center v2-card" style={{ background: 'var(--surface)' }}>
+            <i className="fa-solid fa-clipboard-list text-6xl mb-4" style={{ color: 'var(--border)' }}></i>
+            <p className="mb-4" style={{ color: 'var(--ink-tertiary)', fontFamily: 'var(--font-body)', fontWeight: 300 }}>
               No prep questions yet.
             </p>
             <a
               href="/daily_prep/manage"
-              className="btn-onyx inline-block px-6 py-3 rounded-lg text-white font-medium transition hover:opacity-90"
+              className="v2-btn-sm v2-btn-primary inline-block px-6 py-3 rounded-lg text-white font-medium transition hover:opacity-90"
             >
               <i className="fa-solid fa-plus mr-2"></i>
               Add Your First Question
@@ -216,18 +217,18 @@ const DailyPrepPage = () => {
                 key={question.id}
                 className="rounded-xl p-6 shadow-medium"
                 style={{
-                  background: '#FFFFFF',
+                  background: 'var(--surface)',
                 }}
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <span
                       className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium"
-                      style={{ background: '#F5F5F7', color: '#8E8E93' }}
+                      style={{ background: 'var(--hover-tint)', color: 'var(--ink-tertiary)' }}
                     >
                       {index + 1}
                     </span>
-                    <h3 className="text-lg font-medium" style={{ color: '#1D1D1F' }}>
+                    <h3 className="text-lg font-medium" style={{ color: 'var(--ink)' }}>
                       {question.question_text}
                     </h3>
                   </div>

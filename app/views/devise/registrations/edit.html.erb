@@ -1,230 +1,95 @@
-<div class="flex h-screen relative" style="background: #F5F5F7;">
+<div class="flex h-screen relative" style="background-color: var(--bg);">
   <%= render 'shared/sidebar' %>
 
-  <!-- Mobile overlay -->
-  <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 md:hidden hidden"></div>
+  <main class="flex-1 overflow-y-auto md:ml-[224px]">
+    <!-- v2 Header -->
+    <div class="sticky top-0 z-10" style="background: var(--bg);">
+      <div class="pl-14 pr-4 pt-6 pb-4 md:pl-8 md:pr-8 md:pt-8 md:pb-5 max-w-2xl">
+        <h1 class="v2-h1">Account</h1>
+      </div>
+      <div style="height: 12px; background: linear-gradient(to bottom, var(--bg), transparent); pointer-events: none;"></div>
+    </div>
 
-  <!-- Menu flag button -->
-  <button id="menu-button" class="fixed left-0 z-20 md:hidden rounded-r-lg shadow-lg flex items-center justify-center py-1.5 px-3 transition-all"
-    style="top: 200px; background: linear-gradient(135deg, #2C2C2E, #1D1D1F); writing-mode: vertical-rl;">
-    <span class="text-white font-bold text-sm tracking-wider">MENU</span>
-  </button>
+    <div class="px-4 pb-16 md:px-8" style="max-width: 640px; padding-top: 8px;">
+      <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
+        <%= render "devise/shared/error_messages", resource: resource %>
 
-<script>
-  const sidebar = document.getElementById('sidebar');
-  const overlay = document.getElementById('sidebar-overlay');
-  const menuButton = document.getElementById('menu-button');
-  const closeButton = document.getElementById('sidebar-close');
-
-  function openSidebar() {
-    sidebar.classList.remove('-translate-x-full');
-    sidebar.classList.add('translate-x-0');
-    overlay.classList.remove('hidden');
-    menuButton.classList.add('hidden');
-  }
-
-  function closeSidebar() {
-    sidebar.classList.add('-translate-x-full');
-    sidebar.classList.remove('translate-x-0');
-    overlay.classList.add('hidden');
-    menuButton.classList.remove('hidden');
-  }
-
-  menuButton.addEventListener('click', openSidebar);
-  closeButton.addEventListener('click', closeSidebar);
-  overlay.addEventListener('click', closeSidebar);
-</script>
-
-  <!-- Main Content Area -->
-  <div class="flex-1 flex flex-col overflow-hidden">
-    <%= render 'shared/navbar' %>
-
-    <!-- Scrollable Content -->
-    <main class="flex-1 overflow-y-auto" style="background: #F5F5F7;">
-      <!-- Header Section -->
-      <div style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);">
-        <div class="p-8">
-          <div class="flex items-start justify-between mb-2">
-            <div class="flex-1">
-              <h1 class="text-5xl font-display mb-2" style="color: #1D1D1F;">
-                Account
-              </h1>
+        <%# ── Profile ── %>
+        <div class="v2-card" style="padding: 0; margin-bottom: 16px;">
+          <div style="padding: 10px 18px 6px;"><span class="v2-section-label">Profile</span></div>
+          <div style="padding: 0 18px 18px;">
+            <div style="margin-bottom: 14px;">
+              <label style="display: block; margin-bottom: 6px; font-family: var(--font-body); font-size: 0.733rem; font-weight: 500; color: var(--ink-tertiary);">First Name</label>
+              <%= f.text_field :first_name, autocomplete: "given-name", placeholder: "Your first name",
+                  style: "width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); font-family: var(--font-body); font-size: 0.9rem; outline: none;" %>
+            </div>
+            <div style="margin-bottom: 14px;">
+              <label style="display: block; margin-bottom: 6px; font-family: var(--font-body); font-size: 0.733rem; font-weight: 500; color: var(--ink-tertiary);">Email</label>
+              <%= f.email_field :email, autocomplete: "email", placeholder: "you@example.com",
+                  style: "width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); font-family: var(--font-body); font-size: 0.9rem; outline: none;" %>
+              <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
+                <div style="margin-top: 8px; padding: 8px 12px; border-radius: 6px; background: var(--hover-tint); font-family: var(--font-body); font-size: 0.8rem; color: var(--ink-secondary);">
+                  Waiting confirmation for: <%= resource.unconfirmed_email %>
+                </div>
+              <% end %>
+            </div>
+            <div>
+              <label style="display: block; margin-bottom: 6px; font-family: var(--font-body); font-size: 0.733rem; font-weight: 500; color: var(--ink-tertiary);">Time Zone</label>
+              <%= f.select :timezone,
+                  ActiveSupport::TimeZone.us_zones.map { |tz| [tz.to_s, tz.name] },
+                  {},
+                  style: "width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); font-family: var(--font-body); font-size: 0.9rem; outline: none;" %>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Content Area -->
-      <div class="pl-8 pb-8">
-        <div>
-          <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
-            <%= render "devise/shared/error_messages", resource: resource %>
-
-            <!-- First Name Section -->
-            <div class="mb-6">
-              <div class="-ml-8 pr-8 pl-8 py-4 mb-4 flex items-center gap-3"
-                style="background: linear-gradient(to bottom, color-mix(in srgb, #8E8E93 85%, white) 0%, #8E8E93 100%); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);">
-                <i class="fa-solid fa-user text-white text-lg"></i>
-                <h3 class="text-2xl flex-1 text-white font-display" style="font-weight: 500;">
-                  Name
-                </h3>
-              </div>
-
-              <div class="rounded-xl p-6 mr-8" style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
-                <div class="mb-4">
-                  <%= f.label :first_name, "First Name", class: "block text-sm font-semibold mb-2", style: "color: #1D1D1F; font-family: 'Inter', sans-serif;" %>
-                  <%= f.text_field :first_name, autocomplete: "given-name",
-                      class: "w-full px-4 py-3 rounded-lg focus:outline-none transition",
-                      style: "border: 0.5px solid rgba(199, 199, 204, 0.3); font-family: 'Inter', sans-serif; font-weight: 300;",
-                      placeholder: "Your first name" %>
-                </div>
-              </div>
-            </div>
-
-            <!-- Email Section -->
-            <div class="mb-6">
-              <div class="-ml-8 pr-8 pl-8 py-4 mb-4 flex items-center gap-3"
-                style="background: linear-gradient(to bottom, color-mix(in srgb, #8E8E93 85%, white) 0%, #8E8E93 100%); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);">
-                <i class="fa-solid fa-envelope text-white text-lg"></i>
-                <h3 class="text-2xl flex-1 text-white font-display" style="font-weight: 500;">
-                  Email Address
-                </h3>
-              </div>
-
-              <div class="rounded-xl p-6 mr-8" style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
-                <div class="mb-4">
-                  <%= f.label :email, class: "block text-sm font-semibold mb-2", style: "color: #1D1D1F; font-family: 'Inter', sans-serif;" %>
-                  <%= f.email_field :email, autofocus: true, autocomplete: "email",
-                      class: "w-full px-4 py-3 rounded-lg focus:outline-none transition",
-                      style: "border: 0.5px solid rgba(199, 199, 204, 0.3); font-family: 'Inter', sans-serif; font-weight: 300;",
-                      placeholder: "you@example.com" %>
-                </div>
-
-                <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
-                  <div class="p-3 rounded-lg text-sm" style="background-color: #FEF3C7; color: #92400E; font-family: 'Inter', sans-serif; font-weight: 400;">
-                    <i class="fa-solid fa-clock mr-2"></i>Currently waiting confirmation for: <%= resource.unconfirmed_email %>
-                  </div>
+        <%# ── Change Password ── %>
+        <div class="v2-card" style="padding: 0; margin-bottom: 16px;">
+          <div style="padding: 10px 18px 6px;"><span class="v2-section-label">Change Password</span></div>
+          <div style="padding: 0 18px 18px;">
+            <p class="v2-caption" style="color: var(--ink-faint); margin-bottom: 12px;">Leave blank if you don't want to change it.</p>
+            <div style="margin-bottom: 14px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <label style="font-family: var(--font-body); font-size: 0.733rem; font-weight: 500; color: var(--ink-tertiary);">New Password</label>
+                <% if @minimum_password_length %>
+                  <span style="font-family: var(--font-body); font-size: 0.667rem; color: var(--ink-faint);"><%= @minimum_password_length %> characters min</span>
                 <% end %>
               </div>
+              <%= f.password_field :password, autocomplete: "new-password", placeholder: "Enter new password",
+                  style: "width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); font-family: var(--font-body); font-size: 0.9rem; outline: none;" %>
             </div>
-
-            <!-- Timezone Section -->
-            <div class="mb-6">
-              <div class="-ml-8 pr-8 pl-8 py-4 mb-4 flex items-center gap-3"
-                style="background: linear-gradient(to bottom, color-mix(in srgb, #8E8E93 85%, white) 0%, #8E8E93 100%); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);">
-                <i class="fa-solid fa-globe text-white text-lg"></i>
-                <h3 class="text-2xl flex-1 text-white font-display" style="font-weight: 500;">
-                  Time Zone
-                </h3>
-              </div>
-
-              <div class="rounded-xl p-6 mr-8" style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
-                <div class="mb-2">
-                  <%= f.label :timezone, class: "block text-sm font-semibold mb-2", style: "color: #1D1D1F; font-family: 'Inter', sans-serif;" %>
-                  <%= f.select :timezone,
-                      ActiveSupport::TimeZone.us_zones.map { |tz| [tz.to_s, tz.name] },
-                      {},
-                      class: "w-full px-4 py-3 rounded-lg focus:outline-none transition",
-                      style: "border: 0.5px solid rgba(199, 199, 204, 0.3); font-family: 'Inter', sans-serif; font-weight: 300;" %>
-                </div>
-              </div>
-            </div>
-
-            <!-- Password Section -->
-            <div class="mb-6">
-              <div class="-ml-8 pr-8 pl-8 py-4 mb-4 flex items-center gap-3"
-                style="background: linear-gradient(to bottom, color-mix(in srgb, #8E8E93 85%, white) 0%, #8E8E93 100%); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);">
-                <i class="fa-solid fa-key text-white text-lg"></i>
-                <h3 class="text-2xl flex-1 text-white font-display" style="font-weight: 500;">
-                  Change Password
-                </h3>
-              </div>
-
-              <div class="rounded-xl p-6 mr-8" style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
-                <p class="text-xs mb-6" style="color: #8E8E93; font-family: 'Inter', sans-serif; font-weight: 400;">
-                  Leave these fields blank if you don't want to change your password
-                </p>
-
-                <!-- New Password Field -->
-                <div class="mb-4">
-                  <div class="flex items-center justify-between mb-2">
-                    <%= f.label :password, "New Password", class: "block text-sm font-semibold", style: "color: #1D1D1F; font-family: 'Inter', sans-serif;" %>
-                    <% if @minimum_password_length %>
-                      <span class="text-xs" style="color: #8E8E93; font-family: 'Inter', sans-serif;">
-                        (<%= @minimum_password_length %> characters minimum)
-                      </span>
-                    <% end %>
-                  </div>
-                  <%= f.password_field :password, autocomplete: "new-password",
-                      class: "w-full px-4 py-3 rounded-lg focus:outline-none transition",
-                      style: "border: 0.5px solid rgba(199, 199, 204, 0.3); font-family: 'Inter', sans-serif; font-weight: 300;",
-                      placeholder: "Enter new password" %>
-                </div>
-
-                <!-- Password Confirmation Field -->
-                <div>
-                  <%= f.label :password_confirmation, "Confirm New Password", class: "block text-sm font-semibold mb-2", style: "color: #1D1D1F; font-family: 'Inter', sans-serif;" %>
-                  <%= f.password_field :password_confirmation, autocomplete: "new-password",
-                      class: "w-full px-4 py-3 rounded-lg focus:outline-none transition",
-                      style: "border: 0.5px solid rgba(199, 199, 204, 0.3); font-family: 'Inter', sans-serif; font-weight: 300;",
-                      placeholder: "Confirm new password" %>
-                </div>
-              </div>
-            </div>
-
-            <!-- Current Password Section -->
-            <div class="mb-6">
-              <div class="-ml-8 pr-8 pl-8 py-4 mb-4 flex items-center gap-3"
-                style="background: linear-gradient(to bottom, color-mix(in srgb, #8E8E93 85%, white) 0%, #8E8E93 100%); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);">
-                <i class="fa-solid fa-lock text-white text-lg"></i>
-                <h3 class="text-2xl flex-1 text-white font-display" style="font-weight: 500;">
-                  Confirm Changes
-                </h3>
-              </div>
-
-              <div class="rounded-xl p-6 mr-8" style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
-                <%= f.label :current_password, class: "block text-sm font-semibold mb-2", style: "color: #1D1D1F; font-family: 'Inter', sans-serif;" %>
-                <p class="text-xs mb-3" style="color: #8E8E93; font-family: 'Inter', sans-serif; font-weight: 400;">
-                  We need your current password to confirm any changes
-                </p>
-                <%= f.password_field :current_password, autocomplete: "current-password",
-                    class: "w-full px-4 py-3 rounded-lg focus:outline-none transition",
-                    style: "border: 0.5px solid rgba(199, 199, 204, 0.3); font-family: 'Inter', sans-serif; font-weight: 300;",
-                    placeholder: "Enter current password" %>
-              </div>
-            </div>
-
-            <!-- Submit Button -->
-            <div class="mb-8 mr-8">
-              <%= f.submit "Update Account",
-                  class: "w-full py-3 px-6 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition transform hover:scale-[1.02] cursor-pointer",
-                  style: "background: linear-gradient(135deg, #2C2C2E, #1D1D1F); font-family: 'Inter', sans-serif; font-weight: 600;" %>
-            </div>
-          <% end %>
-
-          <!-- Danger Zone -->
-          <div class="mb-6">
-            <div class="-ml-8 pr-8 pl-8 py-4 mb-4 flex items-center gap-3"
-              style="background: linear-gradient(to bottom, color-mix(in srgb, #8E8E93 85%, white) 0%, #8E8E93 100%); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);">
-              <i class="fa-solid fa-triangle-exclamation text-white text-lg"></i>
-              <h3 class="text-2xl flex-1 text-white font-display" style="font-weight: 500;">
-                Danger Zone
-              </h3>
-            </div>
-
-            <div class="rounded-xl p-6 mr-8" style="background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(199, 199, 204, 0.2);">
-              <p class="text-sm mb-4" style="color: #8E8E93; font-family: 'Inter', sans-serif; font-weight: 400;">
-                Once you delete your account, there is no going back. Please be certain.
-              </p>
-              <%= button_to "Delete My Account", registration_path(resource_name),
-                  data: { confirm: "Are you sure? This action cannot be undone." },
-                  method: :delete,
-                  class: "py-2 px-6 rounded-lg font-semibold border-2 transition hover:bg-red-50",
-                  style: "color: #DC2626; border-color: #DC2626; font-family: 'Inter', sans-serif;" %>
+            <div>
+              <label style="display: block; margin-bottom: 6px; font-family: var(--font-body); font-size: 0.733rem; font-weight: 500; color: var(--ink-tertiary);">Confirm Password</label>
+              <%= f.password_field :password_confirmation, autocomplete: "new-password", placeholder: "Confirm new password",
+                  style: "width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); font-family: var(--font-body); font-size: 0.9rem; outline: none;" %>
             </div>
           </div>
         </div>
+
+        <%# ── Confirm ── %>
+        <div class="v2-card" style="padding: 0; margin-bottom: 16px;">
+          <div style="padding: 10px 18px 6px;"><span class="v2-section-label">Confirm Changes</span></div>
+          <div style="padding: 0 18px 18px;">
+            <p class="v2-caption" style="color: var(--ink-faint); margin-bottom: 8px;">Enter your current password to save changes.</p>
+            <%= f.password_field :current_password, autocomplete: "current-password", placeholder: "Current password",
+                style: "width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); font-family: var(--font-body); font-size: 0.9rem; outline: none;" %>
+          </div>
+        </div>
+
+        <%= f.submit "Update Account", class: "v2-btn v2-btn-primary", style: "width: 100%; padding: 10px; font-size: 0.9rem; justify-content: center; margin-bottom: 24px;" %>
+      <% end %>
+
+      <%# ── Danger Zone ── %>
+      <div class="v2-card" style="padding: 0;">
+        <div style="padding: 10px 18px 6px;"><span class="v2-section-label" style="color: var(--overdue);">Danger Zone</span></div>
+        <div style="padding: 0 18px 18px;">
+          <p class="v2-caption" style="color: var(--ink-faint); margin-bottom: 12px;">Permanently delete your account and all data. This cannot be undone.</p>
+          <%= button_to "Delete My Account", registration_path(resource_name),
+              data: { confirm: "Are you sure? This action cannot be undone." },
+              method: :delete,
+              class: "v2-btn v2-btn-danger" %>
+        </div>
       </div>
-    </main>
-  </div>
+    </div>
+  </main>
 </div>

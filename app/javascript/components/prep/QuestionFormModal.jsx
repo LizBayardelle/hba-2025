@@ -114,7 +114,7 @@ const QuestionFormModal = ({ questions }) => {
         type="button"
         onClick={closeFormModal}
         className="px-4 py-2 rounded-lg font-medium border transition hover:bg-gray-50"
-        style={{ borderColor: 'rgba(199, 199, 204, 0.4)', color: '#1D1D1F' }}
+        style={{ borderColor: 'rgba(199, 199, 204, 0.4)', color: 'var(--ink)' }}
         disabled={isPending}
       >
         Cancel
@@ -141,7 +141,7 @@ const QuestionFormModal = ({ questions }) => {
       <form id="question-form" onSubmit={handleSubmit} className="space-y-6">
         {/* Question Text */}
         <div>
-          <label className="block text-sm font-medium mb-2" style={{ color: '#1D1D1F' }}>
+          <label className="block text-sm font-medium mb-2" style={{ color: 'var(--ink)' }}>
             Question
           </label>
           <input
@@ -152,7 +152,7 @@ const QuestionFormModal = ({ questions }) => {
             className="w-full px-4 py-3 rounded-lg text-sm focus:outline-none transition"
             style={{
               border: '1px solid rgba(199, 199, 204, 0.4)',
-              fontFamily: "'Inter', sans-serif",
+              fontFamily: 'var(--font-body)',
               background: '#F9F9FB',
             }}
             required
@@ -161,7 +161,7 @@ const QuestionFormModal = ({ questions }) => {
 
         {/* Question Type */}
         <div>
-          <label className="block text-sm font-medium mb-3" style={{ color: '#1D1D1F' }}>
+          <label className="block text-sm font-medium mb-3" style={{ color: 'var(--ink)' }}>
             Answer Type
           </label>
           <div className="grid grid-cols-2 gap-3">
@@ -173,16 +173,16 @@ const QuestionFormModal = ({ questions }) => {
                 className="p-4 rounded-lg text-left transition"
                 style={{
                   border: formData.question_type === type.value
-                    ? '2px solid #1D1D1F'
+                    ? '2px solid var(--ink)'
                     : '1px solid rgba(199, 199, 204, 0.4)',
-                  background: formData.question_type === type.value ? '#F5F5F7' : '#FFFFFF',
+                  background: formData.question_type === type.value ? 'var(--hover-tint)' : 'var(--surface)',
                 }}
               >
                 <div className="flex items-center gap-3 mb-1">
-                  <i className={`fa-solid ${type.icon}`} style={{ color: '#8E8E93' }}></i>
-                  <span className="font-medium" style={{ color: '#1D1D1F' }}>{type.label}</span>
+                  <i className={`fa-solid ${type.icon}`} style={{ color: 'var(--ink-tertiary)' }}></i>
+                  <span className="font-medium" style={{ color: 'var(--ink)' }}>{type.label}</span>
                 </div>
-                <p className="text-xs" style={{ color: '#8E8E93' }}>{type.description}</p>
+                <p className="text-xs" style={{ color: 'var(--ink-tertiary)' }}>{type.description}</p>
               </button>
             ))}
           </div>
@@ -192,7 +192,7 @@ const QuestionFormModal = ({ questions }) => {
         {formData.question_type === 'multiple_choice' && (
           <>
             <div>
-              <label className="block text-sm font-medium mb-3" style={{ color: '#1D1D1F' }}>
+              <label className="block text-sm font-medium mb-3" style={{ color: 'var(--ink)' }}>
                 Options
               </label>
               <div className="space-y-2">
@@ -215,7 +215,7 @@ const QuestionFormModal = ({ questions }) => {
                         onClick={() => removeOption(index)}
                         className="w-9 h-9 rounded-lg flex items-center justify-center transition hover:bg-red-50"
                       >
-                        <i className="fa-solid fa-times text-sm" style={{ color: '#DC2626' }}></i>
+                        <i className="fa-solid fa-times text-sm" style={{ color: 'var(--overdue)' }}></i>
                       </button>
                     )}
                   </div>
@@ -225,7 +225,7 @@ const QuestionFormModal = ({ questions }) => {
                 type="button"
                 onClick={addOption}
                 className="mt-3 text-sm font-medium flex items-center gap-2 transition hover:opacity-70"
-                style={{ color: '#1D1D1F' }}
+                style={{ color: 'var(--ink)' }}
               >
                 <i className="fa-solid fa-plus"></i>
                 Add Option
@@ -235,13 +235,13 @@ const QuestionFormModal = ({ questions }) => {
             {/* Allow Multiple */}
             <div className="flex items-center justify-between p-4 rounded-lg" style={{ background: '#F9F9FB' }}>
               <div>
-                <p className="font-medium text-sm" style={{ color: '#1D1D1F' }}>Allow multiple selections</p>
-                <p className="text-xs" style={{ color: '#8E8E93' }}>Users can select more than one option</p>
+                <p className="font-medium text-sm" style={{ color: 'var(--ink)' }}>Allow multiple selections</p>
+                <p className="text-xs" style={{ color: 'var(--ink-tertiary)' }}>Users can select more than one option</p>
               </div>
               <div
                 onClick={() => setFormData(prev => ({ ...prev, allow_multiple: !prev.allow_multiple }))}
                 className="relative w-12 h-7 rounded-full transition-colors duration-200 cursor-pointer"
-                style={{ backgroundColor: formData.allow_multiple ? '#34C759' : '#E5E5E7' }}
+                style={{ backgroundColor: formData.allow_multiple ? '#34C759' : 'var(--border)' }}
               >
                 <div
                   className="absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200"

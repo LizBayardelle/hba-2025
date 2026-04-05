@@ -60,7 +60,7 @@ const ResponseInput = ({ question, value, onChange, onBlur }) => {
         className="w-full px-4 py-3 rounded-lg text-sm focus:outline-none transition"
         style={{
           border: '1px solid rgba(199, 199, 204, 0.4)',
-          fontFamily: "'Inter', sans-serif",
+          fontFamily: 'var(--font-body)',
           fontWeight: 400,
           background: '#F9F9FB',
         }}
@@ -96,14 +96,14 @@ const ResponseInput = ({ question, value, onChange, onBlur }) => {
       >
         <div
           className="relative w-12 h-7 rounded-full transition-colors duration-200"
-          style={{ backgroundColor: value ? '#34C759' : '#E5E5E7' }}
+          style={{ backgroundColor: value ? '#34C759' : 'var(--border)' }}
         >
           <div
             className="absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200"
             style={{ transform: value ? 'translateX(22px)' : 'translateX(4px)' }}
           />
         </div>
-        <span style={{ color: '#1D1D1F', fontWeight: 400 }}>
+        <span style={{ color: 'var(--ink)', fontWeight: 400 }}>
           {value ? 'Yes' : 'No'}
         </span>
       </div>
@@ -146,7 +146,7 @@ const ResponseInput = ({ question, value, onChange, onBlur }) => {
               <div
                 className={`w-5 h-5 rounded-${question.allow_multiple ? 'md' : 'full'} border-2 flex items-center justify-center transition`}
                 style={{
-                  borderColor: isSelected ? '#34C759' : '#C7C7CC',
+                  borderColor: isSelected ? '#34C759' : 'var(--ink-faint)',
                   backgroundColor: isSelected ? '#34C759' : 'transparent',
                 }}
               >
@@ -154,7 +154,7 @@ const ResponseInput = ({ question, value, onChange, onBlur }) => {
                   <i className="fa-solid fa-check text-white text-xs"></i>
                 )}
               </div>
-              <span style={{ color: '#1D1D1F', fontWeight: 400 }}>{option}</span>
+              <span style={{ color: 'var(--ink)', fontWeight: 400 }}>{option}</span>
             </button>
           );
         })}
