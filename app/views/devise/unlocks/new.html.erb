@@ -1,51 +1,30 @@
 <%= render 'shared/public_nav' %>
 
-<div class="min-h-screen flex items-center justify-center relative overflow-hidden" style="background: #000000;">
-  <!-- Subtle gradient overlay -->
-  <div class="absolute inset-0" style="background: radial-gradient(ellipse at top, #1D1D1F 0%, #000000 100%);"></div>
-
-  <!-- Metallic accent glow -->
-  <div class="absolute inset-0 opacity-20">
-    <div class="absolute top-1/4 left-1/4 w-96 h-96 rounded-full filter blur-3xl" style="background: radial-gradient(circle, #8E8E93 0%, transparent 70%);"></div>
-    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full filter blur-3xl" style="background: radial-gradient(circle, #C7C7CC 0%, transparent 70%);"></div>
-  </div>
-
-  <!-- Unlock Account Card -->
-  <div class="relative z-10 w-full max-w-md mx-4">
-    <!-- Logo/Brand -->
-    <div class="text-center mb-8">
-      <%= image_tag "HabitBeaver Logo.png", alt: "HabitBeaver Logo", style: "height: 80px; width: auto;", class: "mx-auto mb-4" %>
-      <p class="text-sm font-light" style="color: #8E8E93;">Build better habits, one day at a time</p>
+<div class="min-h-screen flex items-center justify-center px-4 py-12" style="background: var(--bg);">
+  <div class="w-full max-w-sm">
+    <div class="text-center" style="margin-bottom: 32px;">
+      <div style="width: 36px; height: 36px; background: var(--ink); border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px;">
+        <svg width="18" height="18" viewBox="0 0 14 14" fill="none"><rect x="2" y="3" width="4" height="8" rx="1" fill="var(--bg)"/><rect x="8" y="3" width="4" height="5" rx="1" fill="var(--bg)" opacity="0.5"/></svg>
+      </div>
+      <h1 class="v2-h2" style="margin-bottom: 4px;">Unlock your account</h1>
+      <p class="v2-small" style="color: var(--ink-tertiary);">We'll send you unlock instructions</p>
     </div>
 
-    <!-- Card -->
-    <div class="rounded-2xl p-8" style="background: #FFFFFF; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);">
-      <h2 class="text-2xl font-bold mb-4" style="color: #1D1D1F; font-family: 'Inter', sans-serif;">Unlock Your Account</h2>
-      <p class="text-sm mb-6" style="color: #8E8E93;">Enter your email and we'll send you unlock instructions.</p>
-
+    <div class="v2-card" style="padding: 28px;">
       <%= form_for(resource, as: resource_name, url: unlock_path(resource_name), html: { method: :post }) do |f| %>
         <%= render "devise/shared/error_messages", resource: resource %>
 
-        <!-- Email Field -->
-        <div class="mb-6">
-          <%= f.label :email, class: "block text-xs font-semibold uppercase tracking-wide mb-2", style: "color: #8E8E93;" %>
-          <%= f.email_field :email, autofocus: true, autocomplete: "email",
-              class: "w-full px-4 py-3 rounded-lg border focus:outline-none transition font-light",
-              style: "border: 1px solid #E5E5E7; color: #1D1D1F; background: #FAFAFA;",
-              placeholder: "you@example.com" %>
+        <div style="margin-bottom: 20px;">
+          <%= f.label :email, "Email", style: "display: block; margin-bottom: 6px; font-family: var(--font-body); font-size: 0.733rem; font-weight: 500; color: var(--ink-tertiary);" %>
+          <%= f.email_field :email, autofocus: true, autocomplete: "email", placeholder: "you@example.com",
+              style: "width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); font-family: var(--font-body); font-size: 0.9rem; outline: none;" %>
         </div>
 
-        <!-- Submit Button -->
-        <div class="mb-6">
-          <%= f.submit "Resend Unlock Instructions", class: "w-full py-3 px-4 rounded-lg font-semibold transition transform hover:scale-[1.02] cursor-pointer", style: "background: linear-gradient(135deg, #A8A8AC 0%, #E5E5E7 45%, #FFFFFF 55%, #C7C7CC 70%, #8E8E93 100%); border: 0.5px solid rgba(255, 255, 255, 0.3); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.3); color: #1D1D1F;" %>
-        </div>
+        <%= f.submit "Send Unlock Instructions", class: "v2-btn v2-btn-primary", style: "width: 100%; padding: 10px; font-size: 0.9rem; justify-content: center;" %>
       <% end %>
 
-      <!-- Links -->
-      <div class="text-center">
-        <div class="pt-4" style="border-top: 1px solid #E5E5E7;">
-          <%= link_to "Back to Sign In", new_session_path(resource_name), class: "text-sm font-light hover:underline transition", style: "color: #8E8E93;" %>
-        </div>
+      <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); text-align: center;">
+        <%= link_to "Back to sign in", new_session_path(resource_name), style: "font-family: var(--font-body); font-size: 0.8rem; color: var(--ink-tertiary); text-decoration: none;" %>
       </div>
     </div>
   </div>

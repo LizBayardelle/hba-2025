@@ -33,9 +33,9 @@ const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
 
   if (error) {
     return (
-      <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
-        <i className="fa-solid fa-exclamation-circle text-6xl mb-4" style={{ color: '#DC2626' }}></i>
-        <p style={{ color: '#DC2626', fontFamily: "'Inter', sans-serif", fontWeight: 400 }}>Error loading tag: {error.message}</p>
+      <div className="rounded-xl p-12 text-center v2-card" style={{ background: 'var(--surface)' }}>
+        <i className="fa-solid fa-exclamation-circle text-6xl mb-4" style={{ color: 'var(--overdue)' }}></i>
+        <p style={{ color: 'var(--overdue)', fontFamily: 'var(--font-body)', fontWeight: 400 }}>Error loading tag: {error.message}</p>
       </div>
     );
   }
@@ -67,7 +67,7 @@ const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
             style={{ '--bar-color': color }}
           >
             <i className={`fa-solid ${icon} text-white text-lg`}></i>
-            <h3 className="text-xl flex-1 text-white font-display" style={{ fontWeight: 500 }}>
+            <h3 className="text-xl flex-1 text-white" style={{ fontWeight: 500 }}>
               {title} ({items.length})
             </h3>
           </div>
@@ -91,10 +91,10 @@ const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
             <i className="fa-solid fa-tag text-white"></i>
           </div>
           <div>
-            <h2 className="text-2xl font-display" style={{ color: '#1D1D1F' }}>
+            <h2 className="text-2xl" style={{ color: 'var(--ink)' }}>
               {tag.name}
             </h2>
-            <p className="text-xs" style={{ color: '#8E8E93', fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-xs" style={{ color: 'var(--ink-tertiary)', fontFamily: 'var(--font-body)' }}>
               {totalItems} {totalItems === 1 ? 'item' : 'items'}
             </p>
           </div>
@@ -105,7 +105,7 @@ const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
             className="w-8 h-8 rounded-lg flex items-center justify-center transition hover:bg-gray-100"
             title="Edit tag"
           >
-            <i className="fa-solid fa-pencil text-sm" style={{ color: '#8E8E93' }}></i>
+            <i className="fa-solid fa-pencil text-sm" style={{ color: 'var(--ink-tertiary)' }}></i>
           </button>
           <button
             onClick={(e) => onDelete(tag, e)}
@@ -113,7 +113,7 @@ const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
             title="Delete tag"
             disabled={deletePending}
           >
-            <i className="fa-solid fa-trash text-sm" style={{ color: '#8E8E93' }}></i>
+            <i className="fa-solid fa-trash text-sm" style={{ color: 'var(--ink-tertiary)' }}></i>
           </button>
         </div>
       </div>
@@ -130,10 +130,10 @@ const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
               <div className="flex-1 min-w-0">
                 <div
                   className="text-sm line-clamp-2"
-                  style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif" }}
+                  style={{ color: 'var(--ink)', fontFamily: 'var(--font-body)' }}
                   dangerouslySetInnerHTML={{ __html: journal.content }}
                 />
-                <div className="text-xs mt-1" style={{ color: '#8E8E93' }}>
+                <div className="text-xs mt-1" style={{ color: 'var(--ink-tertiary)' }}>
                   {formatDate(journal.created_at)}
                 </div>
               </div>
@@ -156,8 +156,8 @@ const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
                 <i className="fa-solid fa-check text-white text-xs"></i>
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-semibold text-sm" style={{ color: '#1D1D1F' }}>{habit.name}</div>
-                <div className="text-xs" style={{ color: '#8E8E93' }}>{habit.category_name}</div>
+                <div className="font-semibold text-sm" style={{ color: 'var(--ink)' }}>{habit.name}</div>
+                <div className="text-xs" style={{ color: 'var(--ink-tertiary)' }}>{habit.category_name}</div>
               </div>
               <i className="fa-solid fa-chevron-right text-xs flex-shrink-0" style={{ color: '#C7C7CC' }}></i>
             </div>
@@ -182,16 +182,16 @@ const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
                   <i className={`fa-solid ${icon} text-sm`} style={{ color: sectionColors.documents }}></i>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-sm truncate" style={{ color: '#1D1D1F' }}>{doc.title}</div>
+                  <div className="font-semibold text-sm truncate" style={{ color: 'var(--ink)' }}>{doc.title}</div>
                   {doc.habits?.length > 0 && (
-                    <div className="text-xs truncate" style={{ color: '#8E8E93' }}>
+                    <div className="text-xs truncate" style={{ color: 'var(--ink-tertiary)' }}>
                       {doc.habits.map(h => h.name).join(', ')}
                     </div>
                   )}
                 </div>
                 <span
                   className="text-xs px-2 py-0.5 rounded-lg flex-shrink-0"
-                  style={{ backgroundColor: '#F5F5F7', color: '#8E8E93', fontWeight: 500 }}
+                  style={{ backgroundColor: '#F5F5F7', color: 'var(--ink-tertiary)', fontWeight: 500 }}
                 >
                   {doc.content_type}
                 </span>
@@ -212,8 +212,8 @@ const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
               <div
                 className="w-6 h-6 rounded-md border-2 flex-shrink-0 flex items-center justify-center"
                 style={{
-                  borderColor: task.category_color || '#8E8E93',
-                  backgroundColor: task.completed ? (task.category_color || '#8E8E93') : 'transparent',
+                  borderColor: task.category_color || 'var(--ink-tertiary)',
+                  backgroundColor: task.completed ? (task.category_color || 'var(--ink-tertiary)') : 'transparent',
                 }}
               >
                 {task.completed && <i className="fa-solid fa-check text-white text-xs"></i>}
@@ -221,12 +221,12 @@ const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
               <div className="flex-1 min-w-0">
                 <span
                   className={`font-semibold text-sm ${task.completed ? 'line-through' : ''}`}
-                  style={{ color: '#1D1D1F' }}
+                  style={{ color: 'var(--ink)' }}
                 >
                   {task.name}
                 </span>
                 {task.category_name && (
-                  <div className="text-xs" style={{ color: '#8E8E93' }}>{task.category_name}</div>
+                  <div className="text-xs" style={{ color: 'var(--ink-tertiary)' }}>{task.category_name}</div>
                 )}
               </div>
               <i className="fa-solid fa-chevron-right text-xs flex-shrink-0" style={{ color: '#C7C7CC' }}></i>
@@ -235,12 +235,12 @@ const TagDetail = ({ tagId, onEdit, onDelete, deletePending }) => {
         ))}
 
         {totalItems === 0 && (
-          <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
-            <i className="fa-solid fa-inbox text-5xl mb-4 block" style={{ color: '#E5E5E7' }}></i>
-            <h3 className="text-lg mb-1" style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>
+          <div className="rounded-xl p-12 text-center v2-card" style={{ background: 'var(--surface)' }}>
+            <i className="fa-solid fa-inbox text-5xl mb-4 block" style={{ color: 'var(--border)' }}></i>
+            <h3 className="text-lg mb-1" style={{ color: 'var(--ink)', fontFamily: 'var(--font-body)', fontWeight: 600 }}>
               No Items Yet
             </h3>
-            <p className="text-sm" style={{ color: '#8E8E93', fontWeight: 300, fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-sm" style={{ color: 'var(--ink-tertiary)', fontWeight: 300, fontFamily: 'var(--font-body)' }}>
               Nothing tagged with "{tag.name}" yet
             </p>
           </div>

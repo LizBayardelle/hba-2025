@@ -23,13 +23,13 @@ class PrepQuestionsController < ApplicationController
   end
 
   def manage
-    @prep_questions = current_user.prep_questions.active.ordered
+    @prep_questions = current_user.prep_questions.not_archived.ordered
 
     respond_to do |format|
       format.html
       format.json {
         render json: {
-          questions: @prep_questions.as_json(only: [:id, :question_type, :question_text, :options, :allow_multiple, :position])
+          questions: @prep_questions.as_json(only: [:id, :question_type, :question_text, :options, :allow_multiple, :position, :inactive])
         }
       }
     end
@@ -57,7 +57,7 @@ class PrepQuestionsController < ApplicationController
       format.html
       format.json {
         render json: {
-          questions: @prep_questions.as_json(only: [:id, :question_type, :question_text, :options, :allow_multiple, :position, :archived_at]),
+          questions: @prep_questions.as_json(only: [:id, :question_type, :question_text, :options, :allow_multiple, :position, :archived_at, :inactive]),
           responses: @responses.map { |r|
             r.as_json(only: [:id, :prep_question_id, :response_date, :response_value])
               .merge(
@@ -82,7 +82,7 @@ class PrepQuestionsController < ApplicationController
     if @prep_question.save
       render json: {
         success: true,
-        question: @prep_question.as_json(only: [:id, :question_type, :question_text, :options, :allow_multiple, :position])
+        question: @prep_question.as_json(only: [:id, :question_type, :question_text, :options, :allow_multiple, :position, :inactive])
       }, status: :created
     else
       render json: { success: false, errors: @prep_question.errors.full_messages }, status: :unprocessable_entity
@@ -93,11 +93,18 @@ class PrepQuestionsController < ApplicationController
     if @prep_question.update(prep_question_params)
       render json: {
         success: true,
-        question: @prep_question.as_json(only: [:id, :question_type, :question_text, :options, :allow_multiple, :position])
+        question: @prep_question.as_json(only: [:id, :question_type, :question_text, :options, :allow_multiple, :position, :inactive])
       }
     else
       render json: { success: false, errors: @prep_question.errors.full_messages }, status: :unprocessable_entity
     end
+  end
+
+  def reorder
+    params[:question_ids].each_with_index do |id, index|
+      current_user.prep_questions.where(id: id).update_all(position: index + 1)
+    end
+    render json: { success: true }
   end
 
   def destroy
@@ -112,6 +119,6 @@ class PrepQuestionsController < ApplicationController
   end
 
   def prep_question_params
-    params.require(:prep_question).permit(:question_type, :question_text, :allow_multiple, :position, options: [])
+    params.require(:prep_question).permit(:question_type, :question_text, :allow_multiple, :position, :inactive, options: [])
   end
 end

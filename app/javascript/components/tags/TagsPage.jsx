@@ -76,14 +76,14 @@ const TagsPage = () => {
   return (
     <>
       {/* Header */}
-      <div className="sticky top-0 z-10 shadow-deep" style={{ background: '#FFFFFF' }}>
-        <div className="px-8 pt-8 pb-5">
+      <div className="sticky top-0 z-10" style={{ background: 'var(--bg)' }}>
+        <div className="pl-14 pr-4 pt-6 pb-4 md:pl-8 md:pr-8 md:pt-8 md:pb-5">
           <div className="flex items-start justify-between mb-4">
-            <h1 className="text-5xl font-display" style={{ color: '#1D1D1F' }}>Tags</h1>
+            <h1 className="v2-h1" style={{ color: 'var(--ink)' }}>Tags</h1>
             {tags.length > 0 && (
               <span
                 className="text-sm px-2.5 py-1 rounded-lg"
-                style={{ backgroundColor: '#F5F5F7', color: '#8E8E93', fontWeight: 600 }}
+                style={{ backgroundColor: '#F5F5F7', color: 'var(--ink-tertiary)', fontWeight: 600 }}
               >
                 {tags.length}
               </span>
@@ -93,7 +93,7 @@ const TagsPage = () => {
           {/* Search */}
           {tags.length > 0 && (
             <div className="relative">
-              <i className="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#8E8E93' }}></i>
+              <i className="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: 'var(--ink-tertiary)' }}></i>
               <input
                 type="text"
                 value={searchQuery}
@@ -101,10 +101,10 @@ const TagsPage = () => {
                 placeholder="Search tags..."
                 className="w-full pl-9 pr-4 py-2.5 rounded-lg text-sm focus:outline-none transition-shadow duration-200"
                 style={{
-                  border: '1px solid #8E8E93',
-                  fontFamily: "'Inter', sans-serif",
+                  border: '1px solid var(--ink-tertiary)',
+                  fontFamily: 'var(--font-body)',
                   fontWeight: 400,
-                  background: '#FFFFFF',
+                  background: 'var(--surface)',
                   boxShadow: 'inset 0 3px 6px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(255, 255, 255, 0.8)',
                   letterSpacing: '0.01em',
                   fontSize: '0.9rem',
@@ -134,9 +134,9 @@ const TagsPage = () => {
                     style={{ color: isSelected ? 'rgba(255,255,255,0.6)' : '#C7C7CC' }}
                   ></i>
                   <span style={{
-                    color: isSelected ? 'white' : '#1D1D1F',
+                    color: isSelected ? 'white' : 'var(--ink)',
                     fontWeight: isSelected ? 600 : 400,
-                    fontFamily: "'Inter', sans-serif",
+                    fontFamily: 'var(--font-body)',
                   }}>
                     {tag.name}
                   </span>
@@ -144,7 +144,7 @@ const TagsPage = () => {
                     className="text-xs px-1.5 py-0.5 rounded"
                     style={{
                       backgroundColor: isSelected ? 'rgba(255,255,255,0.2)' : 'rgba(142, 142, 147, 0.15)',
-                      color: isSelected ? 'rgba(255,255,255,0.8)' : '#8E8E93',
+                      color: isSelected ? 'rgba(255,255,255,0.8)' : 'var(--ink-tertiary)',
                       fontWeight: 600,
                     }}
                   >
@@ -159,7 +159,7 @@ const TagsPage = () => {
         {/* Search no results */}
         {!isLoading && !error && tags.length > 0 && filteredTags.length === 0 && searchQuery && (
           <div className="px-8 pb-5">
-            <p className="text-sm" style={{ color: '#8E8E93' }}>
+            <p className="text-sm" style={{ color: 'var(--ink-tertiary)' }}>
               No tags match "{searchQuery}"
             </p>
           </div>
@@ -175,21 +175,21 @@ const TagsPage = () => {
         )}
 
         {error && (
-          <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
-            <i className="fa-solid fa-exclamation-circle text-6xl mb-4" style={{ color: '#DC2626' }}></i>
-            <p style={{ color: '#DC2626', fontFamily: "'Inter', sans-serif", fontWeight: 400 }}>
+          <div className="rounded-xl p-12 text-center v2-card" style={{ background: 'var(--surface)' }}>
+            <i className="fa-solid fa-exclamation-circle text-6xl mb-4" style={{ color: 'var(--overdue)' }}></i>
+            <p style={{ color: 'var(--overdue)', fontFamily: 'var(--font-body)', fontWeight: 400 }}>
               Error loading tags: {error.message}
             </p>
           </div>
         )}
 
         {!isLoading && !error && tags.length === 0 && (
-          <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
-            <i className="fa-solid fa-tags text-6xl mb-4 block" style={{ color: '#E5E5E7' }}></i>
-            <h3 className="text-xl mb-2" style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif", fontWeight: 700 }}>
+          <div className="rounded-xl p-12 text-center v2-card" style={{ background: 'var(--surface)' }}>
+            <i className="fa-solid fa-tags text-6xl mb-4 block" style={{ color: 'var(--border)' }}></i>
+            <h3 className="text-xl mb-2" style={{ color: 'var(--ink)', fontFamily: 'var(--font-body)', fontWeight: 700 }}>
               No Tags Yet
             </h3>
-            <p style={{ color: '#8E8E93', fontWeight: 200, fontFamily: "'Inter', sans-serif" }}>
+            <p style={{ color: 'var(--ink-tertiary)', fontWeight: 200, fontFamily: 'var(--font-body)' }}>
               Tags will appear here as you add them to journals, habits, documents, and tasks.
             </p>
           </div>
@@ -205,12 +205,12 @@ const TagsPage = () => {
         )}
 
         {!isLoading && !error && tags.length > 0 && !selectedTagId && (
-          <div className="rounded-xl p-12 text-center shadow-deep" style={{ background: '#FFFFFF' }}>
-            <i className="fa-solid fa-hand-pointer text-5xl mb-4 block" style={{ color: '#E5E5E7' }}></i>
-            <h3 className="text-lg mb-1" style={{ color: '#1D1D1F', fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>
+          <div className="rounded-xl p-12 text-center v2-card" style={{ background: 'var(--surface)' }}>
+            <i className="fa-solid fa-hand-pointer text-5xl mb-4 block" style={{ color: 'var(--border)' }}></i>
+            <h3 className="text-lg mb-1" style={{ color: 'var(--ink)', fontFamily: 'var(--font-body)', fontWeight: 600 }}>
               Select a Tag
             </h3>
-            <p className="text-sm" style={{ color: '#8E8E93', fontWeight: 300, fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-sm" style={{ color: 'var(--ink-tertiary)', fontWeight: 300, fontFamily: 'var(--font-body)' }}>
               Choose a tag above to see everything associated with it
             </p>
           </div>

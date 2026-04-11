@@ -41,6 +41,13 @@ class SectionsController < ApplicationController
     end
   end
 
+  def reorder
+    params[:section_ids].each_with_index do |id, index|
+      @project.sections.find(id).update(position: index + 1)
+    end
+    render json: { success: true }, status: :ok
+  end
+
   private
 
   def set_project

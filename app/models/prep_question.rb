@@ -13,7 +13,8 @@ class PrepQuestion < ApplicationRecord
   validates :question_type, presence: true
   validates :options, presence: true, if: :multiple_choice?
 
-  scope :active, -> { where(archived_at: nil) }
+  scope :active, -> { where(archived_at: nil, inactive: false) }
+  scope :not_archived, -> { where(archived_at: nil) }
   scope :archived, -> { where.not(archived_at: nil) }
   scope :ordered, -> { order(:position) }
 

@@ -38,7 +38,7 @@ const TagEditModal = () => {
       <button
         type="button"
         onClick={closeEditModal}
-        className="btn-liquid-outline-light"
+        className="v2-btn v2-btn-secondary"
         disabled={updateMutation.isPending}
       >
         Cancel
@@ -46,7 +46,7 @@ const TagEditModal = () => {
       <button
         type="submit"
         form="tag-edit-form"
-        className="btn-liquid"
+        className="v2-btn v2-btn-primary"
         disabled={updateMutation.isPending}
       >
         {updateMutation.isPending ? 'Saving...' : 'Update Tag'}

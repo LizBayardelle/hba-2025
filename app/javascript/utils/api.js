@@ -251,6 +251,10 @@ export const sectionsApi = {
   delete: (projectId, sectionId) => apiRequest(`/projects/${projectId}/sections/${sectionId}`, {
     method: 'DELETE',
   }),
+  reorder: (projectId, sectionIds) => apiRequest(`/projects/${projectId}/sections/reorder`, {
+    method: 'PATCH',
+    body: JSON.stringify({ section_ids: sectionIds }),
+  }),
 };
 
 // Project Tasks API methods
@@ -327,6 +331,12 @@ export const prepQuestionsApi = {
   // Delete (archive) question
   delete: (id) => apiRequest(`/prep_questions/${id}`, {
     method: 'DELETE',
+  }),
+
+  // Reorder questions
+  reorder: (questionIds) => apiRequest('/prep_questions/reorder', {
+    method: 'PATCH',
+    body: JSON.stringify({ question_ids: questionIds }),
   }),
 };
 

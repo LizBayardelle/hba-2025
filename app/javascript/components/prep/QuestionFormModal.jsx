@@ -21,6 +21,7 @@ const QuestionFormModal = ({ questions }) => {
     question_type: 'short_answer',
     options: ['', ''],
     allow_multiple: false,
+    inactive: false,
   });
 
   // Load question data when editing
@@ -33,6 +34,7 @@ const QuestionFormModal = ({ questions }) => {
           question_type: question.question_type || 'short_answer',
           options: question.options?.length > 0 ? question.options : ['', ''],
           allow_multiple: question.allow_multiple || false,
+          inactive: question.inactive || false,
         });
       }
     } else if (isOpen && mode === 'new') {
@@ -41,6 +43,7 @@ const QuestionFormModal = ({ questions }) => {
         question_type: 'short_answer',
         options: ['', ''],
         allow_multiple: false,
+        inactive: false,
       });
     }
   }, [isOpen, mode, questionId, questions]);
@@ -71,6 +74,7 @@ const QuestionFormModal = ({ questions }) => {
     const payload = {
       question_text: formData.question_text,
       question_type: formData.question_type,
+      inactive: formData.inactive,
     };
 
     if (formData.question_type === 'multiple_choice') {
@@ -251,6 +255,24 @@ const QuestionFormModal = ({ questions }) => {
             </div>
           </>
         )}
+
+        {/* Inactive toggle */}
+        <div className="flex items-center gap-4 p-4 rounded-lg" style={{ background: '#F9F9FB' }}>
+          <div
+            onClick={() => setFormData(prev => ({ ...prev, inactive: !prev.inactive }))}
+            className="relative w-12 h-7 rounded-full transition-colors duration-200 cursor-pointer flex-shrink-0"
+            style={{ backgroundColor: formData.inactive ? 'var(--ink)' : 'var(--border)' }}
+          >
+            <div
+              className="absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200"
+              style={{ transform: formData.inactive ? 'translateX(22px)' : 'translateX(4px)' }}
+            />
+          </div>
+          <div>
+            <p className="font-medium text-sm" style={{ color: 'var(--ink)' }}>Inactive</p>
+            <p className="text-xs" style={{ color: 'var(--ink-tertiary)' }}>Hide this question from your daily prep without deleting it</p>
+          </div>
+        </div>
       </form>
     </SlideOverPanel>
   );

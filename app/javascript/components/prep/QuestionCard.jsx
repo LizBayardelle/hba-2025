@@ -15,7 +15,7 @@ const QUESTION_TYPE_ICONS = {
   multiple_choice: 'fa-list-ul',
 };
 
-const QuestionCard = ({ question, index }) => {
+const QuestionCard = ({ question, index, dragHandleProps }) => {
   const { openEditModal, openDeleteModal } = usePrepStore();
 
   return (
@@ -23,13 +23,16 @@ const QuestionCard = ({ question, index }) => {
       className="rounded-xl p-5 shadow-medium transition hover:shadow-md"
       style={{
         background: 'var(--surface)',
+        opacity: question.inactive ? 0.6 : 1,
+        borderLeft: question.inactive ? '3px solid var(--ink-tertiary)' : 'none',
       }}
     >
       <div className="flex items-start gap-4">
-        {/* Position indicator */}
+        {/* Drag handle + Position indicator */}
         <div
-          className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+          className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 cursor-grab active:cursor-grabbing"
           style={{ background: 'var(--hover-tint)' }}
+          {...(dragHandleProps || {})}
         >
           <span className="text-sm font-medium" style={{ color: 'var(--ink-tertiary)' }}>
             {index + 1}
@@ -54,6 +57,15 @@ const QuestionCard = ({ question, index }) => {
                   <i className={`fa-solid ${QUESTION_TYPE_ICONS[question.question_type]}`}></i>
                   {QUESTION_TYPE_LABELS[question.question_type]}
                 </span>
+                {question.inactive && (
+                  <span
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs"
+                    style={{ background: 'var(--hover-tint)', color: 'var(--ink-tertiary)' }}
+                  >
+                    <i className="fa-solid fa-moon"></i>
+                    Inactive
+                  </span>
+                )}
                 {question.question_type === 'multiple_choice' && question.options?.length > 0 && (
                   <span
                     className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs"

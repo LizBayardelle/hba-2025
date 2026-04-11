@@ -1,12 +1,59 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import usePrepStore from '../../stores/prepStore';
+import { prepQuestionsApi } from '../../utils/api';
 import QuestionCard from './QuestionCard';
 import QuestionFormModal from './QuestionFormModal';
 import DeleteQuestionModal from './DeleteQuestionModal';
 
+const SortableQuestionCard = ({ question, index }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: question.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : 'auto',
+    opacity: isDragging ? 0.85 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes}>
+      <QuestionCard question={question} index={index} dragHandleProps={listeners} />
+    </div>
+  );
+};
+
 const ManageQuestionsPage = () => {
   const { openNewModal } = usePrepStore();
+  const queryClient = useQueryClient();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   // Fetch questions
   const { data, isLoading, error } = useQuery({
@@ -14,7 +61,30 @@ const ManageQuestionsPage = () => {
     queryFn: () => fetch('/daily_prep/manage.json').then(res => res.json()),
   });
 
+  const reorderMut = useMutation({
+    mutationFn: (questionIds) => prepQuestionsApi.reorder(questionIds),
+    onError: () => queryClient.invalidateQueries({ queryKey: ['prepQuestions'] }),
+  });
+
   const questions = data?.questions || [];
+
+  const handleDragEnd = useCallback((event) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = questions.findIndex((q) => q.id === active.id);
+    const newIndex = questions.findIndex((q) => q.id === over.id);
+    const reordered = arrayMove(questions, oldIndex, newIndex);
+
+    // Optimistic update
+    queryClient.setQueryData(['prepQuestions'], (old) => ({
+      ...old,
+      questions: reordered,
+    }));
+
+    // Persist
+    reorderMut.mutate(reordered.map((q) => q.id));
+  }, [questions, queryClient, reorderMut]);
 
   return (
     <>
@@ -36,7 +106,7 @@ const ManageQuestionsPage = () => {
                 </h1>
               </div>
               <p className="text-sm ml-13" style={{ color: 'var(--ink-tertiary)', fontFamily: 'var(--font-body)', fontWeight: 300, marginLeft: '52px' }}>
-                Create and edit your daily prep questions
+                Create and edit your daily prep questions. Drag to reorder.
               </p>
             </div>
 
@@ -87,11 +157,15 @@ const ManageQuestionsPage = () => {
         )}
 
         {!isLoading && !error && questions.length > 0 && (
-          <div className="space-y-4">
-            {questions.map((question, index) => (
-              <QuestionCard key={question.id} question={question} index={index} />
-            ))}
-          </div>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={questions.map((q) => q.id)} strategy={verticalListSortingStrategy}>
+              <div className="space-y-4">
+                {questions.map((question, index) => (
+                  <SortableQuestionCard key={question.id} question={question} index={index} />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
         )}
       </div>
 

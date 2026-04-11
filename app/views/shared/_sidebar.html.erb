@@ -267,6 +267,12 @@
             <i class="fa-solid fa-file-alt"></i>
             <span>Documents</span>
           <% end %>
+
+          <% prep_active = current_page?(daily_prep_path) || current_page?(daily_prep_manage_path) || current_page?(daily_prep_answers_path) %>
+          <%= link_to daily_prep_path, class: sidebar_link_classes(prep_active), style: "position: relative;" do %>
+            <i class="fa-solid fa-clipboard-check"></i>
+            <span>Daily Prep</span>
+          <% end %>
         </div>
       </div>
 
@@ -480,12 +486,6 @@
       <div class="mt-4">
         <div class="v2-section-label px-2.5 py-1.5">Utility</div>
         <div class="space-y-0.5">
-          <% prep_active = current_page?(daily_prep_path) || current_page?(daily_prep_manage_path) || current_page?(daily_prep_answers_path) %>
-          <%= link_to daily_prep_path, class: sidebar_link_classes(prep_active), style: "position: relative;" do %>
-            <i class="fa-solid fa-clipboard-check"></i>
-            <span>Daily Prep</span>
-          <% end %>
-
           <%= link_to analytics_path, class: sidebar_link_classes(current_page?(analytics_path)), style: "position: relative;" do %>
             <i class="fa-solid fa-chart-column"></i>
             <span>Analytics</span>

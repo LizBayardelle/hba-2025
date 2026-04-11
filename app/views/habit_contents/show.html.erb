@@ -1,9 +1,9 @@
 <!-- Modal for displaying habit content -->
 <div class="fixed inset-0 flex items-center justify-center p-4 z-50" id="content-modal" style="background: rgba(0, 0, 0, 0.6); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);" onclick="if(event.target === this) closeHabitContentModal()">
-  <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden" onclick="event.stopPropagation()">
+  <div class="v2-card max-w-4xl w-full max-h-[90vh] overflow-hidden" onclick="event.stopPropagation()">
     <!-- Header -->
     <div class="p-6 border-b flex items-center justify-between" style="border-color: #E8EEF1;">
-      <h2 class="text-2xl font-bold display-font" style="color: #1D1D1F;">
+      <h2 class="text-2xl font-bold" style="color: var(--ink);">
         <%= @habit_content.title %>
       </h2>
       <button onclick="closeHabitContentModal()" class="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center transition">
@@ -34,8 +34,7 @@
         <div class="text-center py-8">
           <%= link_to @habit_content.metadata['url'], @habit_content.metadata['url'],
               target: '_blank',
-              class: "inline-flex items-center gap-2 px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition",
-              style: "background: linear-gradient(135deg, #1D1D1F, #45606b);" do %>
+              class: "v2-btn v2-btn-primary inline-flex items-center gap-2" do %>
             <i class="fa-solid fa-external-link-alt"></i>
             Open Link
           <% end %>
@@ -51,8 +50,7 @@
     <!-- Footer -->
     <div class="p-6 border-t flex justify-end" style="border-color: #E8EEF1;">
       <button onclick="closeHabitContentModal()"
-          class="px-6 py-2 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition"
-          style="background: linear-gradient(135deg, #1D1D1F, #45606b);">
+          class="v2-btn v2-btn-primary">
         Close
       </button>
     </div>

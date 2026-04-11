@@ -1,5 +1,22 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+  horizontalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import useProjectStore from '../../stores/projectStore';
 import { projectsApi, sectionsApi, projectTasksApi } from '../../utils/api';
 import TaskDetailModal from './TaskDetailModal';
@@ -11,6 +28,36 @@ const inputStyle = {
   color: 'var(--ink)', fontFamily: 'var(--font-body)', fontSize: '0.9rem', outline: 'none',
 };
 const inputSmStyle = { ...inputStyle, padding: '6px 10px', fontSize: '0.833rem' };
+
+// Drag handle component
+const DragHandle = ({ listeners, style: extraStyle }) => (
+  <div
+    className="flex items-center justify-center cursor-grab active:cursor-grabbing"
+    style={{ color: 'var(--ink-faint)', ...extraStyle }}
+    {...(listeners || {})}
+  >
+    <i className="fa-solid fa-grip-vertical" style={{ fontSize: '0.7rem' }} />
+  </div>
+);
+
+// ── Sortable wrappers ──
+
+const SortableItem = ({ id, children, strategy = 'vertical' }) => {
+  const {
+    attributes, listeners, setNodeRef, transform, transition, isDragging,
+  } = useSortable({ id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : 'auto',
+    opacity: isDragging ? 0.85 : 1,
+  };
+  return (
+    <div ref={setNodeRef} style={style} {...attributes}>
+      {children({ listeners, isDragging })}
+    </div>
+  );
+};
 
 const ProjectPage = ({ projectId }) => {
   const queryClient = useQueryClient();
@@ -32,6 +79,11 @@ const ProjectPage = ({ projectId }) => {
   const [newSectionName, setNewSectionName] = useState('');
   const [showNewSection, setShowNewSection] = useState(false);
   const [sectionRename, setSectionRename] = useState('');
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   // --- Data fetching ---
   const { data, isLoading, error } = useQuery({
@@ -95,6 +147,16 @@ const ProjectPage = ({ projectId }) => {
     },
     onError: (_err, _vars, ctx) => { if (ctx?.prev) queryClient.setQueryData(queryKey, ctx.prev); },
     onSettled: () => queryClient.invalidateQueries({ queryKey }),
+  });
+
+  const reorderSectionsMut = useMutation({
+    mutationFn: (sectionIds) => sectionsApi.reorder(projectId, sectionIds),
+    onError: () => queryClient.invalidateQueries({ queryKey }),
+  });
+
+  const reorderTasksMut = useMutation({
+    mutationFn: (tasks) => projectTasksApi.reorder(tasks),
+    onError: () => queryClient.invalidateQueries({ queryKey }),
   });
 
   const createTaskMut = useMutation({
@@ -168,6 +230,58 @@ const ProjectPage = ({ projectId }) => {
     onError: (_err, _vars, ctx) => { if (ctx?.prev) queryClient.setQueryData(queryKey, ctx.prev); },
     onSettled: () => queryClient.invalidateQueries({ queryKey }),
   });
+
+  // --- Drag handlers ---
+  const handleSectionDragEnd = useCallback((event) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const sections = data?.sections || [];
+    const oldIndex = sections.findIndex((s) => s.id === active.id);
+    const newIndex = sections.findIndex((s) => s.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+    const reordered = arrayMove(sections, oldIndex, newIndex);
+    optimistic((d) => { d.sections = reordered; return d; });
+    reorderSectionsMut.mutate(reordered.map((s) => s.id));
+  }, [data, optimistic, reorderSectionsMut]);
+
+  const handleTaskDragEnd = useCallback((sectionId) => (event) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const section = data?.sections.find((s) => s.id === sectionId);
+    if (!section) return;
+    const tasks = section.project_tasks;
+    const oldIndex = tasks.findIndex((t) => t.id === active.id);
+    const newIndex = tasks.findIndex((t) => t.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+    const reordered = arrayMove(tasks, oldIndex, newIndex);
+    optimistic((d) => {
+      const sec = d.sections.find((s) => s.id === sectionId);
+      if (sec) sec.project_tasks = reordered;
+      return d;
+    });
+    reorderTasksMut.mutate(reordered.map((t, i) => ({ id: t.id, position: i + 1, section_id: sectionId })));
+  }, [data, optimistic, reorderTasksMut]);
+
+  const handleSubtaskDragEnd = useCallback((sectionId, parentId) => (event) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const section = data?.sections.find((s) => s.id === sectionId);
+    if (!section) return;
+    const parent = section.project_tasks.find((t) => t.id === parentId);
+    if (!parent || !parent.subtasks) return;
+    const oldIndex = parent.subtasks.findIndex((s) => s.id === active.id);
+    const newIndex = parent.subtasks.findIndex((s) => s.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+    const reordered = arrayMove(parent.subtasks, oldIndex, newIndex);
+    optimistic((d) => {
+      const sec = d.sections.find((s) => s.id === sectionId);
+      if (!sec) return d;
+      const p = sec.project_tasks.find((t) => t.id === parentId);
+      if (p) p.subtasks = reordered;
+      return d;
+    });
+    reorderTasksMut.mutate(reordered.map((s, i) => ({ id: s.id, position: i + 1, section_id: sectionId })));
+  }, [data, optimistic, reorderTasksMut]);
 
   // --- Filter tasks ---
   const filterTasks = (tasks) => {
@@ -329,139 +443,136 @@ const ProjectPage = ({ projectId }) => {
 
       {/* Board View */}
       {viewMode === 'board' && (
-        <div className="flex gap-5 overflow-x-auto pb-6" style={{ minHeight: 'calc(100vh - 240px)' }}>
-          {sections.map((section) => (
-            <SectionColumn
-              key={section.id}
-              section={section}
-              project={project}
-              tasks={filterTasks(section.project_tasks)}
-              expandedTasks={expandedTasks}
-              toggleTaskExpanded={toggleTaskExpanded}
-              addingTaskSectionId={addingTaskSectionId}
-              setAddingTaskSectionId={setAddingTaskSectionId}
-              addingSubtaskId={addingSubtaskId}
-              setAddingSubtaskId={setAddingSubtaskId}
-              newTaskName={newTaskName}
-              setNewTaskName={setNewTaskName}
-              newSubtaskName={newSubtaskName}
-              setNewSubtaskName={setNewSubtaskName}
-              editingSectionId={editingSectionId}
-              setEditingSectionId={setEditingSectionId}
-              sectionRename={sectionRename}
-              setSectionRename={setSectionRename}
-              onCreateTask={(sectionId, name, parentId) => createTaskMut.mutate({ sectionId, name, parentId })}
-              onUpdateTask={(taskId, updates) => updateTaskMut.mutate({ taskId, updates })}
-              onDeleteTask={(taskId) => deleteTaskMut.mutate(taskId)}
-              onUpdateSection={(sectionId, updates) => updateSectionMut.mutate({ sectionId, updates })}
-              onDeleteSection={(sectionId) => deleteSectionMut.mutate(sectionId)}
-              onOpenTaskModal={openTaskModal}
-            />
-          ))}
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSectionDragEnd}>
+          <SortableContext items={sections.map((s) => s.id)} strategy={horizontalListSortingStrategy}>
+            <div className="flex gap-5 overflow-x-auto pb-6" style={{ minHeight: 'calc(100vh - 240px)' }}>
+              {sections.map((section) => (
+                <SortableItem key={section.id} id={section.id}>
+                  {({ listeners }) => (
+                    <SectionColumn
+                      section={section}
+                      project={project}
+                      tasks={filterTasks(section.project_tasks)}
+                      expandedTasks={expandedTasks}
+                      toggleTaskExpanded={toggleTaskExpanded}
+                      addingTaskSectionId={addingTaskSectionId}
+                      setAddingTaskSectionId={setAddingTaskSectionId}
+                      addingSubtaskId={addingSubtaskId}
+                      setAddingSubtaskId={setAddingSubtaskId}
+                      newTaskName={newTaskName}
+                      setNewTaskName={setNewTaskName}
+                      newSubtaskName={newSubtaskName}
+                      setNewSubtaskName={setNewSubtaskName}
+                      editingSectionId={editingSectionId}
+                      setEditingSectionId={setEditingSectionId}
+                      sectionRename={sectionRename}
+                      setSectionRename={setSectionRename}
+                      onCreateTask={(sectionId, name, parentId) => createTaskMut.mutate({ sectionId, name, parentId })}
+                      onUpdateTask={(taskId, updates) => updateTaskMut.mutate({ taskId, updates })}
+                      onDeleteTask={(taskId) => deleteTaskMut.mutate(taskId)}
+                      onUpdateSection={(sectionId, updates) => updateSectionMut.mutate({ sectionId, updates })}
+                      onDeleteSection={(sectionId) => deleteSectionMut.mutate(sectionId)}
+                      onOpenTaskModal={openTaskModal}
+                      sectionDragListeners={listeners}
+                      sensors={sensors}
+                      onTaskDragEnd={handleTaskDragEnd(section.id)}
+                      onSubtaskDragEnd={handleSubtaskDragEnd}
+                    />
+                  )}
+                </SortableItem>
+              ))}
 
-          {/* Add Section */}
-          {showNewSection ? (
-            <div className="flex-shrink-0 v2-card v2-card-padded" style={{ width: 340 }}>
-              <input
-                type="text" value={newSectionName} onChange={(e) => setNewSectionName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && newSectionName.trim()) { createSectionMut.mutate(newSectionName.trim()); setNewSectionName(''); setShowNewSection(false); }
-                  if (e.key === 'Escape') setShowNewSection(false);
-                }}
-                style={{ ...inputStyle, fontWeight: 500, marginBottom: 12 }} placeholder="Section name..." autoFocus
-              />
-              <div className="flex gap-2">
-                <button onClick={() => { if (newSectionName.trim()) { createSectionMut.mutate(newSectionName.trim()); setNewSectionName(''); setShowNewSection(false); } }} className="v2-btn v2-btn-primary">Add Section</button>
-                <button onClick={() => setShowNewSection(false)} className="v2-btn v2-btn-ghost">Cancel</button>
-              </div>
+              {/* Add Section */}
+              {showNewSection ? (
+                <div className="flex-shrink-0 v2-card v2-card-padded" style={{ width: 340 }}>
+                  <input
+                    type="text" value={newSectionName} onChange={(e) => setNewSectionName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && newSectionName.trim()) { createSectionMut.mutate(newSectionName.trim()); setNewSectionName(''); setShowNewSection(false); }
+                      if (e.key === 'Escape') setShowNewSection(false);
+                    }}
+                    style={{ ...inputStyle, fontWeight: 500, marginBottom: 12 }} placeholder="Section name..." autoFocus
+                  />
+                  <div className="flex gap-2">
+                    <button onClick={() => { if (newSectionName.trim()) { createSectionMut.mutate(newSectionName.trim()); setNewSectionName(''); setShowNewSection(false); } }} className="v2-btn v2-btn-primary">Add Section</button>
+                    <button onClick={() => setShowNewSection(false)} className="v2-btn v2-btn-ghost">Cancel</button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => { setShowNewSection(true); setNewSectionName(''); }}
+                  className="flex-shrink-0 flex items-center justify-center transition"
+                  style={{ width: 340, minHeight: 120, borderRadius: 10, border: '2px dashed var(--border)', color: 'var(--ink-faint)', background: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: '0.867rem' }}
+                >
+                  <i className="fa-solid fa-plus" style={{ marginRight: 6, fontSize: '0.7rem' }} />Add Section
+                </button>
+              )}
             </div>
-          ) : (
-            <button
-              onClick={() => { setShowNewSection(true); setNewSectionName(''); }}
-              className="flex-shrink-0 flex items-center justify-center transition"
-              style={{ width: 340, minHeight: 120, borderRadius: 10, border: '2px dashed var(--border)', color: 'var(--ink-faint)', background: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: '0.867rem' }}
-            >
-              <i className="fa-solid fa-plus" style={{ marginRight: 6, fontSize: '0.7rem' }} />Add Section
-            </button>
-          )}
-        </div>
+          </SortableContext>
+        </DndContext>
       )}
 
       {/* List View */}
       {viewMode === 'list' && (
-        <div style={{ maxWidth: 720 }}>
-          {sections.map((section) => (
-            <div key={section.id} style={{ marginBottom: 24 }}>
-              <div className="flex items-center gap-2" style={{ marginBottom: 8, paddingBottom: 6, borderBottom: '1px solid var(--border)' }}>
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.867rem', fontWeight: 600, color: 'var(--ink)' }}>{section.name}</span>
-                <span className="v2-caption" style={{ color: 'var(--ink-faint)' }}>{filterTasks(section.project_tasks).length}</span>
-                <button onClick={() => { setAddingTaskSectionId(section.id); setNewTaskName(''); }} className="v2-btn-icon-sm ml-auto" title="Add task">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-                </button>
-              </div>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSectionDragEnd}>
+          <SortableContext items={sections.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+            <div style={{ maxWidth: 720 }}>
+              {sections.map((section) => (
+                <SortableItem key={section.id} id={section.id}>
+                  {({ listeners }) => (
+                    <ListSection
+                      section={section}
+                      project={project}
+                      tasks={filterTasks(section.project_tasks)}
+                      expandedTasks={expandedTasks}
+                      toggleTaskExpanded={toggleTaskExpanded}
+                      addingTaskSectionId={addingTaskSectionId}
+                      setAddingTaskSectionId={setAddingTaskSectionId}
+                      addingSubtaskId={addingSubtaskId}
+                      setAddingSubtaskId={setAddingSubtaskId}
+                      newTaskName={newTaskName}
+                      setNewTaskName={setNewTaskName}
+                      newSubtaskName={newSubtaskName}
+                      setNewSubtaskName={setNewSubtaskName}
+                      onCreateTask={(sectionId, name, parentId) => createTaskMut.mutate({ sectionId, name, parentId })}
+                      onUpdateTask={(taskId, updates) => updateTaskMut.mutate({ taskId, updates })}
+                      onDeleteTask={(taskId) => deleteTaskMut.mutate(taskId)}
+                      onOpenTaskModal={openTaskModal}
+                      sectionDragListeners={listeners}
+                      sensors={sensors}
+                      onTaskDragEnd={handleTaskDragEnd(section.id)}
+                      onSubtaskDragEnd={handleSubtaskDragEnd}
+                    />
+                  )}
+                </SortableItem>
+              ))}
 
-              <div className="space-y-1">
-                {filterTasks(section.project_tasks).map((task) => (
-                  <ListTaskRow
-                    key={task.id}
-                    task={task}
-                    project={project}
-                    section={section}
-                    expandedTasks={expandedTasks}
-                    toggleTaskExpanded={toggleTaskExpanded}
-                    addingSubtaskId={addingSubtaskId}
-                    setAddingSubtaskId={setAddingSubtaskId}
-                    newSubtaskName={newSubtaskName}
-                    setNewSubtaskName={setNewSubtaskName}
-                    onUpdateTask={(taskId, updates) => updateTaskMut.mutate({ taskId, updates })}
-                    onDeleteTask={(taskId) => deleteTaskMut.mutate(taskId)}
-                    onCreateTask={(sectionId, name, parentId) => createTaskMut.mutate({ sectionId, name, parentId })}
-                    onOpenTaskModal={openTaskModal}
-                  />
-                ))}
-              </div>
-
-              {addingTaskSectionId === section.id && (
-                <div className="flex gap-2 mt-2">
+              {/* Add Section */}
+              {showNewSection ? (
+                <div className="flex gap-2 mt-2" style={{ maxWidth: 400 }}>
                   <input
-                    type="text" value={newTaskName} onChange={(e) => setNewTaskName(e.target.value)}
+                    type="text" value={newSectionName} onChange={(e) => setNewSectionName(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' && newTaskName.trim()) { createTaskMut.mutate({ sectionId: section.id, name: newTaskName.trim() }); setNewTaskName(''); setAddingTaskSectionId(null); }
-                      if (e.key === 'Escape') setAddingTaskSectionId(null);
+                      if (e.key === 'Enter' && newSectionName.trim()) { createSectionMut.mutate(newSectionName.trim()); setNewSectionName(''); setShowNewSection(false); }
+                      if (e.key === 'Escape') setShowNewSection(false);
                     }}
-                    style={{ ...inputSmStyle, flex: 1 }} placeholder="Task name..." autoFocus
+                    style={{ ...inputSmStyle, flex: 1, fontWeight: 500 }} placeholder="Section name..." autoFocus
                   />
-                  <button onClick={() => { if (newTaskName.trim()) { createTaskMut.mutate({ sectionId: section.id, name: newTaskName.trim() }); setNewTaskName(''); setAddingTaskSectionId(null); } }} className="v2-btn-sm v2-btn-primary">Add</button>
-                  <button onClick={() => setAddingTaskSectionId(null)} className="v2-btn-sm v2-btn-ghost">Cancel</button>
+                  <button onClick={() => { if (newSectionName.trim()) { createSectionMut.mutate(newSectionName.trim()); setNewSectionName(''); setShowNewSection(false); } }} className="v2-btn-sm v2-btn-primary">Add</button>
+                  <button onClick={() => setShowNewSection(false)} className="v2-btn-sm v2-btn-ghost">Cancel</button>
                 </div>
+              ) : (
+                <button
+                  onClick={() => { setShowNewSection(true); setNewSectionName(''); }}
+                  style={{ marginTop: 4, padding: '8px 0', fontSize: '0.833rem', fontFamily: 'var(--font-body)', color: 'var(--ink-faint)', background: 'none', border: 'none', cursor: 'pointer' }}
+                  className="hover:opacity-80 transition"
+                >
+                  <i className="fa-solid fa-plus" style={{ marginRight: 6, fontSize: '0.65rem' }} />Add section
+                </button>
               )}
             </div>
-          ))}
-
-          {/* Add Section */}
-          {showNewSection ? (
-            <div className="flex gap-2 mt-2" style={{ maxWidth: 400 }}>
-              <input
-                type="text" value={newSectionName} onChange={(e) => setNewSectionName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && newSectionName.trim()) { createSectionMut.mutate(newSectionName.trim()); setNewSectionName(''); setShowNewSection(false); }
-                  if (e.key === 'Escape') setShowNewSection(false);
-                }}
-                style={{ ...inputSmStyle, flex: 1, fontWeight: 500 }} placeholder="Section name..." autoFocus
-              />
-              <button onClick={() => { if (newSectionName.trim()) { createSectionMut.mutate(newSectionName.trim()); setNewSectionName(''); setShowNewSection(false); } }} className="v2-btn-sm v2-btn-primary">Add</button>
-              <button onClick={() => setShowNewSection(false)} className="v2-btn-sm v2-btn-ghost">Cancel</button>
-            </div>
-          ) : (
-            <button
-              onClick={() => { setShowNewSection(true); setNewSectionName(''); }}
-              style={{ marginTop: 4, padding: '8px 0', fontSize: '0.833rem', fontFamily: 'var(--font-body)', color: 'var(--ink-faint)', background: 'none', border: 'none', cursor: 'pointer' }}
-              className="hover:opacity-80 transition"
-            >
-              <i className="fa-solid fa-plus" style={{ marginRight: 6, fontSize: '0.65rem' }} />Add section
-            </button>
-          )}
-        </div>
+          </SortableContext>
+        </DndContext>
       )}
 
       {/* Task Detail Modal */}
@@ -479,6 +590,8 @@ const ProjectPage = ({ projectId }) => {
             onDelete={() => { deleteTaskMut.mutate(taskModal.taskId); closeTaskModal(); }}
             onCreateSubtask={(name) => createTaskMut.mutate({ sectionId: found.section.id, name, parentId: taskModal.taskId })}
             onClose={closeTaskModal}
+            onSubtaskDragEnd={handleSubtaskDragEnd(found.section.id, taskModal.taskId)}
+            sensors={sensors}
           />
         );
       })()}
@@ -498,6 +611,8 @@ const SectionColumn = ({
   sectionRename, setSectionRename,
   onCreateTask, onUpdateTask, onDeleteTask,
   onUpdateSection, onDeleteSection, onOpenTaskModal,
+  sectionDragListeners,
+  sensors, onTaskDragEnd, onSubtaskDragEnd,
 }) => {
   const [showMenu, setShowMenu] = useState(false);
 
@@ -506,6 +621,7 @@ const SectionColumn = ({
       {/* Section Header */}
       <div className="v2-section-header" style={{ padding: '12px 14px 8px' }}>
         <div className="flex items-center gap-2 flex-1 min-w-0">
+          <DragHandle listeners={sectionDragListeners} style={{ marginRight: 2 }} />
           {editingSectionId === section.id ? (
             <input
               type="text" value={sectionRename} onChange={(e) => setSectionRename(e.target.value)}
@@ -567,52 +683,62 @@ const SectionColumn = ({
       </div>
 
       {/* Tasks */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-2">
-        {tasks.map((task) => (
-          <BoardTaskCard
-            key={task.id}
-            task={task}
-            project={project}
-            section={section}
-            expandedTasks={expandedTasks}
-            toggleTaskExpanded={toggleTaskExpanded}
-            addingSubtaskId={addingSubtaskId}
-            setAddingSubtaskId={setAddingSubtaskId}
-            newSubtaskName={newSubtaskName}
-            setNewSubtaskName={setNewSubtaskName}
-            onUpdateTask={onUpdateTask}
-            onDeleteTask={onDeleteTask}
-            onCreateTask={onCreateTask}
-            onOpenTaskModal={onOpenTaskModal}
-          />
-        ))}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onTaskDragEnd}>
+        <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+          <div className="flex-1 overflow-y-auto p-3 space-y-2">
+            {tasks.map((task) => (
+              <SortableItem key={task.id} id={task.id}>
+                {({ listeners }) => (
+                  <BoardTaskCard
+                    task={task}
+                    project={project}
+                    section={section}
+                    expandedTasks={expandedTasks}
+                    toggleTaskExpanded={toggleTaskExpanded}
+                    addingSubtaskId={addingSubtaskId}
+                    setAddingSubtaskId={setAddingSubtaskId}
+                    newSubtaskName={newSubtaskName}
+                    setNewSubtaskName={setNewSubtaskName}
+                    onUpdateTask={onUpdateTask}
+                    onDeleteTask={onDeleteTask}
+                    onCreateTask={onCreateTask}
+                    onOpenTaskModal={onOpenTaskModal}
+                    dragListeners={listeners}
+                    sensors={sensors}
+                    onSubtaskDragEnd={onSubtaskDragEnd(section.id, task.id)}
+                  />
+                )}
+              </SortableItem>
+            ))}
 
-        {/* Add Task */}
-        {addingTaskSectionId === section.id ? (
-          <div style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)' }}>
-            <input
-              type="text" value={newTaskName} onChange={(e) => setNewTaskName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && newTaskName.trim()) { onCreateTask(section.id, newTaskName.trim()); setNewTaskName(''); setAddingTaskSectionId(null); }
-                if (e.key === 'Escape') setAddingTaskSectionId(null);
-              }}
-              style={{ ...inputSmStyle, marginBottom: 8 }} placeholder="Task name..." autoFocus
-            />
-            <div className="flex gap-2">
-              <button onClick={() => { if (newTaskName.trim()) { onCreateTask(section.id, newTaskName.trim()); setNewTaskName(''); setAddingTaskSectionId(null); } }} className="v2-btn-sm v2-btn-primary">Add Task</button>
-              <button onClick={() => setAddingTaskSectionId(null)} className="v2-btn-sm v2-btn-ghost">Cancel</button>
-            </div>
+            {/* Add Task */}
+            {addingTaskSectionId === section.id ? (
+              <div style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--surface)' }}>
+                <input
+                  type="text" value={newTaskName} onChange={(e) => setNewTaskName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && newTaskName.trim()) { onCreateTask(section.id, newTaskName.trim()); setNewTaskName(''); setAddingTaskSectionId(null); }
+                    if (e.key === 'Escape') setAddingTaskSectionId(null);
+                  }}
+                  style={{ ...inputSmStyle, marginBottom: 8 }} placeholder="Task name..." autoFocus
+                />
+                <div className="flex gap-2">
+                  <button onClick={() => { if (newTaskName.trim()) { onCreateTask(section.id, newTaskName.trim()); setNewTaskName(''); setAddingTaskSectionId(null); } }} className="v2-btn-sm v2-btn-primary">Add Task</button>
+                  <button onClick={() => setAddingTaskSectionId(null)} className="v2-btn-sm v2-btn-ghost">Cancel</button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => { setAddingTaskSectionId(section.id); setNewTaskName(''); }}
+                style={{ width: '100%', textAlign: 'left', padding: '8px 12px', borderRadius: 8, fontSize: '0.833rem', fontFamily: 'var(--font-body)', color: 'var(--ink-faint)', background: 'none', border: 'none', cursor: 'pointer' }}
+                className="hover:bg-[var(--hover-tint)]"
+              >
+                <i className="fa-solid fa-plus" style={{ marginRight: 6, fontSize: '0.65rem' }} />Add task
+              </button>
+            )}
           </div>
-        ) : (
-          <button
-            onClick={() => { setAddingTaskSectionId(section.id); setNewTaskName(''); }}
-            style={{ width: '100%', textAlign: 'left', padding: '8px 12px', borderRadius: 8, fontSize: '0.833rem', fontFamily: 'var(--font-body)', color: 'var(--ink-faint)', background: 'none', border: 'none', cursor: 'pointer' }}
-            className="hover:bg-[var(--hover-tint)]"
-          >
-            <i className="fa-solid fa-plus" style={{ marginRight: 6, fontSize: '0.65rem' }} />Add task
-          </button>
-        )}
-      </div>
+        </SortableContext>
+      </DndContext>
     </div>
   );
 };
@@ -624,6 +750,8 @@ const BoardTaskCard = ({
   addingSubtaskId, setAddingSubtaskId,
   newSubtaskName, setNewSubtaskName,
   onUpdateTask, onDeleteTask, onCreateTask, onOpenTaskModal,
+  dragListeners,
+  sensors, onSubtaskDragEnd,
 }) => {
   return (
     <div
@@ -631,6 +759,7 @@ const BoardTaskCard = ({
       className="hover:shadow-sm group"
     >
       <div className="flex items-start gap-2.5">
+        <DragHandle listeners={dragListeners} style={{ marginTop: 2 }} />
         <button
           onClick={() => onUpdateTask(task.id, { completed: !task.completed })}
           style={{
@@ -684,33 +813,42 @@ const BoardTaskCard = ({
 
       {/* Subtasks */}
       {expandedTasks[task.id] && task.subtasks && task.subtasks.length > 0 && (
-        <div style={{ marginTop: 8, marginLeft: 24, paddingLeft: 12, borderLeft: '2px solid var(--border)' }} className="space-y-1">
-          {task.subtasks.map((sub) => (
-            <div key={sub.id} className="flex items-center gap-2 group/sub">
-              <button
-                onClick={() => onUpdateTask(sub.id, { completed: !sub.completed })}
-                style={{
-                  width: 14, height: 14, borderRadius: 3, flexShrink: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  border: `1.5px solid ${sub.completed ? 'var(--ink)' : 'var(--border-hover)'}`,
-                  background: sub.completed ? 'var(--ink)' : 'transparent',
-                  cursor: 'pointer', padding: 0,
-                }}
-              >
-                <i className="fa-solid fa-check" style={{ fontSize: '0.4rem', color: 'var(--check-ink)', opacity: sub.completed ? 1 : 0 }} />
-              </button>
-              <span style={{
-                flex: 1, fontFamily: 'var(--font-body)', fontSize: '0.8rem', color: 'var(--ink)',
-                textDecoration: sub.completed ? 'line-through' : 'none', textDecorationColor: 'var(--ink-faint)',
-                opacity: sub.completed ? 0.5 : 1,
-              }}>{sub.name}</span>
-              <button onClick={() => { if (confirm('Archive?')) onDeleteTask(sub.id); }}
-                className="v2-btn-icon-sm opacity-0 group-hover/sub:opacity-100 transition-opacity" style={{ width: 18, height: 18 }}>
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-              </button>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onSubtaskDragEnd}>
+          <SortableContext items={task.subtasks.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+            <div style={{ marginTop: 8, marginLeft: 24, paddingLeft: 12, borderLeft: '2px solid var(--border)' }} className="space-y-1">
+              {task.subtasks.map((sub) => (
+                <SortableItem key={sub.id} id={sub.id}>
+                  {({ listeners: subListeners }) => (
+                    <div className="flex items-center gap-2 group/sub">
+                      <DragHandle listeners={subListeners} style={{ width: 14 }} />
+                      <button
+                        onClick={() => onUpdateTask(sub.id, { completed: !sub.completed })}
+                        style={{
+                          width: 14, height: 14, borderRadius: 3, flexShrink: 0,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          border: `1.5px solid ${sub.completed ? 'var(--ink)' : 'var(--border-hover)'}`,
+                          background: sub.completed ? 'var(--ink)' : 'transparent',
+                          cursor: 'pointer', padding: 0,
+                        }}
+                      >
+                        <i className="fa-solid fa-check" style={{ fontSize: '0.4rem', color: 'var(--check-ink)', opacity: sub.completed ? 1 : 0 }} />
+                      </button>
+                      <span style={{
+                        flex: 1, fontFamily: 'var(--font-body)', fontSize: '0.8rem', color: 'var(--ink)',
+                        textDecoration: sub.completed ? 'line-through' : 'none', textDecorationColor: 'var(--ink-faint)',
+                        opacity: sub.completed ? 0.5 : 1,
+                      }}>{sub.name}</span>
+                      <button onClick={() => { if (confirm('Archive?')) onDeleteTask(sub.id); }}
+                        className="v2-btn-icon-sm opacity-0 group-hover/sub:opacity-100 transition-opacity" style={{ width: 18, height: 18 }}>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                      </button>
+                    </div>
+                  )}
+                </SortableItem>
+              ))}
             </div>
-          ))}
-        </div>
+          </SortableContext>
+        </DndContext>
       )}
 
       {/* Add Subtask */}
@@ -732,6 +870,78 @@ const BoardTaskCard = ({
   );
 };
 
+// ── List Section (List View) ──
+const ListSection = ({
+  section, project, tasks,
+  expandedTasks, toggleTaskExpanded,
+  addingTaskSectionId, setAddingTaskSectionId,
+  addingSubtaskId, setAddingSubtaskId,
+  newTaskName, setNewTaskName,
+  newSubtaskName, setNewSubtaskName,
+  onCreateTask, onUpdateTask, onDeleteTask, onOpenTaskModal,
+  sectionDragListeners,
+  sensors, onTaskDragEnd, onSubtaskDragEnd,
+}) => {
+  return (
+    <div style={{ marginBottom: 24 }}>
+      <div className="flex items-center gap-2" style={{ marginBottom: 8, paddingBottom: 6, borderBottom: '1px solid var(--border)' }}>
+        <DragHandle listeners={sectionDragListeners} />
+        <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.867rem', fontWeight: 600, color: 'var(--ink)' }}>{section.name}</span>
+        <span className="v2-caption" style={{ color: 'var(--ink-faint)' }}>{tasks.length}</span>
+        <button onClick={() => { setAddingTaskSectionId(section.id); setNewTaskName(''); }} className="v2-btn-icon-sm ml-auto" title="Add task">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+        </button>
+      </div>
+
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onTaskDragEnd}>
+        <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+          <div className="space-y-1">
+            {tasks.map((task) => (
+              <SortableItem key={task.id} id={task.id}>
+                {({ listeners }) => (
+                  <ListTaskRow
+                    task={task}
+                    project={project}
+                    section={section}
+                    expandedTasks={expandedTasks}
+                    toggleTaskExpanded={toggleTaskExpanded}
+                    addingSubtaskId={addingSubtaskId}
+                    setAddingSubtaskId={setAddingSubtaskId}
+                    newSubtaskName={newSubtaskName}
+                    setNewSubtaskName={setNewSubtaskName}
+                    onUpdateTask={onUpdateTask}
+                    onDeleteTask={onDeleteTask}
+                    onCreateTask={onCreateTask}
+                    onOpenTaskModal={onOpenTaskModal}
+                    dragListeners={listeners}
+                    sensors={sensors}
+                    onSubtaskDragEnd={onSubtaskDragEnd(section.id, task.id)}
+                  />
+                )}
+              </SortableItem>
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
+
+      {addingTaskSectionId === section.id && (
+        <div className="flex gap-2 mt-2">
+          <input
+            type="text" value={newTaskName} onChange={(e) => setNewTaskName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && newTaskName.trim()) { onCreateTask(section.id, newTaskName.trim()); setNewTaskName(''); setAddingTaskSectionId(null); }
+              if (e.key === 'Escape') setAddingTaskSectionId(null);
+            }}
+            style={{ ...inputSmStyle, flex: 1 }} placeholder="Task name..." autoFocus
+          />
+          <button onClick={() => { if (newTaskName.trim()) { onCreateTask(section.id, newTaskName.trim()); setNewTaskName(''); setAddingTaskSectionId(null); } }} className="v2-btn-sm v2-btn-primary">Add</button>
+          <button onClick={() => setAddingTaskSectionId(null)} className="v2-btn-sm v2-btn-ghost">Cancel</button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ── Task Row (List View) ──
 const ListTaskRow = ({
   task, project, section,
@@ -739,6 +949,8 @@ const ListTaskRow = ({
   addingSubtaskId, setAddingSubtaskId,
   newSubtaskName, setNewSubtaskName,
   onUpdateTask, onDeleteTask, onCreateTask, onOpenTaskModal,
+  dragListeners,
+  sensors, onSubtaskDragEnd,
 }) => {
   return (
     <div>
@@ -746,6 +958,7 @@ const ListTaskRow = ({
         className="flex items-center gap-3 py-1.5 px-2 rounded-lg group transition hover:bg-[var(--hover-tint)]"
         style={{ cursor: 'default' }}
       >
+        <DragHandle listeners={dragListeners} />
         <button
           onClick={() => onUpdateTask(task.id, { completed: !task.completed })}
           style={{
@@ -794,29 +1007,38 @@ const ListTaskRow = ({
 
       {/* Subtasks */}
       {expandedTasks[task.id] && task.subtasks && task.subtasks.length > 0 && (
-        <div style={{ marginLeft: 36, borderLeft: '2px solid var(--border)', paddingLeft: 12 }} className="space-y-0.5">
-          {task.subtasks.map((sub) => (
-            <div key={sub.id} className="flex items-center gap-2.5 py-1 group/sub">
-              <button
-                onClick={() => onUpdateTask(sub.id, { completed: !sub.completed })}
-                style={{
-                  width: 14, height: 14, borderRadius: 3, flexShrink: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  border: `1.5px solid ${sub.completed ? 'var(--ink)' : 'var(--border-hover)'}`,
-                  background: sub.completed ? 'var(--ink)' : 'transparent',
-                  cursor: 'pointer', padding: 0,
-                }}
-              >
-                <i className="fa-solid fa-check" style={{ fontSize: '0.4rem', color: 'var(--check-ink)', opacity: sub.completed ? 1 : 0 }} />
-              </button>
-              <span style={{ flex: 1, fontFamily: 'var(--font-body)', fontSize: '0.8rem', color: 'var(--ink)', textDecoration: sub.completed ? 'line-through' : 'none', opacity: sub.completed ? 0.5 : 1 }}>{sub.name}</span>
-              <button onClick={() => { if (confirm('Archive?')) onDeleteTask(sub.id); }}
-                className="v2-btn-icon-sm opacity-0 group-hover/sub:opacity-100 transition-opacity" style={{ width: 18, height: 18 }}>
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-              </button>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onSubtaskDragEnd}>
+          <SortableContext items={task.subtasks.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+            <div style={{ marginLeft: 36, borderLeft: '2px solid var(--border)', paddingLeft: 12 }} className="space-y-0.5">
+              {task.subtasks.map((sub) => (
+                <SortableItem key={sub.id} id={sub.id}>
+                  {({ listeners: subListeners }) => (
+                    <div className="flex items-center gap-2.5 py-1 group/sub">
+                      <DragHandle listeners={subListeners} style={{ width: 14 }} />
+                      <button
+                        onClick={() => onUpdateTask(sub.id, { completed: !sub.completed })}
+                        style={{
+                          width: 14, height: 14, borderRadius: 3, flexShrink: 0,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          border: `1.5px solid ${sub.completed ? 'var(--ink)' : 'var(--border-hover)'}`,
+                          background: sub.completed ? 'var(--ink)' : 'transparent',
+                          cursor: 'pointer', padding: 0,
+                        }}
+                      >
+                        <i className="fa-solid fa-check" style={{ fontSize: '0.4rem', color: 'var(--check-ink)', opacity: sub.completed ? 1 : 0 }} />
+                      </button>
+                      <span style={{ flex: 1, fontFamily: 'var(--font-body)', fontSize: '0.8rem', color: 'var(--ink)', textDecoration: sub.completed ? 'line-through' : 'none', opacity: sub.completed ? 0.5 : 1 }}>{sub.name}</span>
+                      <button onClick={() => { if (confirm('Archive?')) onDeleteTask(sub.id); }}
+                        className="v2-btn-icon-sm opacity-0 group-hover/sub:opacity-100 transition-opacity" style={{ width: 18, height: 18 }}>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                      </button>
+                    </div>
+                  )}
+                </SortableItem>
+              ))}
             </div>
-          ))}
-        </div>
+          </SortableContext>
+        </DndContext>
       )}
 
       {addingSubtaskId === task.id && (

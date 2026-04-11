@@ -84,7 +84,7 @@ const HabitViewModal = () => {
         <div className="mt-6 pt-6 border-t" style={{ borderColor: 'rgba(199, 199, 204, 0.3)' }}>
           <a
             href={`/categories/${category.id}`}
-            className="btn-liquid inline-flex items-center gap-2"
+            className="v2-btn v2-btn-primary inline-flex items-center gap-2"
           >
             <i className="fa-solid fa-arrow-right"></i>
             View in Category
@@ -98,7 +98,7 @@ const HabitViewModal = () => {
     <>
       <button
         onClick={closeViewModal}
-        className="btn-liquid"
+        className="v2-btn v2-btn-primary"
       >
         Close
       </button>

@@ -81,7 +81,11 @@ Rails.application.routes.draw do
   get 'daily_prep', to: 'prep_questions#index'
   get 'daily_prep/manage', to: 'prep_questions#manage'
   get 'daily_prep/answers', to: 'prep_questions#answers'
-  resources :prep_questions, only: [:create, :update, :destroy]
+  resources :prep_questions, only: [:create, :update, :destroy] do
+    collection do
+      patch :reorder
+    end
+  end
   resources :prep_responses, only: [:create, :update]
   get 'habits', to: 'habits#index'
   get 'analytics', to: 'analytics#index'
@@ -156,6 +160,9 @@ Rails.application.routes.draw do
 
   resources :projects, only: [:index, :show, :create, :update, :destroy] do
     resources :sections, only: [:create, :update, :destroy] do
+      collection do
+        patch :reorder
+      end
       resources :project_tasks, only: [:create], shallow: true
     end
   end
