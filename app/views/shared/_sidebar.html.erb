@@ -240,6 +240,11 @@
           <i class="fa-solid fa-bullseye"></i>
           <span>Goals</span>
         <% end %>
+
+        <%= link_to projects_path, class: sidebar_link_classes(current_page?(projects_path) || request.path.start_with?('/projects')), style: "position: relative;" do %>
+          <i class="fa-solid fa-diagram-project"></i>
+          <span>Projects</span>
+        <% end %>
       </nav>
 
       <!-- Library -->

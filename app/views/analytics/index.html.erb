@@ -46,7 +46,10 @@
       <%# ═══════════════════════════════════════════
           2. STREAKS & HEALTH — current state
           ═══════════════════════════════════════════ %>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" style="margin-bottom: 20px;">
+      <% show_streaks = current_user.analytics_display.in?(%w[both streaks]) %>
+      <% show_health = current_user.analytics_display.in?(%w[both health]) %>
+      <div class="grid grid-cols-1 <%= 'sm:grid-cols-2' if show_streaks && show_health %> gap-4" style="margin-bottom: 20px;">
+        <% if show_streaks %>
         <%# Perfect streak + best streak %>
         <div class="v2-card" style="padding: 20px;">
           <div class="v2-section-label" style="margin-bottom: 12px;">Streaks</div>
@@ -76,7 +79,9 @@
             </div>
           <% end %>
         </div>
+        <% end %>
 
+        <% if show_health %>
         <%# Overall health %>
         <div class="v2-card" style="padding: 20px;">
           <div class="v2-section-label" style="margin-bottom: 12px;">Health</div>
@@ -110,6 +115,7 @@
             </div>
           <% end %>
         </div>
+        <% end %>
       </div>
 
       <%# ═══════════════════════════════════════════

@@ -151,7 +151,8 @@ class SettingsController < ApplicationController
       :default_habits_grouping,
       :default_tasks_grouping,
       :default_lists_grouping,
-      :default_documents_grouping
+      :default_documents_grouping,
+      :analytics_display
     )
   end
 end

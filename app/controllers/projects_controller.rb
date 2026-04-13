@@ -3,9 +3,10 @@ class ProjectsController < ApplicationController
   before_action :set_project, only: [:show, :update, :destroy]
 
   def index
-    @projects = current_user.projects.active.ordered
+    @projects = current_user.projects.active.ordered.includes(sections: { project_tasks: :subtasks })
 
     respond_to do |format|
+      format.html
       format.json {
         render json: @projects.map { |project|
           project.as_json(only: [:id, :name, :color, :icon, :description]).merge(
