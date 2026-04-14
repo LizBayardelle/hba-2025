@@ -21,7 +21,8 @@
       <div style="height: 12px; background: linear-gradient(to bottom, var(--bg), transparent); pointer-events: none;"></div>
     </div>
 
-    <div class="px-4 pb-16 md:px-8" style="max-width: 920px; padding-top: 8px;">
+    <div class="px-4 pb-16 md:px-8" style="max-width: 920px; padding-top: 8px;"
+      x-data="{ addingTo: null, newTaskName: '', selectedSectionId: '', saving: false }">
       <% if @projects.any? %>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <% @projects.each do |project| %>
@@ -37,64 +38,108 @@
               <%# Color accent bar at top %>
               <div style="height: 4px; background: <%= project.color %>; border-radius: 10px 10px 0 0;"></div>
 
-              <%= link_to project_path(project), style: "text-decoration: none; display: block; padding: 20px 20px 12px;" do %>
-                <%# Header: icon + name + stats %>
+              <div style="padding: 20px 20px 12px;">
                 <div class="flex items-start gap-3">
-                  <div style="width: 32px; height: 32px; border-radius: 7px; background: <%= project.color %>; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                    <i class="fa-solid <%= project.icon %>" style="color: white; font-size: 0.75rem;"></i>
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <div style="font-family: var(--font-body); font-size: 0.933rem; font-weight: 600; color: var(--ink); line-height: 1.3;"><%= project.name %></div>
-                    <div class="flex items-center gap-3" style="margin-top: 2px;">
-                      <span class="v2-caption"><%= completed_tasks %>/<%= total_tasks %> tasks</span>
-                      <span class="v2-caption"><%= sections_count %> sections</span>
-                      <% if total_tasks > 0 %>
-                        <span class="v2-caption" style="color: <%= project.color %>;"><%= progress %>%</span>
-                      <% end %>
+                  <%= link_to project_path(project), style: "text-decoration: none; display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;" do %>
+                    <div style="width: 32px; height: 32px; border-radius: 7px; background: <%= project.color %>; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                      <i class="fa-solid <%= project.icon %>" style="color: white; font-size: 0.75rem;"></i>
                     </div>
-                  </div>
+                    <div class="flex-1 min-w-0">
+                      <div style="font-family: var(--font-body); font-size: 0.933rem; font-weight: 600; color: var(--ink); line-height: 1.3;"><%= project.name %></div>
+                      <div class="flex items-center gap-3" style="margin-top: 2px;">
+                        <span class="v2-caption"><%= completed_tasks %>/<%= total_tasks %> tasks</span>
+                        <span class="v2-caption"><%= sections_count %> sections</span>
+                        <% if total_tasks > 0 %>
+                          <span class="v2-caption" style="color: <%= project.color %>;"><%= progress %>%</span>
+                        <% end %>
+                      </div>
+                    </div>
+                  <% end %>
+                  <% if project.sections.active.any? %>
+                    <button
+                      @click="addingTo = { projectId: <%= project.id %>, projectName: '<%= j(project.name) %>', color: '<%= project.color %>', sections: <%= project.sections.active.ordered.map { |s| { id: s.id, name: s.name } }.to_json %> }"
+                      class="v2-btn-icon-sm" title="Add task" style="flex-shrink: 0; width: 28px; height: 28px; margin-left: 4px;">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    </button>
+                  <% end %>
                 </div>
 
                 <%# Progress bar %>
                 <% if total_tasks > 0 %>
-                  <div style="height: 3px; border-radius: 3px; background: var(--border); overflow: hidden; margin-top: 12px;">
-                    <div style="height: 100%; width: <%= progress %>%; background: <%= project.color %>; border-radius: 3px;"></div>
-                  </div>
+                  <%= link_to project_path(project), style: "text-decoration: none; display: block;" do %>
+                    <div style="height: 3px; border-radius: 3px; background: var(--border); overflow: hidden; margin-top: 12px;">
+                      <div style="height: 100%; width: <%= progress %>%; background: <%= project.color %>; border-radius: 3px;"></div>
+                    </div>
+                  <% end %>
                 <% end %>
-              <% end %>
+              </div>
 
-              <%# Active tasks by section %>
+              <%# Active tasks by section — with expand/collapse %>
               <%
                 sections_with_tasks = project.sections.active.ordered.map { |s|
-                  tasks = s.project_tasks.active.top_level.where(completed: false).order(:position).limit(4)
+                  tasks = s.project_tasks.active.top_level.where(completed: false).order(:position).to_a
                   [s, tasks]
                 }.select { |_, tasks| tasks.any? }
+
+                # Flatten into a single ordered list to split at the preview limit
+                all_items = []
+                sections_with_tasks.each do |section, tasks|
+                  tasks.each_with_index do |task, i|
+                    all_items << { section: section, task: task, first_in_section: i == 0 }
+                  end
+                end
+                preview_limit = 4
+                preview_items = all_items.first(preview_limit)
+                overflow_items = all_items.drop(preview_limit)
               %>
-              <% if sections_with_tasks.any? %>
-                <div style="border-top: 1px solid var(--border);">
-                  <% sections_with_tasks.each do |section, tasks| %>
-                    <div style="padding: 6px 20px 2px; font-family: var(--font-body); font-size: 0.6rem; font-weight: 700; color: var(--ink-faint); letter-spacing: 0.06em; text-transform: uppercase;"><%= section.name %></div>
-                    <% tasks.each do |task| %>
-                      <div class="flex items-center gap-2.5" style="padding: 5px 20px;">
-                        <div style="width: 14px; height: 14px; border-radius: 3px; border: 1.5px solid var(--border-hover); flex-shrink: 0;"></div>
-                        <span style="font-family: var(--font-body); font-size: 0.8rem; color: var(--ink); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><%= task.name %></span>
-                        <% if task.due_date %>
-                          <span style="font-size: 0.667rem; font-family: var(--font-mono); color: <%= task.due_date < Date.today ? 'var(--overdue)' : 'var(--ink-faint)' %>; white-space: nowrap;"><%= task.due_date.strftime('%b %-d') %></span>
-                        <% end %>
-                        <% if task.subtasks.active.any? %>
-                          <span class="v2-caption" style="color: var(--ink-faint);"><%= task.subtasks.active.where(completed: true).count %>/<%= task.subtasks.active.count %></span>
+              <% if all_items.any? %>
+                <div style="border-top: 1px solid var(--border);"
+                  x-data="{ expanded: sessionStorage.getItem('lastUpdatedProject') === '<%= project.id %>' }"
+                  x-init="if (expanded) sessionStorage.removeItem('lastUpdatedProject')">
+                  <%# Always-visible preview %>
+                  <% preview_items.each do |item| %>
+                    <% if item[:first_in_section] %>
+                      <div style="padding: 6px 20px 2px; font-family: var(--font-body); font-size: 0.6rem; font-weight: 700; color: var(--ink-faint); letter-spacing: 0.06em; text-transform: uppercase;"><%= item[:section].name %></div>
+                    <% end %>
+                    <div class="flex items-center gap-2.5" style="padding: 5px 20px;">
+                      <div style="width: 14px; height: 14px; border-radius: 3px; border: 1.5px solid var(--border-hover); flex-shrink: 0;"></div>
+                      <span style="font-family: var(--font-body); font-size: 0.8rem; color: var(--ink); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><%= item[:task].name %></span>
+                      <% if item[:task].due_date %>
+                        <span style="font-size: 0.667rem; font-family: var(--font-mono); color: <%= item[:task].due_date < Date.today ? 'var(--overdue)' : 'var(--ink-faint)' %>; white-space: nowrap;"><%= item[:task].due_date.strftime('%b %-d') %></span>
+                      <% end %>
+                      <% if item[:task].subtasks.active.any? %>
+                        <span class="v2-caption" style="color: var(--ink-faint);"><%= item[:task].subtasks.active.where(completed: true).count %>/<%= item[:task].subtasks.active.count %></span>
+                      <% end %>
+                    </div>
+                  <% end %>
+
+                  <%# Overflow — hidden until expanded %>
+                  <% if overflow_items.any? %>
+                    <template x-if="expanded">
+                      <div>
+                        <% overflow_items.each do |item| %>
+                          <% if item[:first_in_section] %>
+                            <div style="padding: 6px 20px 2px; font-family: var(--font-body); font-size: 0.6rem; font-weight: 700; color: var(--ink-faint); letter-spacing: 0.06em; text-transform: uppercase;"><%= item[:section].name %></div>
+                          <% end %>
+                          <div class="flex items-center gap-2.5" style="padding: 5px 20px;">
+                            <div style="width: 14px; height: 14px; border-radius: 3px; border: 1.5px solid var(--border-hover); flex-shrink: 0;"></div>
+                            <span style="font-family: var(--font-body); font-size: 0.8rem; color: var(--ink); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><%= item[:task].name %></span>
+                            <% if item[:task].due_date %>
+                              <span style="font-size: 0.667rem; font-family: var(--font-mono); color: <%= item[:task].due_date < Date.today ? 'var(--overdue)' : 'var(--ink-faint)' %>; white-space: nowrap;"><%= item[:task].due_date.strftime('%b %-d') %></span>
+                            <% end %>
+                            <% if item[:task].subtasks.active.any? %>
+                              <span class="v2-caption" style="color: var(--ink-faint);"><%= item[:task].subtasks.active.where(completed: true).count %>/<%= item[:task].subtasks.active.count %></span>
+                            <% end %>
+                          </div>
                         <% end %>
                       </div>
-                    <% end %>
-                  <% end %>
-                  <%
-                    shown = sections_with_tasks.sum { |_, tasks| tasks.count }
-                    remaining = total_tasks - completed_tasks - shown
-                  %>
-                  <% if remaining > 0 %>
-                    <%= link_to project_path(project), style: "display: block; padding: 6px 20px 8px; font-family: var(--font-body); font-size: 0.733rem; color: var(--ink-faint); text-decoration: none;" do %>
-                      + <%= remaining %> more
-                    <% end %>
+                    </template>
+                    <button
+                      @click="expanded = !expanded"
+                      style="display: block; width: 100%; padding: 6px 20px 8px; font-family: var(--font-body); font-size: 0.733rem; color: var(--ink-faint); text-align: left; background: none; border: none; cursor: pointer;"
+                    >
+                      <span x-text="expanded ? 'Show less' : '+ <%= overflow_items.count %> more'"></span>
+                    </button>
                   <% end %>
                 </div>
               <% elsif total_tasks == 0 %>
@@ -118,6 +163,133 @@
           <% end %>
         </div>
       <% end %>
+      <%# ═══════════════════════════════════════════
+          Slide-over: Add task to project
+          ═══════════════════════════════════════════ %>
+      <template x-teleport="body">
+        <div x-show="addingTo" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+          class="fixed inset-0 z-50 flex justify-end" style="display: none;" @keydown.escape.window="addingTo = null">
+
+          <%# Backdrop %>
+          <div class="absolute inset-0" style="background: rgba(0,0,0,0.4);" @click="addingTo = null; newTaskName = ''; selectedSectionId = '';"></div>
+
+          <%# Panel %>
+          <div x-show="addingTo" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full"
+            class="relative w-full max-w-md" style="background: var(--bg); box-shadow: -8px 0 32px rgba(0,0,0,0.08);"
+            @click.stop>
+
+            <%# Header %>
+            <div style="padding: 16px 24px; border-bottom: 1px solid var(--border); background: var(--surface); display: flex; align-items: center; justify-content: space-between;">
+              <h2 class="v2-h2">Add Task</h2>
+              <button @click="addingTo = null; newTaskName = ''; selectedSectionId = '';" class="v2-btn-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+
+            <%# Body %>
+            <div style="padding: 24px;">
+              <%# Project indicator %>
+              <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+                <div style="width: 24px; height: 24px; border-radius: 5px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" :style="'background:' + (addingTo?.color || 'var(--ink)')">
+                  <i class="fa-solid fa-diagram-project" style="color: white; font-size: 0.6rem;"></i>
+                </div>
+                <span style="font-family: var(--font-body); font-size: 0.867rem; color: var(--ink);" x-text="addingTo?.projectName"></span>
+              </div>
+
+              <%# Task name %>
+              <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 6px; font-family: var(--font-body); font-size: 0.733rem; font-weight: 500; color: var(--ink-tertiary);">Task name</label>
+                <input type="text" x-model="newTaskName" placeholder="What needs to be done?"
+                  x-ref="taskNameInput"
+                  @keydown.enter="if (newTaskName.trim() && selectedSectionId) { $refs.submitBtn.click(); }"
+                  style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); font-family: var(--font-body); font-size: 1rem; font-weight: 500; outline: none;"
+                  x-init="$watch('addingTo', (v) => { if (v) { setTimeout(() => $refs.taskNameInput?.focus(), 200); selectedSectionId = v.sections[0]?.id || ''; } })">
+              </div>
+
+              <%# Section picker %>
+              <div style="margin-bottom: 24px;" x-data="{ creatingSection: false, newSectionName: '' }">
+                <label style="display: block; margin-bottom: 6px; font-family: var(--font-body); font-size: 0.733rem; font-weight: 500; color: var(--ink-tertiary);">Section</label>
+                <div style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center; background: var(--hover-tint-strong); border-radius: 6px; padding: 2px;">
+                  <template x-for="section in (addingTo?.sections || [])" :key="section.id">
+                    <button type="button"
+                      @click.prevent.stop="selectedSectionId = section.id"
+                      :style="'font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; padding: 4px 10px; border-radius: 5px; cursor: pointer; border: none; white-space: nowrap; transition: all 0.15s ease; '
+                        + (selectedSectionId == section.id
+                          ? 'background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 0 0 0.5px rgba(0,0,0,0.04);'
+                          : 'background: transparent; color: var(--ink-tertiary);')"
+                      x-text="section.name">
+                    </button>
+                  </template>
+
+                  <%# New section %>
+                  <template x-if="!creatingSection">
+                    <button type="button" @click.prevent.stop="creatingSection = true; $nextTick(() => $refs.newSectionInput?.focus())"
+                      style="font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; padding: 4px 8px; border-radius: 5px; cursor: pointer; border: 1px dashed var(--border-hover); background: none; color: var(--ink-faint); display: inline-flex; align-items: center; gap: 3px; white-space: nowrap;">
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                      New
+                    </button>
+                  </template>
+                </div>
+
+                <template x-if="creatingSection">
+                  <div style="display: flex; gap: 4px; align-items: center; margin-top: 8px;">
+                    <input type="text" x-ref="newSectionInput" x-model="newSectionName" placeholder="Section name..."
+                      @keydown.enter="
+                        if (newSectionName.trim() && addingTo) {
+                          fetch('/projects/' + addingTo.projectId + '/sections', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-Token': document.querySelector('meta[name=csrf-token]').content },
+                            body: JSON.stringify({ section: { name: newSectionName.trim() } })
+                          }).then(r => r.json()).then(data => {
+                            let s = { id: (data.section ? data.section.id : data.id), name: newSectionName.trim() };
+                            addingTo.sections.push(s);
+                            selectedSectionId = s.id;
+                            newSectionName = '';
+                            creatingSection = false;
+                          });
+                        }
+                      "
+                      @keydown.escape="creatingSection = false; newSectionName = '';"
+                      style="flex: 1; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); font-family: var(--font-body); font-size: 0.8rem; outline: none;">
+                    <button type="button" @click="creatingSection = false; newSectionName = '';"
+                      style="color: var(--ink-faint); background: none; border: none; cursor: pointer; padding: 4px;">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                  </div>
+                </template>
+              </div>
+
+              <%# Submit %>
+              <button x-ref="submitBtn" :disabled="!newTaskName.trim() || !selectedSectionId || saving"
+                @click="
+                  saving = true;
+                  fetch('/projects/' + addingTo.projectId + '/sections/' + selectedSectionId + '/project_tasks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-Token': document.querySelector('meta[name=csrf-token]').content },
+                    body: JSON.stringify({ project_task: { name: newTaskName.trim() } })
+                  }).then(r => {
+                    if (!r.ok) throw new Error('Failed to create task');
+                    return r.json();
+                  }).then(() => {
+                    sessionStorage.setItem('lastUpdatedProject', String(addingTo.projectId));
+                    addingTo = null;
+                    newTaskName = '';
+                    selectedSectionId = '';
+                    saving = false;
+                    window.location.reload();
+                  }).catch((err) => {
+                    saving = false;
+                    alert('Could not create task: ' + err.message);
+                  });
+                "
+                class="v2-btn v2-btn-primary" style="width: 100%; padding: 10px; font-size: 0.9rem; justify-content: center;">
+                <span x-show="!saving">Add Task</span>
+                <span x-show="saving" style="display: none;"><i class="fa-solid fa-spinner fa-spin"></i> Adding...</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </template>
     </div>
   </main>
 </div>
