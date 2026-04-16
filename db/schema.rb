@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_04_11_032602) do
+ActiveRecord::Schema[7.2].define(version: 2026_04_14_182931) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -433,6 +433,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_11_032602) do
     t.jsonb "dashboard_layout", default: [{"block"=>"calendar", "column"=>"left", "visible"=>true, "position"=>0}, {"block"=>"quick_links", "column"=>"left", "visible"=>true, "position"=>1}, {"block"=>"habits", "column"=>"right", "visible"=>true, "position"=>0}, {"block"=>"tasks", "column"=>"right", "visible"=>true, "position"=>1}]
     t.string "first_name"
     t.string "analytics_display", default: "both", null: false
+    t.string "projects_view", default: "cards", null: false
+    t.boolean "projects_expand_all", default: false, null: false
+    t.datetime "setup_completed_at"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end

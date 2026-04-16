@@ -2,6 +2,7 @@
   <%= render 'shared/sidebar' %>
 
   <main class="flex-1 overflow-y-auto md:ml-[224px]">
+    <div x-data="projectsIndex({ view: '<%= j @default_projects_view %>', expandAll: <%= @default_projects_expand_all ? 'true' : 'false' %> })">
     <!-- v2 Header -->
     <div class="sticky top-0 z-10" style="background: var(--bg);">
       <div class="pl-14 pr-4 pt-6 pb-4 md:pl-8 md:pr-8 md:pt-8 md:pb-5">
@@ -12,10 +13,43 @@
               <%= @projects.count %> active project<%= @projects.count == 1 ? '' : 's' %>
             </p>
           </div>
-          <%= button_to projects_path, method: :post, params: { project: { name: "Untitled Project", color: "#9C8B7E", icon: "fa-folder" } }, class: "v2-btn-sm v2-btn-primary" do %>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            New Project
-          <% end %>
+          <div class="flex items-center gap-2">
+            <%# View toggle %>
+            <div style="display: inline-flex; background: var(--hover-tint-strong); border-radius: 6px; padding: 2px;">
+              <button type="button" @click="setView('cards')"
+                :style="'font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; padding: 4px 10px; border-radius: 5px; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 4px; transition: all 0.15s ease; '
+                  + (view === 'cards'
+                    ? 'background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 0 0 0.5px rgba(0,0,0,0.04);'
+                    : 'background: transparent; color: var(--ink-tertiary);')"
+                title="Card view">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                Cards
+              </button>
+              <button type="button" @click="setView('list')"
+                :style="'font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; padding: 4px 10px; border-radius: 5px; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 4px; transition: all 0.15s ease; '
+                  + (view === 'list'
+                    ? 'background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 0 0 0.5px rgba(0,0,0,0.04);'
+                    : 'background: transparent; color: var(--ink-tertiary);')"
+                title="List view">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                List
+              </button>
+            </div>
+            <%# Show all / Collapse all %>
+            <button type="button" @click="toggleExpandAll()"
+              :style="'font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; padding: 6px 10px; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); display: inline-flex; align-items: center; gap: 4px; transition: all 0.15s ease; '
+                + (expandAll
+                  ? 'background: var(--ink); color: var(--surface); border-color: var(--ink);'
+                  : 'background: var(--surface); color: var(--ink-tertiary);')"
+              :title="expandAll ? 'Collapse all projects' : 'Expand all projects'">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" :style="expandAll ? 'transform: rotate(180deg);' : ''"><polyline points="6 9 12 15 18 9"/></svg>
+              <span x-text="expandAll ? 'Collapse all' : 'Show all'"></span>
+            </button>
+            <%= button_to projects_path, method: :post, params: { project: { name: "Untitled Project", color: "#9C8B7E", icon: "fa-folder" } }, class: "v2-btn-sm v2-btn-primary" do %>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New Project
+            <% end %>
+          </div>
         </div>
       </div>
       <div style="height: 12px; background: linear-gradient(to bottom, var(--bg), transparent); pointer-events: none;"></div>
@@ -24,7 +58,8 @@
     <div class="px-4 pb-16 md:px-8" style="max-width: 920px; padding-top: 8px;"
       x-data="{ addingTo: null, newTaskName: '', selectedSectionId: '', saving: false }">
       <% if @projects.any? %>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <%# ═══════════ CARDS VIEW ═══════════ %>
+        <div x-show="view === 'cards'" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <% @projects.each do |project| %>
             <%
               all_tasks = project.project_tasks.active.top_level
@@ -34,7 +69,14 @@
               sections_count = project.sections.active.count
               progress = total_tasks > 0 ? (completed_tasks * 100.0 / total_tasks).round : 0
             %>
-            <div class="v2-card" style="padding: 0; overflow: hidden;">
+            <div class="v2-card project-drag-item"
+              data-project-id="<%= project.id %>"
+              draggable="true"
+              @dragstart="onDragStart($event, <%= project.id %>)"
+              @dragover.prevent="onDragOver($event, <%= project.id %>)"
+              @dragend="onDragEnd()"
+              @drop.prevent="onDrop($event, <%= project.id %>)"
+              :style="dragId === <%= project.id %> ? 'padding: 0; overflow: hidden; opacity: 0.4; cursor: grabbing;' : 'padding: 0; overflow: hidden; cursor: grab;'">
               <%# Color accent bar at top %>
               <div style="height: 4px; background: <%= project.color %>; border-radius: 10px 10px 0 0;"></div>
 
@@ -113,9 +155,9 @@
                     </div>
                   <% end %>
 
-                  <%# Overflow — hidden until expanded %>
+                  <%# Overflow — hidden until expanded (locally or globally) %>
                   <% if overflow_items.any? %>
-                    <template x-if="expanded">
+                    <template x-if="expanded || expandAll">
                       <div>
                         <% overflow_items.each do |item| %>
                           <% if item[:first_in_section] %>
@@ -135,6 +177,7 @@
                       </div>
                     </template>
                     <button
+                      x-show="!expandAll"
                       @click="expanded = !expanded"
                       style="display: block; width: 100%; padding: 6px 20px 8px; font-family: var(--font-body); font-size: 0.733rem; color: var(--ink-faint); text-align: left; background: none; border: none; cursor: pointer;"
                     >
@@ -150,6 +193,71 @@
                 <div style="border-top: 1px solid var(--border); padding: 8px 20px;">
                   <span class="v2-caption" style="color: <%= project.color %>;">All tasks complete</span>
                 </div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+
+        <%# ═══════════ LIST VIEW ═══════════ %>
+        <div x-show="view === 'list'" class="v2-card" style="padding: 0; overflow: hidden;">
+          <% @projects.each do |project|
+            all_tasks = project.project_tasks.active.top_level
+            total_tasks = all_tasks.count
+            completed_tasks = all_tasks.where(completed: true).count
+            sections_count = project.sections.active.count
+            progress = total_tasks > 0 ? (completed_tasks * 100.0 / total_tasks).round : 0
+          %>
+            <div class="project-list-row"
+              data-project-id="<%= project.id %>"
+              draggable="true"
+              @dragstart="onDragStart($event, <%= project.id %>)"
+              @dragover.prevent="onDragOver($event, <%= project.id %>)"
+              @dragend="onDragEnd()"
+              @drop.prevent="onDrop($event, <%= project.id %>)"
+              :style="'display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--border); ' + (dragId === <%= project.id %> ? 'opacity: 0.4; cursor: grabbing;' : 'cursor: grab;')">
+
+              <%# Drag affordance %>
+              <span style="color: var(--ink-faint); font-size: 0.7rem; flex-shrink: 0;" title="Drag to reorder">
+                <i class="fa-solid fa-grip-vertical"></i>
+              </span>
+
+              <%# Icon %>
+              <div style="width: 26px; height: 26px; border-radius: 6px; background: <%= project.color %>; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <i class="fa-solid <%= project.icon %>" style="color: white; font-size: 0.7rem;"></i>
+              </div>
+
+              <%# Name (link) %>
+              <%= link_to project_path(project), style: "text-decoration: none; flex: 1; min-width: 0; font-family: var(--font-body); font-size: 0.9rem; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" do %>
+                <%= project.name %>
+              <% end %>
+
+              <%# Stats %>
+              <span class="v2-caption" style="flex-shrink: 0; min-width: 70px; text-align: right;">
+                <%= completed_tasks %>/<%= total_tasks %> tasks
+              </span>
+              <span class="v2-caption hidden sm:inline" style="flex-shrink: 0; min-width: 70px; text-align: right;">
+                <%= sections_count %> section<%= sections_count == 1 ? '' : 's' %>
+              </span>
+
+              <%# Progress %>
+              <% if total_tasks > 0 %>
+                <div style="flex-shrink: 0; width: 80px; display: flex; align-items: center; gap: 6px;">
+                  <div style="flex: 1; height: 3px; border-radius: 3px; background: var(--border); overflow: hidden;">
+                    <div style="height: 100%; width: <%= progress %>%; background: <%= project.color %>; border-radius: 3px;"></div>
+                  </div>
+                  <span class="v2-caption" style="color: <%= project.color %>; min-width: 26px; text-align: right;"><%= progress %>%</span>
+                </div>
+              <% else %>
+                <div style="flex-shrink: 0; width: 80px;"></div>
+              <% end %>
+
+              <%# Add task %>
+              <% if project.sections.active.any? %>
+                <button
+                  @click.stop.prevent="addingTo = { projectId: <%= project.id %>, projectName: '<%= j(project.name) %>', color: '<%= project.color %>', sections: <%= project.sections.active.ordered.map { |s| { id: s.id, name: s.name } }.to_json %> }"
+                  class="v2-btn-icon-sm" title="Add task" style="flex-shrink: 0; width: 24px; height: 24px;">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
               <% end %>
             </div>
           <% end %>
@@ -291,5 +399,112 @@
         </div>
       </template>
     </div>
+    </div>
   </main>
 </div>
+
+<style>
+  /* Prevent inner links/icons from intercepting drag — only the card/row itself drags */
+  .project-drag-item a, .project-drag-item button,
+  .project-list-row a, .project-list-row button { -webkit-user-drag: none; user-drag: none; }
+</style>
+<script>
+  function projectsIndex(defaults) {
+    defaults = defaults || {};
+    // Read URL params first (they win over the server-provided default)
+    const params = new URLSearchParams(window.location.search);
+    const urlView = params.get('view');
+    const urlExpand = params.get('expand');
+    const initialView = (urlView === 'cards' || urlView === 'list')
+      ? urlView
+      : (defaults.view || 'cards');
+    const initialExpandAll = urlExpand != null
+      ? (urlExpand === '1' || urlExpand === 'true')
+      : !!defaults.expandAll;
+
+    return {
+      view: initialView,
+      expandAll: initialExpandAll,
+      dragId: null,
+      lastOverId: null,
+      syncUrl() {
+        const p = new URLSearchParams(window.location.search);
+        p.set('view', this.view);
+        if (this.expandAll) { p.set('expand', '1'); } else { p.delete('expand'); }
+        const qs = p.toString();
+        const newUrl = window.location.pathname + (qs ? '?' + qs : '') + window.location.hash;
+        window.history.replaceState({}, '', newUrl);
+      },
+      setView(v) {
+        this.view = v;
+        this.syncUrl();
+      },
+      toggleExpandAll() {
+        this.expandAll = !this.expandAll;
+        this.syncUrl();
+      },
+      onDragStart(e, id) {
+        this.dragId = id;
+        try {
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', String(id));
+        } catch (err) {}
+      },
+      onDragOver(e, overId) {
+        if (this.dragId == null || overId === this.dragId) return;
+        if (this.lastOverId === overId) return;
+        this.lastOverId = overId;
+
+        // Find the active container (cards grid or list) so we only move within it.
+        const selector = this.view === 'cards'
+          ? "[x-show=\"view === 'cards'\"]"
+          : "[x-show=\"view === 'list'\"]";
+        const container = document.querySelector(selector);
+        if (!container) return;
+
+        const draggingEl = container.querySelector('[data-project-id="' + this.dragId + '"]');
+        const overEl = container.querySelector('[data-project-id="' + overId + '"]');
+        if (!draggingEl || !overEl) return;
+
+        const items = Array.from(container.children);
+        const dragIdx = items.indexOf(draggingEl);
+        const overIdx = items.indexOf(overEl);
+        if (dragIdx < 0 || overIdx < 0) return;
+
+        if (dragIdx < overIdx) {
+          overEl.after(draggingEl);
+        } else {
+          overEl.before(draggingEl);
+        }
+      },
+      onDrop(e, _id) {
+        this.persistOrder();
+      },
+      onDragEnd() {
+        // Safety net: persist on dragend in case drop didn't fire on a valid target
+        if (this.dragId != null) this.persistOrder();
+        this.dragId = null;
+        this.lastOverId = null;
+      },
+      persistOrder() {
+        const selector = this.view === 'cards'
+          ? "[x-show=\"view === 'cards'\"]"
+          : "[x-show=\"view === 'list'\"]";
+        const container = document.querySelector(selector);
+        if (!container) return;
+        const ids = Array.from(container.querySelectorAll('[data-project-id]'))
+          .map(el => parseInt(el.dataset.projectId, 10));
+        const token = document.querySelector('meta[name=csrf-token]')?.content;
+        fetch('/projects/reorder', {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-Token': token
+          },
+          body: JSON.stringify({ project_ids: ids })
+        }).catch(() => {});
+      }
+    };
+  }
+</script>

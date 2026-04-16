@@ -152,7 +152,9 @@ class SettingsController < ApplicationController
       :default_tasks_grouping,
       :default_lists_grouping,
       :default_documents_grouping,
-      :analytics_display
+      :analytics_display,
+      :projects_view,
+      :projects_expand_all
     )
   end
 end

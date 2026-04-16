@@ -72,6 +72,12 @@
   --check-ink: #1C1B1A;
 }
 
+/* ── Theme-aware logos ────────────────────────────────────────────── */
+.logo-cream, .logo-white, .logo-dark { display: none; }
+[data-theme="cream"] .logo-cream { display: inline; }
+[data-theme="white"] .logo-white { display: inline; }
+[data-theme="dark"] .logo-dark { display: inline; }
+
 /* ── Theme transition (applied by JS during switch) ───────────────── */
 html.theme-transitioning,
 html.theme-transitioning *,
@@ -1374,6 +1380,104 @@ trix-toolbar {
 
 trix-toolbar + trix-editor {
   border-radius: 0 0 0.5rem 0.5rem;
+}
+
+/* ── Dark theme: form controls ───────────────────────────────────────
+   Native inputs/selects/textareas on pages like /settings only set
+   `border-color` inline, so they'd render with default white chrome
+   in dark mode. Theme them globally via tokens so text is legible. */
+
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="email"],
+[data-theme="dark"] input[type="password"],
+[data-theme="dark"] input[type="number"],
+[data-theme="dark"] input[type="search"],
+[data-theme="dark"] input[type="url"],
+[data-theme="dark"] input[type="tel"],
+[data-theme="dark"] input[type="date"],
+[data-theme="dark"] input[type="time"],
+[data-theme="dark"] input[type="datetime-local"],
+[data-theme="dark"] input:not([type]),
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background-color: var(--surface);
+  color: var(--ink);
+}
+
+[data-theme="dark"] select option {
+  background-color: var(--surface);
+  color: var(--ink);
+}
+
+[data-theme="dark"] .form-input,
+[data-theme="dark"] .form-input-hero,
+[data-theme="dark"] .form-input-sm {
+  background-color: var(--surface);
+  color: var(--ink);
+  border-color: var(--border);
+}
+
+[data-theme="dark"] .input-inset,
+[data-theme="dark"] input[type="text"].input-inset,
+[data-theme="dark"] input[type="email"].input-inset,
+[data-theme="dark"] input[type="password"].input-inset,
+[data-theme="dark"] textarea.input-inset {
+  background-color: var(--bg);
+  border-color: var(--border);
+  color: var(--ink);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] trix-editor {
+  background-color: var(--bg);
+  border-color: var(--border);
+  color: var(--ink);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] trix-toolbar {
+  background-color: var(--bg);
+  border-color: var(--border);
+}
+
+[data-theme="dark"] .form-dropdown {
+  background: var(--surface);
+  border-color: var(--border);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .form-dropdown button {
+  color: var(--ink);
+}
+
+[data-theme="dark"] .form-dropdown button:hover {
+  background-color: var(--hover-tint);
+}
+
+[data-theme="dark"] .checkbox-row {
+  color: var(--ink) !important;
+}
+
+[data-theme="dark"] .checkbox-row:hover {
+  background-color: var(--hover-tint);
+}
+
+/* Tailwind `bg-white` surfaces (importance/time-block/dashboard-layout rows,
+   modals, icon pickers) should follow the theme surface in dark mode. */
+[data-theme="dark"] .bg-white {
+  background-color: var(--surface) !important;
+}
+
+/* Soft-grey hover utilities should use theme hover tints in dark mode. */
+[data-theme="dark"] .hover\:bg-gray-50:hover,
+[data-theme="dark"] .hover\:bg-gray-100:hover {
+  background-color: var(--hover-tint-strong) !important;
+}
+
+/* Theme-colored native checkboxes/radios (replaces browser blue). */
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--ink);
 }
 
 /* ── Trix Content Styling (v2) ── */

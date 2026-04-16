@@ -130,6 +130,30 @@
                     class: "w-full px-3 py-2 rounded-lg border focus:outline-none transition font-light text-sm auto-save",
                     style: "border-color: var(--border);" %>
               </div>
+
+              <!-- Projects View -->
+              <div class="setting-group" data-setting="projects_view">
+                <%= f.label :projects_view, class: "block text-sm font-semibold mb-1", style: "color: var(--ink);" do %>
+                  <i class="fa-solid fa-diagram-project mr-1 text-xs" style="color: var(--ink-tertiary);"></i>Projects View
+                <% end %>
+                <%= f.select :projects_view,
+                    [['Cards', 'cards'], ['List', 'list']],
+                    {},
+                    class: "w-full px-3 py-2 rounded-lg border focus:outline-none transition font-light text-sm auto-save",
+                    style: "border-color: var(--border);" %>
+              </div>
+
+              <!-- Projects Expand All -->
+              <div class="setting-group" data-setting="projects_expand_all">
+                <%= f.label :projects_expand_all, class: "block text-sm font-semibold mb-1", style: "color: var(--ink);" do %>
+                  <i class="fa-solid fa-angles-down mr-1 text-xs" style="color: var(--ink-tertiary);"></i>Expand All Projects
+                <% end %>
+                <%= f.select :projects_expand_all,
+                    [['Collapsed', 'false'], ['Expanded', 'true']],
+                    {},
+                    class: "w-full px-3 py-2 rounded-lg border focus:outline-none transition font-light text-sm auto-save",
+                    style: "border-color: var(--border);" %>
+              </div>
             </div>
 
             <!-- Default Groupings -->
@@ -1658,6 +1682,19 @@
           // Load time blocks on page load
           loadTimeBlocks();
         </script>
+
+      <!-- Setup Wizard -->
+      <div class="v2-card p-6 mb-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="v2-h2 mb-1" style="color: var(--ink);">Setup Wizard</h2>
+            <p class="v2-small" style="color: var(--ink-tertiary);">Re-run the setup wizard to review and update your configuration.</p>
+          </div>
+          <a href="/setup" class="v2-btn v2-btn-secondary">
+            <i class="fa-solid fa-wand-magic-sparkles mr-2"></i>Re-run Setup
+          </a>
+        </div>
+      </div>
       </div>
   </main>
 </div>

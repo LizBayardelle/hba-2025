@@ -166,9 +166,15 @@ class CategoriesController < ApplicationController
     @category = current_user.categories.build(category_params)
 
     if @category.save
-      redirect_to root_path, notice: 'Category created successfully.'
+      respond_to do |format|
+        format.html { redirect_to root_path, notice: 'Category created successfully.' }
+        format.json { render json: @category.as_json(only: [:id, :name, :color, :icon, :description]), status: :created }
+      end
     else
-      redirect_to root_path, alert: "Error creating category: #{@category.errors.full_messages.join(', ')}"
+      respond_to do |format|
+        format.html { redirect_to root_path, alert: "Error creating category: #{@category.errors.full_messages.join(', ')}" }
+        format.json { render json: { errors: @category.errors.full_messages }, status: :unprocessable_entity }
+      end
     end
   end
 
@@ -192,6 +198,16 @@ class CategoriesController < ApplicationController
       format.html { redirect_to root_path, notice: 'Category archived successfully.' }
       format.json { render json: { success: true, message: 'Category archived successfully.' }, status: :ok }
     end
+  end
+
+  def reorder
+    ids = Array(params[:category_ids]).map(&:to_i)
+    Category.transaction do
+      ids.each_with_index do |id, index|
+        current_user.categories.where(id: id).update_all(position: index + 1)
+      end
+    end
+    render json: { success: true }
   end
 
   private

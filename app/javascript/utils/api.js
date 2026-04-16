@@ -226,11 +226,29 @@ export const notesApi = {
 // Categories API methods
 export const categoriesApi = {
   fetchAll: () => apiRequest('/categories.json'),
+  create: (data) => apiRequest('/categories.json', {
+    method: 'POST',
+    body: JSON.stringify({ category: data }),
+  }),
+  update: (id, data) => apiRequest(`/categories/${id}.json`, {
+    method: 'PATCH',
+    body: JSON.stringify({ category: data }),
+  }),
+  delete: (id) => apiRequest(`/categories/${id}.json`, { method: 'DELETE' }),
+  reorder: (categoryIds) => apiRequest('/categories/reorder', {
+    method: 'PATCH',
+    body: JSON.stringify({ category_ids: categoryIds }),
+  }),
 };
 
 // Projects API methods
 export const projectsApi = {
+  fetchAll: () => apiRequest('/projects.json'),
   fetchOne: (id) => apiRequest(`/projects/${id}.json`),
+  create: (data) => apiRequest('/projects.json', {
+    method: 'POST',
+    body: JSON.stringify({ project: data }),
+  }),
   update: (id, data) => apiRequest(`/projects/${id}`, {
     method: 'PATCH',
     body: JSON.stringify({ project: data }),
@@ -438,5 +456,59 @@ export const checklistItemsApi = {
   reorderForGoal: (goalId, itemIds) => apiRequest(`/goals/${goalId}/checklist_items/reorder`, {
     method: 'PATCH',
     body: JSON.stringify({ item_ids: itemIds }),
+  }),
+};
+
+// Setup Wizard API methods
+export const setupApi = {
+  complete: () => apiRequest('/setup/complete', { method: 'POST' }),
+};
+
+// Settings API methods
+export const settingsApi = {
+  update: (data) => apiRequest('/settings', {
+    method: 'PATCH',
+    body: JSON.stringify({ user: data }),
+  }),
+  fetchImportanceLevels: () => apiRequest('/settings/importance_levels'),
+  createImportanceLevel: (data) => apiRequest('/settings/importance_levels', {
+    method: 'POST',
+    body: JSON.stringify({ importance_level: data }),
+  }),
+  updateImportanceLevel: (id, data) => apiRequest(`/settings/importance_levels/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ importance_level: data }),
+  }),
+  deleteImportanceLevel: (id) => apiRequest(`/settings/importance_levels/${id}`, {
+    method: 'DELETE',
+  }),
+  reorderImportanceLevels: (ids) => apiRequest('/app_api/v1/settings/importance_levels/reorder', {
+    method: 'PATCH',
+    body: JSON.stringify({ ids }),
+  }),
+  fetchTimeBlocks: () => apiRequest('/settings/time_blocks'),
+  createTimeBlock: (data) => apiRequest('/settings/time_blocks', {
+    method: 'POST',
+    body: JSON.stringify({ time_block: data }),
+  }),
+  updateTimeBlock: (id, data) => apiRequest(`/settings/time_blocks/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ time_block: data }),
+  }),
+  deleteTimeBlock: (id) => apiRequest(`/settings/time_blocks/${id}`, {
+    method: 'DELETE',
+  }),
+  reorderTimeBlocks: (ids) => apiRequest('/app_api/v1/settings/time_blocks/reorder', {
+    method: 'PATCH',
+    body: JSON.stringify({ ids }),
+  }),
+};
+
+// Google Calendar API methods
+export const googleCalendarApi = {
+  fetchCalendars: () => apiRequest('/google_calendar/calendars'),
+  selectCalendars: (calendarIds) => apiRequest('/google_calendar/select', {
+    method: 'PATCH',
+    body: JSON.stringify({ calendar_ids: calendarIds }),
   }),
 };

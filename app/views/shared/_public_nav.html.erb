@@ -3,12 +3,7 @@
   <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between items-center h-14">
       <%= link_to root_path, class: "flex items-center gap-2.5", style: "text-decoration: none;" do %>
-        <div style="width: 24px; height: 24px; background: var(--ink); border-radius: 5px; display: flex; align-items: center; justify-content: center;">
-          <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-            <rect x="2" y="3" width="4" height="8" rx="1" fill="var(--bg)"/>
-            <rect x="8" y="3" width="4" height="5" rx="1" fill="var(--bg)" opacity="0.5"/>
-          </svg>
-        </div>
+        <%= render 'shared/logo', size: 26 %>
         <span style="font-family: var(--font-body); font-size: 0.9rem; font-weight: 600; color: var(--ink); letter-spacing: -0.02em;">Habit Beaver</span>
       <% end %>
 

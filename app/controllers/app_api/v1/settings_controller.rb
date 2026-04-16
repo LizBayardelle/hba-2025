@@ -8,7 +8,7 @@ module AppApi
             :email_reminders, :push_notifications, :theme, :default_view,
             :root_location, :default_habits_grouping, :default_tasks_grouping,
             :default_lists_grouping, :default_documents_grouping, :dashboard_layout,
-            :analytics_display
+            :analytics_display, :projects_view, :projects_expand_all
           ]),
           importance_levels: current_user.importance_levels.ordered,
           time_blocks: current_user.time_blocks.ordered
@@ -44,7 +44,7 @@ module AppApi
           :email_reminders, :push_notifications, :theme, :default_view,
           :root_location, :default_habits_grouping, :default_tasks_grouping,
           :default_lists_grouping, :default_documents_grouping,
-          :analytics_display
+          :analytics_display, :projects_view, :projects_expand_all
         )
       end
     end

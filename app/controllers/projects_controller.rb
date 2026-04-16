@@ -4,6 +4,8 @@ class ProjectsController < ApplicationController
 
   def index
     @projects = current_user.projects.active.ordered.includes(sections: { project_tasks: :subtasks })
+    @default_projects_view = current_user.projects_view.presence || "cards"
+    @default_projects_expand_all = current_user.projects_expand_all
 
     respond_to do |format|
       format.html
@@ -51,9 +53,15 @@ class ProjectsController < ApplicationController
     @project = current_user.projects.build(project_params)
 
     if @project.save
-      redirect_to project_path(@project), notice: 'Project created successfully.'
+      respond_to do |format|
+        format.html { redirect_to project_path(@project), notice: 'Project created successfully.' }
+        format.json { render json: @project.as_json(only: [:id, :name, :color, :icon, :description]), status: :created }
+      end
     else
-      redirect_to root_path, alert: "Error creating project: #{@project.errors.full_messages.join(', ')}"
+      respond_to do |format|
+        format.html { redirect_to root_path, alert: "Error creating project: #{@project.errors.full_messages.join(', ')}" }
+        format.json { render json: { errors: @project.errors.full_messages }, status: :unprocessable_entity }
+      end
     end
   end
 
@@ -69,6 +77,16 @@ class ProjectsController < ApplicationController
         format.json { render json: { success: false, errors: @project.errors.full_messages }, status: :unprocessable_entity }
       end
     end
+  end
+
+  def reorder
+    ids = Array(params[:project_ids]).map(&:to_i)
+    Project.transaction do
+      ids.each_with_index do |id, index|
+        current_user.projects.where(id: id).update_all(position: index + 1)
+      end
+    end
+    render json: { success: true }
   end
 
   def destroy

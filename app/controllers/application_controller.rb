@@ -7,8 +7,19 @@ class ApplicationController < ActionController::Base
   before_action :clear_daily_habits, if: :user_signed_in?
   before_action :update_habit_health, if: :user_signed_in?
   before_action :configure_permitted_parameters, if: :devise_controller?
+  before_action :redirect_to_setup, if: :user_signed_in?
 
   private
+
+  def redirect_to_setup
+    return if devise_controller?
+    return if self.is_a?(SetupController)
+    return if self.is_a?(GoogleCalendarController)
+    return if request.path.start_with?('/app_api')
+    return if current_user.setup_completed_at.present?
+
+    redirect_to setup_path
+  end
 
   def set_cache_headers
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"

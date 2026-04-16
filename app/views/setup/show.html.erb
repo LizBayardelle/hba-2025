@@ -1,0 +1,22 @@
+<% content_for(:title) { "Setup - Habit Beaver" } %>
+<% content_for(:head) do %>
+  <%= javascript_include_tag "setup_app", type: "module", "data-turbo-track": "reload", defer: true %>
+<% end %>
+
+<div id="setup-root"
+     data-user-settings="<%= {
+       theme: current_user.theme,
+       timezone: current_user.timezone,
+       date_format: current_user.date_format,
+       time_format: current_user.time_format,
+       week_starts_on: current_user.week_starts_on,
+       first_name: current_user.first_name,
+       google_sync_enabled: current_user.google_sync_enabled,
+       google_calendar_id: current_user.google_calendar_id,
+       setup_completed_at: current_user.setup_completed_at,
+       dashboard_layout: current_user.dashboard_layout.presence || User::DEFAULT_DASHBOARD_LAYOUT
+     }.to_json %>"
+     data-step="<%= params[:step] || '1' %>"
+     data-google-connect-url="<%= google_calendar_connect_path %>"
+     style="min-height: 100vh; background: var(--bg);">
+</div>

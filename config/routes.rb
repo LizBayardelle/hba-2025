@@ -77,6 +77,9 @@ Rails.application.routes.draw do
 
   root to: 'home#index'
 
+  get 'setup', to: 'setup#show'
+  post 'setup/complete', to: 'setup#complete'
+
   get 'dashboard', to: 'dashboard#index'
   get 'daily_prep', to: 'prep_questions#index'
   get 'daily_prep/manage', to: 'prep_questions#manage'
@@ -155,10 +158,16 @@ Rails.application.routes.draw do
   resources :tags, only: [:index, :show, :update, :destroy]
 
   resources :categories, only: [:index, :create, :update, :destroy, :show] do
+    collection do
+      patch :reorder
+    end
     resources :habits, only: [:show, :create, :update, :destroy]
   end
 
   resources :projects, only: [:index, :show, :create, :update, :destroy] do
+    collection do
+      patch :reorder
+    end
     resources :sections, only: [:create, :update, :destroy] do
       collection do
         patch :reorder

@@ -1,6 +1,13 @@
 class GoogleCalendarController < ApplicationController
 
   def connect
+    # Store return URL for setup wizard flow
+    if request.referer&.include?('/setup')
+      session[:google_oauth_return_to] = '/setup?step=5'
+    else
+      session[:google_oauth_return_to] = settings_path
+    end
+
     # Generate OAuth URL
     client_id = ENV['GOOGLE_CLIENT_ID']
     redirect_uri = google_calendar_callback_url
@@ -28,18 +35,20 @@ class GoogleCalendarController < ApplicationController
     # Exchange code for tokens
     tokens = exchange_code_for_tokens(params[:code])
 
+    return_to = session.delete(:google_oauth_return_to) || settings_path
+
     if tokens && tokens['refresh_token']
       current_user.update(
         google_refresh_token: tokens['refresh_token'],
         google_sync_enabled: true
       )
-      redirect_to settings_path, notice: 'Google Calendar connected successfully!'
+      redirect_to return_to, notice: 'Google Calendar connected successfully!'
     else
-      redirect_to settings_path, alert: 'Failed to connect Google Calendar'
+      redirect_to return_to, alert: 'Failed to connect Google Calendar'
     end
   rescue StandardError => e
     Rails.logger.error("Google Calendar callback error: #{e.message}")
-    redirect_to settings_path, alert: 'Error connecting to Google Calendar'
+    redirect_to(session.delete(:google_oauth_return_to) || settings_path, alert: 'Error connecting to Google Calendar')
   end
 
   def calendars
