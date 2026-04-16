@@ -154,7 +154,8 @@ class SettingsController < ApplicationController
       :default_documents_grouping,
       :analytics_display,
       :projects_view,
-      :projects_expand_all
+      :projects_expand_all,
+      :tracking_paused
     )
   end
 end

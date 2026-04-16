@@ -8,7 +8,8 @@
   <main class="flex-1 overflow-y-auto md:ml-[224px]">
     <div id="category-react-root" style="background-color: var(--bg); min-height: 100%;"
          data-category-id="<%= @category.id %>"
-         data-sort="<%= params[:sort] || 'priority' %>">
+         data-sort="<%= params[:sort] || 'priority' %>"
+         data-tracking-paused="<%= current_user.tracking_paused %>">
     </div>
   </main>
 </div>

@@ -10,7 +10,8 @@ class User < ApplicationRecord
     { 'block' => 'quick_links', 'column' => 'left', 'position' => 1, 'visible' => true },
     { 'block' => 'habits', 'column' => 'right', 'position' => 2, 'visible' => true },
     { 'block' => 'tasks', 'column' => 'right', 'position' => 3, 'visible' => true },
-    { 'block' => 'daily_prep', 'column' => 'full', 'position' => 4, 'visible' => false }
+    { 'block' => 'daily_prep', 'column' => 'full', 'position' => 4, 'visible' => false },
+    { 'block' => 'projects', 'column' => 'left', 'position' => 5, 'visible' => false }
   ].freeze
 
   has_many :categories, dependent: :destroy

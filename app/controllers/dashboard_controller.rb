@@ -71,6 +71,9 @@ class DashboardController < ApplicationController
       @calendar_events = []
     end
 
+    # === Projects ===
+    @projects = current_user.projects.active.ordered.includes(sections: { project_tasks: :subtasks })
+
     # === Daily Prep Questions ===
     @prep_questions = current_user.prep_questions.active.ordered
     @prep_responses = current_user.prep_responses.for_date(@today).includes(:prep_question)

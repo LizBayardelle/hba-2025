@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import useCategoryStore from '../../stores/categoryStore';
 import useTasksStore from '../../stores/tasksStore';
@@ -25,6 +25,30 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
   const [activeSection, setActiveSection] = useState('habits');
   const [taskFilter, setTaskFilter] = useState('today');
   const [togglingTaskId, setTogglingTaskId] = useState(null);
+  const [trackingPaused, setTrackingPaused] = useState(() => {
+    const root = document.getElementById('category-react-root');
+    return root?.dataset.trackingPaused === 'true';
+  });
+
+  const toggleTrackingPaused = useCallback(async () => {
+    const newPaused = !trackingPaused;
+    setTrackingPaused(newPaused);
+    try {
+      const response = await fetch('/settings', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-Token': document.querySelector('[name=csrf-token]').content,
+        },
+        body: JSON.stringify({ user: { tracking_paused: newPaused } }),
+      });
+      if (!response.ok) throw new Error('Failed to update');
+    } catch (e) {
+      setTrackingPaused(!newPaused);
+    }
+  }, [trackingPaused]);
+
   const { openNewHabitModal, openCategoryEditModal } = useCategoryStore();
   const { openNewModal: openNewTaskModal, openViewModal: openTaskViewModal, openEditModal: openTaskEditModal } = useTasksStore();
   const { openFormModal: openNewListModal, openShowModal: openListShowModal } = useListsStore();
@@ -800,6 +824,30 @@ const CategoryPage = ({ categoryId, initialSort = 'priority' }) => {
             >
               Edit Category
             </button>
+          </div>
+        </div>
+
+        {/* Off day toggle */}
+        <div className="px-8 pb-3">
+          <div
+            className="flex items-center gap-2.5 rounded-lg"
+            style={{
+              padding: '6px 12px',
+              background: trackingPaused ? 'var(--surface)' : 'transparent',
+              border: `1px solid ${trackingPaused ? 'var(--border)' : 'transparent'}`,
+              transition: 'all 0.2s ease',
+              width: 'fit-content',
+            }}
+          >
+            <button
+              onClick={toggleTrackingPaused}
+              className={`v2-toggle ${trackingPaused ? 'active' : ''}`}
+              role="switch"
+              aria-checked={trackingPaused}
+            />
+            <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.8rem', color: 'var(--ink-tertiary)' }}>
+              {trackingPaused ? 'Off day. Tracking paused.' : 'Off day'}
+            </span>
           </div>
         </div>
 

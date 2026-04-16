@@ -43,6 +43,31 @@
       <div style="height: 12px; background: linear-gradient(to bottom, var(--bg), transparent); pointer-events: none;"></div>
     </div>
 
+    <!-- Off Day Toggle -->
+    <div class="px-4 md:px-8" style="max-width: 920px; padding-top: 8px;">
+      <div id="off-day-bar"
+           class="flex items-center justify-between rounded-xl"
+           style="padding: 10px 16px; background: <%= current_user.tracking_paused ? 'var(--surface)' : 'transparent' %>; border: 1px solid <%= current_user.tracking_paused ? 'var(--border)' : 'transparent' %>; transition: all 0.2s ease;">
+        <div class="flex items-center gap-2.5">
+          <button
+            id="tracking-pause-toggle"
+            onclick="toggleTrackingPaused()"
+            class="v2-toggle <%= current_user.tracking_paused ? 'active' : '' %>"
+            role="switch"
+            aria-checked="<%= current_user.tracking_paused %>"
+          ></button>
+          <div>
+            <span style="font-family: var(--font-body); font-size: 0.875rem; font-weight: 500; color: var(--ink);">
+              <%= current_user.tracking_paused ? 'Off day. Streaks and health are frozen.' : 'Taking an off day?' %>
+            </span>
+            <p id="off-day-subtitle" class="v2-caption" style="color: var(--ink-faint); margin-top: 1px; font-size: 0.75rem;">
+              <%= current_user.tracking_paused ? 'Turn this off when you\'re ready to get back to it.' : 'Turn this on to freeze streaks and health. No penalties.' %>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Grey Background Content -->
     <div class="space-y-6 px-4 pb-16 md:px-8" style="background-color: var(--bg); max-width: 920px; padding-top: 8px;">
       <%
@@ -98,6 +123,8 @@
             <%= render 'dashboard/tasks_block' %>
           <% when 'daily_prep' %>
             <%= render 'dashboard/daily_prep_block' %>
+          <% when 'projects' %>
+            <%= render 'dashboard/projects_block' %>
           <% end %>
         <% else %>
           <!-- Two Column Row -->
@@ -115,6 +142,8 @@
                   <%= render 'dashboard/tasks_block' %>
                 <% when 'daily_prep' %>
                   <%= render 'dashboard/daily_prep_block' %>
+                <% when 'projects' %>
+                  <%= render 'dashboard/projects_block' %>
                 <% end %>
               <% end %>
             </div>
@@ -131,6 +160,8 @@
                   <%= render 'dashboard/tasks_block' %>
                 <% when 'daily_prep' %>
                   <%= render 'dashboard/daily_prep_block' %>
+                <% when 'projects' %>
+                  <%= render 'dashboard/projects_block' %>
                 <% end %>
               <% end %>
             </div>
@@ -244,6 +275,47 @@ function playCompletionAnimation(buttonEl, color) {
 
 // The selected dashboard date (may be a past date via arrow navigation)
 const DASHBOARD_DATE = '<%= @today.strftime('%Y-%m-%d') %>';
+
+// Toggle tracking paused
+async function toggleTrackingPaused() {
+  const toggle = document.getElementById('tracking-pause-toggle');
+  const bar = document.getElementById('off-day-bar');
+  const subtitle = document.getElementById('off-day-subtitle');
+  const wasActive = toggle.classList.contains('active'); // active = paused
+  const newPaused = !wasActive; // toggling: if was paused, unpause; if wasn't, pause
+
+  // Optimistic UI update
+  toggle.classList.toggle('active');
+  const label = bar.querySelector('span');
+  label.textContent = newPaused ? 'Off day. Streaks and health are frozen.' : 'Taking an off day?';
+  subtitle.textContent = newPaused
+    ? 'Turn this off when you\u2019re ready to get back to it.'
+    : 'Turn this on to freeze streaks and health. No penalties.';
+  bar.style.background = newPaused ? 'var(--surface)' : 'transparent';
+  bar.style.borderColor = newPaused ? 'var(--border)' : 'transparent';
+
+  try {
+    const response = await fetch('/settings', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name=csrf-token]').content,
+      },
+      body: JSON.stringify({ user: { tracking_paused: newPaused } }),
+    });
+    if (!response.ok) throw new Error('Failed to update');
+  } catch (e) {
+    // Revert on failure
+    toggle.classList.toggle('active');
+    label.textContent = wasActive ? 'Off day. Streaks and health are frozen.' : 'Taking an off day?';
+    subtitle.textContent = wasActive
+      ? 'Turn this off when you\u2019re ready to get back to it.'
+      : 'Turn this on to freeze streaks and health. No penalties.';
+    bar.style.background = wasActive ? 'var(--surface)' : 'transparent';
+    bar.style.borderColor = wasActive ? 'var(--border)' : 'transparent';
+  }
+}
 
 // Today's Focus view toggle
 function switchFocusView(view) {

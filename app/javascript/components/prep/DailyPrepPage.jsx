@@ -151,23 +151,12 @@ const DailyPrepPage = () => {
             </div>
 
             <div className="flex items-center gap-3">
-              <a
-                href="/daily_prep/answers"
-                className="px-4 py-2 rounded-lg text-sm font-medium transition hover:opacity-80"
-                style={{
-                  background: 'var(--hover-tint)',
-                  color: 'var(--ink)',
-                  border: '1px solid rgba(199, 199, 204, 0.4)'
-                }}
-              >
-                <i className="fa-solid fa-clock-rotate-left mr-2"></i>
+              <a href="/daily_prep/answers" className="v2-btn v2-btn-secondary">
+                <i className="fa-solid fa-clock-rotate-left mr-2" style={{ fontSize: '11px' }}></i>
                 History
               </a>
-              <a
-                href="/daily_prep/manage"
-                className="v2-btn-sm v2-btn-primary px-4 py-2 rounded-lg text-sm font-medium text-white transition hover:opacity-80"
-              >
-                <i className="fa-solid fa-gear mr-2"></i>
+              <a href="/daily_prep/manage" className="v2-btn v2-btn-primary">
+                <i className="fa-solid fa-gear mr-2" style={{ fontSize: '11px' }}></i>
                 Manage
               </a>
             </div>

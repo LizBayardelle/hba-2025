@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import useHabitsStore from '../../stores/habitsStore';
 import HabitGroup from './HabitGroup';
 import HabitEditModal from './HabitEditModal';
@@ -13,6 +13,31 @@ import { getColorVariants } from '../../utils/colorUtils';
 const HabitsPage = () => {
   const { viewMode, selectedDate, setViewMode, goToPreviousDay, goToNextDay, goToToday, openNewModal } = useHabitsStore();
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Tracking paused state (initialized from data attribute)
+  const [trackingPaused, setTrackingPaused] = useState(() => {
+    const root = document.getElementById('habits-root');
+    return root?.dataset.trackingPaused === 'true';
+  });
+
+  const toggleTrackingPaused = useCallback(async () => {
+    const newPaused = !trackingPaused;
+    setTrackingPaused(newPaused);
+    try {
+      const response = await fetch('/settings', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-Token': document.querySelector('[name=csrf-token]').content,
+        },
+        body: JSON.stringify({ user: { tracking_paused: newPaused } }),
+      });
+      if (!response.ok) throw new Error('Failed to update');
+    } catch (e) {
+      setTrackingPaused(!newPaused);
+    }
+  }, [trackingPaused]);
 
   // Update sidebar date when selectedDate changes
   useEffect(() => {
@@ -198,6 +223,25 @@ const HabitsPage = () => {
 
           {/* Controls row */}
           <div className="flex flex-wrap items-center gap-3 mt-4">
+            <div
+              className="flex items-center gap-2.5 rounded-lg"
+              style={{
+                padding: '6px 12px',
+                background: trackingPaused ? 'var(--surface)' : 'transparent',
+                border: `1px solid ${trackingPaused ? 'var(--border)' : 'transparent'}`,
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <button
+                onClick={toggleTrackingPaused}
+                className={`v2-toggle ${trackingPaused ? 'active' : ''}`}
+                role="switch"
+                aria-checked={trackingPaused}
+              />
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: '0.8rem', color: 'var(--ink-tertiary)' }}>
+                {trackingPaused ? 'Off day. Tracking paused.' : 'Off day'}
+              </span>
+            </div>
             <div className="v2-seg-control">
               {[
                 { value: 'none', label: 'All' },

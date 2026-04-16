@@ -3,85 +3,420 @@
 <div style="background: var(--bg);">
 
   <!-- ═══════════════════════════════════════════
-       HERO
+       1. HERO
        ═══════════════════════════════════════════ -->
-  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8" style="padding-top: 80px; padding-bottom: 80px;">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8" style="padding-top: 96px; padding-bottom: 88px;">
     <div class="max-w-2xl">
-      <h1 style="font-family: var(--font-display); font-size: clamp(2.2rem, 5vw, 3.2rem); font-weight: 400; color: var(--ink); line-height: 1.15; letter-spacing: -0.03em;">
-        Build the life you want,<br>one small habit at a time.
+      <div style="font-family: var(--font-body); font-size: 0.75rem; font-weight: 500; color: var(--ink-faint); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 20px;">
+        Habit Beaver
+      </div>
+      <h1 style="font-family: var(--font-display); font-size: clamp(2.2rem, 5.2vw, 3.4rem); font-weight: 400; color: var(--ink); line-height: 1.1; letter-spacing: -0.03em;">
+        Keep your life organized<br>without punishing yourself<br>for being human.
       </h1>
-      <p style="font-family: var(--font-body); font-size: 1.1rem; color: var(--ink-secondary); margin-top: 20px; line-height: 1.7; max-width: 500px;">
-        Track your habits, manage tasks, set goals, and reflect daily — all in one calm, focused space. No points systems. No pushy notifications. Just a clear picture of who you're becoming.
+      <div style="margin-top: 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px;">
+        <% ["Habits", "Daily check-in", "Tasks", "Projects", "Goals", "Journal", "Notes"].each_with_index do |label, i| %>
+          <% if i > 0 %>
+            <span style="font-family: var(--font-body); font-size: 0.7rem; color: var(--ink-faint);">·</span>
+          <% end %>
+          <span style="font-family: var(--font-body); font-size: 0.78rem; color: var(--ink-secondary); padding: 5px 11px; border: 1px solid var(--border); border-radius: 999px; background: rgba(199,199,204,0.06); white-space: nowrap;">
+            <%= label %>
+          </span>
+        <% end %>
+      </div>
+      <p style="font-family: var(--font-body); font-size: 1.1rem; color: var(--ink-secondary); margin-top: 24px; line-height: 1.7; max-width: 540px;">
+        A gentler way to hold the pieces of your life together, through the good weeks and the messy ones.
       </p>
-      <div style="margin-top: 32px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+      <div style="margin-top: 36px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
         <%= link_to new_user_registration_path, class: "v2-btn v2-btn-primary", style: "padding: 12px 28px; font-size: 0.933rem;" do %>
-          Get started free
+          Try it free
         <% end %>
         <%= link_to new_user_session_path, style: "font-family: var(--font-body); font-size: 0.867rem; color: var(--ink-tertiary); text-decoration: none;" do %>
-          Already have an account? Sign in
+          I already have an account
         <% end %>
+      </div>
+      <p style="font-family: var(--font-body); font-size: 0.8rem; color: var(--ink-faint); margin-top: 20px; line-height: 1.6;">
+        No streak anxiety. No guilt notifications. No lost progress when life happens.
+      </p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       2. HOW IT WORKS
+       ═══════════════════════════════════════════ -->
+  <div style="border-top: 1px solid var(--border); padding: 72px 0;">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 style="font-family: var(--font-display); font-size: 1.8rem; font-weight: 400; color: var(--ink); letter-spacing: -0.02em; margin-bottom: 12px;">
+        How it works.
+      </h2>
+      <p style="font-family: var(--font-body); font-size: 0.95rem; color: var(--ink-tertiary); margin-bottom: 44px; max-width: 520px; line-height: 1.6;">
+        A lighter loop than most habit apps. Set up once, check in quickly, and let the system hold the pressure so you don't have to.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+        <div>
+          <div style="font-family: var(--font-mono); font-size: 0.733rem; color: var(--ink-faint); margin-bottom: 10px;">01</div>
+          <div style="font-family: var(--font-body); font-size: 1rem; font-weight: 600; color: var(--ink); margin-bottom: 8px;">Plan your habits</div>
+          <p style="font-family: var(--font-body); font-size: 0.9rem; color: var(--ink-tertiary); line-height: 1.65;">
+            Pick the routines that actually matter right now. Group them by morning, afternoon, and evening, or by the areas of your life you want to tend to. Start with three. Add more when you're ready.
+          </p>
+        </div>
+
+        <div>
+          <div style="font-family: var(--font-mono); font-size: 0.733rem; color: var(--ink-faint); margin-bottom: 10px;">02</div>
+          <div style="font-family: var(--font-body); font-size: 1rem; font-weight: 600; color: var(--ink); margin-bottom: 8px;">Check in simply</div>
+          <p style="font-family: var(--font-body); font-size: 0.9rem; color: var(--ink-tertiary); line-height: 1.65;">
+            Open the app, mark what you did, close it. A daily check-in should take less time than making your coffee, and shouldn't feel like a performance review.
+          </p>
+        </div>
+
+        <div>
+          <div style="font-family: var(--font-mono); font-size: 0.733rem; color: var(--ink-faint); margin-bottom: 10px;">03</div>
+          <div style="font-family: var(--font-body); font-size: 1rem; font-weight: 600; color: var(--ink); margin-bottom: 8px;">Keep going, even when life happens</div>
+          <p style="font-family: var(--font-body); font-size: 0.9rem; color: var(--ink-tertiary); line-height: 1.65;">
+            Sick day? Travel week? Flip the day-off toggle. Your streaks pause, your health bars hold steady, and tomorrow picks up where today left off.
+          </p>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- ═══════════════════════════════════════════
-       WHAT YOU GET — feature grid
+       3. WHY IT FEELS DIFFERENT  (key section)
        ═══════════════════════════════════════════ -->
-  <div style="border-top: 1px solid var(--border); padding: 64px 0;">
+  <div style="border-top: 1px solid var(--border); padding: 80px 0;">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-      <h2 style="font-family: var(--font-display); font-size: 1.6rem; font-weight: 400; color: var(--ink); letter-spacing: -0.02em; margin-bottom: 12px;">One app for the whole picture.</h2>
+      <div class="max-w-2xl" style="margin-bottom: 48px;">
+        <h2 style="font-family: var(--font-display); font-size: clamp(1.8rem, 3.2vw, 2.2rem); font-weight: 400; color: var(--ink); letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 18px;">
+          Most habit apps reward perfection.<br>This one doesn't.
+        </h2>
+        <p style="font-family: var(--font-body); font-size: 1rem; color: var(--ink-secondary); line-height: 1.7;">
+          Rigid streak counters turn one off day into a reason to quit. Habit Beaver is built around the way real consistency actually looks: uneven, occasionally interrupted, and still very much working.
+        </p>
+      </div>
 
-      <p style="font-family: var(--font-body); font-size: 0.933rem; color: var(--ink-tertiary); margin-bottom: 36px; max-width: 520px;">
-        Most people use five apps to manage their day. Habit Beaver brings it together so nothing falls through the cracks.
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <!-- Card 1: Day off toggle with UI mock -->
+        <div class="v2-card" style="padding: 24px;">
+          <div style="font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; color: var(--ink-faint); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 12px;">Day off, without losing everything</div>
+          <div style="font-family: var(--font-body); font-size: 0.95rem; font-weight: 600; color: var(--ink); margin-bottom: 10px;">Pause, don't reset.</div>
+          <p style="font-family: var(--font-body); font-size: 0.87rem; color: var(--ink-tertiary); line-height: 1.65; margin-bottom: 18px;">
+            Toggle a day off for illness, travel, or a week that got away from you. Streaks freeze instead of breaking. You come back to where you were, not to zero.
+          </p>
+          <!-- day-off state mock -->
+          <div style="border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; background: rgba(199,199,204,0.08);">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div>
+                <div style="font-family: var(--font-body); font-size: 0.75rem; color: var(--ink-faint); letter-spacing: 0.04em; text-transform: uppercase;">Today</div>
+                <div style="font-family: var(--font-body); font-size: 0.9rem; font-weight: 600; color: var(--ink); margin-top: 2px;">Day off</div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="font-family: var(--font-body); font-size: 0.75rem; color: var(--ink-tertiary);">On</div>
+                <div style="width: 32px; height: 18px; background: var(--ink); border-radius: 999px; position: relative;">
+                  <div style="width: 14px; height: 14px; background: #fff; border-radius: 999px; position: absolute; top: 2px; right: 2px;"></div>
+                </div>
+              </div>
+            </div>
+            <div style="font-family: var(--font-body); font-size: 0.78rem; color: var(--ink-tertiary); margin-top: 10px; line-height: 1.5;">
+              Streaks paused. Picking up tomorrow.
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: Health bars with UI mock -->
+        <div class="v2-card" style="padding: 24px;">
+          <div style="font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; color: var(--ink-faint); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 12px;">Health bars, not just streaks</div>
+          <div style="font-family: var(--font-body); font-size: 0.95rem; font-weight: 600; color: var(--ink); margin-bottom: 10px;">One bad day isn't a verdict.</div>
+          <p style="font-family: var(--font-body); font-size: 0.87rem; color: var(--ink-tertiary); line-height: 1.65; margin-bottom: 18px;">
+            A habit's health reflects the last few weeks, not a single miss. One off day is a small dip. Three strong weeks is a full bar. A more honest picture of how you're actually doing.
+          </p>
+          <!-- health bar mock -->
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div>
+              <div style="display: flex; justify-content: space-between; font-family: var(--font-body); font-size: 0.78rem; color: var(--ink-secondary); margin-bottom: 4px;">
+                <span>Morning walk</span><span style="color: var(--ink-tertiary);">92%</span>
+              </div>
+              <div style="height: 6px; background: rgba(199,199,204,0.35); border-radius: 999px; overflow: hidden;">
+                <div style="width: 92%; height: 100%; background: var(--ink);"></div>
+              </div>
+            </div>
+            <div>
+              <div style="display: flex; justify-content: space-between; font-family: var(--font-body); font-size: 0.78rem; color: var(--ink-secondary); margin-bottom: 4px;">
+                <span>Read 20 pages</span><span style="color: var(--ink-tertiary);">74%</span>
+              </div>
+              <div style="height: 6px; background: rgba(199,199,204,0.35); border-radius: 999px; overflow: hidden;">
+                <div style="width: 74%; height: 100%; background: var(--ink);"></div>
+              </div>
+            </div>
+            <div>
+              <div style="display: flex; justify-content: space-between; font-family: var(--font-body); font-size: 0.78rem; color: var(--ink-secondary); margin-bottom: 4px;">
+                <span>Stretch</span><span style="color: var(--ink-tertiary);">58%</span>
+              </div>
+              <div style="height: 6px; background: rgba(199,199,204,0.35); border-radius: 999px; overflow: hidden;">
+                <div style="width: 58%; height: 100%; background: var(--ink);"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: Overall progress -->
+        <div class="v2-card" style="padding: 24px;">
+          <div style="font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; color: var(--ink-faint); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 12px;">Progress that survives real life</div>
+          <div style="font-family: var(--font-body); font-size: 0.95rem; font-weight: 600; color: var(--ink); margin-bottom: 10px;">See the shape of your year, not last Tuesday.</div>
+          <p style="font-family: var(--font-body); font-size: 0.87rem; color: var(--ink-tertiary); line-height: 1.65; margin-bottom: 18px;">
+            Zoom out on how you're trending across all your habits, instead of staring at a red square from a rough week. Encouraging when you're on, gentle when you're off.
+          </p>
+          <!-- trend mock -->
+          <div style="display: grid; grid-template-columns: repeat(14, 1fr); gap: 3px;">
+            <% [0.4,0.6,0.8,0.7,0.9,1,0.2,0.5,0.75,0.85,0.9,0.95,0.7,0.85].each do |intensity| %>
+              <div style="aspect-ratio: 1; border-radius: 3px; background: rgba(29,29,31,<%= intensity %>);"></div>
+            <% end %>
+          </div>
+          <div style="font-family: var(--font-body); font-size: 0.78rem; color: var(--ink-tertiary); margin-top: 12px; line-height: 1.5;">
+            Two weeks at a glance. Dips are data, not failure.
+          </div>
+        </div>
+
+      </div>
+
+      <div style="margin-top: 40px; font-family: var(--font-display); font-size: 1.3rem; font-weight: 400; color: var(--ink-secondary); letter-spacing: -0.02em;">
+        Bad week? You're still in it.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       4. REAL-LIFE USE CASE: a day in the life
+       ═══════════════════════════════════════════ -->
+  <div style="border-top: 1px solid var(--border); padding: 80px 0;">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="max-w-2xl" style="margin-bottom: 40px;">
+        <h2 style="font-family: var(--font-display); font-size: clamp(1.8rem, 3.2vw, 2.2rem); font-weight: 400; color: var(--ink); letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 18px;">
+          A Tuesday, for example.
+        </h2>
+        <p style="font-family: var(--font-body); font-size: 1rem; color: var(--ink-secondary); line-height: 1.7;">
+          Not aspirational. Just a normal week with a couple of normal dips.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16">
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+          <div style="display: flex; gap: 18px;">
+            <div style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--ink-faint); min-width: 56px; padding-top: 2px;">7:12a</div>
+            <div>
+              <div style="font-family: var(--font-body); font-size: 0.95rem; color: var(--ink); line-height: 1.6;">
+                Opens the app. Three morning habits (water, stretch, journal) grouped and waiting. Taps two, skips one without ceremony.
+              </div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 18px;">
+            <div style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--ink-faint); min-width: 56px; padding-top: 2px;">1:40p</div>
+            <div>
+              <div style="font-family: var(--font-body); font-size: 0.95rem; color: var(--ink); line-height: 1.6;">
+                A task surfaces: <em style="color: var(--ink-secondary);">reply to landlord</em>. Checks it off between meetings.
+              </div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 18px;">
+            <div style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--ink-faint); min-width: 56px; padding-top: 2px;">9:55p</div>
+            <div>
+              <div style="font-family: var(--font-body); font-size: 0.95rem; color: var(--ink); line-height: 1.6;">
+                Not feeling the evening routine. Marks the two things she did, closes the app. No lecture.
+              </div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 18px;">
+            <div style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--ink-faint); min-width: 56px; padding-top: 2px;">Next wk</div>
+            <div>
+              <div style="font-family: var(--font-body); font-size: 0.95rem; color: var(--ink); line-height: 1.6;">
+                Traveling for three days. Flips the day-off toggle. When she's back, her 14-day meditation streak is still there. Health bars held. She picks up. She doesn't start over.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="v2-card" style="padding: 24px; align-self: start;">
+          <div style="font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; color: var(--ink-faint); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 14px;">Tuesday · morning</div>
+
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px;">
+              <div style="width: 18px; height: 18px; border-radius: 5px; background: var(--ink); display: flex; align-items: center; justify-content: center;">
+                <span style="color: #fff; font-size: 0.7rem;">✓</span>
+              </div>
+              <div style="font-family: var(--font-body); font-size: 0.9rem; color: var(--ink);">Water · 16oz</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px;">
+              <div style="width: 18px; height: 18px; border-radius: 5px; background: var(--ink); display: flex; align-items: center; justify-content: center;">
+                <span style="color: #fff; font-size: 0.7rem;">✓</span>
+              </div>
+              <div style="font-family: var(--font-body); font-size: 0.9rem; color: var(--ink);">Stretch · 5 min</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; opacity: 0.55;">
+              <div style="width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--ink-tertiary);"></div>
+              <div style="font-family: var(--font-body); font-size: 0.9rem; color: var(--ink-secondary);">Morning journal</div>
+            </div>
+          </div>
+
+          <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); font-family: var(--font-body); font-size: 0.8rem; color: var(--ink-tertiary); line-height: 1.55;">
+            You skipped one. That's fine. Your morning health is still <strong style="color: var(--ink);">strong</strong>.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       5. ONE PLACE FOR ALL OF IT
+       ═══════════════════════════════════════════ -->
+  <div style="border-top: 1px solid var(--border); padding: 80px 0;">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="max-w-2xl" style="margin-bottom: 44px;">
+        <h2 style="font-family: var(--font-display); font-size: clamp(1.8rem, 3.2vw, 2.2rem); font-weight: 400; color: var(--ink); letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 18px;">
+          Your whole day, in one quiet place.
+        </h2>
+        <p style="font-family: var(--font-body); font-size: 1rem; color: var(--ink-secondary); line-height: 1.7;">
+          Your life shouldn't be siloed across nine different apps. Habits, daily check-ins, tasks, projects, goals, notes, journal: all here, all talking to each other, all in the same calm rhythm.
+        </p>
+      </div>
+
+      <!-- the "one place" grid: what actually lives inside -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3" style="margin-bottom: 40px;">
+
+        <div style="padding: 18px 18px 20px; border: 1px solid var(--border); border-radius: 12px; background: rgba(199,199,204,0.06);">
+          <i class="fa-solid fa-check-double" style="font-size: 0.9rem; color: var(--ink); margin-bottom: 12px; display: block;"></i>
+          <div style="font-family: var(--font-body); font-size: 0.9rem; font-weight: 600; color: var(--ink); margin-bottom: 4px;">Habits</div>
+          <div style="font-family: var(--font-body); font-size: 0.8rem; color: var(--ink-tertiary); line-height: 1.5;">The routines you're building, grouped by time of day.</div>
+        </div>
+
+        <div style="padding: 18px 18px 20px; border: 1px solid var(--border); border-radius: 12px; background: rgba(199,199,204,0.06);">
+          <i class="fa-solid fa-sun" style="font-size: 0.9rem; color: var(--ink); margin-bottom: 12px; display: block;"></i>
+          <div style="font-family: var(--font-body); font-size: 0.9rem; font-weight: 600; color: var(--ink); margin-bottom: 4px;">Daily check-in</div>
+          <div style="font-family: var(--font-body); font-size: 0.8rem; color: var(--ink-tertiary); line-height: 1.5;">A two-minute morning pulse on how you're doing.</div>
+        </div>
+
+        <div style="padding: 18px 18px 20px; border: 1px solid var(--border); border-radius: 12px; background: rgba(199,199,204,0.06);">
+          <i class="fa-solid fa-list-check" style="font-size: 0.9rem; color: var(--ink); margin-bottom: 12px; display: block;"></i>
+          <div style="font-family: var(--font-body); font-size: 0.9rem; font-weight: 600; color: var(--ink); margin-bottom: 4px;">Tasks</div>
+          <div style="font-family: var(--font-body); font-size: 0.8rem; color: var(--ink-tertiary); line-height: 1.5;">The stuff with a due date, without the dread.</div>
+        </div>
+
+        <div style="padding: 18px 18px 20px; border: 1px solid var(--border); border-radius: 12px; background: rgba(199,199,204,0.06);">
+          <i class="fa-solid fa-diagram-project" style="font-size: 0.9rem; color: var(--ink); margin-bottom: 12px; display: block;"></i>
+          <div style="font-family: var(--font-body); font-size: 0.9rem; font-weight: 600; color: var(--ink); margin-bottom: 4px;">Projects</div>
+          <div style="font-family: var(--font-body); font-size: 0.8rem; color: var(--ink-tertiary); line-height: 1.5;">The bigger things, broken into the small next steps.</div>
+        </div>
+
+        <div style="padding: 18px 18px 20px; border: 1px solid var(--border); border-radius: 12px; background: rgba(199,199,204,0.06);">
+          <i class="fa-solid fa-bullseye" style="font-size: 0.9rem; color: var(--ink); margin-bottom: 12px; display: block;"></i>
+          <div style="font-family: var(--font-body); font-size: 0.9rem; font-weight: 600; color: var(--ink); margin-bottom: 4px;">Goals</div>
+          <div style="font-family: var(--font-body); font-size: 0.8rem; color: var(--ink-tertiary); line-height: 1.5;">A target and a visible line toward it. No scoreboard.</div>
+        </div>
+
+        <div style="padding: 18px 18px 20px; border: 1px solid var(--border); border-radius: 12px; background: rgba(199,199,204,0.06);">
+          <i class="fa-solid fa-book-open" style="font-size: 0.9rem; color: var(--ink); margin-bottom: 12px; display: block;"></i>
+          <div style="font-family: var(--font-body); font-size: 0.9rem; font-weight: 600; color: var(--ink); margin-bottom: 4px;">Journal</div>
+          <div style="font-family: var(--font-body); font-size: 0.8rem; color: var(--ink-tertiary); line-height: 1.5;">A private place to put the day down when you want to.</div>
+        </div>
+
+        <div style="padding: 18px 18px 20px; border: 1px solid var(--border); border-radius: 12px; background: rgba(199,199,204,0.06);">
+          <i class="fa-regular fa-note-sticky" style="font-size: 0.9rem; color: var(--ink); margin-bottom: 12px; display: block;"></i>
+          <div style="font-family: var(--font-body); font-size: 0.9rem; font-weight: 600; color: var(--ink); margin-bottom: 4px;">Notes</div>
+          <div style="font-family: var(--font-body); font-size: 0.8rem; color: var(--ink-tertiary); line-height: 1.5;">The reference material your habits and projects lean on.</div>
+        </div>
+
+        <div style="padding: 18px 18px 20px; border: 1px solid var(--border); border-radius: 12px; background: rgba(199,199,204,0.06);">
+          <i class="fa-solid fa-chart-line" style="font-size: 0.9rem; color: var(--ink); margin-bottom: 12px; display: block;"></i>
+          <div style="font-family: var(--font-body); font-size: 0.9rem; font-weight: 600; color: var(--ink); margin-bottom: 4px;">Progress</div>
+          <div style="font-family: var(--font-body); font-size: 0.8rem; color: var(--ink-tertiary); line-height: 1.5;">Streaks, health bars, and honest long-range trends.</div>
+        </div>
+
+      </div>
+
+      <!-- so you can close the tabs -->
+      <div style="padding: 24px 28px; border: 1px solid var(--border); border-radius: 14px;">
+        <div style="font-family: var(--font-body); font-size: 0.72rem; font-weight: 500; color: var(--ink-faint); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 12px;">So you can close</div>
+        <div style="font-family: var(--font-body); font-size: 0.95rem; color: var(--ink-secondary); line-height: 1.7;">
+          The habit app with the streak you're quietly terrified to break. The sticky notes on the fridge. The to-do list on your phone <em>and</em> the one in your notebook. The project board you opened once. The daily reminders you started ignoring around week two.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       6. FEATURES: supporting cast
+       ═══════════════════════════════════════════ -->
+  <div style="border-top: 1px solid var(--border); padding: 72px 0;">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 style="font-family: var(--font-display); font-size: 1.8rem; font-weight: 400; color: var(--ink); letter-spacing: -0.02em; margin-bottom: 12px;">
+        What's inside.
+      </h2>
+      <p style="font-family: var(--font-body); font-size: 0.95rem; color: var(--ink-tertiary); margin-bottom: 36px; max-width: 520px; line-height: 1.6;">
+        Enough to hold your routine. Not so much that setup becomes the hobby.
       </p>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
-        <div class="v2-card" style="padding: 24px;">
-          <div style="font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; color: var(--ink-faint); letter-spacing: 0.03em; margin-bottom: 10px;">Habits</div>
-          <div style="font-size: 0.867rem; font-weight: 600; color: var(--ink); font-family: var(--font-body); margin-bottom: 6px;">Know what to do every morning</div>
-          <p style="font-family: var(--font-body); font-size: 0.833rem; color: var(--ink-tertiary); line-height: 1.6;">
-            Your dashboard groups today's habits by time of day. Morning routine, afternoon check-ins, evening wind-down — all laid out and ready to check off. Streaks and health scores show you where you're strong and where to refocus.
+        <div class="v2-card" style="padding: 22px;">
+          <div style="font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; color: var(--ink-faint); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px;">Habits</div>
+          <div style="font-size: 0.9rem; font-weight: 600; color: var(--ink); font-family: var(--font-body); margin-bottom: 6px;">Group them the way you actually live</div>
+          <p style="font-family: var(--font-body); font-size: 0.85rem; color: var(--ink-tertiary); line-height: 1.6;">
+            By time of day, by category, or by the area of life you're tending to. Start with three. Add more when they stop being a stretch.
           </p>
         </div>
 
-        <div class="v2-card" style="padding: 24px;">
-          <div style="font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; color: var(--ink-faint); letter-spacing: 0.03em; margin-bottom: 10px;">Tasks</div>
-          <div style="font-size: 0.867rem; font-weight: 600; color: var(--ink); font-family: var(--font-body); margin-bottom: 6px;">Stop losing track of things</div>
-          <p style="font-family: var(--font-body); font-size: 0.833rem; color: var(--ink-tertiary); line-height: 1.6;">
-            Tasks with due dates, priorities, and recurring schedules. Overdue items surface automatically. Attach checklists, documents, and notes so everything about a task lives in one place.
+        <div class="v2-card" style="padding: 22px;">
+          <div style="font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; color: var(--ink-faint); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px;">Tasks</div>
+          <div style="font-size: 0.9rem; font-weight: 600; color: var(--ink); font-family: var(--font-body); margin-bottom: 6px;">Plain, dated, recurring when they need to be</div>
+          <p style="font-family: var(--font-body); font-size: 0.85rem; color: var(--ink-tertiary); line-height: 1.6;">
+            Due dates, priorities, repeats. Overdue items surface without drama. Attach notes and documents so a task carries its own context.
           </p>
         </div>
 
-        <div class="v2-card" style="padding: 24px;">
-          <div style="font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; color: var(--ink-faint); letter-spacing: 0.03em; margin-bottom: 10px;">Goals</div>
-          <div style="font-size: 0.867rem; font-weight: 600; color: var(--ink); font-family: var(--font-body); margin-bottom: 6px;">Turn "someday" into a plan</div>
-          <p style="font-family: var(--font-body); font-size: 0.833rem; color: var(--ink-tertiary); line-height: 1.6;">
-            Set a counted target (run 100 miles) or break it into named steps (launch the website). A visual progress bar shows how far you've come. Increment with one tap.
+        <div class="v2-card" style="padding: 22px;">
+          <div style="font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; color: var(--ink-faint); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px;">Projects</div>
+          <div style="font-size: 0.9rem; font-weight: 600; color: var(--ink); font-family: var(--font-body); margin-bottom: 6px;">The bigger things, broken into smaller ones</div>
+          <p style="font-family: var(--font-body); font-size: 0.85rem; color: var(--ink-tertiary); line-height: 1.6;">
+            Asana-style projects for the work that spans weeks: a move, a launch, a book, a renovation. Sub-tasks, ordering, progress, all without the overhead of a full PM tool.
           </p>
         </div>
 
-        <div class="v2-card" style="padding: 24px;">
-          <div style="font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; color: var(--ink-faint); letter-spacing: 0.03em; margin-bottom: 10px;">Journal</div>
-          <div style="font-size: 0.867rem; font-weight: 600; color: var(--ink); font-family: var(--font-body); margin-bottom: 6px;">Process your thoughts</div>
-          <p style="font-family: var(--font-body); font-size: 0.833rem; color: var(--ink-tertiary); line-height: 1.6;">
-            A private journal with rich text, tagging, and search. Write freely or mark entries private so they don't preview in your list. Over time, your journal becomes a searchable record of how you've grown.
+        <div class="v2-card" style="padding: 22px;">
+          <div style="font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; color: var(--ink-faint); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px;">Goals</div>
+          <div style="font-size: 0.9rem; font-weight: 600; color: var(--ink); font-family: var(--font-body); margin-bottom: 6px;">A target and a visible line toward it</div>
+          <p style="font-family: var(--font-body); font-size: 0.85rem; color: var(--ink-tertiary); line-height: 1.6;">
+            Counted (run 100 miles) or stepped (launch the site). A quiet progress bar shows the shape of it. Increment with a tap.
           </p>
         </div>
 
-        <div class="v2-card" style="padding: 24px;">
-          <div style="font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; color: var(--ink-faint); letter-spacing: 0.03em; margin-bottom: 10px;">Daily Prep</div>
-          <div style="font-size: 0.867rem; font-weight: 600; color: var(--ink); font-family: var(--font-body); margin-bottom: 6px;">Start each day with intention</div>
-          <p style="font-family: var(--font-body); font-size: 0.833rem; color: var(--ink-tertiary); line-height: 1.6;">
-            Create your own daily reflection questions — "What's my top priority?" or "How am I feeling (1-10)?" — and answer them each morning. Review past answers to spot patterns in your mindset over weeks and months.
+        <div class="v2-card" style="padding: 22px;">
+          <div style="font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; color: var(--ink-faint); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px;">Daily check-in</div>
+          <div style="font-size: 0.9rem; font-weight: 600; color: var(--ink); font-family: var(--font-body); margin-bottom: 6px;">A short morning pulse, on your terms</div>
+          <p style="font-family: var(--font-body); font-size: 0.85rem; color: var(--ink-tertiary); line-height: 1.6;">
+            Answer a handful of questions you chose: mood, priority, energy, whatever fits. Read back across weeks to see how the story of your year is actually going.
           </p>
         </div>
 
-        <div class="v2-card" style="padding: 24px;">
-          <div style="font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; color: var(--ink-faint); letter-spacing: 0.03em; margin-bottom: 10px;">Notes & Documents</div>
-          <div style="font-size: 0.867rem; font-weight: 600; color: var(--ink); font-family: var(--font-body); margin-bottom: 6px;">Keep your reference material close</div>
-          <p style="font-family: var(--font-body); font-size: 0.833rem; color: var(--ink-tertiary); line-height: 1.6;">
-            Attach documents, YouTube videos, links, and files directly to habits. Your meditation habit can link to a guided audio. Your workout can reference a routine. Quick notes for everything else.
+        <div class="v2-card" style="padding: 22px;">
+          <div style="font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; color: var(--ink-faint); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px;">Streaks & health bars</div>
+          <div style="font-size: 0.9rem; font-weight: 600; color: var(--ink); font-family: var(--font-body); margin-bottom: 6px;">Pick the view that helps, not the one that punishes</div>
+          <p style="font-family: var(--font-body); font-size: 0.85rem; color: var(--ink-tertiary); line-height: 1.6;">
+            Use streaks if they motivate you. Use health bars if they don't. Toggle freely. Same data, shape that suits the day.
+          </p>
+        </div>
+
+        <div class="v2-card" style="padding: 22px;">
+          <div style="font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; color: var(--ink-faint); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px;">Day off</div>
+          <div style="font-size: 0.9rem; font-weight: 600; color: var(--ink); font-family: var(--font-body); margin-bottom: 6px;">A toggle, not a negotiation</div>
+          <p style="font-family: var(--font-body); font-size: 0.85rem; color: var(--ink-tertiary); line-height: 1.6;">
+            Pause tracking for a day, a weekend, or a rough week. Streaks freeze. Health bars hold. Tomorrow starts where today left off.
+          </p>
+        </div>
+
+        <div class="v2-card" style="padding: 22px;">
+          <div style="font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; color: var(--ink-faint); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px;">Notes & journal</div>
+          <div style="font-size: 0.9rem; font-weight: 600; color: var(--ink); font-family: var(--font-body); margin-bottom: 6px;">A quiet place for the context around your habits</div>
+          <p style="font-family: var(--font-body); font-size: 0.85rem; color: var(--ink-tertiary); line-height: 1.6;">
+            Attach a note to a habit or keep one on its own. Private entries stay private. Search finds them later when you need them.
           </p>
         </div>
 
@@ -90,97 +425,22 @@
   </div>
 
   <!-- ═══════════════════════════════════════════
-       DESIGN PHILOSOPHY
+       7. FINAL CTA
        ═══════════════════════════════════════════ -->
-  <div style="border-top: 1px solid var(--border); padding: 64px 0;">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="max-w-xl">
-        <h2 style="font-family: var(--font-display); font-size: 1.8rem; font-weight: 400; color: var(--ink); letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 20px;">
-          Designed to disappear.
-        </h2>
-        <p style="font-family: var(--font-body); font-size: 1rem; color: var(--ink-secondary); line-height: 1.7; margin-bottom: 16px;">
-          Most productivity apps compete for your attention with badges, points, and notifications. Habit Beaver does the opposite. It's a quiet tool that respects your focus.
-        </p>
-        <p style="font-family: var(--font-body); font-size: 1rem; color: var(--ink-secondary); line-height: 1.7; margin-bottom: 16px;">
-          Check in, check off, move on. Your data is always there when you need it — in clean analytics, streak counts, and health scores — but it never shouts at you.
-        </p>
-        <p style="font-family: var(--font-body); font-size: 1rem; color: var(--ink-secondary); line-height: 1.7;">
-          Three themes. Your colors. Your categories. Your pace.
-        </p>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════
-       HOW IT WORKS
-       ═══════════════════════════════════════════ -->
-  <div style="border-top: 1px solid var(--border); padding: 64px 0;">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-      <h2 style="font-family: var(--font-display); font-size: 1.6rem; font-weight: 400; color: var(--ink); letter-spacing: -0.02em; margin-bottom: 8px;">The compound effect is real.</h2>
-      <p style="font-family: var(--font-body); font-size: 0.933rem; color: var(--ink-tertiary); margin-bottom: 36px; max-width: 520px;">
-        Small actions, repeated consistently, change everything. Here's how Habit Beaver makes consistency easy.
-      </p>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div>
-          <div style="font-family: var(--font-mono); font-size: 0.733rem; color: var(--ink-faint); margin-bottom: 8px;">01</div>
-          <div style="font-family: var(--font-body); font-size: 1rem; font-weight: 600; color: var(--ink); margin-bottom: 6px;">Make it yours</div>
-          <p style="font-family: var(--font-body); font-size: 0.867rem; color: var(--ink-tertiary); line-height: 1.6;">
-            Organize habits into categories that match your life. Set morning, afternoon, and evening blocks. Choose what matters most with custom priority levels. The system adapts to you, not the other way around.
-          </p>
-        </div>
-
-        <div>
-          <div style="font-family: var(--font-mono); font-size: 0.733rem; color: var(--ink-faint); margin-bottom: 8px;">02</div>
-          <div style="font-family: var(--font-body); font-size: 1rem; font-weight: 600; color: var(--ink); margin-bottom: 6px;">Two minutes a day</div>
-          <p style="font-family: var(--font-body); font-size: 0.867rem; color: var(--ink-tertiary); line-height: 1.6;">
-            Open your dashboard, check off what you've done, and move on. The interface is fast and minimal on purpose — it shouldn't take longer to track a habit than to do it.
-          </p>
-        </div>
-
-        <div>
-          <div style="font-family: var(--font-mono); font-size: 0.733rem; color: var(--ink-faint); margin-bottom: 8px;">03</div>
-          <div style="font-family: var(--font-body); font-size: 1rem; font-weight: 600; color: var(--ink); margin-bottom: 6px;">Watch yourself change</div>
-          <p style="font-family: var(--font-body); font-size: 0.867rem; color: var(--ink-tertiary); line-height: 1.6;">
-            After a few weeks, your 90-day heatmap starts filling in. Streaks compound. Health scores climb. You stop wondering if you're making progress — you can see it.
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════
-       ALSO INCLUDES
-       ═══════════════════════════════════════════ -->
-  <div style="border-top: 1px solid var(--border); padding: 48px 0;">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex flex-wrap gap-x-8 gap-y-3" style="font-family: var(--font-body); font-size: 0.833rem; color: var(--ink-tertiary);">
-        <span><i class="fa-brands fa-google" style="margin-right: 4px; font-size: 0.7rem;"></i> Google Calendar sync</span>
-        <span><i class="fa-solid fa-moon" style="margin-right: 4px; font-size: 0.7rem;"></i> Dark mode</span>
-        <span><i class="fa-solid fa-mobile-screen" style="margin-right: 4px; font-size: 0.7rem;"></i> Mobile friendly</span>
-        <span><i class="fa-solid fa-list-check" style="margin-right: 4px; font-size: 0.7rem;"></i> Reusable checklists</span>
-        <span><i class="fa-solid fa-tags" style="margin-right: 4px; font-size: 0.7rem;"></i> Tags & search</span>
-        <span><i class="fa-solid fa-file-alt" style="margin-right: 4px; font-size: 0.7rem;"></i> File attachments</span>
-        <span><i class="fa-solid fa-repeat" style="margin-right: 4px; font-size: 0.7rem;"></i> Recurring tasks</span>
-        <span><i class="fa-solid fa-heart-pulse" style="margin-right: 4px; font-size: 0.7rem;"></i> Habit health scores</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════
-       CTA
-       ═══════════════════════════════════════════ -->
-  <div style="border-top: 1px solid var(--border); padding: 64px 0;">
+  <div style="border-top: 1px solid var(--border); padding: 96px 0 104px;">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <h2 style="font-family: var(--font-display); font-size: 1.8rem; font-weight: 400; color: var(--ink); letter-spacing: -0.02em; margin-bottom: 12px;">
-        Start today. It's free.
+      <h2 style="font-family: var(--font-display); font-size: clamp(1.9rem, 3.6vw, 2.4rem); font-weight: 400; color: var(--ink); letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 16px;">
+        Consistency that survives real life.
       </h2>
-      <p style="font-family: var(--font-body); font-size: 0.933rem; color: var(--ink-tertiary); margin-bottom: 28px;">
-        No credit card. No time limit. No catch.
+      <p style="font-family: var(--font-body); font-size: 1rem; color: var(--ink-secondary); margin-bottom: 32px; max-width: 520px; margin-left: auto; margin-right: auto; line-height: 1.65;">
+        Structure without pressure. Progress you can see without staring at it. Free to start, no streak anxiety included.
       </p>
       <%= link_to new_user_registration_path, class: "v2-btn v2-btn-primary", style: "padding: 12px 28px; font-size: 0.933rem;" do %>
         Create your account
       <% end %>
+      <p style="font-family: var(--font-body); font-size: 0.8rem; color: var(--ink-faint); margin-top: 20px;">
+        No credit card. No time limit. Come back whenever.
+      </p>
     </div>
   </div>
 

@@ -1,0 +1,128 @@
+<%# Slide-over modal for adding a task to a project.
+    Expects the parent to have Alpine x-data with:
+      addingTo: null | { projectId, projectName, color, sections: [{id, name}] }
+      newTaskName: ''
+      selectedSectionId: ''
+      saving: false
+%>
+<div x-show="addingTo" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+  class="fixed inset-0 z-50 flex justify-end" style="display: none;" @keydown.escape.window="addingTo = null">
+
+  <%# Backdrop %>
+  <div class="absolute inset-0" style="background: rgba(0,0,0,0.4);" @click="addingTo = null; newTaskName = ''; selectedSectionId = '';"></div>
+
+  <%# Panel %>
+  <div x-show="addingTo" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full"
+    class="relative w-full max-w-md" style="background: var(--bg); box-shadow: -8px 0 32px rgba(0,0,0,0.08);"
+    @click.stop>
+
+    <%# Header %>
+    <div style="padding: 16px 24px; border-bottom: 1px solid var(--border); background: var(--surface); display: flex; align-items: center; justify-content: space-between;">
+      <h2 class="v2-h2">Add Task</h2>
+      <button @click="addingTo = null; newTaskName = ''; selectedSectionId = '';" class="v2-btn-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <%# Body %>
+    <div style="padding: 24px;">
+      <%# Project indicator %>
+      <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+        <div class="flex items-center justify-center flex-shrink-0 rounded-md" style="width: 28px; height: 28px;" :style="{ background: addingTo?.color || 'var(--ink)' }">
+          <i class="fa-solid text-white" :class="addingTo?.icon || 'fa-briefcase'" style="font-size: 0.7rem;"></i>
+        </div>
+        <span style="font-family: var(--font-body); font-size: 0.867rem; font-weight: 600; color: var(--ink);" x-text="addingTo?.projectName"></span>
+      </div>
+
+      <%# Task name %>
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; margin-bottom: 6px; font-family: var(--font-body); font-size: 0.733rem; font-weight: 500; color: var(--ink-tertiary);">Task name</label>
+        <input type="text" x-model="newTaskName" placeholder="What needs to be done?"
+          x-ref="taskNameInput"
+          @keydown.enter="if (newTaskName.trim() && selectedSectionId) { $refs.submitBtn.click(); }"
+          style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); font-family: var(--font-body); font-size: 1rem; font-weight: 500; outline: none;"
+          x-init="$watch('addingTo', (v) => { if (v) { setTimeout(() => $refs.taskNameInput?.focus(), 200); selectedSectionId = v.sections[0]?.id || ''; } })">
+      </div>
+
+      <%# Section picker %>
+      <div style="margin-bottom: 24px;" x-data="{ creatingSection: false, newSectionName: '' }">
+        <label style="display: block; margin-bottom: 6px; font-family: var(--font-body); font-size: 0.733rem; font-weight: 500; color: var(--ink-tertiary);">Section</label>
+        <div style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center; background: var(--hover-tint-strong); border-radius: 6px; padding: 2px;">
+          <template x-for="section in (addingTo?.sections || [])" :key="section.id">
+            <button type="button"
+              @click.prevent.stop="selectedSectionId = section.id"
+              :style="'font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; padding: 4px 10px; border-radius: 5px; cursor: pointer; border: none; white-space: nowrap; transition: all 0.15s ease; '
+                + (selectedSectionId == section.id
+                  ? 'background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 0 0 0.5px rgba(0,0,0,0.04);'
+                  : 'background: transparent; color: var(--ink-tertiary);')"
+              x-text="section.name">
+            </button>
+          </template>
+
+          <%# New section %>
+          <template x-if="!creatingSection">
+            <button type="button" @click.prevent.stop="creatingSection = true; $nextTick(() => $refs.newSectionInput?.focus())"
+              style="font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; padding: 4px 8px; border-radius: 5px; cursor: pointer; border: 1px dashed var(--border-hover); background: none; color: var(--ink-faint); display: inline-flex; align-items: center; gap: 3px; white-space: nowrap;">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New
+            </button>
+          </template>
+        </div>
+
+        <template x-if="creatingSection">
+          <div style="display: flex; gap: 4px; align-items: center; margin-top: 8px;">
+            <input type="text" x-ref="newSectionInput" x-model="newSectionName" placeholder="Section name..."
+              @keydown.enter="
+                if (newSectionName.trim() && addingTo) {
+                  fetch('/projects/' + addingTo.projectId + '/sections', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-Token': document.querySelector('meta[name=csrf-token]').content },
+                    body: JSON.stringify({ section: { name: newSectionName.trim() } })
+                  }).then(r => r.json()).then(data => {
+                    let s = { id: (data.section ? data.section.id : data.id), name: newSectionName.trim() };
+                    addingTo.sections.push(s);
+                    selectedSectionId = s.id;
+                    newSectionName = '';
+                    creatingSection = false;
+                  });
+                }
+              "
+              @keydown.escape="creatingSection = false; newSectionName = '';"
+              style="flex: 1; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); font-family: var(--font-body); font-size: 0.8rem; outline: none;">
+            <button type="button" @click="creatingSection = false; newSectionName = '';"
+              style="color: var(--ink-faint); background: none; border: none; cursor: pointer; padding: 4px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </template>
+      </div>
+
+      <%# Submit %>
+      <button x-ref="submitBtn" :disabled="!newTaskName.trim() || !selectedSectionId || saving"
+        @click="
+          saving = true;
+          fetch('/projects/' + addingTo.projectId + '/sections/' + selectedSectionId + '/project_tasks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-Token': document.querySelector('meta[name=csrf-token]').content },
+            body: JSON.stringify({ project_task: { name: newTaskName.trim() } })
+          }).then(r => {
+            if (!r.ok) throw new Error('Failed to create task');
+            return r.json();
+          }).then(() => {
+            addingTo = null;
+            newTaskName = '';
+            selectedSectionId = '';
+            saving = false;
+            window.location.reload();
+          }).catch((err) => {
+            saving = false;
+            alert('Could not create task: ' + err.message);
+          });
+        "
+        class="v2-btn v2-btn-primary" style="width: 100%; padding: 10px; font-size: 0.9rem; justify-content: center;">
+        <span x-show="!saving">Add Task</span>
+        <span x-show="saving" style="display: none;"><i class="fa-solid fa-spinner fa-spin"></i> Adding...</span>
+      </button>
+    </div>
+  </div>
+</div>

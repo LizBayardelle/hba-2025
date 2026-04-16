@@ -330,6 +330,36 @@ html.theme-transitioning *::after {
   box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 0 0 0.5px rgba(0,0,0,0.04);
 }
 
+/* ── v2 Toggle (iOS-style) ────────────────────────────────────────── */
+.v2-toggle {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  background: var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+.v2-toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  transition: transform 0.2s ease;
+}
+.v2-toggle.active {
+  background: var(--ink);
+}
+.v2-toggle.active::after {
+  transform: translateX(16px);
+}
+
 /* ── v2 Cards ─────────────────────────────────────────────────────── */
 
 .v2-card {

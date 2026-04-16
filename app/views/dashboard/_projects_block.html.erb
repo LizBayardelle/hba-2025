@@ -1,0 +1,142 @@
+<div class="v2-card" style="padding: 0;"
+  x-data="{ expandAll: true, addingTo: null, newTaskName: '', selectedSectionId: '', saving: false }">
+  <div class="v2-section-header" style="padding: 14px 18px 10px;">
+    <div class="flex items-center gap-2">
+      <h2 class="v2-section-title">Projects</h2>
+      <%= link_to projects_path, class: "v2-btn-icon-sm", title: "All Projects", style: "width: 24px; height: 24px;" do %>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      <% end %>
+    </div>
+    <button @click="expandAll = !expandAll" class="v2-btn-sm v2-btn-ghost" style="font-size: 0.7rem; padding: 3px 8px; color: var(--ink-tertiary);">
+      <span x-text="expandAll ? 'Collapse Tasks' : 'Show All Tasks'"></span>
+    </button>
+  </div>
+
+  <div>
+    <% if @projects.any? %>
+      <div>
+        <% @projects.each_with_index do |project, proj_index| %>
+          <%
+            all_tasks = project.project_tasks.active.top_level
+            total_tasks = all_tasks.count
+            completed_tasks = all_tasks.where(completed: true).count
+            progress = total_tasks > 0 ? (completed_tasks * 100.0 / total_tasks).round : 0
+
+            sections_with_tasks = project.sections.active.ordered.map { |s|
+              tasks = s.project_tasks.active.top_level.where(completed: false).order(:position).to_a
+              [s, tasks]
+            }.select { |_, tasks| tasks.any? }
+
+            all_items = []
+            sections_with_tasks.each do |section, tasks|
+              tasks.each_with_index do |task, i|
+                all_items << { section: section, task: task, first_in_section: i == 0 }
+              end
+            end
+            preview_limit = 3
+            preview_items = all_items.first(preview_limit)
+            overflow_items = all_items.drop(preview_limit)
+          %>
+          <div style="<%= proj_index > 0 ? 'border-top: 1px solid var(--border);' : '' %>">
+            <%# Project header %>
+            <div style="padding: 12px 18px 8px; display: flex; align-items: flex-start; gap: 10px;">
+              <%= link_to project_path(project), style: "text-decoration: none; display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;" do %>
+                <div style="width: 28px; height: 28px; border-radius: 6px; background: <%= project.color %>; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                  <i class="fa-solid <%= project.icon %>" style="color: white; font-size: 0.7rem;"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div style="font-family: var(--font-body); font-size: 0.867rem; font-weight: 600; color: var(--ink); line-height: 1.3;"><%= project.name %></div>
+                  <div class="flex items-center gap-2" style="margin-top: 1px;">
+                    <span class="v2-caption"><%= completed_tasks %>/<%= total_tasks %> tasks</span>
+                    <% if total_tasks > 0 %>
+                      <span class="v2-caption" style="color: <%= project.color %>;"><%= progress %>%</span>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+              <button
+                @click="addingTo = { projectId: <%= project.id %>, projectName: '<%= j(project.name) %>', color: '<%= project.color %>', icon: '<%= project.icon %>', sections: <%= project.sections.active.ordered.map { |s| { id: s.id, name: s.name } }.to_json %> }"
+                class="v2-btn-icon-sm" title="Add task" style="flex-shrink: 0; width: 26px; height: 26px; margin-top: 2px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
+            </div>
+
+            <% if total_tasks > 0 %>
+              <%= link_to project_path(project), style: "text-decoration: none; display: block; padding: 0 18px;" do %>
+                <div style="height: 3px; border-radius: 3px; background: var(--border); overflow: hidden;">
+                  <div style="height: 100%; width: <%= progress %>%; background: <%= project.color %>; border-radius: 3px;"></div>
+                </div>
+              <% end %>
+            <% end %>
+
+            <%# Task preview %>
+            <% if all_items.any? %>
+              <div x-data="{ expanded: false }">
+                <% preview_items.each do |item| %>
+                  <% if item[:first_in_section] %>
+                    <div style="padding: 4px 18px 1px; font-family: var(--font-body); font-size: 0.6rem; font-weight: 700; color: var(--ink-faint); letter-spacing: 0.06em; text-transform: uppercase;"><%= item[:section].name %></div>
+                  <% end %>
+                  <div class="flex items-center gap-2.5" style="padding: 4px 18px;">
+                    <div style="width: 12px; height: 12px; border-radius: 3px; border: 1.5px solid var(--border-hover); flex-shrink: 0;"></div>
+                    <span style="font-family: var(--font-body); font-size: 0.767rem; color: var(--ink); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><%= item[:task].name %></span>
+                    <% if item[:task].due_date %>
+                      <span style="font-size: 0.633rem; font-family: var(--font-mono); color: <%= item[:task].due_date < Date.today ? 'var(--overdue)' : 'var(--ink-faint)' %>; white-space: nowrap;"><%= item[:task].due_date.strftime('%b %-d') %></span>
+                    <% end %>
+                  </div>
+                <% end %>
+
+                <% if overflow_items.any? %>
+                  <template x-if="expanded || expandAll">
+                    <div>
+                      <% overflow_items.each do |item| %>
+                        <% if item[:first_in_section] %>
+                          <div style="padding: 4px 18px 1px; font-family: var(--font-body); font-size: 0.6rem; font-weight: 700; color: var(--ink-faint); letter-spacing: 0.06em; text-transform: uppercase;"><%= item[:section].name %></div>
+                        <% end %>
+                        <div class="flex items-center gap-2.5" style="padding: 4px 18px;">
+                          <div style="width: 12px; height: 12px; border-radius: 3px; border: 1.5px solid var(--border-hover); flex-shrink: 0;"></div>
+                          <span style="font-family: var(--font-body); font-size: 0.767rem; color: var(--ink); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><%= item[:task].name %></span>
+                          <% if item[:task].due_date %>
+                            <span style="font-size: 0.633rem; font-family: var(--font-mono); color: <%= item[:task].due_date < Date.today ? 'var(--overdue)' : 'var(--ink-faint)' %>; white-space: nowrap;"><%= item[:task].due_date.strftime('%b %-d') %></span>
+                          <% end %>
+                        </div>
+                      <% end %>
+                    </div>
+                  </template>
+                  <button
+                    x-show="!expandAll"
+                    @click="expanded = !expanded"
+                    style="display: block; width: 100%; padding: 4px 18px 8px; font-family: var(--font-body); font-size: 0.7rem; color: var(--ink-faint); text-align: left; background: none; border: none; cursor: pointer;"
+                  >
+                    <span x-text="expanded ? 'Show less' : '+ <%= overflow_items.count %> more'"></span>
+                  </button>
+                <% else %>
+                  <div style="padding-bottom: 8px;"></div>
+                <% end %>
+              </div>
+            <% elsif total_tasks > 0 && completed_tasks == total_tasks %>
+              <div style="padding: 4px 18px 10px;">
+                <span class="v2-caption" style="color: <%= project.color %>;">All tasks complete</span>
+              </div>
+            <% else %>
+              <div style="padding: 4px 18px 10px;">
+                <span class="v2-caption" style="color: var(--ink-faint);">No tasks yet</span>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div style="padding: 20px 18px; text-align: center;">
+        <p class="v2-small" style="color: var(--ink-tertiary); margin-bottom: 8px;">No projects yet</p>
+        <%= link_to projects_path, class: "v2-btn-sm v2-btn-secondary" do %>
+          <i class="fa-solid fa-plus mr-1"></i>Create a project
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Add task slide-over modal %>
+  <template x-teleport="body">
+    <%= render 'shared/add_project_task_modal' %>
+  </template>
+</div>

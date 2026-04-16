@@ -188,6 +188,9 @@ class Habit < ApplicationRecord
   end
 
   def update_health!
+    # Skip health penalties when tracking is paused
+    return health if user.tracking_paused
+
     # Check if we need to update health based on missed days
     today = Time.zone.today
     yesterday = today - 1.day
@@ -258,6 +261,8 @@ class Habit < ApplicationRecord
   end
 
   def apply_health_penalty(missed_date)
+    # Skip penalties when tracking is paused
+    return if user.tracking_paused
     # Skip if we already processed this missed date
     return if last_missed_date == missed_date
 

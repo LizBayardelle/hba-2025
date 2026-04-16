@@ -23,6 +23,7 @@ const BLOCK_INFO = {
   habits: { name: 'Habits', icon: 'fa-chart-line', description: 'Today\'s habits with completion tracking' },
   tasks: { name: 'Tasks', icon: 'fa-check', description: 'Upcoming and overdue tasks' },
   daily_prep: { name: 'Daily Prep', icon: 'fa-clipboard-check', description: 'Daily reflection questions' },
+  projects: { name: 'Projects', icon: 'fa-briefcase', description: 'Your projects and task progress' },
 };
 
 const DEFAULT_LAYOUT = [
@@ -31,6 +32,7 @@ const DEFAULT_LAYOUT = [
   { block: 'habits', column: 'right', position: 2, visible: true },
   { block: 'tasks', column: 'right', position: 3, visible: true },
   { block: 'daily_prep', column: 'full', position: 4, visible: false },
+  { block: 'projects', column: 'left', position: 5, visible: false },
 ];
 
 function SortableBlock({ item, onToggleVisible, onChangeColumn }) {
