@@ -201,51 +201,82 @@ const DailyPrepPage = () => {
 
         {!isLoading && !error && questions.length > 0 && (
           <div className="space-y-6">
-            {questions.map((question, index) => (
-              <div
-                key={question.id}
-                className="rounded-xl p-6 shadow-medium"
-                style={{
-                  background: 'var(--surface)',
-                }}
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <span
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium"
-                      style={{ background: 'var(--hover-tint)', color: 'var(--ink-tertiary)' }}
+            {(() => {
+              let questionNumber = 0;
+              return questions.map((question) => {
+                if (question.question_type === 'header') {
+                  return (
+                    <div
+                      key={question.id}
+                      className="flex items-center gap-3"
+                      style={{ marginTop: '12px', marginBottom: '-8px' }}
                     >
-                      {index + 1}
-                    </span>
-                    <h3 className="text-lg font-medium" style={{ color: 'var(--ink)' }}>
-                      {question.question_text}
-                    </h3>
-                  </div>
-                  {saveStatus[question.id] && (
-                    <span
-                      className="text-xs px-2 py-1 rounded"
-                      style={{
-                        background: saveStatus[question.id] === 'saved' ? '#D1FAE5' :
-                          saveStatus[question.id] === 'error' ? '#FEE2E2' : '#F3F4F6',
-                        color: saveStatus[question.id] === 'saved' ? '#065F46' :
-                          saveStatus[question.id] === 'error' ? '#991B1B' : '#6B7280'
-                      }}
-                    >
-                      {saveStatus[question.id] === 'saving' && 'Saving...'}
-                      {saveStatus[question.id] === 'saved' && 'Saved'}
-                      {saveStatus[question.id] === 'error' && 'Error saving'}
-                    </span>
-                  )}
-                </div>
+                      <h2
+                        style={{
+                          fontFamily: 'var(--font-display)',
+                          fontSize: '0.9rem',
+                          fontWeight: 600,
+                          letterSpacing: '0.08em',
+                          textTransform: 'uppercase',
+                          color: 'var(--ink-tertiary)',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {question.question_text}
+                      </h2>
+                      <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+                    </div>
+                  );
+                }
 
-                <ResponseInput
-                  question={question}
-                  value={getResponseValue(question.id, question.question_type)}
-                  onChange={(value) => handleChange(question.id, value, question.question_type)}
-                  onBlur={(value) => handleBlur(question.id, value, question.question_type)}
-                />
-              </div>
-            ))}
+                questionNumber += 1;
+                return (
+                  <div
+                    key={question.id}
+                    className="rounded-xl p-6 shadow-medium"
+                    style={{
+                      background: 'var(--surface)',
+                    }}
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <span
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium"
+                          style={{ background: 'var(--hover-tint)', color: 'var(--ink-tertiary)' }}
+                        >
+                          {questionNumber}
+                        </span>
+                        <h3 className="text-lg font-medium" style={{ color: 'var(--ink)' }}>
+                          {question.question_text}
+                        </h3>
+                      </div>
+                      {saveStatus[question.id] && (
+                        <span
+                          className="text-xs px-2 py-1 rounded"
+                          style={{
+                            background: saveStatus[question.id] === 'saved' ? '#D1FAE5' :
+                              saveStatus[question.id] === 'error' ? '#FEE2E2' : '#F3F4F6',
+                            color: saveStatus[question.id] === 'saved' ? '#065F46' :
+                              saveStatus[question.id] === 'error' ? '#991B1B' : '#6B7280'
+                          }}
+                        >
+                          {saveStatus[question.id] === 'saving' && 'Saving...'}
+                          {saveStatus[question.id] === 'saved' && 'Saved'}
+                          {saveStatus[question.id] === 'error' && 'Error saving'}
+                        </span>
+                      )}
+                    </div>
+
+                    <ResponseInput
+                      question={question}
+                      value={getResponseValue(question.id, question.question_type)}
+                      onChange={(value) => handleChange(question.id, value, question.question_type)}
+                      onBlur={(value) => handleBlur(question.id, value, question.question_type)}
+                    />
+                  </div>
+                );
+              });
+            })()}
           </div>
         )}
       </div>

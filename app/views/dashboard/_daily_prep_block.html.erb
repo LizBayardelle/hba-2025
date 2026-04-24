@@ -3,8 +3,9 @@
   <div class="v2-section-header" style="padding: 14px 18px 10px;">
     <h2 class="v2-section-title">Daily Prep</h2>
     <div class="flex items-center gap-3">
+      <% answerable_questions = @prep_questions.reject { |q| q.question_type == 'header' } %>
       <% answered_count = @prep_response_map.count { |_, r| r.response_value.present? || r.long_response.present? } %>
-      <span class="v2-caption"><%= answered_count %> of <%= @prep_questions.count %> answered</span>
+      <span class="v2-caption"><%= answered_count %> of <%= answerable_questions.count %> answered</span>
       <%= link_to daily_prep_path, class: "v2-caption", style: "color: var(--ink-tertiary);" do %>
         View all
       <% end %>
@@ -16,8 +17,15 @@
     <% if @prep_questions.any? %>
       <div>
         <% @prep_questions.each_with_index do |question, index| %>
+          <% if question.question_type == 'header' %>
+            <div style="padding: <%= index == 0 ? '14px' : '20px' %> 24px 6px;">
+              <h3 style="font-family: var(--font-display); font-size: 1rem; font-weight: 600; letter-spacing: 0.01em; color: var(--ink-secondary); margin: 0; padding-bottom: 6px; border-bottom: 1px solid var(--border);">
+                <%= question.question_text %>
+              </h3>
+            </div>
+          <% else %>
           <% response = @prep_response_map[question.id] %>
-          <div class="prep-question-item" style="padding: 14px 24px; border-top: 1px solid var(--border); <%= index == 0 ? 'border-top: none;' : '' %>" data-question-id="<%= question.id %>" data-question-type="<%= question.question_type %>" data-today="<%= @today %>">
+          <div class="prep-question-item" style="padding: 10px 24px;" data-question-id="<%= question.id %>" data-question-type="<%= question.question_type %>" data-today="<%= @today %>">
             <!-- Question text -->
             <p class="v2-small" style="margin-bottom: 6px; color: var(--ink-secondary);"><%= question.question_text %></p>
 
@@ -94,6 +102,7 @@
               <div class="prep-status mt-1 v2-caption" style="color: var(--ink-faint); display: none;"></div>
             </div>
           </div>
+          <% end %>
         <% end %>
       </div>
     <% else %>

@@ -6,7 +6,8 @@ class PrepQuestion < ApplicationRecord
     short_answer: 0,
     long_answer: 1,
     checkbox: 2,
-    multiple_choice: 3
+    multiple_choice: 3,
+    header: 4
   }
 
   validates :question_text, presence: true

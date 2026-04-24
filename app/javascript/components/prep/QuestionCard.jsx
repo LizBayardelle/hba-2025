@@ -6,6 +6,7 @@ const QUESTION_TYPE_LABELS = {
   long_answer: 'Long Answer',
   checkbox: 'Yes/No',
   multiple_choice: 'Multiple Choice',
+  header: 'Section Header',
 };
 
 const QUESTION_TYPE_ICONS = {
@@ -13,16 +14,18 @@ const QUESTION_TYPE_ICONS = {
   long_answer: 'fa-align-left',
   checkbox: 'fa-toggle-on',
   multiple_choice: 'fa-list-ul',
+  header: 'fa-heading',
 };
 
 const QuestionCard = ({ question, index, dragHandleProps }) => {
   const { openEditModal, openDeleteModal } = usePrepStore();
+  const isHeader = question.question_type === 'header';
 
   return (
     <div
       className="rounded-xl p-5 shadow-medium transition hover:shadow-md"
       style={{
-        background: 'var(--surface)',
+        background: isHeader ? 'var(--hover-tint)' : 'var(--surface)',
         opacity: question.inactive ? 0.6 : 1,
         borderLeft: question.inactive ? '3px solid var(--ink-tertiary)' : 'none',
       }}
@@ -31,12 +34,16 @@ const QuestionCard = ({ question, index, dragHandleProps }) => {
         {/* Drag handle + Position indicator */}
         <div
           className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 cursor-grab active:cursor-grabbing"
-          style={{ background: 'var(--hover-tint)' }}
+          style={{ background: isHeader ? 'var(--surface)' : 'var(--hover-tint)' }}
           {...(dragHandleProps || {})}
         >
-          <span className="text-sm font-medium" style={{ color: 'var(--ink-tertiary)' }}>
-            {index + 1}
-          </span>
+          {isHeader ? (
+            <i className="fa-solid fa-heading text-sm" style={{ color: 'var(--ink-tertiary)' }}></i>
+          ) : (
+            <span className="text-sm font-medium" style={{ color: 'var(--ink-tertiary)' }}>
+              {index + 1}
+            </span>
+          )}
         </div>
 
         {/* Question content */}
@@ -45,14 +52,20 @@ const QuestionCard = ({ question, index, dragHandleProps }) => {
             <div className="flex-1 min-w-0">
               <h3
                 className="text-base font-medium mb-2 truncate"
-                style={{ color: 'var(--ink)' }}
+                style={{
+                  color: 'var(--ink)',
+                  fontFamily: isHeader ? 'var(--font-display)' : undefined,
+                  fontSize: isHeader ? '1.1rem' : undefined,
+                  letterSpacing: isHeader ? '0.02em' : undefined,
+                  textTransform: isHeader ? 'uppercase' : undefined,
+                }}
               >
                 {question.question_text}
               </h3>
               <div className="flex items-center gap-2 flex-wrap">
                 <span
                   className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs"
-                  style={{ background: 'var(--hover-tint)', color: 'var(--ink-tertiary)' }}
+                  style={{ background: isHeader ? 'var(--surface)' : 'var(--hover-tint)', color: 'var(--ink-tertiary)' }}
                 >
                   <i className={`fa-solid ${QUESTION_TYPE_ICONS[question.question_type]}`}></i>
                   {QUESTION_TYPE_LABELS[question.question_type]}

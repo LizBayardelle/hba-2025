@@ -9,6 +9,7 @@ const QUESTION_TYPES = [
   { value: 'long_answer', label: 'Long Answer', icon: 'fa-align-left', description: 'Rich text editor' },
   { value: 'checkbox', label: 'Yes/No', icon: 'fa-toggle-on', description: 'Simple toggle' },
   { value: 'multiple_choice', label: 'Multiple Choice', icon: 'fa-list-ul', description: 'Select from options' },
+  { value: 'header', label: 'Section Header', icon: 'fa-heading', description: 'Visual divider, no input' },
 ];
 
 const QuestionFormModal = ({ questions }) => {
@@ -146,13 +147,13 @@ const QuestionFormModal = ({ questions }) => {
         {/* Question Text */}
         <div>
           <label className="block text-sm font-medium mb-2" style={{ color: 'var(--ink)' }}>
-            Question
+            {formData.question_type === 'header' ? 'Header Text' : 'Question'}
           </label>
           <input
             type="text"
             value={formData.question_text}
             onChange={(e) => setFormData(prev => ({ ...prev, question_text: e.target.value }))}
-            placeholder="What would you like to ask yourself daily?"
+            placeholder={formData.question_type === 'header' ? 'e.g. Morning Reflection' : 'What would you like to ask yourself daily?'}
             className="w-full px-4 py-3 rounded-lg text-sm focus:outline-none transition"
             style={{
               border: '1px solid rgba(199, 199, 204, 0.4)',
@@ -166,7 +167,7 @@ const QuestionFormModal = ({ questions }) => {
         {/* Question Type */}
         <div>
           <label className="block text-sm font-medium mb-3" style={{ color: 'var(--ink)' }}>
-            Answer Type
+            Type
           </label>
           <div className="grid grid-cols-2 gap-3">
             {QUESTION_TYPES.map((type) => (
