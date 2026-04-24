@@ -7,11 +7,10 @@ class SettingsController < ApplicationController
   end
 
   def update
-    update_params = settings_params.to_h
-
-    # Handle dashboard_layout separately since it's an array of hashes
+    # Dashboard layout is a standalone save — write it directly to avoid
+    # unrelated model validations blocking the update.
     if params[:user][:dashboard_layout].present?
-      update_params[:dashboard_layout] = params[:user][:dashboard_layout].map do |item|
+      layout = params[:user][:dashboard_layout].map do |item|
         {
           'block' => item['block'],
           'column' => item['column'],
@@ -19,7 +18,16 @@ class SettingsController < ApplicationController
           'visible' => item['visible']
         }
       end
+      current_user.update_column(:dashboard_layout, layout)
+
+      respond_to do |format|
+        format.html { redirect_to settings_path, notice: 'Settings updated successfully.' }
+        format.json { render json: { success: true, message: 'Settings updated successfully.' } }
+      end
+      return
     end
+
+    update_params = settings_params.to_h
 
     if current_user.update(update_params)
       respond_to do |format|

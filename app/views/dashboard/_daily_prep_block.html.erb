@@ -37,7 +37,7 @@
               <% when 'long_answer' %>
                 <div class="prep-long-answer-wrapper">
                   <% input_id = "prep-trix-#{question.id}" %>
-                  <input id="<%= input_id %>" type="hidden" value="<%= response&.long_response.to_s %>" data-response-id="<%= response&.id %>">
+                  <%= hidden_field_tag input_id, response&.long_response&.body.to_s, data: { response_id: response&.id } %>
                   <trix-editor
                     input="<%= input_id %>"
                     class="prep-trix trix-content text-sm rounded-lg"

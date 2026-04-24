@@ -10,6 +10,9 @@ Rails.application.routes.draw do
         post 'users', to: 'registrations#create', as: :user_registration
       end
 
+      get 'auth/me', to: 'auth#me'
+      post 'setup/complete', to: 'setup#complete'
+
       get 'dashboard', to: 'dashboard#index'
 
       resources :habits, only: [:index, :show, :create, :update, :destroy] do
@@ -33,7 +36,11 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :categories, only: [:index, :show, :create, :update, :destroy]
+      resources :categories, only: [:index, :show, :create, :update, :destroy] do
+        collection do
+          patch :reorder
+        end
+      end
       resources :tags, only: [:index, :show, :update, :destroy]
       resources :documents, only: [:index, :show, :create, :update, :destroy] do
         member do
@@ -72,6 +79,23 @@ Rails.application.routes.draw do
       patch 'google_calendar/select', to: 'google_calendar#select_calendar'
       delete 'google_calendar/disconnect', to: 'google_calendar#disconnect'
       post 'google_calendar/refresh', to: 'google_calendar#refresh'
+
+      resources :projects, only: [:index, :show, :create, :update, :destroy] do
+        collection do
+          patch :reorder
+        end
+        resources :sections, only: [:create, :update, :destroy] do
+          collection do
+            patch :reorder
+          end
+          resources :project_tasks, only: [:create]
+        end
+      end
+      resources :project_tasks, only: [:update, :destroy] do
+        collection do
+          patch :reorder
+        end
+      end
     end
   end
 

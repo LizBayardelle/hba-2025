@@ -148,7 +148,16 @@ module AppApi
 
       def destroy
         @category.update(archived: true)
-        render_success message: 'Category archived.'
+        render_success({ message: 'Category archived.' })
+      end
+
+      def reorder
+        ActiveRecord::Base.transaction do
+          Array(params[:items]).each do |item|
+            current_user.categories.where(id: item[:id]).update_all(position: item[:position])
+          end
+        end
+        render_success({ message: 'Categories reordered.' })
       end
 
       private

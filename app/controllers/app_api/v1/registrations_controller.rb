@@ -12,7 +12,10 @@ module AppApi
             user: {
               id: resource.id,
               email: resource.email,
-              timezone: resource.timezone
+              first_name: resource.first_name,
+              timezone: resource.timezone,
+              setup_completed_at: resource.setup_completed_at&.iso8601,
+              google_calendar_connected: resource.google_refresh_token.present?
             },
             message: 'Signed up successfully.'
           }, status: :created
