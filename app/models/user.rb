@@ -31,6 +31,8 @@ class User < ApplicationRecord
   has_many :project_tasks, dependent: :destroy
   has_many :prep_questions, dependent: :destroy
   has_many :prep_responses, dependent: :destroy
+  has_many :prompts, dependent: :destroy
+  has_many :prompt_responses, dependent: :destroy
 
   THEMES = %w[cream white dark].freeze
   validates :theme, inclusion: { in: THEMES }, allow_nil: true

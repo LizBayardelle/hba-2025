@@ -160,6 +160,14 @@ Rails.application.routes.draw do
   get 'terms', to: 'legal#terms', as: :terms
 
   resources :journals, only: [:index, :show, :create, :update, :destroy]
+  resources :prompts do
+    member do
+      patch :archive
+      patch :unarchive
+    end
+    resources :prompt_responses, only: [:create], shallow: true
+  end
+  resources :prompt_responses, only: [:update, :destroy]
   resources :tasks, only: [:index, :show, :create, :update, :destroy] do
     resources :checklist_items, only: [:create, :update, :destroy], module: :tasks do
       collection do

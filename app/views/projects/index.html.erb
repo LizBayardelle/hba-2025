@@ -1,3 +1,7 @@
+<% content_for :head do %>
+  <%= javascript_include_tag "projects_app", type: "module" %>
+<% end %>
+
 <div class="flex h-screen relative" style="background-color: var(--bg);">
   <%= render 'shared/sidebar' %>
 
@@ -97,6 +101,12 @@
                       </div>
                     </div>
                   <% end %>
+                  <button
+                    type="button"
+                    @click.stop.prevent="window.openProjectEditModal(<%= project.id %>)"
+                    class="v2-btn-icon-sm" title="Edit project" style="flex-shrink: 0; width: 28px; height: 28px; margin-left: 4px;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                  </button>
                   <% if project.sections.active.any? %>
                     <button
                       @click="addingTo = { projectId: <%= project.id %>, projectName: '<%= j(project.name) %>', color: '<%= project.color %>', icon: '<%= project.icon %>', sections: <%= project.sections.active.ordered.map { |s| { id: s.id, name: s.name } }.to_json %> }"
@@ -231,6 +241,14 @@
                 <%= project.name %>
               <% end %>
 
+              <%# Edit %>
+              <button
+                type="button"
+                @click.stop.prevent="window.openProjectEditModal(<%= project.id %>)"
+                class="v2-btn-icon-sm" title="Edit project" style="flex-shrink: 0; width: 24px; height: 24px;">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              </button>
+
               <%# Stats %>
               <span class="v2-caption" style="flex-shrink: 0; min-width: 70px; text-align: right;">
                 <%= completed_tasks %>/<%= total_tasks %> tasks
@@ -281,6 +299,8 @@
     </div>
   </main>
 </div>
+
+<div id="projects-modals-root"></div>
 
 <style>
   /* Prevent inner links/icons from intercepting drag — only the card/row itself drags */

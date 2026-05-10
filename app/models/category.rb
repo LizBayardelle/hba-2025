@@ -5,6 +5,7 @@ class Category < ApplicationRecord
   has_many :goals, dependent: :nullify
   has_many :lists, dependent: :nullify
   has_many :notes, dependent: :nullify
+  has_many :prompts, dependent: :nullify
   has_and_belongs_to_many :documents
 
   validates :name, presence: true

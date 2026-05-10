@@ -1,0 +1,207 @@
+<%
+  question_type_options = [
+    ["Short text",      "short_answer"],
+    ["Long text",       "long_answer"],
+    ["Number",          "integer"],
+    ["Yes / No",        "yes_no"],
+    ["Multiple choice", "multiple_choice"],
+    ["Checkboxes",      "checkboxes"]
+  ]
+  type_label = ->(t) { question_type_options.find { |_, v| v == t }&.first || t.to_s.humanize }
+%>
+<div class="flex h-screen relative" style="background-color: var(--bg);">
+  <%= render 'shared/sidebar' %>
+
+  <main class="flex-1 overflow-y-auto md:ml-[224px]">
+    <div x-data="{ showNewModal: false, newType: 'short_answer', newOptions: [''], newCategoryId: '', newTags: '' }">
+
+      <!-- Header -->
+      <div class="sticky top-0 z-10" style="background: var(--bg);">
+        <div class="pl-14 pr-4 pt-6 pb-4 md:pl-8 md:pr-8 md:pt-8 md:pb-5">
+          <div class="flex items-baseline justify-between">
+            <div>
+              <h1 class="v2-h1">Prompts</h1>
+              <p class="v2-small" style="margin-top: 4px; color: var(--ink-tertiary);">
+                <% if params[:archived] == 'true' %>
+                  <%= @prompts.count %> archived
+                <% else %>
+                  <%= @prompts.count %> active prompt<%= @prompts.count == 1 ? '' : 's' %>
+                <% end %>
+              </p>
+            </div>
+            <div class="flex items-center gap-2">
+              <div style="display: inline-flex; background: var(--hover-tint-strong); border-radius: 6px; padding: 2px;">
+                <%= link_to "Active", prompts_path,
+                    style: "font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; padding: 4px 10px; border-radius: 5px; text-decoration: none; #{params[:archived] != 'true' ? 'background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.06);' : 'background: transparent; color: var(--ink-tertiary);'}" %>
+                <%= link_to "Archived", prompts_path(archived: true),
+                    style: "font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; padding: 4px 10px; border-radius: 5px; text-decoration: none; #{params[:archived] == 'true' ? 'background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.06);' : 'background: transparent; color: var(--ink-tertiary);'}" %>
+              </div>
+              <button @click="showNewModal = true" class="v2-btn-sm v2-btn-primary">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                New Prompt
+              </button>
+            </div>
+          </div>
+        </div>
+        <div style="height: 12px; background: linear-gradient(to bottom, var(--bg), transparent); pointer-events: none;"></div>
+      </div>
+
+      <!-- Flash -->
+      <% if flash[:notice] %>
+        <div class="px-4 md:px-8" style="max-width: 920px;">
+          <div style="padding: 8px 12px; background: var(--hover-tint); border-radius: 6px; font-size: 0.8rem; color: var(--ink-secondary); margin-bottom: 12px;"><%= flash[:notice] %></div>
+        </div>
+      <% end %>
+      <% if flash[:alert] %>
+        <div class="px-4 md:px-8" style="max-width: 920px;">
+          <div style="padding: 8px 12px; background: rgba(192,64,64,0.1); border-radius: 6px; font-size: 0.8rem; color: #C04040; margin-bottom: 12px;"><%= flash[:alert] %></div>
+        </div>
+      <% end %>
+
+      <!-- List -->
+      <div class="px-4 pb-16 md:px-8" style="max-width: 920px; padding-top: 8px;">
+        <% if @prompts.any? %>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <% @prompts.each do |prompt| %>
+              <% count = @response_counts[prompt.id] || 0 %>
+              <% last_at = @last_responded_at[prompt.id] %>
+              <% color = prompt.category&.color || '#8E8E93' %>
+              <div x-data="{ open: false }">
+                <div class="v2-card" style="padding: 0; overflow: hidden; cursor: pointer;" @click="open = true">
+                  <div style="height: 4px; background: <%= color %>; border-radius: 10px 10px 0 0;"></div>
+                  <div style="padding: 18px 20px;">
+                    <div class="flex items-start gap-3">
+                      <div style="width: 32px; height: 32px; border-radius: 7px; background: <%= color %>; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i class="fa-solid fa-comment-dots" style="color: white; font-size: 0.75rem;"></i>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div style="font-family: var(--font-body); font-size: 0.933rem; font-weight: 600; color: var(--ink); line-height: 1.3;"><%= prompt.title %></div>
+                        <% if prompt.description.present? %>
+                          <div class="v2-small" style="color: var(--ink-tertiary); margin-top: 4px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"><%= prompt.description %></div>
+                        <% end %>
+                        <div class="flex items-center gap-3 flex-wrap" style="margin-top: 8px;">
+                          <span class="v2-caption" style="text-transform: uppercase; letter-spacing: 0.04em;"><%= type_label.call(prompt.question_type) %></span>
+                          <% if prompt.category %>
+                            <span class="v2-caption" style="color: <%= color %>;"><%= prompt.category.name %></span>
+                          <% end %>
+                          <% prompt.tags.each do |tag| %>
+                            <span class="v2-caption" style="color: var(--ink-tertiary);">#<%= tag.name %></span>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flex items-center justify-between" style="border-top: 1px solid var(--border); padding: 8px 20px; background: var(--hover-tint);">
+                    <span class="v2-caption" style="color: var(--ink-tertiary);">
+                      <%= count %> response<%= count == 1 ? '' : 's' %><% if last_at %> · last <%= time_ago_in_words(last_at) %> ago<% end %>
+                    </span>
+                    <%= link_to "View log →", prompt_path(prompt), class: "v2-caption", style: "color: var(--ink-secondary); text-decoration: none;", "@click.stop": "" %>
+                  </div>
+                </div>
+
+                <!-- Answer modal -->
+                <template x-teleport="body">
+                  <div x-show="open" @click.self="open = false" @keydown.escape.window="open = false" class="fixed inset-0 flex items-center justify-center z-50 p-4" style="background: rgba(0,0,0,0.4); display: none;">
+                    <div @click.stop class="v2-card" style="padding: 24px; width: 100%; max-width: 32rem; max-height: 90vh; overflow-y: auto;">
+                      <div class="flex items-baseline gap-3" style="margin-bottom: 4px;">
+                        <div style="width: 6px; height: 22px; background: <%= color %>; border-radius: 3px; flex-shrink: 0;"></div>
+                        <h2 class="v2-h2" style="margin: 0;"><%= prompt.title %></h2>
+                      </div>
+                      <% if prompt.description.present? %>
+                        <p class="v2-small" style="color: var(--ink-tertiary); margin-bottom: 16px; margin-left: 18px;"><%= simple_format(prompt.description) %></p>
+                      <% else %>
+                        <div style="height: 12px;"></div>
+                      <% end %>
+
+                      <%= form_with model: PromptResponse.new, url: prompt_prompt_responses_path(prompt), method: :post, local: true do |f| %>
+                        <%= render 'answer_inputs', prompt: prompt, f: f %>
+
+                        <div class="flex gap-2 justify-end" style="margin-top: 20px;">
+                          <button type="button" @click="open = false" class="v2-btn v2-btn-secondary">Cancel</button>
+                          <%= f.submit "Save", class: "v2-btn v2-btn-primary" %>
+                        </div>
+                      <% end %>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="v2-card" style="padding: 48px 24px; text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 8px; opacity: 0.3;"><i class="fa-solid fa-comment-dots"></i></div>
+            <div class="v2-h3" style="margin-bottom: 4px;">
+              <% if params[:archived] == 'true' %>No archived prompts<% else %>No prompts yet<% end %>
+            </div>
+            <% if params[:archived] != 'true' %>
+              <p class="v2-small" style="color: var(--ink-tertiary); margin-bottom: 16px;">Create a recurring question to log answers over time.</p>
+              <button @click="showNewModal = true" class="v2-btn v2-btn-primary">Create your first prompt</button>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- New Prompt Modal -->
+      <template x-teleport="body">
+        <div x-show="showNewModal" @click.self="showNewModal = false" @keydown.escape.window="showNewModal = false" class="fixed inset-0 flex items-center justify-center z-50 p-4" style="background: rgba(0,0,0,0.4); display: none;">
+          <div @click.stop class="v2-card" style="padding: 24px; width: 100%; max-width: 36rem; max-height: 90vh; overflow-y: auto;">
+            <h2 class="v2-h2" style="margin-bottom: 20px;">New Prompt</h2>
+
+            <%= form_with model: Prompt.new, url: prompts_path, method: :post, local: true do |f| %>
+              <div style="margin-bottom: 12px;">
+                <label class="v2-caption" style="display: block; margin-bottom: 4px;">Title</label>
+                <%= f.text_field :title, placeholder: "e.g., What did I tell myself when stressed?", required: true, class: "form-input", style: "font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border);" %>
+              </div>
+
+              <div style="margin-bottom: 12px;">
+                <label class="v2-caption" style="display: block; margin-bottom: 4px;">Description (optional)</label>
+                <%= f.text_area :description, rows: 2, placeholder: "Optional context shown above the answer field", class: "form-input", style: "font-family: var(--font-body); resize: none; background: var(--surface); color: var(--ink); border-color: var(--border);" %>
+              </div>
+
+              <div style="margin-bottom: 12px;">
+                <label class="v2-caption" style="display: block; margin-bottom: 4px;">Answer format</label>
+                <%= f.select :question_type,
+                    options_for_select(question_type_options, "short_answer"),
+                    {},
+                    "x-model": "newType",
+                    class: "form-input",
+                    style: "font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border);" %>
+              </div>
+
+              <div style="margin-bottom: 12px;" x-show="newType === 'multiple_choice' || newType === 'checkboxes'" x-cloak>
+                <label class="v2-caption" style="display: block; margin-bottom: 4px;">Options</label>
+                <template x-for="(opt, idx) in newOptions" :key="idx">
+                  <div class="flex items-center gap-2" style="margin-bottom: 6px;">
+                    <input type="text" :name="'prompt[options][]'" x-model="newOptions[idx]" placeholder="Option" class="form-input" style="flex: 1; font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border);">
+                    <button type="button" @click="newOptions.splice(idx, 1)" class="v2-btn-icon-sm" x-show="newOptions.length > 1"><i class="fa-solid fa-times" style="font-size: 0.7rem;"></i></button>
+                  </div>
+                </template>
+                <button type="button" @click="newOptions.push('')" class="v2-caption" style="background: none; border: none; cursor: pointer; color: var(--ink-secondary); padding: 4px 0;">+ Add option</button>
+              </div>
+
+              <div style="margin-bottom: 12px;">
+                <label class="v2-caption" style="display: block; margin-bottom: 4px;">Category (optional)</label>
+                <%= f.select :category_id,
+                    options_for_select([['No category', '']] + current_user.categories.active.ordered.map { |c| [c.name, c.id] }),
+                    {},
+                    "x-model": "newCategoryId",
+                    class: "form-input",
+                    style: "font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border);" %>
+              </div>
+
+              <div style="margin-bottom: 20px;">
+                <label class="v2-caption" style="display: block; margin-bottom: 4px;">Tags (optional, comma-separated)</label>
+                <%= f.text_field :tag_names, "x-model": "newTags", placeholder: "e.g., reflection, evening", class: "form-input", style: "font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border);" %>
+              </div>
+
+              <div class="flex gap-2 justify-end">
+                <button type="button" @click="showNewModal = false" class="v2-btn v2-btn-secondary">Cancel</button>
+                <%= f.submit "Create Prompt", class: "v2-btn v2-btn-primary" %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </template>
+    </div>
+  </main>
+</div>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_04_16_160445) do
+ActiveRecord::Schema[7.2].define(version: 2026_05_10_022735) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -327,6 +327,34 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_16_160445) do
     t.index ["user_id"], name: "index_projects_on_user_id"
   end
 
+  create_table "prompt_responses", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "prompt_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.jsonb "response_value", default: {}
+    t.index ["prompt_id", "created_at"], name: "index_prompt_responses_on_prompt_id_and_created_at"
+    t.index ["prompt_id"], name: "index_prompt_responses_on_prompt_id"
+    t.index ["user_id"], name: "index_prompt_responses_on_user_id"
+  end
+
+  create_table "prompts", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "category_id"
+    t.string "title", null: false
+    t.text "description"
+    t.integer "position", default: 0
+    t.datetime "archived_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "question_type", default: 0, null: false
+    t.jsonb "options", default: []
+    t.index ["category_id"], name: "index_prompts_on_category_id"
+    t.index ["user_id", "archived_at"], name: "index_prompts_on_user_id_and_archived_at"
+    t.index ["user_id", "position"], name: "index_prompts_on_user_id_and_position"
+    t.index ["user_id"], name: "index_prompts_on_user_id"
+  end
+
   create_table "sections", force: :cascade do |t|
     t.string "name", null: false
     t.bigint "project_id", null: false
@@ -473,6 +501,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_16_160445) do
   add_foreign_key "project_tasks", "sections"
   add_foreign_key "project_tasks", "users"
   add_foreign_key "projects", "users"
+  add_foreign_key "prompt_responses", "prompts"
+  add_foreign_key "prompt_responses", "users"
+  add_foreign_key "prompts", "categories"
+  add_foreign_key "prompts", "users"
   add_foreign_key "sections", "projects"
   add_foreign_key "taggings", "tags"
   add_foreign_key "tags", "users"

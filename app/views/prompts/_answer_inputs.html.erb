@@ -1,0 +1,51 @@
+<%# Renders the right input(s) for a prompt's question_type inside a form_with block.
+    Locals: prompt, f (FormBuilder)
+%>
+<% case prompt.question_type %>
+<% when "short_answer" %>
+  <%= text_field_tag "prompt_response[text_value]", nil,
+      autofocus: true, required: true,
+      class: "form-input",
+      style: "font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border); width: 100%;" %>
+
+<% when "long_answer" %>
+  <%= f.rich_text_area :body, class: "w-full rounded-lg", style: "border: 1px solid var(--border);" %>
+
+<% when "integer" %>
+  <%= number_field_tag "prompt_response[number_value]", nil,
+      autofocus: true, required: true, step: 1,
+      class: "form-input",
+      style: "font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border); width: 100%;" %>
+
+<% when "yes_no" %>
+  <div class="flex gap-2">
+    <label class="flex items-center gap-2 v2-card" style="padding: 10px 16px; cursor: pointer; flex: 1; justify-content: center;">
+      <input type="radio" name="prompt_response[yes_value]" value="true" required>
+      <span style="font-family: var(--font-body); font-weight: 500;">Yes</span>
+    </label>
+    <label class="flex items-center gap-2 v2-card" style="padding: 10px 16px; cursor: pointer; flex: 1; justify-content: center;">
+      <input type="radio" name="prompt_response[yes_value]" value="false" required>
+      <span style="font-family: var(--font-body); font-weight: 500;">No</span>
+    </label>
+  </div>
+
+<% when "multiple_choice" %>
+  <div class="space-y-2">
+    <% Array(prompt.options).each do |opt| %>
+      <label class="flex items-center gap-2 v2-card" style="padding: 10px 14px; cursor: pointer;">
+        <input type="radio" name="prompt_response[selected_value]" value="<%= opt %>" required>
+        <span style="font-family: var(--font-body); font-size: 0.9rem;"><%= opt %></span>
+      </label>
+    <% end %>
+  </div>
+
+<% when "checkboxes" %>
+  <div class="space-y-2">
+    <% Array(prompt.options).each do |opt| %>
+      <label class="flex items-center gap-2 v2-card" style="padding: 10px 14px; cursor: pointer;">
+        <input type="checkbox" name="prompt_response[selected_value][]" value="<%= opt %>">
+        <span style="font-family: var(--font-body); font-size: 0.9rem;"><%= opt %></span>
+      </label>
+    <% end %>
+  </div>
+<% end %>

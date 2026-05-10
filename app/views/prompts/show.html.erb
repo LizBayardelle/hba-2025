@@ -1,0 +1,238 @@
+<%
+  question_type_options = [
+    ["Short text",      "short_answer"],
+    ["Long text",       "long_answer"],
+    ["Number",          "integer"],
+    ["Yes / No",        "yes_no"],
+    ["Multiple choice", "multiple_choice"],
+    ["Checkboxes",      "checkboxes"]
+  ]
+%>
+<div class="flex h-screen relative" style="background-color: var(--bg);">
+  <%= render 'shared/sidebar' %>
+
+  <main class="flex-1 overflow-y-auto md:ml-[224px]">
+    <% color = @prompt.category&.color || '#8E8E93' %>
+    <div x-data="{
+      showEditModal: false,
+      editType: '<%= @prompt.question_type %>',
+      editOptions: <%= raw (@prompt.options.presence || ['']).to_json %>,
+      editingId: null
+    }">
+
+      <!-- Header -->
+      <div class="sticky top-0 z-10" style="background: var(--bg);">
+        <div class="pl-14 pr-4 pt-6 pb-4 md:pl-8 md:pr-8 md:pt-8 md:pb-5">
+          <div class="flex items-baseline justify-between">
+            <div style="min-width: 0; flex: 1;">
+              <%= link_to prompts_path, class: "v2-caption", style: "text-decoration: none; color: var(--ink-tertiary); display: inline-flex; align-items: center; gap: 4px; margin-bottom: 6px;" do %>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                Prompts
+              <% end %>
+              <div class="flex items-center gap-3">
+                <div style="width: 6px; height: 32px; background: <%= color %>; border-radius: 3px; flex-shrink: 0;"></div>
+                <h1 class="v2-h1" style="margin: 0;"><%= @prompt.title %></h1>
+              </div>
+              <div class="flex items-center gap-3 flex-wrap" style="margin-top: 6px;">
+                <span class="v2-small" style="color: var(--ink-tertiary);"><%= @responses.count %> response<%= @responses.count == 1 ? '' : 's' %></span>
+                <span class="v2-caption" style="text-transform: uppercase; letter-spacing: 0.04em;"><%= question_type_options.find { |_, v| v == @prompt.question_type }&.first || @prompt.question_type.humanize %></span>
+                <% if @prompt.category %>
+                  <span class="v2-caption" style="color: <%= color %>;"><%= @prompt.category.name %></span>
+                <% end %>
+                <% @prompt.tags.each do |tag| %>
+                  <span class="v2-caption" style="color: var(--ink-tertiary);">#<%= tag.name %></span>
+                <% end %>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button @click="showEditModal = true" class="v2-btn-sm v2-btn-secondary" title="Edit prompt">
+                <i class="fa-solid fa-pen" style="font-size: 0.7rem;"></i>
+              </button>
+              <% if @prompt.archived? %>
+                <%= button_to unarchive_prompt_path(@prompt), method: :patch, class: "v2-btn-sm v2-btn-secondary" do %>
+                  Unarchive
+                <% end %>
+              <% else %>
+                <%= button_to archive_prompt_path(@prompt), method: :patch, class: "v2-btn-sm v2-btn-secondary" do %>
+                  Archive
+                <% end %>
+              <% end %>
+              <%= button_to prompt_path(@prompt), method: :delete, data: { confirm: "Delete this prompt and all #{@responses.count} responses?" }, class: "v2-btn-sm v2-btn-secondary", style: "color: #C04040;" do %>
+                <i class="fa-solid fa-trash" style="font-size: 0.7rem;"></i>
+              <% end %>
+            </div>
+          </div>
+        </div>
+        <div style="height: 12px; background: linear-gradient(to bottom, var(--bg), transparent); pointer-events: none;"></div>
+      </div>
+
+      <!-- Flash -->
+      <% if flash[:notice] %>
+        <div class="px-4 md:px-8" style="max-width: 760px; margin: 0 auto;">
+          <div style="padding: 8px 12px; background: var(--hover-tint); border-radius: 6px; font-size: 0.8rem; color: var(--ink-secondary); margin-bottom: 12px;"><%= flash[:notice] %></div>
+        </div>
+      <% end %>
+      <% if flash[:alert] %>
+        <div class="px-4 md:px-8" style="max-width: 760px; margin: 0 auto;">
+          <div style="padding: 8px 12px; background: rgba(192,64,64,0.1); border-radius: 6px; font-size: 0.8rem; color: #C04040; margin-bottom: 12px;"><%= flash[:alert] %></div>
+        </div>
+      <% end %>
+
+      <!-- Science log -->
+      <div class="px-4 pb-16 md:px-8" style="max-width: 760px; margin: 0 auto;">
+        <% if @prompt.description.present? %>
+          <div style="padding: 12px 16px; background: var(--hover-tint); border-radius: 8px; margin-bottom: 20px;">
+            <p style="font-family: var(--font-body); font-size: 0.85rem; color: var(--ink-secondary); line-height: 1.5; margin: 0;"><%= simple_format(@prompt.description) %></p>
+          </div>
+        <% end %>
+
+        <% if @responses.any? %>
+          <div class="space-y-0">
+            <% @responses.each do |response| %>
+              <div class="prompt-log-row" style="display: grid; grid-template-columns: 168px 1fr auto; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--border); align-items: baseline;" x-data="{ hover: false }" @mouseover="hover = true" @mouseleave="hover = false">
+                <div style="font-family: var(--font-body); font-size: 0.78rem; font-weight: 600; color: var(--ink); letter-spacing: -0.01em; line-height: 1.4;">
+                  <%= response.created_at.in_time_zone(current_user.timezone).strftime('%b %-d, %Y') %><br>
+                  <span style="font-weight: 400; color: var(--ink-tertiary); font-size: 0.72rem;"><%= response.created_at.in_time_zone(current_user.timezone).strftime('%-l:%M %p') %></span>
+                </div>
+
+                <div style="font-family: var(--font-body); font-size: 0.9rem; color: var(--ink); line-height: 1.55;">
+                  <% case @prompt.question_type %>
+                  <% when "long_answer" %>
+                    <div class="trix-content"><%= response.body %></div>
+                  <% when "yes_no" %>
+                    <span style="display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; background: <%= response.yes_value ? 'rgba(124,179,66,0.15)' : 'rgba(232,121,109,0.12)' %>; color: <%= response.yes_value ? '#3F6B1A' : '#A04030' %>;">
+                      <%= response.yes_value ? 'Yes' : 'No' %>
+                    </span>
+                  <% when "checkboxes" %>
+                    <% items = Array(response.selected_value) %>
+                    <% if items.any? %>
+                      <div class="flex flex-wrap gap-1">
+                        <% items.each do |item| %>
+                          <span style="font-size: 0.78rem; padding: 2px 8px; border-radius: 8px; background: var(--hover-tint-strong); color: var(--ink-secondary);"><%= item %></span>
+                        <% end %>
+                      </div>
+                    <% else %>
+                      <span style="color: var(--ink-tertiary); font-style: italic;">none</span>
+                    <% end %>
+                  <% when "integer" %>
+                    <span style="font-variant-numeric: tabular-nums; font-weight: 500;"><%= response.number_value %></span>
+                  <% else %>
+                    <%= response.display_value.presence || content_tag(:span, '—', style: 'color: var(--ink-tertiary);') %>
+                  <% end %>
+                </div>
+
+                <div class="flex items-center gap-1" style="opacity: 0;" x-bind:style="hover ? 'opacity: 1;' : 'opacity: 0;'">
+                  <button @click="editingId = <%= response.id %>" class="v2-btn-icon-sm" title="Edit">
+                    <i class="fa-solid fa-pen" style="font-size: 0.6rem;"></i>
+                  </button>
+                  <%= button_to prompt_response_path(response), method: :delete, data: { confirm: "Delete this response?" }, class: "v2-btn-icon-sm", form: { style: "display: inline;" } do %>
+                    <i class="fa-solid fa-trash" style="font-size: 0.6rem;"></i>
+                  <% end %>
+                </div>
+
+                <!-- Edit row (in place) -->
+                <div x-show="editingId === <%= response.id %>" x-cloak style="grid-column: 1 / -1; padding: 12px; background: var(--hover-tint); border-radius: 8px; margin-top: 8px;">
+                  <%= form_with model: response, url: prompt_response_path(response), method: :patch, local: true do |f| %>
+                    <% case @prompt.question_type %>
+                    <% when "short_answer" %>
+                      <%= text_field_tag "prompt_response[text_value]", response.text_value, class: "form-input", style: "width: 100%; background: var(--surface);" %>
+                    <% when "long_answer" %>
+                      <%= f.rich_text_area :body, class: "w-full rounded-lg", style: "border: 1px solid var(--border); background: var(--surface);" %>
+                    <% when "integer" %>
+                      <%= number_field_tag "prompt_response[number_value]", response.number_value, step: 1, class: "form-input", style: "width: 100%; background: var(--surface);" %>
+                    <% when "yes_no" %>
+                      <div class="flex gap-2">
+                        <label><input type="radio" name="prompt_response[yes_value]" value="true" <%= 'checked' if response.yes_value %>> Yes</label>
+                        <label style="margin-left: 12px;"><input type="radio" name="prompt_response[yes_value]" value="false" <%= 'checked' unless response.yes_value %>> No</label>
+                      </div>
+                    <% when "multiple_choice" %>
+                      <% Array(@prompt.options).each do |opt| %>
+                        <div><label><input type="radio" name="prompt_response[selected_value]" value="<%= opt %>" <%= 'checked' if response.selected_value == opt %>> <%= opt %></label></div>
+                      <% end %>
+                    <% when "checkboxes" %>
+                      <% Array(@prompt.options).each do |opt| %>
+                        <div><label><input type="checkbox" name="prompt_response[selected_value][]" value="<%= opt %>" <%= 'checked' if Array(response.selected_value).include?(opt) %>> <%= opt %></label></div>
+                      <% end %>
+                    <% end %>
+                    <div class="flex justify-end gap-2" style="margin-top: 10px;">
+                      <button type="button" @click="editingId = null" class="v2-btn v2-btn-secondary">Cancel</button>
+                      <%= f.submit "Save", class: "v2-btn v2-btn-primary" %>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="v2-small" style="text-align: center; padding: 40px; color: var(--ink-tertiary);">
+            No responses yet. Answer this prompt from the <%= link_to "Prompts page", prompts_path, style: "color: var(--ink-secondary); text-decoration: underline;" %>.
+          </div>
+        <% end %>
+      </div>
+
+      <!-- Edit Prompt Modal -->
+      <template x-teleport="body">
+        <div x-show="showEditModal" @click.self="showEditModal = false" @keydown.escape.window="showEditModal = false" class="fixed inset-0 flex items-center justify-center z-50 p-4" style="background: rgba(0,0,0,0.4); display: none;">
+          <div @click.stop class="v2-card" style="padding: 24px; width: 100%; max-width: 36rem; max-height: 90vh; overflow-y: auto;">
+            <h2 class="v2-h2" style="margin-bottom: 20px;">Edit Prompt</h2>
+
+            <%= form_with model: @prompt, url: prompt_path(@prompt), method: :patch, local: true do |f| %>
+              <div style="margin-bottom: 12px;">
+                <label class="v2-caption" style="display: block; margin-bottom: 4px;">Title</label>
+                <%= f.text_field :title, required: true, class: "form-input", style: "font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border);" %>
+              </div>
+
+              <div style="margin-bottom: 12px;">
+                <label class="v2-caption" style="display: block; margin-bottom: 4px;">Description</label>
+                <%= f.text_area :description, rows: 2, class: "form-input", style: "font-family: var(--font-body); resize: none; background: var(--surface); color: var(--ink); border-color: var(--border);" %>
+              </div>
+
+              <div style="margin-bottom: 12px;">
+                <label class="v2-caption" style="display: block; margin-bottom: 4px;">Answer format</label>
+                <%= f.select :question_type,
+                    options_for_select(question_type_options, @prompt.question_type),
+                    {},
+                    "x-model": "editType",
+                    class: "form-input",
+                    style: "font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border);" %>
+                <% if @responses.any? %>
+                  <p class="v2-caption" style="color: var(--ink-tertiary); margin-top: 4px;">Changing this won't reformat existing responses.</p>
+                <% end %>
+              </div>
+
+              <div style="margin-bottom: 12px;" x-show="editType === 'multiple_choice' || editType === 'checkboxes'" x-cloak>
+                <label class="v2-caption" style="display: block; margin-bottom: 4px;">Options</label>
+                <template x-for="(opt, idx) in editOptions" :key="idx">
+                  <div class="flex items-center gap-2" style="margin-bottom: 6px;">
+                    <input type="text" :name="'prompt[options][]'" x-model="editOptions[idx]" placeholder="Option" class="form-input" style="flex: 1; font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border);">
+                    <button type="button" @click="editOptions.splice(idx, 1)" class="v2-btn-icon-sm" x-show="editOptions.length > 1"><i class="fa-solid fa-times" style="font-size: 0.7rem;"></i></button>
+                  </div>
+                </template>
+                <button type="button" @click="editOptions.push('')" class="v2-caption" style="background: none; border: none; cursor: pointer; color: var(--ink-secondary); padding: 4px 0;">+ Add option</button>
+              </div>
+
+              <div style="margin-bottom: 12px;">
+                <label class="v2-caption" style="display: block; margin-bottom: 4px;">Category</label>
+                <%= f.select :category_id,
+                    options_for_select([['No category', '']] + current_user.categories.active.ordered.map { |c| [c.name, c.id] }, @prompt.category_id),
+                    {},
+                    class: "form-input",
+                    style: "font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border);" %>
+              </div>
+
+              <div style="margin-bottom: 20px;">
+                <label class="v2-caption" style="display: block; margin-bottom: 4px;">Tags (comma-separated)</label>
+                <%= f.text_field :tag_names, value: @prompt.tag_names.join(', '), class: "form-input", style: "font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border);" %>
+              </div>
+
+              <div class="flex gap-2 justify-end">
+                <button type="button" @click="showEditModal = false" class="v2-btn v2-btn-secondary">Cancel</button>
+                <%= f.submit "Save Changes", class: "v2-btn v2-btn-primary" %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </template>
+    </div>
+  </main>
+</div>

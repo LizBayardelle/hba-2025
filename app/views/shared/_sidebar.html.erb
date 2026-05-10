@@ -246,6 +246,12 @@
       <div class="mt-4">
         <div class="v2-section-label px-2.5 py-1.5">Library</div>
         <div class="space-y-0.5">
+          <% prompts_active = current_page?(prompts_path) || (request.path.start_with?('/prompts') && controller_name == 'prompts') %>
+          <%= link_to prompts_path, class: sidebar_link_classes(prompts_active), style: "position: relative;" do %>
+            <i class="fa-solid fa-comment-dots"></i>
+            <span>Prompts</span>
+          <% end %>
+
           <%= link_to journal_path, class: sidebar_link_classes(current_page?(journal_path)), style: "position: relative;" do %>
             <i class="fa-solid fa-book"></i>
             <span>Journal</span>
