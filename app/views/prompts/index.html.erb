@@ -1,19 +1,35 @@
-<%
-  question_type_options = [
-    ["Short text",      "short_answer"],
-    ["Long text",       "long_answer"],
-    ["Number",          "integer"],
-    ["Yes / No",        "yes_no"],
-    ["Multiple choice", "multiple_choice"],
-    ["Checkboxes",      "checkboxes"]
-  ]
-  type_label = ->(t) { question_type_options.find { |_, v| v == t }&.first || t.to_s.humanize }
-%>
 <div class="flex h-screen relative" style="background-color: var(--bg);">
   <%= render 'shared/sidebar' %>
 
   <main class="flex-1 overflow-y-auto md:ml-[224px]">
-    <div x-data="{ showNewModal: false, newType: 'short_answer', newOptions: [''], newCategoryId: '', newTags: '' }">
+    <div x-data='{
+      "showNewModal": false,
+      "newQuestions": [{ "id": null, "text": "", "question_type": "short_answer", "options": [""], "_destroy": false }],
+      "newCategoryId": "",
+      "newTags": [],
+      "tagInput": "",
+      "showTagSuggestions": false,
+      "allTags": <%= @available_tags.pluck(:name).to_json %>,
+      addTag(name) {
+        const trimmed = (name || "").trim();
+        if (!trimmed) return;
+        if (!this.newTags.some(t => t.toLowerCase() === trimmed.toLowerCase())) {
+          this.newTags.push(trimmed);
+        }
+        this.tagInput = "";
+        this.showTagSuggestions = false;
+      },
+      removeTag(name) {
+        this.newTags = this.newTags.filter(t => t !== name);
+      },
+      filteredTagSuggestions() {
+        const q = this.tagInput.toLowerCase();
+        return this.allTags.filter(t =>
+          t.toLowerCase().includes(q) &&
+          !this.newTags.some(s => s.toLowerCase() === t.toLowerCase())
+        );
+      }
+    }'>
 
       <!-- Header -->
       <div class="sticky top-0 z-10" style="background: var(--bg);">
@@ -80,7 +96,8 @@
                           <div class="v2-small" style="color: var(--ink-tertiary); margin-top: 4px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"><%= prompt.description %></div>
                         <% end %>
                         <div class="flex items-center gap-3 flex-wrap" style="margin-top: 8px;">
-                          <span class="v2-caption" style="text-transform: uppercase; letter-spacing: 0.04em;"><%= type_label.call(prompt.question_type) %></span>
+                          <% q_count = prompt.prompt_questions.size %>
+                          <span class="v2-caption" style="text-transform: uppercase; letter-spacing: 0.04em;"><%= q_count %> question<%= q_count == 1 ? '' : 's' %></span>
                           <% if prompt.category %>
                             <span class="v2-caption" style="color: <%= color %>;"><%= prompt.category.name %></span>
                           <% end %>
@@ -114,7 +131,7 @@
                       <% end %>
 
                       <%= form_with model: PromptResponse.new, url: prompt_prompt_responses_path(prompt), method: :post, local: true do |f| %>
-                        <%= render 'answer_inputs', prompt: prompt, f: f %>
+                        <%= render 'answer_inputs', prompt: prompt %>
 
                         <div class="flex gap-2 justify-end" style="margin-top: 20px;">
                           <button type="button" @click="open = false" class="v2-btn v2-btn-secondary">Cancel</button>
@@ -158,41 +175,17 @@
                 <%= f.text_area :description, rows: 2, placeholder: "Optional context shown above the answer field", class: "form-input", style: "font-family: var(--font-body); resize: none; background: var(--surface); color: var(--ink); border-color: var(--border);" %>
               </div>
 
-              <div style="margin-bottom: 12px;">
-                <label class="v2-caption" style="display: block; margin-bottom: 4px;">Answer format</label>
-                <%= f.select :question_type,
-                    options_for_select(question_type_options, "short_answer"),
-                    {},
-                    "x-model": "newType",
-                    class: "form-input",
-                    style: "font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border);" %>
-              </div>
+              <%= render 'questions_editor', questions_state: 'newQuestions' %>
 
-              <div style="margin-bottom: 12px;" x-show="newType === 'multiple_choice' || newType === 'checkboxes'" x-cloak>
-                <label class="v2-caption" style="display: block; margin-bottom: 4px;">Options</label>
-                <template x-for="(opt, idx) in newOptions" :key="idx">
-                  <div class="flex items-center gap-2" style="margin-bottom: 6px;">
-                    <input type="text" :name="'prompt[options][]'" x-model="newOptions[idx]" placeholder="Option" class="form-input" style="flex: 1; font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border);">
-                    <button type="button" @click="newOptions.splice(idx, 1)" class="v2-btn-icon-sm" x-show="newOptions.length > 1"><i class="fa-solid fa-times" style="font-size: 0.7rem;"></i></button>
-                  </div>
-                </template>
-                <button type="button" @click="newOptions.push('')" class="v2-caption" style="background: none; border: none; cursor: pointer; color: var(--ink-secondary); padding: 4px 0;">+ Add option</button>
-              </div>
-
-              <div style="margin-bottom: 12px;">
-                <label class="v2-caption" style="display: block; margin-bottom: 4px;">Category (optional)</label>
-                <%= f.select :category_id,
-                    options_for_select([['No category', '']] + current_user.categories.active.ordered.map { |c| [c.name, c.id] }),
-                    {},
-                    "x-model": "newCategoryId",
-                    class: "form-input",
-                    style: "font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border);" %>
-              </div>
-
-              <div style="margin-bottom: 20px;">
-                <label class="v2-caption" style="display: block; margin-bottom: 4px;">Tags (optional, comma-separated)</label>
-                <%= f.text_field :tag_names, "x-model": "newTags", placeholder: "e.g., reflection, evening", class: "form-input", style: "font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border);" %>
-              </div>
+              <%= render 'category_tag_pickers',
+                    categories: @available_categories,
+                    all_tag_names: @available_tags.pluck(:name),
+                    category_state: 'newCategoryId',
+                    tags_state: 'newTags',
+                    tag_input_state: 'tagInput',
+                    suggestions_state: 'showTagSuggestions',
+                    category_field: 'prompt[category_id]',
+                    tags_field: 'prompt[tag_names]' %>
 
               <div class="flex gap-2 justify-end">
                 <button type="button" @click="showNewModal = false" class="v2-btn v2-btn-secondary">Cancel</button>

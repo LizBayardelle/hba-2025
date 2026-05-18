@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_05_10_022735) do
+ActiveRecord::Schema[7.2].define(version: 2026_05_18_191120) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -327,12 +327,34 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_10_022735) do
     t.index ["user_id"], name: "index_projects_on_user_id"
   end
 
+  create_table "prompt_answers", force: :cascade do |t|
+    t.bigint "prompt_response_id", null: false
+    t.bigint "prompt_question_id", null: false
+    t.jsonb "response_value", default: {}
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["prompt_question_id"], name: "index_prompt_answers_on_prompt_question_id"
+    t.index ["prompt_response_id", "prompt_question_id"], name: "idx_prompt_answers_on_response_question", unique: true
+    t.index ["prompt_response_id"], name: "index_prompt_answers_on_prompt_response_id"
+  end
+
+  create_table "prompt_questions", force: :cascade do |t|
+    t.bigint "prompt_id", null: false
+    t.string "text", null: false
+    t.integer "question_type", default: 0, null: false
+    t.jsonb "options", default: []
+    t.integer "position", default: 0
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["prompt_id", "position"], name: "index_prompt_questions_on_prompt_id_and_position"
+    t.index ["prompt_id"], name: "index_prompt_questions_on_prompt_id"
+  end
+
   create_table "prompt_responses", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "prompt_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.jsonb "response_value", default: {}
     t.index ["prompt_id", "created_at"], name: "index_prompt_responses_on_prompt_id_and_created_at"
     t.index ["prompt_id"], name: "index_prompt_responses_on_prompt_id"
     t.index ["user_id"], name: "index_prompt_responses_on_user_id"
@@ -347,8 +369,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_10_022735) do
     t.datetime "archived_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "question_type", default: 0, null: false
-    t.jsonb "options", default: []
     t.index ["category_id"], name: "index_prompts_on_category_id"
     t.index ["user_id", "archived_at"], name: "index_prompts_on_user_id_and_archived_at"
     t.index ["user_id", "position"], name: "index_prompts_on_user_id_and_position"
@@ -501,6 +521,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_10_022735) do
   add_foreign_key "project_tasks", "sections"
   add_foreign_key "project_tasks", "users"
   add_foreign_key "projects", "users"
+  add_foreign_key "prompt_answers", "prompt_questions"
+  add_foreign_key "prompt_answers", "prompt_responses"
+  add_foreign_key "prompt_questions", "prompts"
   add_foreign_key "prompt_responses", "prompts"
   add_foreign_key "prompt_responses", "users"
   add_foreign_key "prompts", "categories"

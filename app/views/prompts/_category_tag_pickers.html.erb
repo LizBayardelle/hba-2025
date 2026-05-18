@@ -1,0 +1,81 @@
+<%# Renders a category segmented-control + tag autocomplete chip input.
+    Locals:
+      categories       — list of Category records
+      all_tag_names    — array of available tag name strings
+      category_state   — Alpine variable name for selected category id (string)
+      tags_state       — Alpine variable name for selected tag names array
+      tag_input_state  — Alpine variable name for the tag input string
+      suggestions_state — Alpine variable name for showing suggestions dropdown
+      category_field   — server-side hidden field name (e.g. "prompt[category_id]")
+      tags_field       — server-side hidden field name (e.g. "prompt[tag_names]")
+%>
+<div style="margin-bottom: 14px;">
+  <label class="v2-caption" style="display: block; margin-bottom: 6px;">Category</label>
+  <div class="v2-seg-control flex-wrap">
+    <button type="button" @click="<%= category_state %> = ''"
+      :class="<%= category_state %> === '' ? 'v2-seg-btn active' : 'v2-seg-btn'">
+      None
+    </button>
+    <% categories.each do |cat| %>
+      <button type="button" @click="<%= category_state %> = '<%= cat.id %>'"
+        :class="<%= category_state %> === '<%= cat.id %>' ? 'v2-seg-btn active' : 'v2-seg-btn'"
+        style="display: flex; align-items: center; gap: 6px; padding: 5px 12px;">
+        <span style="width: 8px; height: 8px; border-radius: 50%; background: <%= cat.color %>; flex-shrink: 0;"></span>
+        <%= cat.name %>
+      </button>
+    <% end %>
+  </div>
+  <input type="hidden" name="<%= category_field %>" :value="<%= category_state %>">
+</div>
+
+<div style="margin-bottom: 18px;">
+  <label class="v2-caption" style="display: block; margin-bottom: 6px;">Tags</label>
+  <div>
+    <input type="text" x-ref="tagInputEl_<%= tags_state %>" x-model="<%= tag_input_state %>"
+      @input="<%= suggestions_state %> = <%= tag_input_state %>.length > 0"
+      @keydown.enter.prevent="addTag(<%= tag_input_state %>)"
+      @keydown="if ($event.key === ',') { $event.preventDefault(); addTag(<%= tag_input_state %>); }"
+      @focus="<%= suggestions_state %> = <%= tag_input_state %>.length > 0"
+      @blur="setTimeout(() => <%= suggestions_state %> = false, 200)"
+      placeholder="Type to add tags..."
+      class="form-input"
+      style="font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border);">
+
+    <template x-teleport="body">
+      <div x-cloak
+        :style="(<%= suggestions_state %> && (filteredTagSuggestions().length > 0 || <%= tag_input_state %>.trim()))
+          ? (() => {
+              const el = $refs['tagInputEl_<%= tags_state %>'];
+              if (!el) return 'display: none;';
+              const r = el.getBoundingClientRect();
+              return `position: fixed; top: ${r.bottom + 4}px; left: ${r.left}px; width: ${r.width}px; z-index: 9999; background: var(--surface); border-radius: 8px; box-shadow: 0 6px 24px rgba(0,0,0,0.12); border: 1px solid var(--border); max-height: 200px; overflow-y: auto;`;
+            })()
+          : 'display: none;'">
+        <template x-for="tag in filteredTagSuggestions()" :key="tag">
+          <button type="button" @mousedown.prevent="addTag(tag)"
+            style="display: block; width: 100%; text-align: left; padding: 8px 12px; font-size: 0.85rem; font-family: var(--font-body); color: var(--ink); background: none; border: none; cursor: pointer;"
+            x-text="tag"></button>
+        </template>
+        <template x-if="<%= tag_input_state %>.trim() && !filteredTagSuggestions().find(t => t.toLowerCase() === <%= tag_input_state %>.toLowerCase())">
+          <button type="button" @mousedown.prevent="addTag(<%= tag_input_state %>)"
+            style="display: block; width: 100%; text-align: left; padding: 8px 12px; font-size: 0.85rem; font-family: var(--font-body); color: var(--ink-secondary); background: none; border: none; border-top: 1px solid var(--border); cursor: pointer;">
+            + Create "<span x-text="<%= tag_input_state %>.trim()"></span>"
+          </button>
+        </template>
+      </div>
+    </template>
+  </div>
+
+  <div x-show="<%= tags_state %>.length > 0" class="flex flex-wrap gap-1.5" style="margin-top: 8px;">
+    <template x-for="tag in <%= tags_state %>" :key="tag">
+      <span class="v2-badge v2-badge-neutral" style="display: flex; align-items: center; gap: 4px; padding: 3px 10px;">
+        <span x-text="tag"></span>
+        <button type="button" @click="removeTag(tag)" style="background: none; border: none; cursor: pointer; color: var(--ink-faint); font-size: 0.65rem; padding: 0; line-height: 1;">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </span>
+    </template>
+  </div>
+
+  <input type="hidden" name="<%= tags_field %>" :value="<%= tags_state %>.join(',')">
+</div>

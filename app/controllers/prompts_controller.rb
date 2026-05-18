@@ -3,7 +3,7 @@ class PromptsController < ApplicationController
   before_action :set_prompt, only: [:show, :update, :destroy, :archive, :unarchive]
 
   def index
-    @prompts = current_user.prompts.includes(:category, :tags).ordered
+    @prompts = current_user.prompts.includes(:category, :tags, :prompt_questions).ordered
 
     if params[:archived] == 'true'
       @prompts = @prompts.archived
@@ -17,10 +17,17 @@ class PromptsController < ApplicationController
 
     @response_counts = current_user.prompt_responses.group(:prompt_id).count
     @last_responded_at = current_user.prompt_responses.group(:prompt_id).maximum(:created_at)
+    @available_categories = current_user.categories.active.ordered
+    @available_tags = current_user.tags.order(:name)
   end
 
   def show
-    @responses = @prompt.prompt_responses.includes(:rich_text_body).recent_first
+    @questions = @prompt.prompt_questions.ordered
+    @responses = @prompt.prompt_responses
+                        .includes(prompt_answers: [:prompt_question, :rich_text_body])
+                        .recent_first
+    @available_categories = current_user.categories.active.ordered
+    @available_tags = current_user.tags.order(:name)
   end
 
   def create
@@ -82,11 +89,10 @@ class PromptsController < ApplicationController
   end
 
   def prompt_params
-    permitted = params.require(:prompt).permit(:title, :description, :category_id, :question_type, :tag_names, options: [])
-    if permitted[:options].is_a?(Array)
-      permitted[:options] = permitted[:options].map { |o| o.to_s.strip }.reject(&:blank?)
-    end
-    permitted
+    params.require(:prompt).permit(
+      :title, :description, :category_id, :tag_names,
+      prompt_questions_attributes: [:id, :text, :question_type, :position, :_destroy, options: []]
+    )
   end
 
   def assign_tags(prompt, names)
@@ -100,7 +106,10 @@ class PromptsController < ApplicationController
   end
 
   def prompt_json(prompt)
-    prompt.as_json(only: [:id, :title, :description, :category_id, :position, :archived_at, :question_type, :options])
-          .merge(tags: prompt.tags.pluck(:id, :name))
+    prompt.as_json(only: [:id, :title, :description, :category_id, :position, :archived_at])
+          .merge(
+            tags: prompt.tags.pluck(:id, :name),
+            questions: prompt.prompt_questions.ordered.as_json(only: [:id, :text, :question_type, :options, :position])
+          )
   end
 end

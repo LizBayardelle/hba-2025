@@ -1,0 +1,66 @@
+<%# Locals:
+      questions_state — Alpine variable name (e.g. "newQuestions" or "editQuestions")
+%>
+<div style="margin-bottom: 14px;">
+  <div class="flex items-center justify-between" style="margin-bottom: 6px;">
+    <label class="v2-caption">Questions</label>
+    <button type="button" @click="<%= questions_state %>.push({ id: null, text: '', question_type: 'short_answer', options: [''], _destroy: false })"
+      class="v2-caption" style="background: none; border: none; cursor: pointer; color: var(--ink-secondary); padding: 0;">
+      + Add question
+    </button>
+  </div>
+
+  <template x-for="(q, qIdx) in <%= questions_state %>" :key="qIdx">
+    <div x-show="!q._destroy" class="v2-card" style="padding: 12px; margin-bottom: 8px; background: var(--hover-tint);">
+      <div class="flex items-start gap-2" style="margin-bottom: 8px;">
+        <input type="text" x-model="q.text" placeholder="Question text"
+          :name="`prompt[prompt_questions_attributes][${qIdx}][text]`"
+          class="form-input"
+          style="flex: 1; font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border);">
+        <button type="button" @click="q._destroy = true" class="v2-btn-icon-sm" title="Remove">
+          <i class="fa-solid fa-times" style="font-size: 0.7rem;"></i>
+        </button>
+      </div>
+
+      <select x-model="q.question_type"
+        :name="`prompt[prompt_questions_attributes][${qIdx}][question_type]`"
+        class="form-input"
+        style="font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border); font-size: 0.8rem;">
+        <option value="short_answer">Short text</option>
+        <option value="long_answer">Long text</option>
+        <option value="integer">Number</option>
+        <option value="yes_no">Yes / No</option>
+        <option value="multiple_choice">Multiple choice</option>
+        <option value="checkboxes">Checkboxes</option>
+      </select>
+
+      <div x-show="q.question_type === 'multiple_choice' || q.question_type === 'checkboxes'" x-cloak style="margin-top: 8px;">
+        <label class="v2-caption" style="display: block; margin-bottom: 4px;">Options</label>
+        <template x-for="(opt, oIdx) in q.options" :key="oIdx">
+          <div class="flex items-center gap-2" style="margin-bottom: 4px;">
+            <input type="text" x-model="q.options[oIdx]"
+              :name="`prompt[prompt_questions_attributes][${qIdx}][options][]`"
+              placeholder="Option"
+              class="form-input"
+              style="flex: 1; font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border); font-size: 0.8rem;">
+            <button type="button" @click="q.options.splice(oIdx, 1)" class="v2-btn-icon-sm" x-show="q.options.length > 1">
+              <i class="fa-solid fa-times" style="font-size: 0.65rem;"></i>
+            </button>
+          </div>
+        </template>
+        <button type="button" @click="q.options.push('')"
+          class="v2-caption" style="background: none; border: none; cursor: pointer; color: var(--ink-secondary); padding: 4px 0;">
+          + Add option
+        </button>
+      </div>
+
+      <input type="hidden" :name="`prompt[prompt_questions_attributes][${qIdx}][id]`" :value="q.id || ''">
+      <input type="hidden" :name="`prompt[prompt_questions_attributes][${qIdx}][position]`" :value="qIdx">
+      <input type="hidden" :name="`prompt[prompt_questions_attributes][${qIdx}][_destroy]`" :value="q._destroy ? '1' : '0'">
+    </div>
+  </template>
+
+  <div x-show="<%= questions_state %>.filter(q => !q._destroy).length === 0" class="v2-small" style="text-align: center; padding: 12px; color: var(--ink-tertiary);">
+    No questions yet — click "+ Add question" to start.
+  </div>
+</div>
