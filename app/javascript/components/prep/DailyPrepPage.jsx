@@ -11,7 +11,7 @@ const DailyPrepPage = () => {
   // Fetch questions and today's responses
   const { data, isLoading, error } = useQuery({
     queryKey: ['dailyPrep'],
-    queryFn: () => fetch('/daily_prep.json').then(res => res.json()),
+    queryFn: () => fetch('/daily_report.json').then(res => res.json()),
   });
 
   const questions = data?.questions || [];
@@ -138,7 +138,7 @@ const DailyPrepPage = () => {
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1">
               <h1 className="v2-h1 mb-2" style={{ color: 'var(--ink)' }}>
-                Daily Prep
+                Daily Report
               </h1>
               <p className="text-sm" style={{ color: 'var(--ink-tertiary)', fontFamily: 'var(--font-body)', fontWeight: 300 }}>
                 {today ? new Date(today + 'T00:00:00').toLocaleDateString('en-US', {
@@ -151,11 +151,11 @@ const DailyPrepPage = () => {
             </div>
 
             <div className="flex items-center gap-3">
-              <a href="/daily_prep/answers" className="v2-btn v2-btn-secondary">
+              <a href="/daily_report/answers" className="v2-btn v2-btn-secondary">
                 <i className="fa-solid fa-clock-rotate-left mr-2" style={{ fontSize: '11px' }}></i>
                 History
               </a>
-              <a href="/daily_prep/manage" className="v2-btn v2-btn-primary">
+              <a href="/daily_report/manage" className="v2-btn v2-btn-primary">
                 <i className="fa-solid fa-gear mr-2" style={{ fontSize: '11px' }}></i>
                 Manage
               </a>
@@ -190,7 +190,7 @@ const DailyPrepPage = () => {
               No prep questions yet.
             </p>
             <a
-              href="/daily_prep/manage"
+              href="/daily_report/manage"
               className="v2-btn-sm v2-btn-primary inline-block px-6 py-3 rounded-lg text-white font-medium transition hover:opacity-90"
             >
               <i className="fa-solid fa-plus mr-2"></i>

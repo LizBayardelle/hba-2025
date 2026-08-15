@@ -325,7 +325,7 @@
               quick_links: { name: 'Quick Links', icon: 'fa-link' },
               habits: { name: 'Habits', icon: 'fa-chart-line' },
               tasks: { name: 'Tasks', icon: 'fa-check' },
-              daily_prep: { name: 'Daily Prep', icon: 'fa-clipboard-check' },
+              daily_prep: { name: 'Daily Report', icon: 'fa-clipboard-check' },
               projects: { name: 'Projects', icon: 'fa-briefcase' }
             };
 
@@ -1696,6 +1696,114 @@
           </a>
         </div>
       </div>
+
+      <!-- Danger Zone -->
+      <div class="v2-card p-6 mb-6" style="border-color: #FB7185;">
+        <h2 class="v2-h2 mb-1" style="color: #BE123C;">
+          <i class="fa-solid fa-triangle-exclamation mr-2"></i>Danger Zone
+        </h2>
+        <p class="v2-small mb-4" style="color: var(--ink-tertiary);">
+          Archive everything at once and start fresh. Nothing is deleted — archived items can be restored later.
+        </p>
+        <button type="button" id="reset-everything-btn"
+          class="w-full px-4 py-4 rounded-lg font-bold text-white transition"
+          style="background-color: #DC2626; font-family: var(--font-body); font-size: 1rem; letter-spacing: 0.02em; border: none; cursor: pointer;"
+          onmouseover="this.style.backgroundColor='#B91C1C'" onmouseout="this.style.backgroundColor='#DC2626'">
+          <i class="fa-solid fa-rotate-left mr-2"></i>Reset Everything
+        </button>
+      </div>
+
+      <!-- Reset Confirmation Modal -->
+      <div id="reset-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="v2-card p-6 w-full max-w-lg" style="max-height: 90vh; overflow-y: auto;">
+          <h3 class="text-xl v2-h2 mb-2" style="color: #BE123C;">
+            <i class="fa-solid fa-triangle-exclamation mr-2"></i>Reset Everything
+          </h3>
+          <p class="v2-small mb-5" style="color: var(--ink-tertiary);">
+            Choose what to archive. Every item of the selected types will be archived — not deleted.
+          </p>
+
+          <%= form_with url: settings_reset_path, method: :post, local: true, id: "reset-form" do %>
+            <div class="space-y-2 mb-5">
+              <% [
+                   ['habits',     'Habits',      'fa-chart-line',       current_user.habits.where(archived_at: nil).count],
+                   ['tasks',      'Tasks',       'fa-check',            current_user.tasks.where(archived_at: nil).count],
+                   ['goals',      'Goals',       'fa-bullseye',         current_user.goals.where(archived_at: nil).count],
+                   ['projects',   'Projects',    'fa-diagram-project',  current_user.projects.where(archived: false).count],
+                   ['daily_prep', 'Daily Report', 'fa-clipboard-check', current_user.prep_questions.where(archived_at: nil).count]
+                 ].each do |scope, label, icon, count| %>
+                <label class="flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition hover:bg-black/5"
+                  style="border-color: var(--border); text-transform: none; font-size: 0.9rem; font-weight: 400; letter-spacing: normal; color: var(--ink);">
+                  <input type="checkbox" name="scopes[]" value="<%= scope %>" class="reset-scope-checkbox w-4 h-4" style="accent-color: #DC2626;">
+                  <i class="fa-solid <%= icon %>" style="width: 16px; text-align: center; color: var(--ink-tertiary);"></i>
+                  <span style="flex: 1;"><%= label %></span>
+                  <span class="v2-small" style="color: var(--ink-tertiary);"><%= count %> active</span>
+                </label>
+              <% end %>
+            </div>
+
+            <div class="p-3 rounded-lg mb-5" style="background-color: #FFE4E6; border: 1px solid #FB7185;">
+              <p class="text-sm" style="color: #BE123C;">
+                Type <strong>ARCHIVE</strong> below to confirm.
+              </p>
+              <input type="text" id="reset-confirm-input" autocomplete="off"
+                class="w-full mt-2 px-3 py-2 rounded-lg border-2 focus:outline-none"
+                style="border-color: #FB7185; background: var(--surface); color: var(--ink);"
+                placeholder="ARCHIVE">
+            </div>
+
+            <div class="flex gap-3">
+              <button type="button" id="cancel-reset-btn" class="flex-1 px-4 py-3 rounded-lg border-2 font-semibold transition"
+                style="border-color: var(--border); color: var(--ink); background: none; cursor: pointer;">
+                Cancel
+              </button>
+              <button type="submit" id="confirm-reset-btn" disabled
+                class="flex-1 px-4 py-3 rounded-lg font-bold text-white transition"
+                style="background-color: #DC2626; border: none; cursor: pointer; opacity: 0.4;">
+                Archive Selected
+              </button>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <script>
+        (function() {
+          var modal = document.getElementById('reset-modal');
+          var openBtn = document.getElementById('reset-everything-btn');
+          var cancelBtn = document.getElementById('cancel-reset-btn');
+          var confirmBtn = document.getElementById('confirm-reset-btn');
+          var confirmInput = document.getElementById('reset-confirm-input');
+          var checkboxes = document.querySelectorAll('.reset-scope-checkbox');
+
+          function refreshConfirmState() {
+            var anyChecked = Array.prototype.some.call(checkboxes, function(cb) { return cb.checked; });
+            var typedOk = confirmInput.value.trim().toUpperCase() === 'ARCHIVE';
+            var enabled = anyChecked && typedOk;
+            confirmBtn.disabled = !enabled;
+            confirmBtn.style.opacity = enabled ? '1' : '0.4';
+            confirmBtn.style.cursor = enabled ? 'pointer' : 'not-allowed';
+          }
+
+          function closeModal() {
+            modal.classList.add('hidden');
+            confirmInput.value = '';
+            checkboxes.forEach(function(cb) { cb.checked = false; });
+            refreshConfirmState();
+          }
+
+          openBtn.addEventListener('click', function() {
+            modal.classList.remove('hidden');
+            refreshConfirmState();
+          });
+          cancelBtn.addEventListener('click', closeModal);
+          modal.addEventListener('click', function(e) { if (e.target === modal) closeModal(); });
+          confirmInput.addEventListener('input', refreshConfirmState);
+          checkboxes.forEach(function(cb) { cb.addEventListener('change', refreshConfirmState); });
+
+          refreshConfirmState();
+        })();
+      </script>
       </div>
   </main>
 </div>

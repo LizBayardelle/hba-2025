@@ -148,21 +148,26 @@
                 <% end %>
               </div>
             </div>
+            <% header_btn_style = "display: inline-flex; align-items: center; gap: 6px; line-height: 1;" %>
             <div class="flex items-center gap-2">
-              <button @click="showEditModal = true" class="v2-btn-sm v2-btn-secondary" title="Edit prompt">
+              <button @click="showEditModal = true" class="v2-btn-sm v2-btn-secondary" style="<%= header_btn_style %>" title="Edit prompt">
                 <i class="fa-solid fa-pen" style="font-size: 0.7rem;"></i>
+                <span>Edit</span>
               </button>
               <% if @prompt.archived? %>
-                <%= button_to unarchive_prompt_path(@prompt), method: :patch, class: "v2-btn-sm v2-btn-secondary" do %>
-                  Unarchive
+                <%= button_to unarchive_prompt_path(@prompt), method: :patch, class: "v2-btn-sm v2-btn-secondary", style: header_btn_style do %>
+                  <i class="fa-solid fa-box-open" style="font-size: 0.7rem;"></i>
+                  <span>Unarchive</span>
                 <% end %>
               <% else %>
-                <%= button_to archive_prompt_path(@prompt), method: :patch, class: "v2-btn-sm v2-btn-secondary" do %>
-                  Archive
+                <%= button_to archive_prompt_path(@prompt), method: :patch, class: "v2-btn-sm v2-btn-secondary", style: header_btn_style do %>
+                  <i class="fa-solid fa-box-archive" style="font-size: 0.7rem;"></i>
+                  <span>Archive</span>
                 <% end %>
               <% end %>
-              <%= button_to prompt_path(@prompt), method: :delete, data: { confirm: "Delete this prompt and all #{@responses.count} responses?" }, class: "v2-btn-sm v2-btn-secondary", style: "color: #C04040;" do %>
+              <%= button_to prompt_path(@prompt), method: :delete, data: { confirm: "Delete this prompt and all #{@responses.count} responses?" }, class: "v2-btn-sm v2-btn-secondary", style: "#{header_btn_style} color: #C04040;" do %>
                 <i class="fa-solid fa-trash" style="font-size: 0.7rem;"></i>
+                <span>Delete</span>
               <% end %>
             </div>
           </div>

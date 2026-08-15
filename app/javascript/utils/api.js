@@ -332,7 +332,7 @@ export const listsApi = {
 // Prep Questions API methods
 export const prepQuestionsApi = {
   // Fetch all questions
-  fetchAll: () => apiRequest('/daily_prep/manage.json'),
+  fetchAll: () => apiRequest('/daily_report/manage.json'),
 
   // Create question
   create: (data) => apiRequest('/prep_questions', {

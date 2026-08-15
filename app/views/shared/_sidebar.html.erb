@@ -219,6 +219,12 @@
           <span>Dashboard</span>
         <% end %>
 
+        <% prep_active = current_page?(daily_report_path) || current_page?(daily_report_manage_path) || current_page?(daily_report_answers_path) %>
+        <%= link_to daily_report_path, class: sidebar_link_classes(prep_active), style: "position: relative;" do %>
+          <i class="fa-solid fa-clipboard-check"></i>
+          <span>Daily Report</span>
+        <% end %>
+
         <% habits_url = current_user.default_habits_grouping != 'category' ? habits_path(view: current_user.default_habits_grouping) : habits_path %>
         <%= link_to habits_url, class: sidebar_link_classes(current_page?(habits_path)), style: "position: relative;" do %>
           <i class="fa-solid fa-chart-line"></i>
@@ -272,12 +278,6 @@
           <%= link_to documents_url, class: sidebar_link_classes(current_page?(documents_path)), style: "position: relative;" do %>
             <i class="fa-solid fa-file-alt"></i>
             <span>Documents</span>
-          <% end %>
-
-          <% prep_active = current_page?(daily_prep_path) || current_page?(daily_prep_manage_path) || current_page?(daily_prep_answers_path) %>
-          <%= link_to daily_prep_path, class: sidebar_link_classes(prep_active), style: "position: relative;" do %>
-            <i class="fa-solid fa-clipboard-check"></i>
-            <span>Daily Prep</span>
           <% end %>
         </div>
       </div>

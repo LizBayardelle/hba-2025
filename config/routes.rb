@@ -105,9 +105,17 @@ Rails.application.routes.draw do
   post 'setup/complete', to: 'setup#complete'
 
   get 'dashboard', to: 'dashboard#index'
-  get 'daily_prep', to: 'prep_questions#index'
-  get 'daily_prep/manage', to: 'prep_questions#manage'
-  get 'daily_prep/answers', to: 'prep_questions#answers'
+  get 'daily_report', to: 'prep_questions#index', as: :daily_report
+  get 'daily_report/manage', to: 'prep_questions#manage', as: :daily_report_manage
+  get 'daily_report/answers', to: 'prep_questions#answers', as: :daily_report_answers
+
+  # Legacy /daily_prep URLs — kept so old bookmarks, links, and any cached
+  # JS bundle still hitting the .json endpoints keep working.
+  %w[manage answers].each do |sub|
+    get "daily_prep/#{sub}", to: redirect { |p, _req| "/daily_report/#{sub}#{".#{p[:format]}" if p[:format]}" }
+  end
+  get 'daily_prep', to: redirect { |p, _req| "/daily_report#{".#{p[:format]}" if p[:format]}" }
+
   resources :prep_questions, only: [:create, :update, :destroy] do
     collection do
       patch :reorder
@@ -134,6 +142,7 @@ Rails.application.routes.draw do
   get 'tags', to: 'tags#index'
   get 'settings', to: 'settings#index'
   patch 'settings', to: 'settings#update'
+  post 'settings/reset', to: 'settings#reset', as: :settings_reset
 
   get 'settings/importance_levels', to: 'settings#importance_levels'
   post 'settings/importance_levels', to: 'settings#create_importance_level'

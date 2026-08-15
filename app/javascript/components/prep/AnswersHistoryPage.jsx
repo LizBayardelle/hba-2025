@@ -53,14 +53,14 @@ const AnswersHistoryPage = () => {
   // List view data
   const { data: listData, isLoading: listLoading, error: listError } = useQuery({
     queryKey: ['prepAnswers', 'list', selectedQuestion, sortOrder],
-    queryFn: () => fetch(`/daily_prep/answers.json?${listQueryParams}`).then(res => res.json()),
+    queryFn: () => fetch(`/daily_report/answers.json?${listQueryParams}`).then(res => res.json()),
     enabled: viewMode === 'list',
   });
 
   // Chart view data (always fetches all)
   const { data: chartData, isLoading: chartLoading, error: chartError } = useQuery({
     queryKey: ['prepAnswers', 'chart', sortOrder],
-    queryFn: () => fetch(`/daily_prep/answers.json?${chartQueryParams}`).then(res => res.json()),
+    queryFn: () => fetch(`/daily_report/answers.json?${chartQueryParams}`).then(res => res.json()),
     enabled: viewMode === 'chart',
   });
 
@@ -234,10 +234,10 @@ const AnswersHistoryPage = () => {
           {/* Title row */}
           <div className="flex items-center gap-3 mb-4 md:mb-6">
             <a
-              href="/daily_prep"
+              href="/daily_report"
               className="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center transition flex-shrink-0"
               style={{ color: 'var(--ink-tertiary)' }}
-              title="Back to Daily Prep"
+              title="Back to Daily Report"
             >
               <i className="fa-solid fa-arrow-left"></i>
             </a>
@@ -357,7 +357,7 @@ const AnswersHistoryPage = () => {
             <i className="fa-solid fa-inbox text-5xl mb-4" style={{ color: 'var(--border)' }}></i>
             <p className="v2-body" style={{ color: 'var(--ink-tertiary)' }}>
               {selectedQuestion === 'all'
-                ? 'No answers recorded yet. Complete your daily prep to see history here!'
+                ? 'No answers recorded yet. Complete your daily report to see history here!'
                 : 'No answers for this question yet.'}
             </p>
           </div>

@@ -74,7 +74,7 @@ class DashboardController < ApplicationController
     # === Projects ===
     @projects = current_user.projects.active.ordered.includes(sections: { project_tasks: :subtasks })
 
-    # === Daily Prep Questions ===
+    # === Daily Report Questions ===
     @prep_questions = current_user.prep_questions.active.ordered
     @prep_responses = current_user.prep_responses.for_date(@today).includes(:prep_question)
     @prep_response_map = @prep_responses.index_by(&:prep_question_id)

@@ -271,7 +271,7 @@ const QuestionFormModal = ({ questions }) => {
           </div>
           <div>
             <p className="font-medium text-sm" style={{ color: 'var(--ink)' }}>Inactive</p>
-            <p className="text-xs" style={{ color: 'var(--ink-tertiary)' }}>Hide this question from your daily prep without deleting it</p>
+            <p className="text-xs" style={{ color: 'var(--ink-tertiary)' }}>Hide this question from your daily report without deleting it</p>
           </div>
         </div>
       </form>

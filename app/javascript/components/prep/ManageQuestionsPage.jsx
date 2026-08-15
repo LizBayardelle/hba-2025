@@ -58,7 +58,7 @@ const ManageQuestionsPage = () => {
   // Fetch questions
   const { data, isLoading, error } = useQuery({
     queryKey: ['prepQuestions'],
-    queryFn: () => fetch('/daily_prep/manage.json').then(res => res.json()),
+    queryFn: () => fetch('/daily_report/manage.json').then(res => res.json()),
   });
 
   const reorderMut = useMutation({
@@ -95,9 +95,9 @@ const ManageQuestionsPage = () => {
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <a
-                  href="/daily_prep"
+                  href="/daily_report"
                   className="w-10 h-10 rounded-full flex items-center justify-center transition hover:bg-gray-100"
-                  title="Back to Daily Prep"
+                  title="Back to Daily Report"
                 >
                   <i className="fa-solid fa-arrow-left" style={{ color: 'var(--ink-tertiary)' }}></i>
                 </a>
@@ -106,7 +106,7 @@ const ManageQuestionsPage = () => {
                 </h1>
               </div>
               <p className="text-sm ml-13" style={{ color: 'var(--ink-tertiary)', fontFamily: 'var(--font-body)', fontWeight: 300, marginLeft: '52px' }}>
-                Create and edit your daily prep questions. Drag to reorder.
+                Create and edit your daily report questions. Drag to reorder.
               </p>
             </div>
 

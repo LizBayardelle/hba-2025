@@ -1,4 +1,6 @@
 class SettingsController < ApplicationController
+  RESETTABLE_SCOPES = %w[habits tasks goals projects daily_prep].freeze
+
   before_action :authenticate_user!
   before_action :set_importance_level, only: [:show_importance_level, :update_importance_level, :destroy_importance_level]
   before_action :set_time_block, only: [:show_time_block, :update_time_block, :destroy_time_block]
@@ -39,6 +41,46 @@ class SettingsController < ApplicationController
         format.html { redirect_to settings_path, alert: 'Error updating settings: ' + current_user.errors.full_messages.join(', ') }
         format.json { render json: { success: false, message: current_user.errors.full_messages.join(', ') }, status: :unprocessable_entity }
       end
+    end
+  end
+
+  # Bulk-archive everything the user checked in the reset dialog.
+  # Archives only — nothing is deleted, so it can all be restored later.
+  def reset
+    scopes = Array(params[:scopes]).map(&:to_s) & RESETTABLE_SCOPES
+    now = Time.current
+    archived = {}
+
+    if scopes.include?('habits')
+      archived['habits'] = current_user.habits.where(archived_at: nil).update_all(archived_at: now)
+    end
+
+    if scopes.include?('tasks')
+      archived['tasks'] = current_user.tasks.where(archived_at: nil).update_all(archived_at: now)
+    end
+
+    if scopes.include?('goals')
+      archived['goals'] = current_user.goals.where(archived_at: nil).update_all(archived_at: now)
+    end
+
+    if scopes.include?('projects')
+      archived['projects'] = current_user.projects.where(archived: false).update_all(archived: true)
+    end
+
+    if scopes.include?('daily_prep')
+      archived['daily report questions'] = current_user.prep_questions.where(archived_at: nil).update_all(archived_at: now)
+    end
+
+    message =
+      if archived.empty?
+        'Nothing selected — nothing was archived.'
+      else
+        'Archived ' + archived.map { |label, count| "#{count} #{label}" }.to_sentence + '.'
+      end
+
+    respond_to do |format|
+      format.html { redirect_to settings_path, notice: message }
+      format.json { render json: { success: true, message: message, archived: archived } }
     end
   end
 

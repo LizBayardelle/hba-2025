@@ -22,7 +22,7 @@ const BLOCK_INFO = {
   quick_links: { name: 'Quick Links', icon: 'fa-link', description: 'Fast access to common actions' },
   habits: { name: 'Habits', icon: 'fa-chart-line', description: 'Today\'s habits with completion tracking' },
   tasks: { name: 'Tasks', icon: 'fa-check', description: 'Upcoming and overdue tasks' },
-  daily_prep: { name: 'Daily Prep', icon: 'fa-clipboard-check', description: 'Daily reflection questions' },
+  daily_prep: { name: 'Daily Report', icon: 'fa-clipboard-check', description: 'Daily reflection questions' },
   projects: { name: 'Projects', icon: 'fa-briefcase', description: 'Your projects and task progress' },
 };
 
