@@ -1,0 +1,93 @@
+<%#
+  Shared behaviour for the project-task checkboxes rendered in the dashboard
+  Projects block and on /projects. Both lists render only *incomplete* tasks,
+  so completing one removes its row and bumps the project's count/progress.
+
+  Markup contract (see callers):
+    button[data-project-task-toggle]  data-task-id, data-project-id
+    [data-project-task-row]           the row to remove on success
+    [data-project-count="<id>"]       data-completed / data-total
+    [data-project-progress-bar="<id>"]
+    [data-project-percent="<id>"]
+%>
+<script>
+  (function () {
+    if (window.toggleProjectTask) return; // partial may appear once per page
+
+    function bumpProjectProgress(projectId) {
+      if (!projectId) return;
+      var countEl = document.querySelector('[data-project-count="' + projectId + '"]');
+      if (!countEl) return;
+
+      var total = parseInt(countEl.dataset.total, 10) || 0;
+      var completed = Math.min((parseInt(countEl.dataset.completed, 10) || 0) + 1, total);
+      countEl.dataset.completed = completed;
+      countEl.textContent = completed + '/' + total + ' tasks';
+
+      var pct = total > 0 ? Math.round((completed * 100) / total) : 0;
+      var bar = document.querySelector('[data-project-progress-bar="' + projectId + '"]');
+      if (bar) bar.style.width = pct + '%';
+      var pctEl = document.querySelector('[data-project-percent="' + projectId + '"]');
+      if (pctEl) pctEl.textContent = pct + '%';
+    }
+
+    window.toggleProjectTask = async function (taskId, btn) {
+      if (btn.dataset.busy === '1') return;
+      btn.dataset.busy = '1';
+
+      var row = btn.closest('[data-project-task-row]');
+      var projectId = btn.dataset.projectId;
+      var icon = btn.querySelector('i');
+      var originalIconClass = icon ? icon.className : '';
+
+      if (icon) {
+        icon.className = 'fa-solid fa-spinner fa-spin';
+        icon.style.opacity = '1';
+      }
+
+      try {
+        var token = document.querySelector('meta[name="csrf-token"]');
+        var res = await fetch('/project_tasks/' + taskId, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-Token': token ? token.content : ''
+          },
+          body: JSON.stringify({ project_task: { completed: true } })
+        });
+
+        var data = await res.json().catch(function () { return {}; });
+        if (!res.ok || !data.success) {
+          throw new Error((data.errors || ['Request failed with status ' + res.status]).join(', '));
+        }
+
+        // Fill the box so the check reads before the row leaves.
+        btn.style.background = 'var(--ink)';
+        btn.style.borderColor = 'var(--ink)';
+        if (icon) {
+          icon.className = 'fa-solid fa-check';
+          icon.style.opacity = '1';
+        }
+
+        bumpProjectProgress(projectId);
+
+        if (row) {
+          setTimeout(function () {
+            row.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+            row.style.opacity = '0';
+            row.style.transform = 'translateX(6px)';
+            setTimeout(function () { row.remove(); }, 200);
+          }, 260);
+        }
+      } catch (err) {
+        console.error('Error completing project task:', err);
+        if (icon) {
+          icon.className = originalIconClass;
+          icon.style.opacity = '0';
+        }
+        btn.dataset.busy = '';
+      }
+    };
+  })();
+</script>

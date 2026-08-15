@@ -10,6 +10,35 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
+    <%#
+      Social share (Open Graph / Twitter). Pages can override any of these with
+      content_for :og_title / :og_description / :og_image / :og_type.
+      og:image must be an absolute URL — crawlers won't resolve relative paths.
+    %>
+    <% og_title = content_for(:og_title) || content_for(:title) || "Habit Beaver" %>
+    <% og_description = content_for(:og_description) || "A better system for staying on track. Build habits, manage tasks, and hit your goals." %>
+    <% og_image = URI.join(request.base_url, content_for(:og_image) || "/og-image.jpg").to_s %>
+
+    <meta name="description" content="<%= og_description %>">
+
+    <meta property="og:site_name" content="Habit Beaver">
+    <meta property="og:type" content="<%= content_for(:og_type) || 'website' %>">
+    <meta property="og:title" content="<%= og_title %>">
+    <meta property="og:description" content="<%= og_description %>">
+    <meta property="og:url" content="<%= request.original_url %>">
+    <meta property="og:image" content="<%= og_image %>">
+    <meta property="og:image:secure_url" content="<%= og_image %>">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="HabitBeaver — a better system for staying on track">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<%= og_title %>">
+    <meta name="twitter:description" content="<%= og_description %>">
+    <meta name="twitter:image" content="<%= og_image %>">
+    <meta name="twitter:image:alt" content="HabitBeaver — a better system for staying on track">
+
     <%= yield :head %>
 
     <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />

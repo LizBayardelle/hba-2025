@@ -187,136 +187,122 @@ class Habit < ApplicationRecord
     completion && completion.count >= target_count
   end
 
+  # First day this habit could be expected. Health is never penalised for
+  # days before this — a habit created today has not missed anything yet.
+  def started_on
+    start_date || created_at&.to_date || Time.zone.today
+  end
+
+  # Every missed due day costs a flat 10 points; every completed one earns 12
+  # back, capped at 100. A habit only ever loses health for days it existed
+  # for, and every un-judged day since the last check is evaluated — so the
+  # decay is the same whether the app is opened daily or once a fortnight.
+  HEALTH_PENALTY_PER_MISS = 10
+  HEALTH_GAIN_PER_COMPLETION = 12
+  MAX_HEALTH_BACKFILL_DAYS = 365
+
+  # Health is recomputed from completion history rather than accumulated, so
+  # it is idempotent: calling this repeatedly always lands on the same number.
+  # That is what lets today count the moment it is completed — today earns its
+  # +12 immediately, but is never counted as a miss until the day is over.
   def update_health!
-    # Skip health penalties when tracking is paused
     return health if user.tracking_paused
 
-    # Check if we need to update health based on missed days
     today = Time.zone.today
-    yesterday = today - 1.day
-
-    # For flexible mode with non-daily frequency, check period end
-    if schedule_mode == 'flexible' && frequency_type != 'day'
-      # Weekly: check on Monday for last week
-      # Monthly: check on 1st for last month
-      case frequency_type
-      when 'week'
-        if today.wday == 1 # Monday - check last week
-          week_start = yesterday.beginning_of_week
-          week_end = yesterday.end_of_week
-          period_completions = habit_completions.where(completed_at: week_start..week_end).sum(:count)
-          if period_completions < target_count
-            apply_health_penalty(yesterday)
-          else
-            build_health if consecutive_misses > 0
-            update_columns(consecutive_misses: 0, last_missed_date: nil) if consecutive_misses > 0
-          end
-        end
-      when 'month'
-        if today.day == 1 # First of month - check last month
-          month_start = yesterday.beginning_of_month
-          month_end = yesterday.end_of_month
-          period_completions = habit_completions.where(completed_at: month_start..month_end).sum(:count)
-          if period_completions < target_count
-            apply_health_penalty(yesterday)
-          else
-            build_health if consecutive_misses > 0
-            update_columns(consecutive_misses: 0, last_missed_date: nil) if consecutive_misses > 0
-          end
-        end
-      end
+    value = if schedule_mode == 'flexible' && frequency_type != 'day'
+      health_from_periods(today)
     else
-      # For daily flexible mode, specific_days, and interval modes
-      # Only apply penalty if yesterday was a due date
-      yesterday_was_due = due_on?(yesterday)
-
-      if yesterday_was_due
-        yesterday_completion = habit_completions.find_by(completed_at: yesterday)
-        required_count = schedule_mode == 'flexible' ? target_count : 1
-        yesterday_met = yesterday_completion && yesterday_completion.count >= required_count
-
-        # If yesterday wasn't met, apply health penalty
-        unless yesterday_met
-          apply_health_penalty(yesterday)
-        else
-          # If yesterday was met, reset consecutive misses and build health
-          if consecutive_misses > 0
-            update_columns(consecutive_misses: 0, last_missed_date: nil)
-          end
-          # Build health for completing
-          build_health
-        end
-      end
+      health_from_days(today)
     end
 
-    # Reset weekly miss counter on Monday
-    if today.wday == 1 # Monday
-      update_column(:misses_this_week, 0)
-    end
-
-    # Update last health check timestamp
-    update_column(:last_health_check_at, Time.current)
-
+    update_columns(health: value, last_health_check_at: Time.current)
     health
   end
 
-  def apply_health_penalty(missed_date)
-    # Skip penalties when tracking is paused
-    return if user.tracking_paused
-    # Skip if we already processed this missed date
-    return if last_missed_date == missed_date
+  # Day-by-day modes: daily flexible, specific_days, interval.
+  def health_from_days(today)
+    required = schedule_mode == 'flexible' ? target_count : 1
+    window_start = health_window_start(today)
+    counts = completion_counts_between(window_start, today)
 
-    # Determine penalty based on miss pattern
-    penalty = calculate_penalty(missed_date)
+    value = 100
+    all_misses = []
+    streak_of_misses = 0
 
-    # Apply penalty
-    new_health = [health - penalty, 0].max
-    new_consecutive = was_yesterday_missed? ? consecutive_misses + 1 : 1
-    new_weekly_misses = misses_this_week + 1
+    (window_start..today).each do |date|
+      next unless due_on?(date)
 
-    update_columns(
-      health: new_health,
-      last_missed_date: missed_date,
-      consecutive_misses: new_consecutive,
-      misses_this_week: new_weekly_misses
-    )
-  end
-
-  def calculate_penalty(missed_date)
-    # Single miss: -10% health
-    # 2nd miss in same week (not consecutive): -20% health
-    # 2 days missed in a row: -10% then -30% (total -40%)
-    # 3 days missed in a row: -10%, -30%, -40% (total -80%)
-    # 4+ days missed in a row: Drops to 0%
-
-    if was_yesterday_missed?
-      # Consecutive miss
-      case consecutive_misses + 1
-      when 2 then 30  # Second consecutive day
-      when 3 then 40  # Third consecutive day
-      else 100        # Fourth+ consecutive day - zero it out
+      if (counts[date] || 0) >= required
+        value = [value + HEALTH_GAIN_PER_COMPLETION, 100].min
+        streak_of_misses = 0
+      elsif date < today
+        # Today is not a miss until it is over
+        value = [value - HEALTH_PENALTY_PER_MISS, 0].max
+        all_misses << date
+        streak_of_misses += 1
       end
-    elsif misses_this_week >= 1
-      # Second miss in the week but not consecutive
-      20
-    else
-      # First miss
-      10
     end
+
+    sync_miss_counters(all_misses, streak_of_misses, today)
+    value
   end
 
-  def was_yesterday_missed?
-    return false unless last_missed_date
-    yesterday = Time.zone.today - 1.day
-    last_missed_date == yesterday
+  # Flexible weekly/monthly: judged per whole period, current period counts
+  # as soon as its target is hit.
+  def health_from_periods(today)
+    weekly = frequency_type == 'week'
+    cursor = health_window_start(today)
+    cursor = weekly ? cursor.beginning_of_week : cursor.beginning_of_month
+    current_period_start = weekly ? today.beginning_of_week : today.beginning_of_month
+
+    value = 100
+    all_misses = []
+    streak_of_misses = 0
+    guard = 0
+
+    while cursor <= current_period_start && guard < 400
+      guard += 1
+      period_end = weekly ? cursor.end_of_week : cursor.end_of_month
+
+      # Only judge a period the habit existed through in full
+      if cursor >= started_on
+        completed = habit_completions.where(completed_at: cursor..period_end).sum(:count)
+        if completed >= target_count
+          value = [value + HEALTH_GAIN_PER_COMPLETION, 100].min
+          streak_of_misses = 0
+        elsif cursor < current_period_start
+          # The period in progress is not a miss until it closes
+          value = [value - HEALTH_PENALTY_PER_MISS, 0].max
+          all_misses << period_end
+          streak_of_misses += 1
+        end
+      end
+
+      cursor = weekly ? cursor + 1.week : cursor.next_month
+    end
+
+    sync_miss_counters(all_misses, streak_of_misses, today)
+    value
   end
 
-  def build_health
-    # Each consecutive day completed: +10-15% health (caps at 100%)
-    return if health >= 100
+  # Bound the walk so a long-lived habit can't scan unbounded history.
+  # Health saturates well inside this window, so the result is unaffected.
+  def health_window_start(today)
+    [started_on, today - MAX_HEALTH_BACKFILL_DAYS].max
+  end
 
-    new_health = [health + 12, 100].min
-    update_column(:health, new_health)
+  def completion_counts_between(from, to)
+    habit_completions.where(completed_at: from..to).pluck(:completed_at, :count).to_h
+  end
+
+  # These columns are informational only — health no longer derives from them.
+  def sync_miss_counters(all_misses, streak_of_misses, today)
+    week_start = today.beginning_of_week
+    update_columns(
+      consecutive_misses: streak_of_misses,
+      last_missed_date: all_misses.last,
+      misses_this_week: all_misses.count { |d| d >= week_start }
+    )
   end
 
   def health_state
