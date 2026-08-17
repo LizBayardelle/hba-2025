@@ -25,8 +25,12 @@ module AppApi
           end
       end
 
-      def render_success(data = {}, status: :ok)
-        render json: data, status: status
+      # Accepts either a positional payload — render_success({ id: 1 }) — or bare
+      # keywords, as in render_success(message: 'Deleted.'). Without **extra the
+      # keyword form raises ArgumentError, since :status makes Ruby parse a
+      # trailing symbol-keyed hash as keywords rather than the positional arg.
+      def render_success(data = {}, status: :ok, **extra)
+        render json: data.merge(extra), status: status
       end
 
       def render_error(message, status: :unprocessable_entity)

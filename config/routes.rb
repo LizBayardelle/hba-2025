@@ -41,6 +41,16 @@ Rails.application.routes.draw do
           patch :reorder
         end
       end
+
+      resources :prompts, only: [:index, :show, :create, :update, :destroy] do
+        member do
+          patch :archive
+          patch :unarchive
+        end
+        resources :prompt_responses, only: [:create]
+      end
+      resources :prompt_responses, only: [:update, :destroy]
+
       resources :tags, only: [:index, :show, :update, :destroy]
       resources :documents, only: [:index, :show, :create, :update, :destroy] do
         member do
