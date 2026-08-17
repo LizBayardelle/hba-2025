@@ -38,11 +38,15 @@ module AppApi
       end
 
       def show
+        responses = @prompt.prompt_responses
+                           .includes(prompt_answers: [:prompt_question, :rich_text_body])
+                           .recent_first
+                           .to_a
+
         render json: prompt_json(@prompt).merge(
-          responses: @prompt.prompt_responses
-                            .includes(prompt_answers: [:prompt_question, :rich_text_body])
-                            .recent_first
-                            .map { |r| response_json(r) }
+          response_count: responses.length,
+          last_responded_at: responses.first&.created_at,
+          responses: responses.map { |r| response_json(r) }
         )
       end
 
