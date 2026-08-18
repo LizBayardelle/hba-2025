@@ -14,6 +14,7 @@ Rails.application.routes.draw do
       post 'setup/complete', to: 'setup#complete'
 
       get 'dashboard', to: 'dashboard#index'
+      get 'analytics', to: 'analytics#index'
 
       resources :habits, only: [:index, :show, :create, :update, :destroy] do
         post 'completions/increment', to: 'habit_completions#increment'
