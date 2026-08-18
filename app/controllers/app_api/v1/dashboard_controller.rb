@@ -18,7 +18,10 @@ module AppApi
         habits = all_habits.select { |h| h.due_on?(today) }
 
         today_completions = HabitCompletion.where(
-          habit_id: habits.pluck(&:id),
+          # habits is an Array here, and ActiveSupport's Array#pluck takes keys as
+          # arguments — passing a block silently yields [nil, nil, ...], so this
+          # matched no completions at all.
+          habit_id: habits.map(&:id),
           completed_at: today
         ).group(:habit_id).sum(:count)
 
@@ -41,7 +44,7 @@ module AppApi
         date = today
         loop do
           completions = HabitCompletion.where(
-            habit_id: habits.pluck(&:id),
+            habit_id: habits.map(&:id),
             completed_at: date
           ).group(:habit_id).sum(:count)
 
