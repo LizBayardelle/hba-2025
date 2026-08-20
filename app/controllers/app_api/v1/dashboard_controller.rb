@@ -71,8 +71,16 @@ module AppApi
         prep_questions = current_user.prep_questions.active.ordered
         prep_responses = current_user.prep_responses.for_date(today).includes(:prep_question)
 
+        # Projects block — mirrors dashboard/_projects_block.html.erb: progress
+        # across top-level tasks, plus the next few open ones with their section.
+        projects = current_user.projects.active.ordered
+                               .includes(sections: :project_tasks)
+                               .map { |project| project_summary(project) }
+
         render json: {
           date: today,
+          dashboard_layout: current_user.dashboard_layout,
+          projects: projects,
           habits: {
             groups: grouped_habits.map { |key, group_habits|
               {
@@ -125,6 +133,35 @@ module AppApi
       end
 
       private
+
+      PROJECT_TASK_PREVIEW = 3
+
+      def project_summary(project)
+        all_tasks = project.sections.reject(&:archived).flat_map { |section|
+          section.project_tasks.reject { |t| t.archived? || t.parent_id.present? }
+        }
+        completed = all_tasks.count(&:completed)
+
+        # Open tasks in section order, carrying the section name for grouping.
+        upcoming = project.sections.reject(&:archived).sort_by { |s| s.position || 0 }.flat_map { |section|
+          section.project_tasks
+                 .reject { |t| t.archived? || t.parent_id.present? || t.completed }
+                 .sort_by { |t| t.position || 0 }
+                 .map { |task| { id: task.id, name: task.name, section_name: section.name } }
+        }
+
+        {
+          id: project.id,
+          name: project.name,
+          color: project.color,
+          icon: project.icon,
+          total_tasks: all_tasks.length,
+          completed_tasks: completed,
+          progress: all_tasks.any? ? (completed * 100.0 / all_tasks.length).round : 0,
+          upcoming_tasks: upcoming.first(PROJECT_TASK_PREVIEW),
+          remaining_count: [upcoming.length - PROJECT_TASK_PREVIEW, 0].max
+        }
+      end
 
       def task_summary(task)
         {
