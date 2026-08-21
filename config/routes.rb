@@ -68,6 +68,7 @@ Rails.application.routes.draw do
       end
 
       resource :settings, only: [:show, :update] do
+        post :reset
         resources :importance_levels, only: [:index, :show, :create, :update, :destroy] do
           collection do
             patch :reorder
