@@ -1,3 +1,7 @@
+<% content_for :head do %>
+  <%= render 'shared/sortable_assets' %>
+<% end %>
+
 <div class="flex h-screen relative" style="background-color: var(--bg);">
   <%= render 'shared/sidebar' %>
 
@@ -33,9 +37,14 @@
 
       <!-- Header -->
       <div class="sticky top-0 z-10" style="background: var(--bg);">
-        <div class="pl-14 pr-4 pt-6 pb-4 md:pl-8 md:pr-8 md:pt-8 md:pb-5">
-          <div class="flex items-baseline justify-between">
-            <div>
+          <%# On phones the header clears the fixed hamburger by sitting *below*
+              it (pt-16) rather than beside it, so the title gets the full width
+              and lines up with the list below, which is px-4. %>
+        <div class="px-4 pt-16 pb-4 md:pl-8 md:pr-8 md:pt-8 md:pb-5">
+          <%# Stacked on phones so the title/count get the full width; the
+              filter toggle and New Prompt only sit alongside once there's room. %>
+          <div class="flex flex-col gap-3 md:flex-row md:items-baseline md:justify-between md:gap-4">
+            <div style="min-width: 0;">
               <h1 class="v2-h1">Prompts</h1>
               <p class="v2-small" style="margin-top: 4px; color: var(--ink-tertiary);">
                 <% if params[:archived] == 'true' %>
@@ -45,7 +54,7 @@
                 <% end %>
               </p>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 flex-wrap" style="flex-shrink: 0;">
               <div style="display: inline-flex; background: var(--hover-tint-strong); border-radius: 6px; padding: 2px;">
                 <%= link_to "Active", prompts_path,
                     style: "font-family: var(--font-body); font-size: 0.7rem; font-weight: 500; padding: 4px 10px; border-radius: 5px; text-decoration: none; #{params[:archived] != 'true' ? 'background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.06);' : 'background: transparent; color: var(--ink-tertiary);'}" %>
@@ -77,16 +86,25 @@
       <!-- List -->
       <div class="px-4 pb-16 md:px-8" style="max-width: 920px; padding-top: 8px;">
         <% if @prompts.any? %>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <%# Reordering only makes sense over the full, unfiltered list — a
+              filtered view would renumber a subset and scramble the rest. %>
+          <% reorderable = params[:archived] != 'true' && params[:category_id].blank? %>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+               <%= "data-sortable-url=#{reorder_prompts_path.inspect}".html_safe if reorderable %>>
             <% @prompts.each do |prompt| %>
               <% count = @response_counts[prompt.id] || 0 %>
               <% last_at = @last_responded_at[prompt.id] %>
               <% color = prompt.category&.color || '#8E8E93' %>
-              <div x-data="{ open: false }">
+              <div x-data="{ open: false }" <%= "data-sortable-item data-sortable-id=#{prompt.id}".html_safe if reorderable %>>
                 <div class="v2-card" style="padding: 0; overflow: hidden; cursor: pointer;" @click="open = true">
                   <div style="height: 4px; background: <%= color %>; border-radius: 10px 10px 0 0;"></div>
                   <div style="padding: 18px 20px;">
                     <div class="flex items-start gap-3">
+                      <% if reorderable %>
+                        <button type="button" data-drag-handle title="Drag to reorder" @click.stop style="padding-top: 8px;">
+                          <i class="fa-solid fa-grip-vertical" style="font-size: 0.8rem;"></i>
+                        </button>
+                      <% end %>
                       <div style="width: 32px; height: 32px; border-radius: 7px; background: <%= color %>; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                         <i class="fa-solid fa-comment-dots" style="color: white; font-size: 0.75rem;"></i>
                       </div>

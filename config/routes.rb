@@ -182,6 +182,9 @@ Rails.application.routes.draw do
 
   resources :journals, only: [:index, :show, :create, :update, :destroy]
   resources :prompts do
+    collection do
+      patch :reorder
+    end
     member do
       patch :archive
       patch :unarchive

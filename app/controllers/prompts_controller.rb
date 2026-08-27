@@ -1,6 +1,6 @@
 class PromptsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_prompt, only: [:show, :update, :destroy, :archive, :unarchive]
+  before_action :set_prompt, only: [:show, :edit, :update, :destroy, :archive, :unarchive]
 
   def index
     @prompts = current_user.prompts.includes(:category, :tags, :prompt_questions).ordered
@@ -30,6 +30,24 @@ class PromptsController < ApplicationController
     @available_tags = current_user.tags.order(:name)
   end
 
+  def edit
+    @questions = @prompt.prompt_questions.ordered
+    @available_categories = current_user.categories.active.ordered
+    @available_tags = current_user.tags.order(:name)
+  end
+
+  # Drag reordering of the prompt list itself. Takes ids in their new order.
+  def reorder
+    ids = Array(params[:ids]).map(&:to_i)
+    scoped = current_user.prompts.where(id: ids).index_by(&:id)
+
+    ids.each_with_index do |id, index|
+      scoped[id]&.update_column(:position, index)
+    end
+
+    render json: { success: true, count: scoped.size }
+  end
+
   def create
     @prompt = current_user.prompts.build(prompt_params.except(:tag_names))
     max_position = current_user.prompts.maximum(:position) || 0
@@ -50,15 +68,30 @@ class PromptsController < ApplicationController
   end
 
   def update
+    # Edits started from /prompts/:id/edit belong back on that prompt's log,
+    # not on the index the modal used to return to.
+    from_edit = params[:from] == 'edit'
+
     if @prompt.update(prompt_params.except(:tag_names))
       assign_tags(@prompt, prompt_params[:tag_names]) if prompt_params.key?(:tag_names)
       respond_to do |format|
-        format.html { redirect_to prompts_path, notice: 'Prompt updated.' }
+        format.html { redirect_to(from_edit ? prompt_path(@prompt) : prompts_path, notice: 'Prompt updated.') }
         format.json { render json: prompt_json(@prompt) }
       end
     else
       respond_to do |format|
-        format.html { redirect_to prompts_path, alert: "Error: #{@prompt.errors.full_messages.join(', ')}" }
+        format.html do
+          if from_edit
+            # Keep the user on the form rather than dumping them on the index
+            @questions = @prompt.prompt_questions.ordered
+            @available_categories = current_user.categories.active.ordered
+            @available_tags = current_user.tags.order(:name)
+            flash.now[:alert] = "Error: #{@prompt.errors.full_messages.join(', ')}"
+            render :edit, status: :unprocessable_entity
+          else
+            redirect_to prompts_path, alert: "Error: #{@prompt.errors.full_messages.join(', ')}"
+          end
+        end
         format.json { render json: { errors: @prompt.errors.full_messages }, status: :unprocessable_entity }
       end
     end

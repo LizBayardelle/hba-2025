@@ -1,0 +1,104 @@
+<% content_for :head do %>
+  <%= render 'shared/sortable_assets' %>
+<% end %>
+
+<div class="flex h-screen relative" style="background-color: var(--bg);">
+  <%= render 'shared/sidebar' %>
+
+  <main class="flex-1 overflow-y-auto md:ml-[224px]">
+    <% color = @prompt.category&.color || '#8E8E93' %>
+    <%
+      edit_questions = @questions.map do |q|
+        { id: q.id, text: q.text, question_type: q.question_type, options: (q.options.presence || ['']), _destroy: false }
+      end
+      edit_questions << { id: nil, text: '', question_type: 'short_answer', options: [''], _destroy: false } if edit_questions.empty?
+    %>
+    <div x-data='{
+      "editQuestions": <%= edit_questions.to_json %>,
+      "editCategoryId": <%= @prompt.category_id.to_s.to_json %>,
+      "editTags": <%= @prompt.tag_names.to_json %>,
+      "tagInput": "",
+      "showTagSuggestions": false,
+      "allTags": <%= @available_tags.pluck(:name).to_json %>,
+      addTag(name) {
+        const trimmed = (name || "").trim();
+        if (!trimmed) return;
+        if (!this.editTags.some(t => t.toLowerCase() === trimmed.toLowerCase())) {
+          this.editTags.push(trimmed);
+        }
+        this.tagInput = "";
+        this.showTagSuggestions = false;
+      },
+      removeTag(name) {
+        this.editTags = this.editTags.filter(t => t !== name);
+      },
+      filteredTagSuggestions() {
+        const q = this.tagInput.toLowerCase();
+        return this.allTags.filter(t =>
+          t.toLowerCase().includes(q) &&
+          !this.editTags.some(s => s.toLowerCase() === t.toLowerCase())
+        );
+      }
+    }'>
+
+      <!-- Header -->
+      <div class="sticky top-0 z-10" style="background: var(--bg);">
+        <%# Matches show/index: clears the fixed hamburger vertically on phones
+            so the header lines up with the form below, which is px-4. %>
+        <div class="px-4 pt-16 pb-4 md:pl-8 md:pr-8 md:pt-8 md:pb-5" style="max-width: 720px; margin: 0 auto;">
+          <%= link_to prompt_path(@prompt), class: "v2-caption", style: "text-decoration: none; color: var(--ink-tertiary); display: inline-flex; align-items: center; gap: 4px; margin-bottom: 6px;" do %>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            <%= @prompt.title %>
+          <% end %>
+          <div class="flex items-center gap-3">
+            <div style="width: 6px; height: 30px; background: <%= color %>; border-radius: 3px; flex-shrink: 0;"></div>
+            <h1 class="v2-h1" style="margin: 0;">Edit Prompt</h1>
+          </div>
+        </div>
+        <div style="height: 12px; background: linear-gradient(to bottom, var(--bg), transparent); pointer-events: none;"></div>
+      </div>
+
+      <div class="px-4 pb-24 md:px-8" style="max-width: 720px; margin: 0 auto;">
+        <% if flash[:alert] %>
+          <div style="padding: 8px 12px; background: rgba(192,64,64,0.1); border-radius: 6px; font-size: 0.8rem; color: #C04040; margin-bottom: 12px;"><%= flash[:alert] %></div>
+        <% end %>
+
+        <%= form_with model: @prompt, url: prompt_path(@prompt), method: :patch, local: true do |f| %>
+          <%= hidden_field_tag :from, 'edit' %>
+          <div class="v2-card" style="padding: 20px; margin-bottom: 16px;">
+            <div style="margin-bottom: 12px;">
+              <label class="v2-caption" style="display: block; margin-bottom: 4px;">Title</label>
+              <%= f.text_field :title, required: true, class: "form-input", style: "font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border);" %>
+            </div>
+
+            <div>
+              <label class="v2-caption" style="display: block; margin-bottom: 4px;">Description</label>
+              <%= f.text_area :description, rows: 2, placeholder: "Optional context shown above the answer field", class: "form-input", style: "font-family: var(--font-body); resize: none; background: var(--surface); color: var(--ink); border-color: var(--border);" %>
+            </div>
+          </div>
+
+          <div class="v2-card" style="padding: 20px; margin-bottom: 16px;">
+            <%= render 'questions_editor', questions_state: 'editQuestions' %>
+          </div>
+
+          <div class="v2-card" style="padding: 20px; margin-bottom: 16px;">
+            <%= render 'category_tag_pickers',
+                  categories: @available_categories,
+                  all_tag_names: @available_tags.pluck(:name),
+                  category_state: 'editCategoryId',
+                  tags_state: 'editTags',
+                  tag_input_state: 'tagInput',
+                  suggestions_state: 'showTagSuggestions',
+                  category_field: 'prompt[category_id]',
+                  tags_field: 'prompt[tag_names]' %>
+          </div>
+
+          <div class="flex gap-2 justify-end">
+            <%= link_to "Cancel", prompt_path(@prompt), class: "v2-btn v2-btn-secondary" %>
+            <%= f.submit "Save Changes", class: "v2-btn v2-btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </main>
+</div>

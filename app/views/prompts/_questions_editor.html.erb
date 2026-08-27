@@ -1,7 +1,38 @@
 <%# Locals:
       questions_state — Alpine variable name (e.g. "newQuestions" or "editQuestions")
+
+    Order is submitted as the hidden [position] field below, which is just the
+    array index — so moving an item in the array is all that reordering needs.
+    Removed questions stay in the array (flagged _destroy) and are skipped when
+    working out neighbours, so a move never appears to do nothing.
 %>
-<div style="margin-bottom: 14px;">
+<div style="margin-bottom: 14px;" x-data="{
+  visibleBefore(list, idx) { return list.slice(0, idx).filter(q => !q._destroy).length; },
+  isFirstVisible(list, idx) { return !list.slice(0, idx).some(q => !q._destroy); },
+  isLastVisible(list, idx) { return !list.slice(idx + 1).some(q => !q._destroy); },
+  moveQuestion(list, from, dir) {
+    let to = from + dir;
+    while (to >= 0 && to < list.length && list[to]._destroy) to += dir;
+    if (to < 0 || to >= list.length) return;
+    const moved = list[from];
+    list[from] = list[to];
+    list[to] = moved;
+  },
+  applyDragOrder(list, order) {
+    // Must be a true permutation — dropping a bad index instead would quietly
+    // apply a wrong order rather than surfacing the problem.
+    if (!Array.isArray(order) || order.length !== list.length) return;
+    const next = order.map(i => list[i]);
+    if (next.some(q => q === undefined)) return;
+    list.splice(0, list.length, ...next);
+  },
+  initDrag(list) {
+    if (!window.hbSortableState) return;
+    window.hbSortableState(this.$refs.questionList, {
+      onReorder: (order) => this.applyDragOrder(list, order)
+    });
+  }
+}">
   <div class="flex items-center justify-between" style="margin-bottom: 6px;">
     <label class="v2-caption">Questions</label>
     <button type="button" @click="<%= questions_state %>.push({ id: null, text: '', question_type: 'short_answer', options: [''], _destroy: false })"
@@ -10,14 +41,42 @@
     </button>
   </div>
 
+  <div x-ref="questionList" x-init="$nextTick(() => initDrag(<%= questions_state %>))">
   <template x-for="(q, qIdx) in <%= questions_state %>" :key="qIdx">
-    <div x-show="!q._destroy" class="v2-card" style="padding: 12px; margin-bottom: 8px; background: var(--hover-tint);">
+    <div x-show="!q._destroy" data-sortable-item class="v2-card" style="padding: 12px; margin-bottom: 8px; background: var(--hover-tint);">
       <div class="flex items-start gap-2" style="margin-bottom: 8px;">
+        <%# Drag handle — SortableJS (mouse + touch) %>
+        <button type="button" data-drag-handle title="Drag to reorder" style="padding-top: 8px;" @click.prevent>
+          <i class="fa-solid fa-grip-vertical" style="font-size: 0.75rem;"></i>
+        </button>
+
+        <%# Up/down remain for keyboard and precise single-step moves %>
+        <div class="flex flex-col" style="flex-shrink: 0; gap: 2px;">
+          <button type="button"
+            @click="moveQuestion(<%= questions_state %>, qIdx, -1)"
+            :disabled="isFirstVisible(<%= questions_state %>, qIdx)"
+            :style="isFirstVisible(<%= questions_state %>, qIdx) ? 'opacity: 0.25; cursor: not-allowed;' : 'cursor: pointer;'"
+            class="v2-btn-icon-sm" style="width: 22px; height: 20px;" title="Move up">
+            <i class="fa-solid fa-chevron-up" style="font-size: 0.6rem;"></i>
+          </button>
+          <button type="button"
+            @click="moveQuestion(<%= questions_state %>, qIdx, 1)"
+            :disabled="isLastVisible(<%= questions_state %>, qIdx)"
+            :style="isLastVisible(<%= questions_state %>, qIdx) ? 'opacity: 0.25; cursor: not-allowed;' : 'cursor: pointer;'"
+            class="v2-btn-icon-sm" style="width: 22px; height: 20px;" title="Move down">
+            <i class="fa-solid fa-chevron-down" style="font-size: 0.6rem;"></i>
+          </button>
+        </div>
+
+        <span class="v2-caption"
+          style="flex-shrink: 0; width: 16px; text-align: right; padding-top: 9px; color: var(--ink-tertiary); font-variant-numeric: tabular-nums;"
+          x-text="visibleBefore(<%= questions_state %>, qIdx) + 1"></span>
+
         <input type="text" x-model="q.text" placeholder="Question text"
           :name="`prompt[prompt_questions_attributes][${qIdx}][text]`"
           class="form-input"
           style="flex: 1; font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border);">
-        <button type="button" @click="q._destroy = true" class="v2-btn-icon-sm" title="Remove">
+        <button type="button" @click="q._destroy = true" class="v2-btn-icon-sm" title="Remove" style="flex-shrink: 0;">
           <i class="fa-solid fa-times" style="font-size: 0.7rem;"></i>
         </button>
       </div>
@@ -59,6 +118,7 @@
       <input type="hidden" :name="`prompt[prompt_questions_attributes][${qIdx}][_destroy]`" :value="q._destroy ? '1' : '0'">
     </div>
   </template>
+  </div>
 
   <div x-show="<%= questions_state %>.filter(q => !q._destroy).length === 0" class="v2-small" style="text-align: center; padding: 12px; color: var(--ink-tertiary);">
     No questions yet — click "+ Add question" to start.

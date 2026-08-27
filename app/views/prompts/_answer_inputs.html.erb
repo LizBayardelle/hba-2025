@@ -1,8 +1,13 @@
 <%# Renders inputs for each of the prompt's questions inside a form_with block.
-    Locals: prompt
+    Locals:
+      prompt    - the Prompt
+      response  - optional PromptResponse; when given, inputs are prefilled for editing
+      questions - optional preloaded question collection; pass it when rendering
+                  this partial in a loop to avoid re-querying per render
     Inputs are named: prompt_response[answers][<question_id>][text_value | number_value | yes_value | selected_value | body]
 %>
-<% questions = prompt.prompt_questions.ordered %>
+<% response = local_assigns[:response] %>
+<% questions = local_assigns[:questions] || prompt.prompt_questions.ordered %>
 <% if questions.empty? %>
   <p class="v2-small" style="text-align: center; padding: 16px; color: var(--ink-tertiary);">
     This prompt has no questions yet. Edit it from the
@@ -12,32 +17,33 @@
 <% else %>
   <div class="space-y-4">
     <% questions.each do |q| %>
+      <% a = response&.answer_for(q) %>
       <div>
         <label class="v2-caption" style="display: block; margin-bottom: 6px; color: var(--ink-secondary); font-weight: 600;"><%= q.text %></label>
         <% case q.question_type %>
         <% when "short_answer" %>
-          <%= text_field_tag "prompt_response[answers][#{q.id}][text_value]", nil,
+          <%= text_field_tag "prompt_response[answers][#{q.id}][text_value]", a&.text_value,
               class: "form-input",
               style: "font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border); width: 100%;" %>
 
         <% when "long_answer" %>
-          <%= text_area_tag "prompt_response[answers][#{q.id}][body]", nil, rows: 4,
+          <%= text_area_tag "prompt_response[answers][#{q.id}][body]", a&.body&.to_plain_text, rows: 5,
               class: "form-input",
-              style: "font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border); width: 100%;" %>
+              style: "font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border); width: 100%; line-height: 1.5;" %>
 
         <% when "integer" %>
-          <%= number_field_tag "prompt_response[answers][#{q.id}][number_value]", nil, step: 1,
+          <%= number_field_tag "prompt_response[answers][#{q.id}][number_value]", a&.number_value, step: 1,
               class: "form-input",
               style: "font-family: var(--font-body); background: var(--surface); color: var(--ink); border-color: var(--border); width: 100%;" %>
 
         <% when "yes_no" %>
           <div class="flex gap-2">
             <label class="v2-card" style="padding: 8px 14px; cursor: pointer; flex: 1; justify-content: center; display: flex; align-items: center; gap: 6px;">
-              <input type="radio" name="prompt_response[answers][<%= q.id %>][yes_value]" value="true">
+              <input type="radio" name="prompt_response[answers][<%= q.id %>][yes_value]" value="true" <%= 'checked' if a&.yes_value == true %>>
               <span style="font-family: var(--font-body); font-weight: 500;">Yes</span>
             </label>
             <label class="v2-card" style="padding: 8px 14px; cursor: pointer; flex: 1; justify-content: center; display: flex; align-items: center; gap: 6px;">
-              <input type="radio" name="prompt_response[answers][<%= q.id %>][yes_value]" value="false">
+              <input type="radio" name="prompt_response[answers][<%= q.id %>][yes_value]" value="false" <%= 'checked' if a&.yes_value == false %>>
               <span style="font-family: var(--font-body); font-weight: 500;">No</span>
             </label>
           </div>
@@ -46,7 +52,7 @@
           <div class="space-y-1">
             <% Array(q.options).each do |opt| %>
               <label class="v2-card" style="padding: 8px 12px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                <input type="radio" name="prompt_response[answers][<%= q.id %>][selected_value]" value="<%= opt %>">
+                <input type="radio" name="prompt_response[answers][<%= q.id %>][selected_value]" value="<%= opt %>" <%= 'checked' if a&.selected_value == opt %>>
                 <span style="font-family: var(--font-body); font-size: 0.9rem;"><%= opt %></span>
               </label>
             <% end %>
@@ -56,7 +62,7 @@
           <div class="space-y-1">
             <% Array(q.options).each do |opt| %>
               <label class="v2-card" style="padding: 8px 12px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                <input type="checkbox" name="prompt_response[answers][<%= q.id %>][selected_value][]" value="<%= opt %>">
+                <input type="checkbox" name="prompt_response[answers][<%= q.id %>][selected_value][]" value="<%= opt %>" <%= 'checked' if Array(a&.selected_value).include?(opt) %>>
                 <span style="font-family: var(--font-body); font-size: 0.9rem;"><%= opt %></span>
               </label>
             <% end %>

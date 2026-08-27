@@ -1,0 +1,26 @@
+<%# Read-only rendering of a single answer.
+    Locals: question, answer (may be nil), clamp (optional, default false)
+%>
+<% clamp = local_assigns.fetch(:clamp, false) %>
+<% if answer.nil? || answer.blank_value? %>
+  <span style="color: var(--ink-tertiary);">—</span>
+<% else %>
+  <% case question.question_type %>
+  <% when "long_answer" %>
+    <div class="trix-content <%= 'clamp-3' if clamp %>"><%= answer.body %></div>
+  <% when "yes_no" %>
+    <span style="display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 0.72rem; font-weight: 600; background: <%= answer.yes_value ? 'rgba(124,179,66,0.15)' : 'rgba(232,121,109,0.12)' %>; color: <%= answer.yes_value ? '#3F6B1A' : '#A04030' %>;">
+      <%= answer.yes_value ? 'Yes' : 'No' %>
+    </span>
+  <% when "checkboxes" %>
+    <div class="flex flex-wrap gap-1">
+      <% Array(answer.selected_value).each do |item| %>
+        <span style="font-size: 0.74rem; padding: 2px 8px; border-radius: 8px; background: var(--hover-tint-strong); color: var(--ink-secondary);"><%= item %></span>
+      <% end %>
+    </div>
+  <% when "integer" %>
+    <span style="font-variant-numeric: tabular-nums; font-weight: 500;"><%= answer.number_value %></span>
+  <% else %>
+    <%= answer.display_value %>
+  <% end %>
+<% end %>
