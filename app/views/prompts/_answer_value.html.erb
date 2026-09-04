@@ -2,7 +2,16 @@
     Locals: question, answer (may be nil), clamp (optional, default false)
 %>
 <% clamp = local_assigns.fetch(:clamp, false) %>
-<% if answer.nil? || answer.blank_value? %>
+<% if answer && answer.legacy_only? %>
+  <%# Recorded before this question's type was changed. The value is still
+      stored; it just doesn't fit the current type's shape. %>
+  <% answer.legacy_values.each do |entry| %>
+    <div class="prompt-legacy-value <%= 'clamp-3' if clamp %>" title="Recorded as <%= entry[:label] %>, before this question's type was changed">
+      <span class="prompt-legacy-badge"><%= entry[:label] %></span>
+      <span><%= entry[:value] %></span>
+    </div>
+  <% end %>
+<% elsif answer.nil? || answer.blank_value? %>
   <span style="color: var(--ink-tertiary);">—</span>
 <% else %>
   <% case question.question_type %>

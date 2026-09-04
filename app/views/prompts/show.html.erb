@@ -93,6 +93,28 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
+  /* An answer recorded under a previous question type — shown rather than
+     hidden behind a dash, but visibly distinct from a current-format value. */
+  .prompt-legacy-value {
+    color: var(--ink-secondary);
+    font-style: italic;
+  }
+  .prompt-legacy-badge {
+    display: inline-block;
+    font-family: var(--font-body);
+    font-size: 0.6rem;
+    font-weight: 700;
+    font-style: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink-tertiary);
+    background: var(--hover-tint-strong);
+    border-radius: 6px;
+    padding: 1px 6px;
+    margin-right: 6px;
+    vertical-align: 1px;
+  }
   .prompt-grid-scroll {
     overflow-x: auto;
     overflow-y: visible;

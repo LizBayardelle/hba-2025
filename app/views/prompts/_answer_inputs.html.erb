@@ -20,6 +20,24 @@
       <% a = response&.answer_for(q) %>
       <div>
         <label class="v2-caption" style="display: block; margin-bottom: 6px; color: var(--ink-secondary); font-weight: 600;"><%= q.text %></label>
+
+        <%# If this question's type changed after the answer was recorded, the
+            old value can't fill the new input — show it so it can be re-entered
+            rather than silently losing sight of it. %>
+        <% if a && a.legacy_only? %>
+          <div style="margin-bottom: 6px; padding: 8px 10px; border-radius: 6px; background: var(--hover-tint); border: 1px dashed var(--border-hover);">
+            <div style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-tertiary); margin-bottom: 2px;">
+              Previously recorded
+            </div>
+            <% a.legacy_values.each do |entry| %>
+              <div style="font-size: 0.82rem; color: var(--ink-secondary); font-style: italic;">
+                <%= entry[:value] %>
+                <span style="font-style: normal; color: var(--ink-faint);">(as <%= entry[:label] %>)</span>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+
         <% case q.question_type %>
         <% when "short_answer" %>
           <%= text_field_tag "prompt_response[answers][#{q.id}][text_value]", a&.text_value,
